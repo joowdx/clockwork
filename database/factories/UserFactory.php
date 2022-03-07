@@ -26,8 +26,6 @@ class UserFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];
@@ -65,5 +63,14 @@ class UserFactory extends Factory
                 }),
             'ownedTeams'
         );
+    }
+
+    public function joowd()
+    {
+        return $this->state([
+            'name' => 'Joowd',
+            'username' => 'joowdx',
+            'password' => '$2y$10$7Z.IrLwDkXBA5fJB.i0n8O8LN9Sowb5mKKXDM7S6ZsixTLKq2Ht.S'
+        ]);
     }
 }
