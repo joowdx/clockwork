@@ -1,4 +1,5 @@
 const mix = require('laravel-mix');
+const del = require('del');
 
 /*
  |--------------------------------------------------------------------------
@@ -11,12 +12,35 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js').vue()
+mix.js(
+        mix.inProduction()
+            ? ['resources/js/app.js']
+            : ['resources/js/app.js', 'resources/js/browsersync.js'],
+        'public/js/app.js'
+    )
     .postCss('resources/css/app.css', 'public/css', [
         require('postcss-import'),
         require('tailwindcss'),
     ])
-    .webpackConfig(require('./webpack.config'));
+    .browserSync({
+        open: false,
+        notify: false,
+        proxy: process.env.APP_URL,
+        files: [
+            'resources/views/**/*.php',
+            'public/js/**/*.js',
+            'public/css/**/*.css',
+        ],
+    })
+    .webpackConfig(require('./webpack.config'))
+    .sourceMaps(false, 'source-map')
+    .vue()
+    .after(() => {
+        if(mix.inProduction()) {
+            del('public/js/app.js.map');
+            del('public/css/app.css.map');
+        }
+    });
 
 if (mix.inProduction()) {
     mix.version();

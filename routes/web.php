@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\BiometricsController;
 use App\Http\Controllers\SampleController;
+use App\Http\Controllers\LogsController;
 use App\Models\Employee;
 use App\Models\Log;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -71,3 +72,7 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 })->name('dashboard');
 
 Route::get('/sample', SampleController::class);
+
+Route::get('/logs', LogsController::class)->name('logs');
+
+Route::get('/biometrics', BiometricsController::class)->name('biometrics');
