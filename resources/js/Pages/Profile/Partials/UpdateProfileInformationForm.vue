@@ -5,7 +5,7 @@
         </template>
 
         <template #description>
-            Update your account's profile information and email address.
+            Update your account's signatory information.
         </template>
 
         <template #form>
@@ -20,12 +20,12 @@
 
                 <!-- Current Profile Photo -->
                 <div class="mt-2" v-show="! photoPreview">
-                    <img :src="user.profile_photo_url" :alt="user.name" class="rounded-full h-20 w-20 object-cover">
+                    <img :src="user.profile_photo_url" :alt="user.name" class="object-cover w-20 h-20 rounded-full">
                 </div>
 
                 <!-- New Profile Photo Preview -->
                 <div class="mt-2" v-show="photoPreview">
-                    <span class="block rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center"
+                    <span class="block w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full"
                           :style="'background-image: url(\'' + photoPreview + '\');'">
                     </span>
                 </div>
@@ -41,18 +41,24 @@
                 <jet-input-error :message="form.errors.photo" class="mt-2" />
             </div>
 
-            <!-- Name -->
+            <!-- Biometrics -->
             <div class="col-span-6 sm:col-span-4">
-                <jet-label for="name" value="Name" />
-                <jet-input id="name" type="text" class="mt-1 block w-full" v-model="form.name" autocomplete="name" />
-                <jet-input-error :message="form.errors.name" class="mt-2" />
+                <jet-label for="biometrics" value="Biometrics" />
+                <jet-input id="biometrics" type="text" class="block w-full mt-1 bg-gray-100" v-model="user.username" autocomplete="biometrics" disabled />
             </div>
 
-            <!-- Email -->
+            <!-- Assignee -->
             <div class="col-span-6 sm:col-span-4">
-                <jet-label for="email" value="Email" />
-                <jet-input id="email" type="email" class="mt-1 block w-full" v-model="form.email" />
-                <jet-input-error :message="form.errors.email" class="mt-2" />
+                <jet-label for="assignee" value="Assignee" />
+                <jet-input id="assignee" type="text" class="block w-full mt-1" v-model="form.assignee" autocomplete="assignee" />
+                <jet-input-error :message="form.errors.assignee" class="mt-2" />
+            </div>
+
+            <!-- Position -->
+            <div class="col-span-6 sm:col-span-4">
+                <jet-label for="position" value="Assignee Position" />
+                <jet-input id="position" type="text" class="block w-full mt-1" v-model="form.position" />
+                <jet-input-error :message="form.errors.position" class="mt-2" />
             </div>
         </template>
 
@@ -95,8 +101,8 @@
             return {
                 form: this.$inertia.form({
                     _method: 'PUT',
-                    name: this.user.name,
-                    email: this.user.email,
+                    assignee: this.user.assignee,
+                    position: this.user.position,
                     photo: null,
                 }),
 
