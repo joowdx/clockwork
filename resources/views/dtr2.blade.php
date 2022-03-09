@@ -18,6 +18,11 @@
                 }
             }
 
+            .weekend {
+                background: #33333355;
+                border-color: transparent !important;
+            }
+
             .xl1532075 {
                 padding-top: 1px;
                 padding-right: 1px;
@@ -467,6 +472,24 @@
                             <td class="xl1532075"></td>
                         </tr>
                         <tr height="20" style="height:15.0pt">
+                            <td height="20" class="xl1532075" style="height:15.0pt">From:</td>
+                            <td class="xl1532075">{{ $from->format('M d, Y') }}</td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                        </tr>
+                        <tr height="20" style="height:15.0pt">
+                            <td height="20" class="xl1532075" style="height:15.0pt">To:</td>
+                            <td class="xl1532075">{{ $to->format('M d, Y') }}</td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                            <td class="xl1532075"></td>
+                        </tr>
+                        <tr height="20" style="height:15.0pt">
                             <td height="20" class="xl1532075" style="height:15.0pt"></td>
                             <td class="xl1532075"></td>
                             <td class="xl1532075"></td>
@@ -491,48 +514,25 @@
                             <td class="xl7232075"></td>
                             <td class="xl7232075"></td>
                         </tr>
-                        @for ($i = 0; $i < $from->diffInDays($to); $i++)
-                            <tr height="20" style="height:15.0pt">
-                                <td colspan="2" height="20" class="xl8032075" style="border-right:.5pt hairline black;height:15.0pt"> {{ $from->clone()->addDay($i)->format('M d, Y') }} </td>
+                        @foreach (Carbon\CarbonPeriod::create($from, $to) as $date)
+                            <tr height="20" @if ($date->isWeekend()) class="weekend" @endif style="height:15.0pt">
+                                <td colspan="2" height="20" class="xl8032075" style="border-right:.5pt hairline black;height:15.0pt"> {{ $date->format('D M d, Y') }} </td>
                                 <td class="xl6732075"></td>
-                                <td class="xl7332075">
-                                    {{
-                                        $employee->logs
-                                            ->filter(fn ($s) => $s->state == '1 0 0 0')
-                                            ->first(fn ($t) => $t->time->isSameDay($from->clone()->addDay($i)))
-                                            ?->time->format('H:i:s')
-                                    }}
-                                </td>
-                                <td class="xl7332075">
-                                    {{
-                                        $employee->logs
-                                            ->filter(fn ($s) => $s->state == '1 1 0 0')
-                                            ->first(fn ($t) => $t->time->isSameDay($from->clone()->addDay($i)))
-                                            ?->time->format('H:i:s')
-                                    }}
-                                </td>
-                                <td class="xl7332075">
-                                    {{
-                                        $employee->logs
-                                            ->filter(fn ($s) => $s->state == '1 0 0 0')
-                                            ->filter(fn ($t) => $t->time->isSameDay($from->clone()->addDay($i)))
-                                            ->skip(1)
-                                            ->first()
-                                            ?->time->format('H:i:s')
-                                    }}
-                                </td>
-                                <td class="xl7332075">
-                                    {{
-                                        $employee->logs
-                                            ->filter(fn ($s) => $s->state == '1 1 0 0')
-                                            ->filter(fn ($t) => $t->time->isSameDay($from->clone()->addDay($i)))
-                                            ->skip(1)
-                                            ->first()
-                                            ?->time->format('H:i:s')
-                                    }}
-                                </td>
+                                @php $i = 0 @endphp
+                                @foreach ($employee->logs->filter(fn ($t) => $t->time->isSameDay($date))->values() as $key => $log)
+                                    @if (($log->state == '1000' && $i % 2 == 0) || ($log->state == '1100' && $i % 2 == 1))
+                                        @php $i++ @endphp
+                                    @else
+                                        <td class="xl7332075"></td>
+                                        @php $i+=2 @endphp
+                                    @endif
+                                    <td class="xl7332075"> {{ $log->time->format('H:i') }} </td>
+                                @endforeach
+                                @for ($j = 0; $j < 4 - $i; $j++)
+                                    <td class="xl7332075"></td>
+                                @endfor
                             </tr>
-                        @endfor
+                        @endforeach
                         @for ($i = 0; $i < 5; $i++)
                             <tr height="20" style="height:15.0pt">
                                 <td height="20" class="xl1532075" style="height:15.0pt"></td>
@@ -558,14 +558,14 @@
                             <td class="xl1532075"></td>
                             <td class="xl1532075"></td>
                             <td class="xl1532075"></td>
-                            <td colspan="3" class="xl6832075">JUDE C. PINEDA</td>
+                            <td colspan="3" class="xl6832075"> {{ Auth::user()?->assignee }} </td>
                         </tr>
                         <tr height="20" style="height:15.0pt">
                             <td height="20" class="xl1532075" style="height:15.0pt"></td>
                             <td class="xl1532075"></td>
                             <td class="xl1532075"></td>
                             <td class="xl1532075"></td>
-                            <td colspan="3" class="xl6932075">PICT OFFICER</td>
+                            <td colspan="3" class="xl6932075"> {{ Auth::user()?->position }} </td>
                         </tr>
                         <tr height="20" style="height:15.0pt">
                             <td height="20" class="xl1532075" style="height:15.0pt"></td>
