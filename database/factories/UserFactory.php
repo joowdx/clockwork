@@ -25,7 +25,7 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->name(),
+            'assignee' => $this->faker->name(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];
@@ -65,12 +65,23 @@ class UserFactory extends Factory
         );
     }
 
-    public function joowd()
+    public function pgso()
     {
         return $this->state([
-            'name' => 'Joowd',
-            'username' => 'joowdx',
+            'assignee' => 'JUDE C. PINEDA',
+            'position' => 'PICT OFFICER',
+            'username' => 'pgso',
             'password' => '$2y$10$7Z.IrLwDkXBA5fJB.i0n8O8LN9Sowb5mKKXDM7S6ZsixTLKq2Ht.S'
+        ]);
+    }
+
+    public function admin()
+    {
+        return $this->state([
+            'assignee' => 'GENE PHILIP L. RELLANOS',
+            'position' => 'ADMINISTRATIVE CLERK II',
+            'username' => 'admin',
+            'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
         ]);
     }
 }

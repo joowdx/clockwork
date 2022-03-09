@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\User::factory()->joowd()->create();
+        \App\Models\User::factory()->pgso()->create();
+        \App\Models\User::factory()->admin()->create();
     }
 }
