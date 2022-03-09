@@ -19,7 +19,7 @@
             }
 
             .weekend {
-                background: #33333355;
+                background: #33333322;
                 border-color: transparent !important;
             }
 
