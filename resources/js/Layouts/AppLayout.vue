@@ -46,8 +46,8 @@
                     },
                     {
                         name: 'Biometrics',
-                        href: route('biometrics'),
-                        active: route().current('biometrics'),
+                        href: route('biometrics.index'),
+                        active: route().current('biometrics.*'),
                         show: true,
                     },
                     {

@@ -15,8 +15,8 @@ class SampleController extends Controller
      */
     public function __invoke()
     {
-        $from = today()->subMonth(2);
-        $to = today();
+        $from = today()->subMonth()->startOfMonth();
+        $to = today()->subMonth()->endOfMonth();
         return view('dtr2', [
             'employees' => Employee::with(['logs' => fn ($q) => $q->whereBetween('time', [$from, $to])])->get(),
             'from' => $from,

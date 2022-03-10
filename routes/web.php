@@ -6,6 +6,7 @@ use App\Http\Controllers\TimeLogsController;
 use App\Models\Employee;
 use App\Models\User;
 use App\Models\TimeLog;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,13 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
 
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
+
     // return dd(Employee::with([
     //     'logs' => fn ($e) => $e->whereMonth('time', 2)->whereYear('time', 2022)
     // ])->first()?->logs->map(fn ($e) => $e->time));
@@ -35,8 +43,6 @@ Route::get('/', function () {
     $indices = Employee::all()->map(fn ($e) => $e->user_id . '.' . $e->biometrics_id);
 
     $user = Auth::user() ?? User::find(1);
-
-    $latest = $user->latestLog;
 
     File::lines('../PGSO.csv')
         ->skip(1)
@@ -71,7 +77,7 @@ Route::get('/', function () {
             'updated_at' => now(),
             'user_id' => $user->id, ###############################
         ])
-        ->reject(fn ($e) => $latest?->time->gte($e['time']))
+        ->reject(fn ($e) => $user->latest?->time->gte($e['time']))
         ->chunk(1000)
         ->map(fn ($e) => $e->toArray())
         ->each(fn ($e) => DB::transaction(fn () => TimeLog::insert($e)));
@@ -92,6 +98,10 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 
 Route::get('/sample', SampleController::class);
 
-Route::get('/timelogs', TimeLogsController::class)->name('timelogs');
+// Route::get('/biometrics', BiometricsController::class)->name('biometrics');
 
-Route::get('/biometrics', BiometricsController::class)->name('biometrics');
+
+Route::middleware(['auth', 'verified'])->group(function() {
+    Route::resource('biometrics', BiometricsController::class);
+    Route::get('/logs', TimeLogsController::class)->name('timelogs');
+});
