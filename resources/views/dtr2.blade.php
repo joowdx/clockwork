@@ -459,7 +459,7 @@
                             </tr>
                             <tr height="21" style="height:15.75pt">
                                 <td height="21" class="xl6632075" style="height:15.75pt">NAME:</td>
-                                <td colspan="4" class="xl7032075"> {{ "$employee->fullName ($employee->biometrics_id)" }} </td>
+                                <td colspan="4" class="xl7032075"> {{ "$employee->fullName ({$employee->user->username}-$employee->biometrics_id)" }} </td>
                                 <td class="xl7432075"></td>
                                 <td class="xl7432075"></td>
                             </tr>
@@ -521,7 +521,7 @@
                                     <td class="xl6732075"></td>
                                     @php $i = 0 @endphp
                                     @foreach ($employee->logs->filter(fn ($t) => $t->time->isSameDay($date))->values() as $key => $log)
-                                        @if (($log->state == '1000' && $i % 2 == 0) || ($log->state == '1100' && $i % 2 == 1))
+                                        @if (($log->state == $log::IN && $i % 2 == 0) || ($log->state == $log::OUT && $i % 2 == 1))
                                             @php $i++ @endphp
                                         @else
                                             <td class="xl7332075"></td>

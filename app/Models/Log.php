@@ -11,6 +11,9 @@ class Log extends Model
     use Compoships;
     use HasFactory;
 
+    const IN = '1000';
+    const OUT = '1100';
+
     protected $fillable = [
         'biometrics_id',
         'user_id',
