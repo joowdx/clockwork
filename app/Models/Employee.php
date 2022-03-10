@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
+    use Compoships;
     use HasFactory;
 
     protected $fillable = [
@@ -27,7 +29,7 @@ class Employee extends Model
 
     public function logs()
     {
-        return $this->hasMany(Log::class, 'biometrics_id', 'biometrics_id');
+        return $this->hasMany(Log::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
     }
 
     public function getFullNameAttribute()

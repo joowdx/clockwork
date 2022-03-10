@@ -53,11 +53,26 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function toSearchableArray()
+    public function toSearchableArray(): array
     {
         return [
             'assignee' => $this->assignee,
             'username' => $this->username,
         ];
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(Log::class);
+    }
+
+    public function latestLog()
+    {
+        return $this->hasOne(Log::class)->latestOfMany('time');
     }
 }

@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('biometrics_id');
+            $table->foreignId('user_id');
             $table->dateTime('time');
             $table->string('state');
             $table->timestamps();
