@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class LogsController extends Controller
+class TimeLogsController extends Controller
 {
     /**
      * Handle the incoming request.
@@ -14,6 +14,6 @@ class LogsController extends Controller
      */
     public function __invoke(Request $request)
     {
-        return inertia('Logs/Index');
+        return inertia('TimeLogs/Index');
     }
 }

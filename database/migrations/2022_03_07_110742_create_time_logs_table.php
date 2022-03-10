@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('logs', function (Blueprint $table) {
+        Schema::create('time_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('biometrics_id');
             $table->foreignId('user_id');

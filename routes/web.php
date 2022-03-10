@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\BiometricsController;
 use App\Http\Controllers\SampleController;
-use App\Http\Controllers\LogsController;
+use App\Http\Controllers\TimeLogsController;
 use App\Models\Employee;
-use App\Models\Log;
+use App\Models\User;
+use App\Models\TimeLog;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,36 +30,53 @@ Route::get('/', function () {
     //     'logs' => fn ($e) => $e->whereMonth('time', 2)->whereYear('time', 2022)
     // ])->first()?->logs->map(fn ($e) => $e->time));
 
+    $columns = array_flip(explode(',', strtoupper((string) File::lines('../PGSO.csv')->first())));
+
+    $indices = Employee::all()->map(fn ($e) => $e->user_id . '.' . $e->biometrics_id);
+
+    $user = Auth::user() ?? User::find(1);
+
+    $latest = $user->latestLog;
+
     File::lines('../PGSO.csv')
         ->skip(1)
-        ->filter(fn($e) => $e)
+        ->filter(fn ($e) => $e)
         ->map(fn($e) => str($e)->explode(','))
         ->map(fn ($e) => [
-            'biometrics_id' => $e[0],
+            'biometrics_id' => $e[$columns['SCANNER ID']],
             'name' => json_encode([
-                'last' => $e[1],
-                'first' => $e[2],
-                'middle' => $e[3],
-                'extension' => $e[4],
+                'last' => $e[$columns['FAMILY NAME']],
+                'first' => $e[$columns['GIVEN NAME']],
+                'middle' => $e[$columns['MIDDLE INITIAL']],
+                'extension' => $e[$columns['NAME EXTENSION']],
             ]),
-            'regular' => (bool) $e[5],
-            'user_id' => Auth::user()->id ?? 1,
+            'regular' => (bool) $e[$columns['REGULAR']],
+            'created_at' => now(),
+            'updated_at' => now(),
+            'user_id' => $user->id, ###############################
         ])
-        ->chunk(100)
+        ->reject(fn ($e) => $indices->contains($user->id. '.' . $e['biometrics_id'])) ###############################
+        ->chunk(1000)
         ->map(fn ($e) => $e->toArray())
-        ->each(fn ($e) => Employee::insert($e));
+        ->each(fn ($e) => DB::transaction(fn () => Employee::insert($e)));
 
-    return File::lines('../1_attlog.dat')
+    File::lines('../1_attlog.dat')
         ->filter(fn ($e) => $e)
         ->map(fn ($e) => explode("\t", $e))
         ->map(fn ($e) => [
             'biometrics_id' => trim($e[0]),
             'time' => Carbon::createFromTimeString($e[1]),
             'state' => join('', collect(array_slice($e, 2))->map(fn ($e) => $e > 1 ? 1 : $e)->toArray()),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'user_id' => $user->id, ###############################
         ])
+        ->reject(fn ($e) => $latest?->time->gte($e['time']))
         ->chunk(1000)
         ->map(fn ($e) => $e->toArray())
-        ->each(fn ($e) => Log::insert($e));
+        ->each(fn ($e) => DB::transaction(fn () => TimeLog::insert($e)));
+
+    return dd(TimeLog::count(), Employee::count());
 
     // return Inertia::render('Welcome', [
     //     'canLogin' => Route::has('login'),
@@ -73,6 +92,6 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 
 Route::get('/sample', SampleController::class);
 
-Route::get('/logs', LogsController::class)->name('logs');
+Route::get('/timelogs', TimeLogsController::class)->name('timelogs');
 
 Route::get('/biometrics', BiometricsController::class)->name('biometrics');

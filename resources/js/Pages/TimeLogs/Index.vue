@@ -2,7 +2,7 @@
     <app-layout title="Logs">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Logs
+                Time Logs
             </h2>
         </template>
     </app-layout>

@@ -66,13 +66,8 @@ class User extends Authenticatable
         return $this->hasMany(Employee::class);
     }
 
-    public function logs()
-    {
-        return $this->hasMany(Log::class);
-    }
-
     public function latestLog()
     {
-        return $this->hasOne(Log::class)->latestOfMany('time');
+        return $this->hasOne(TimeLog::class)->latestOfMany('time');
     }
 }

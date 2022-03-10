@@ -29,7 +29,7 @@ class Employee extends Model
 
     public function logs()
     {
-        return $this->hasMany(Log::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
+        return $this->hasMany(TimeLog::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
     }
 
     public function getFullNameAttribute()

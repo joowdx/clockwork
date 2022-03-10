@@ -6,7 +6,7 @@ use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Log extends Model
+class TimeLog extends Model
 {
     use Compoships;
     use HasFactory;

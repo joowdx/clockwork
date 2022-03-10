@@ -51,9 +51,9 @@
                         show: true,
                     },
                     {
-                        name: 'Logs',
-                        href: route('logs'),
-                        active: route().current('logs'),
+                        name: 'Time Logs',
+                        href: route('timelogs'),
+                        active: route().current('timelogs'),
                         show: true,
                     },
                 ]
