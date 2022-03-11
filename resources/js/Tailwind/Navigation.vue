@@ -32,7 +32,7 @@
                         <div>
                             <MenuButton class="flex text-sm rounded-full">
                                 <span class="sr-only">Open user menu</span>
-                                <img class="object-cover w-8 h-8 rounded-full" :src="$page.props.auth?.user?.profile_photo_url" alt="" />
+                                <img class="object-cover w-8 h-8 rounded-full" :src="$page.props.user?.profile_photo_url" alt="" />
                             </MenuButton>
                         </div>
                         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
