@@ -42,7 +42,7 @@
                         name: 'Dashboard',
                         href: route('dashboard'),
                         active: route().current('dashboard'),
-                        show: true,
+                        show: false,
                     },
                     {
                         name: 'Biometrics',
@@ -52,8 +52,8 @@
                     },
                     {
                         name: 'Time Logs',
-                        href: route('timelogs'),
-                        active: route().current('timelogs'),
+                        href: route('timelogs.index'),
+                        active: route().current('timelogs.*'),
                         show: true,
                     },
                 ]

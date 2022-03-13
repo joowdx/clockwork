@@ -442,7 +442,7 @@
                             </tr>
                             <tr height="20" style="height:15.0pt">
                                 <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
+                                <td class="xl1532075"><small> ({{ $employee->user->username }} — {{ str_pad($employee->biometrics_id, 4, 0, STR_PAD_LEFT) }}) </small></td>
                                 <td class="xl1532075"></td>
                                 <td class="xl1532075"></td>
                                 <td class="xl1532075"></td>
@@ -451,7 +451,7 @@
                             </tr>
                             <tr height="21" style="height:15.75pt">
                                 <td height="21" class="xl6632075" style="height:15.75pt">NAME:</td>
-                                <td colspan="4" class="xl7032075"> {{ "$employee->fullName ({$employee->user->username}-$employee->biometrics_id)" }} </td>
+                                <td colspan="4" class="xl7032075">{{ $employee->name_format->fullStartLastInitialMiddle }}</td>
                                 <td class="xl7432075"></td>
                                 <td class="xl7432075"></td>
                             </tr>

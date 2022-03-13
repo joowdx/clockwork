@@ -1,6 +1,6 @@
 <template>
-    <listbox v-model="selected" class="p-0 border-none">
-        <div class="relative mt-1">
+    <listbox as="div" v-model="selected" class="p-0 border-none">
+        <div class="relative">
             <listbox-button class="relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default dark:bg-gray-800 dark:focus:border-gray-800 dark:focus:ring-gray-700 dark:border-gray-700 focus:outline-none focus:border-indigo-300 focus:ring focus:ring-indigo-200 sm:text-sm" style="height:42px!important;">
                 <span class="block capitalize truncate" v-html="selected.name ?? selected"></span>
 
@@ -13,7 +13,7 @@
                 <listbox-options class="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg dark:bg-gray-800 max-h-56 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                     <listbox-option as="template" v-for="item in items" :key="item.value ?? item" :value="item" v-slot="{ active, selected }" >
                         <li :hidden="item ? false : true" :class="[active ? 'bg-indigo-400 dark:bg-gray-700 dark:text-gray-200' : 'text-gray-900', ' select-none relative py-2 pl-3 pr-9']">
-                            <span :class="[selected ? 'font-bold' : 'font-normal', 'block truncate capitalize dark:text-gray-200']" v-html="item.name ?? item"> </span>
+                            <span :class="[active ? 'text-white' : '', 'block truncate capitalize dark:text-gray-200']" v-html="item.name ?? item"> </span>
 
                             <span v-if="selected" :class="[active ? 'text-white' : 'text-indigo-400 dark:text-gray-200', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                 <check-icon class="w-5 h-5" aria-hidden="true" />
