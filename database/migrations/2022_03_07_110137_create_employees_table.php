@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedInteger('biometrics_id');
             $table->json('name');
             $table->boolean('regular');
+            $table->string('office');
             $table->foreignId('user_id');
             $table->timestamps();
             $table->unique(['biometrics_id', 'user_id']);

@@ -2,20 +2,25 @@
 
 namespace App\Models;
 
+use App\Traits\HasNameAccessorAndFormatter;
 use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Employee extends Model
 {
     use Compoships;
     use HasFactory;
+    use HasNameAccessorAndFormatter;
+    use Searchable;
 
     protected $fillable = [
         'biometrics_id',
         'name',
         'regular',
-        'user_id'
+        'office',
+        'user_id',
     ];
 
     protected $casts = [
@@ -32,10 +37,11 @@ class Employee extends Model
         return $this->hasMany(TimeLog::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
     }
 
-    public function getFullNameAttribute()
+    public function toSearchableArray()
     {
-        return "{$this->name->last}, {$this->name->first} {$this->name->extension}";
+        return [
+            'name' => $this->name_format->full,
+        ];
     }
-
 
 }
