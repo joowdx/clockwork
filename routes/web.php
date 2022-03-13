@@ -29,7 +29,8 @@ Route::get('/', function () {
 
 
 Route::middleware(['auth', 'verified'])->group(function() {
-    Route::get('/dashboard', fn () => inertia('dashboard'))->name('dashboard');
+    // Route::get('/dashboard', fn () => inertia('dashboard'))->name('dashboard');
+    Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
     Route::get('/printpreview', PrintPreviewController::class)->name('printpreview');
     Route::resource('biometrics', BiometricsController::class)->except(['edit', 'create']);
     Route::resource('timelogs', TimeLogsController::class)->only(['index', 'store']);
