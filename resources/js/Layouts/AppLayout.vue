@@ -48,7 +48,7 @@
                         name: 'Biometrics',
                         href: route('biometrics.index'),
                         active: route().current('biometrics.*'),
-                        show: true,
+                        show: false,
                     },
                     {
                         name: 'Time Logs',
