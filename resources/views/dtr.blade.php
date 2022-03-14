@@ -1,12 +1,11 @@
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<!DOCTYPE html>
+<html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-        <meta name="ProgId" content="Excel.Sheet">
-        <meta name="Generator" content="Microsoft Excel 15">
         <style>
-            table {
-                mso-displayed-decimal-separator: "\.";
-                mso-displayed-thousand-separator: "\,";
+            @page {
+                margin: 10mm 10mm 0 10mm;
+                scale: 100%;
             }
 
             @media print {
@@ -23,569 +22,229 @@
                 border-color: transparent !important;
             }
 
-            .xl1532075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
+            .xl6920299 {
                 color: black;
+                font-size: 8.0pt;
+                font-weight: 400;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Consolas, monospace;
+                text-transform: uppercase;
+            }
+
+            .xl6820299 {
+                font-size: 11.0pt;
+                font-weight: 700;
+                font-style: normal;
+                text-decoration: none;
+                font-family: "Cascadia Code", monospace;
+                text-align: left;
+                vertical-align: bottom;
+                border-top: none;
+                border-right: none;
+                border-bottom: .5pt solid windowtext;
+                border-left: none;
+                white-space: nowrap;
+            }
+
+            .xl7120299 {
                 font-size: 11.0pt;
                 font-weight: 400;
                 font-style: normal;
                 text-decoration: none;
-                font-family: Calibri, sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: general;
+                font-family: Bahnschrift, sans-serif;
+                text-align: center;
                 vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
+                border-top: none;
+                border-right: none;
+                border-bottom: .5pt solid windowtext;
+                border-left: none;
                 white-space: nowrap;
             }
 
-            .xl6532076 {
-                font-size: 15.0pt !important;
+            .xl7220299 {
+                font-size: 10.0pt;
+                font-weight: 400;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Consolas, monospace;
+                text-align: left;
+                vertical-align: bottom;
+                white-space: nowrap;
             }
 
-            .xl6532075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
+            .xl7320299 {
+                font-size: 10.0pt;
+                font-weight: 400;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Consolas, monospace;
+                text-align: left;
+                vertical-align: bottom;
+                white-space: nowrap;
+            }
+
+            .xl7520299 {
+                font-size: 8.0pt;
+                font-weight: 700;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Consolas, monospace;
+                text-align: left;
+                vertical-align: bottom;
+                white-space: nowrap;
+            }
+
+            .xl7620299 {
+                font-size: 20.0pt;
+                font-weight: 700;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Bahnschrift, sans-serif;
+                text-align: center;
+                vertical-align: middle;
+                white-space: nowrap;
+            }
+
+            .xl7720299 {
+                font-size: 11.0pt;
+                font-weight: 400;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Bahnschrift, sans-serif;
+                text-align: left;
+                vertical-align: bottom;
+                white-space: nowrap;
+                text-transform: uppercase;
+            }
+
+            .xl7920299 {
                 font-size: 11.0pt;
                 font-weight: 700;
                 font-style: normal;
                 text-decoration: none;
                 font-family: Bahnschrift, sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: center;
-                vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl6632075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: "Bahnschrift SemiBold", sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
                 text-align: general;
                 vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
                 white-space: nowrap;
             }
 
-            .xl6732075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
+            .xl8020299 {
+                font-size: 8.0pt;
                 font-weight: 400;
                 font-style: normal;
                 text-decoration: none;
                 font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: general;
+                text-align: right;
                 vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
                 white-space: nowrap;
+                text-transform: uppercase;
             }
 
-            .xl6832075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 700;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Corbel, sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: center;
-                vertical-align: bottom;
-                border-top: none;
-                border-right: none;
-                border-bottom: .5pt solid windowtext;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl6932075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: "Corbel Light", sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: center;
-                vertical-align: bottom;
-                border-top: .5pt solid windowtext;
-                border-right: none;
-                border-bottom: none;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7032075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 700;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Calibri, sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: bottom;
-                border-top: none;
-                border-right: none;
-                border-bottom: 1.0pt solid windowtext;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7132075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
+            .xl8120299 {
                 font-size: 11.0pt;
                 font-weight: 400;
                 font-style: normal;
                 text-decoration: none;
                 font-family: "Bahnschrift Light", sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: right;
+                text-align: center;
                 vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7232075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7332075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: "Short Time";
-                text-align: left;
-                vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7432075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 700;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Calibri, sans-serif;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: general;
-                vertical-align: bottom;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7532075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 700;
-                font-style: normal;
-                text-decoration: none;
-                font-family: "Cascadia Code", monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: middle;
-                border-top: none;
-                border-right: none;
-                border-bottom: .5pt solid windowtext;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7632075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 700;
-                font-style: normal;
-                text-decoration: none;
-                font-family: "Cascadia Code", monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: general;
-                vertical-align: bottom;
-                border-top: none;
-                border-right: none;
-                border-bottom: .5pt solid windowtext;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7732075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 700;
-                font-style: normal;
-                text-decoration: none;
-                font-family: "Cascadia Code", monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: bottom;
-                border-top: none;
-                border-right: none;
-                border-bottom: .5pt solid windowtext;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7832075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: middle;
                 border-top: .5pt solid windowtext;
                 border-right: none;
                 border-bottom: none;
                 border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl7932075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: middle;
-                border-top: .5pt solid windowtext;
-                border-right: .5pt hairline windowtext;
-                border-bottom: none;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl8032075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: middle;
-                mso-background-source: auto;
-                mso-pattern: auto;
-                white-space: nowrap;
-            }
-
-            .xl8132075 {
-                padding-top: 1px;
-                padding-right: 1px;
-                padding-left: 1px;
-                mso-ignore: padding;
-                color: black;
-                font-size: 11.0pt;
-                font-weight: 400;
-                font-style: normal;
-                text-decoration: none;
-                font-family: Consolas, monospace;
-                mso-font-charset: 0;
-                mso-number-format: General;
-                text-align: left;
-                vertical-align: middle;
-                border-top: none;
-                border-right: .5pt hairline windowtext;
-                border-bottom: none;
-                border-left: none;
-                mso-background-source: auto;
-                mso-pattern: auto;
                 white-space: nowrap;
             }
         </style>
+        <title>DAILY TIME RECORD</title>
     </head>
     <body>
-        <div align="center" x:publishsource="Excel">
+        <div align="center">
             @foreach ($employees as $employee)
                 @for ($x = 0; $x < $pages = ceil(Carbon\CarbonPeriod::create($from, $to)->count() / 31); $x++)
                     <div class="pagebreak"></div>
-                    <table border="0" cellpadding="0" cellspacing="0" width="572" style="border-collapse:collapse;table-layout:fixed;width:428pt">
-                        <colgroup>
-                            <col width="64" span="3" style="width:48pt">
-                            <col width="95" span="4" style="mso-width-source:userset;mso-width-alt:3474;width:71pt">
-                        </colgroup>
+                    <table border="0" cellpadding="0" cellspacing="0" width="640" style="border-collapse:collapse;table-layout:fixed;width:480pt">
                         <tbody>
                             <tr height="20" style="height:15.0pt">
-                                <td colspan="7" height="20" class="xl6532075 xl6532076" width="572" style="height:15.0pt;width:428pt">
-                                    <a name="RANGE!A1:G46">DAILY TIME RECORD</a>
+                                <td colspan="10" rowspan="2" height="40" class="xl7620299" width="640" style="height:30.0pt;width:480pt">DAILY TIME RECORD</td>
+                            </tr>
+                            <tr height="20" style="height:15.0pt"></tr>
+                            <tr height="20" style="height:15.0pt"></tr>
+                            <tr height="20" style="height:15.0pt">
+                                <td colspan="2" height="20" class="xl7920299" style="height:15.0pt">EMPLOYEE</td>
+                                <td colspan="6" class="xl7720299">
+                                    {{ $employee->name_format->fullStartLastInitialMiddle }}
+                                </td>
+                                <td colspan="2" class="xl8020299">
+                                    {{ $employee->user->username }} — {{ str_pad($employee->biometrics_id, 4, 0, STR_PAD_LEFT) }}
+                                </td>
+                            </tr>
+                            <tr height="20" style="height:15.0pt"></tr>
+                            <tr height="20" style="height:15.0pt">
+                                <td colspan="2" height="20" class="xl7920299" style="height:15.0pt">FROM</td>
+                                <td colspan="8" class="xl7720299">
+                                    {{ $from->format('d M Y') }}
                                 </td>
                             </tr>
                             <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"><small> ({{ $employee->user->username }} — {{ str_pad($employee->biometrics_id, 4, 0, STR_PAD_LEFT) }}) </small></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
+                                <td colspan="2" height="20" class="xl7920299" style="height:15.0pt">TO</td>
+                                <td colspan="8" class="xl7720299">
+                                    {{ $to->format('d M Y') }}
+                                </td>
                             </tr>
-                            <tr height="21" style="height:15.75pt">
-                                <td height="21" class="xl6632075" style="height:15.75pt">NAME:</td>
-                                <td colspan="4" class="xl7032075">{{ $employee->name_format->fullStartLastInitialMiddle }}</td>
-                                <td class="xl7432075"></td>
-                                <td class="xl7432075"></td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt">From:</td>
-                                <td class="xl1532075">{{ $from->format('M d, Y') }}</td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt">To:</td>
-                                <td class="xl1532075">{{ $to->format('M d, Y') }}</td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                            </tr>
+                            <tr height="20" style="height:15.0pt"></tr>
                             <tr height="22" style="height:16.5pt">
-                                <td colspan="2" height="22" class="xl7532075" style="height:16.5pt">TIME</td>
-                                <td class="xl7632075"></td>
-                                <td class="xl7732075">IN</td>
-                                <td class="xl7732075">OUT</td>
-                                <td class="xl7732075">IN</td>
-                                <td class="xl7732075">OUT</td>
+                                <td colspan="2" height="22" class="xl6820299" style="height:16.5pt">DATE</td>
+                                <td class="xl6820299">IN</td>
+                                <td class="xl6820299">OUT</td>
+                                <td class="xl6820299">IN</td>
+                                <td class="xl6820299">OUT</td>
+                                <td class="xl6820299">IN</td>
+                                <td class="xl6820299">OUT</td>
+                                <td class="xl6820299"></td>
+                                <td class="xl6820299"></td>
                             </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td colspan="2" height="20" class="xl7832075" style="border-right:.5pt hairline black;height:15.0pt"></td>
-                                <td class="xl6732075"></td>
-                                <td class="xl7232075"></td>
-                                <td class="xl7232075"></td>
-                                <td class="xl7232075"></td>
-                                <td class="xl7232075"></td>
-                            </tr>
-                            @foreach (Carbon\CarbonPeriod::create($from->clone()->addDays($x * 31), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 31))->lt($to) ? $end->subDay() : $to) as $date)
+                            <tr height="20" style="height:15.0pt"></tr>
+                            @foreach ($days = (Carbon\CarbonPeriod::create($from->clone()->addDays($x * 31), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 31))->lt($to) ? $end->subDay() : $to)) as $date)
                                 <tr height="20" @if ($date->isWeekend()) class="weekend" @endif style="height:15.0pt">
-                                    <td colspan="2" height="20" class="xl8032075" style="border-right:.5pt hairline black;height:15.0pt"> &nbsp;&nbsp; {{  $date->format('D M d, Y') }} </td>
-                                    <td class="xl6732075"></td>
+                                    <td colspan="2" height="20" class="xl7220299" style="height:15.0pt">
+                                        {{  $date->format('D d-m-y') }}
+                                    </td>
                                     @php $i = 0 @endphp
                                     @foreach ($employee->logs->filter(fn ($t) => $t->time->isSameDay($date))->values() as $key => $log)
                                         @if (($log->state == $log::IN && $i % 2 == 0) || ($log->state == $log::OUT && $i % 2 == 1))
                                             @php $i++ @endphp
                                         @else
-                                            <td class="xl7332075"></td>
+                                            <td class="xl7320299"></td>
                                             @php $i+=2 @endphp
                                         @endif
-                                        <td class="xl7332075"> {{ $log->time->format('H:i') }} </td>
+                                        <td class="xl7320299"> {{ $log->time->format('H:i') }} </td>
                                     @endforeach
-                                    @for ($j = 0; $j < 4 - $i; $j++)
-                                        <td class="xl7332075"></td>
-                                    @endfor
+                                    @if (8 - $i > 0)
+                                        <td colspan="{{ 8 - $i }}" class="xl7320299"></td>
+                                    @endif
                                 </tr>
                             @endforeach
-                            @for ($i = 0; $i < 5; $i++)
-                                <tr height="20" style="height:15.0pt">
-                                    <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                    <td class="xl1532075"></td>
-                                    <td class="xl1532075"></td>
-                                    <td class="xl1532075"></td>
-                                    <td class="xl1532075"></td>
-                                    <td class="xl1532075"></td>
-                                    <td class="xl1532075"></td>
-                                </tr>
+                            @for ($i = 31 - $days->count() + 5; $i > 0; $i--)
+                                <tr height="20" style="height:15.0pt"></tr>
                             @endfor
                             <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl7132075">{{ now()->format('M d, Y') }}</td>
+                                <td colspan="6"></td>
+                                <td colspan="4" class="xl7120299">
+                                    {{ Auth::user()?->assignee }}
+                                </td>
                             </tr>
                             <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td colspan="3" class="xl6832075"> {{ Auth::user()?->assignee }} </td>
+                                <td colspan="6"></td>
+                                <td colspan="4" class="xl8120299">
+                                    {{ Auth::user()?->position }}
+                                </td>
                             </tr>
                             <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td colspan="3" class="xl6932075"> {{ Auth::user()?->position }} </td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td height="20" class="xl1532075" style="height:15.0pt"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                                <td class="xl1532075"></td>
-                            </tr>
-                            <tr height="0" style="display:none">
-                                <td width="64" style="width:48pt"></td>
-                                <td width="64" style="width:48pt"></td>
-                                <td width="64" style="width:48pt"></td>
-                                <td width="95" style="width:71pt"></td>
-                                <td width="95" style="width:71pt"></td>
-                                <td width="95" style="width:71pt"></td>
-                                <td width="95" style="width:71pt"></td>
+                                <td colspan="3" height="20" class="xl7520299" style="height:15.0pt">
+                                    DATE PRINTED: <font class="xl6920299">{{ today()->format('d M Y') }}</font>
+                                </td>
+                                <td colspan="7"></td>
                             </tr>
                         </tbody>
                     </table>
