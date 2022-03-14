@@ -44,7 +44,7 @@
             <!-- Biometrics -->
             <div class="col-span-6 sm:col-span-4">
                 <jet-label for="biometrics" value="Biometrics" />
-                <jet-input id="biometrics" type="text" class="block w-full mt-1 bg-gray-100" v-model="user.username" autocomplete="biometrics" disabled />
+                <jet-input id="biometrics" type="text" class="block w-full mt-1 uppercase bg-gray-100 disabled:opacity-50" v-model="user.username" autocomplete="biometrics" disabled />
             </div>
 
             <!-- Assignee -->
