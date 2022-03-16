@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -26,12 +25,17 @@ class PrintPreviewController extends Controller
 
         $start = $month->setDay($request->period == '2nd' ? 16 : 1);
 
-        $end = $request->period == '1st' ? $month->clone()->setDay(15) : $month->clone()->endOfMonth();
+        $end = $request->period == '1st' ? $month->clone()->setDay(15)->endOfDay() : $month->clone()->endOfMonth();
+
+        $request->id ? $request->user()->load([
+            'employees' => fn ($q) => $q->whereIn('id', $request->id),
+            'employees.logs' => fn($q) => $q->whereBetween('time', [$start, $end])
+        ]) : [];
 
         return view('dtr', [
-            'employees' => $request->id ? Employee::find($request->id)->load(['logs' => fn ($q) => $q->whereBetween('time', [$start, $end])]) : [],
             'from' => $start,
             'to' => $end,
+            'employees' => $request->user()->employees,
         ]);
     }
 }
