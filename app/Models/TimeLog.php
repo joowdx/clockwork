@@ -11,8 +11,8 @@ class TimeLog extends Model
     use Compoships;
     use HasFactory;
 
-    const IN = '1000';
-    const OUT = '1100';
+    const IN = ['1000', '1010'];
+    const OUT = ['1100', '1110'];
 
     protected $fillable = [
         'biometrics_id',

@@ -212,7 +212,7 @@
                                     </td>
                                     @php $i = 0 @endphp
                                     @foreach ($employee->logs->filter(fn ($t) => $t->time->isSameDay($date))->values() as $key => $log)
-                                        @if (($log->state == $log::IN && $i % 2 == 0) || ($log->state == $log::OUT && $i % 2 == 1))
+                                        @if ((in_array($log->state, $log::IN) && $i % 2 == 0) || (in_array($log->state, $log::OUT) && $i % 2 == 1))
                                             @php $i++ @endphp
                                         @else
                                             <td class="xl7320299"></td>
