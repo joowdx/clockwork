@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('biometrics_id');
             $table->json('name');
-            $table->string('office');
+            $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
             $table->foreignId('user_id');

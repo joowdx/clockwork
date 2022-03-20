@@ -10,6 +10,7 @@ use App\Repositories\TimeLogRepository;
 use App\Services\EmployeeService;
 use App\Services\TimeLogService;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class ImportServiceProvider extends ServiceProvider
@@ -24,12 +25,12 @@ class ImportServiceProvider extends ServiceProvider
         $this->app->bind(EmployeeService::class, fn () => new EmployeeService(new EmployeeRepository(app(Employee::class))));
 
         $this->app->bind(Import::class, function () {
-            switch(request()->file->extension()) {
-                case 'csv': {
+            switch(explode('.', Route::currentRouteName())[0]) {
+                case 'employees': {
                     return new EmployeeService(new EmployeeRepository(app(Employee::class)));
                     break;
                 }
-                case 'txt': {
+                case 'timelogs': {
                     return new TimeLogService(new TimeLogRepository(app(TimeLog::class)));
                     break;
                 }

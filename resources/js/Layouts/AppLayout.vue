@@ -51,6 +51,12 @@
                         show: false,
                     },
                     {
+                        name: 'Employees',
+                        href: route('employees.index'),
+                        active: route().current('employees.*'),
+                        show: true,
+                    },
+                    {
                         name: 'Time Logs',
                         href: route('timelogs.index'),
                         active: route().current('timelogs.*'),

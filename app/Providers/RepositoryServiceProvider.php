@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Contracts\Repository;
+use App\Models\Employee;
+use App\Repositories\EmployeeRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,7 +29,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(Repository::class, function () {
             if(app()->runningInConsole()) {
-                return null;
+                return new EmployeeRepository(app(Employee::class));
             }
 
             $name = explode('Controller@', preg_replace('/.*\\\/', '', request()->route()->action['controller']))[0];

@@ -3,6 +3,7 @@
 namespace App\Contracts;
 
 use Closure;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -25,9 +26,7 @@ interface Repository
 
     public function insert(array $payload, ?Closure $inserter = null): void;
 
-    public function update(Model $model, array $payload, ?Closure $updater = null): void;
-
-    public function upsert(array $payload, array $unique, ?Closure $upserter = null): void;
+    public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): void;
 
     public function delete(Model $model, ?Closure $deleter = null): void;
 

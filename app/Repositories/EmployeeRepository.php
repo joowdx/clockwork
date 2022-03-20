@@ -27,23 +27,26 @@ class EmployeeRepository extends BaseRepository
             'office' => $line[$headers['OFFICE']],
             'regular' => (bool) $line[$headers['REGULAR']],
             'active' => (bool) $line[$headers['ACTIVE']],
-            'user_id' => request()->user()->id,
+            'user_id' => auth()->id(),
+            'nameToJSON' => true,
         ]);
     }
 
     protected function transformData(array $payload): array
     {
+        $name = [
+            'last' => strtoupper($payload['name']['last']),
+            'first' => strtoupper($payload['name']['first']),
+            'middle' => strtoupper($payload['name']['middle']),
+            'extension' => strtoupper($payload['name']['extension']),
+        ];
+
         return [
             'biometrics_id' => $payload['biometrics_id'],
-            'name' => json_encode([
-                'last' => $payload['name']['last'],
-                'first' => $payload['name']['first'],
-                'middle' => $payload['name']['middle'],
-                'extension' => $payload['name']['extension'],
-            ]),
-            'office' => $payload['office'],
+            'name' => @$payload['nameToJSON'] ? json_encode($name) : $name,
+            'office' => strtoupper($payload['office']),
             'regular' => (bool) $payload['regular'],
-            'active' => (bool) $payload['active'],
+            'active' => ((bool) @$payload['active']) ?? null,
             'user_id' => $payload['user_id'],
         ];
     }

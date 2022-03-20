@@ -4,6 +4,7 @@ namespace App\Contracts;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -137,7 +138,7 @@ abstract class BaseRepository implements Repository
         DB::transaction(fn () => $this->model()->insert($payload));
     }
 
-    public function update(Model $model, array $payload, ?Closure $updater = null): void
+    public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): void
     {
         if ($updater) {
             $updater($model, $payload);
@@ -145,18 +146,16 @@ abstract class BaseRepository implements Repository
             return;
         }
 
-        $model->update($this->transformData($payload));
-    }
+        $data = collect($this->transformData($payload))->except($except)->toArray();
 
-    public function upsert(array $payload, array $unique, ?Closure $upserter = null): void
-    {
-        if ($upserter) {
-            DB::transaction(fn () => $upserter($payload, $unique));
-
-            return;
+        if ($model instanceof Model) {
+            $model->update($data);
+        } else if ($model instanceof EloquentCollection) {
+            $model->toQuery()->update($data);
+        } else {
+            $this->model()->whereIn('id', $model)->update($data);
         }
 
-        DB::transaction(fn () => $this->model()->upsert($payload, $unique));
     }
 
     public function delete(Model $model, ?Closure $deleter = null): void

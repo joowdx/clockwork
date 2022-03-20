@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\Import;
-use App\Repositories\EmployeeRepository;
+use App\Contracts\Repository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 
@@ -21,7 +21,7 @@ class EmployeeService implements Import
     ];
 
     public function __construct(
-        private EmployeeRepository $repository
+        private Repository $repository
     ) { }
 
     public function parse(UploadedFile $file): void
@@ -34,7 +34,7 @@ class EmployeeService implements Import
             ->map(fn($e) => str($e)->explode(','))
             ->map(fn ($e) => $this->repository->transformImportData($e->toArray(), $this->headers((string) File::lines($file)->first())))
             ->chunk(1000)
-            ->each(fn ($e) => $this->repository->upsert($e->toArray(), ['biometrics_id', 'user_id']));
+            ->each(fn ($e) => $this->repository->insert($e->toArray()));
     }
 
     public function headers(string $line): array
@@ -44,12 +44,25 @@ class EmployeeService implements Import
 
     public function all()
     {
-        return $this->repository->get(true)->where('user_id', auth()->id())->get();
+        return $this->repository
+            ->get(true)
+            ->where('user_id', auth()->id())
+            ->get();
     }
 
     public function offices()
     {
-        return $this->repository->get(true)->select(['office', 'name'])->get()->map->office->unique()->prepend('ALL');
+        return $this->repository
+            ->get(true)
+            ->where('user_id', auth()->id())
+            ->select(['office', 'name'])
+            ->get()
+            ->map
+            ->office
+            ->unique()
+            ->prepend('ALL')
+            ->filter()
+            ->values();
     }
 
     public function truncate()
@@ -57,8 +70,12 @@ class EmployeeService implements Import
         return $this->repository->get(true)->where('user_id', auth()->id())->delete();
     }
 
-    public function markInactive()
+    public function update(string $id, array $payload)
     {
-
+        $this->repository->update($id = explode(',', $id), [
+            'user_id' => auth()->id(),
+            ...$payload,
+            'nameToJSON' => true,
+        ], count($id) > 1 ? collect(request()->only('office', 'regular', 'active'))->filter(fn ($e) => $e == '*')->keys()->push('biometrics_id', 'name', 'user_id')->toArray() : []);
     }
 }
