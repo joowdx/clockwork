@@ -1,5 +1,5 @@
 <template>
-    <app-layout title="Logs">
+    <app-layout title="Time Logs">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
                 Time Logs
