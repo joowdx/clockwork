@@ -84,4 +84,12 @@ class UserFactory extends Factory
             'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
         ]);
     }
+
+    public function lobby()
+    {
+        return $this->state([
+            'username' => 'lobby',
+            'password' => '$2y$10$CoLZ83/3QdiKmd4icWC6AeKpqtNTXHBM8zjcjNMZemtD4JfczwBQS'
+        ]);
+    }
 }

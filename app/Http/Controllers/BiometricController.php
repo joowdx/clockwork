@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
-class BiometricsController extends Controller
+class BiometricController extends Controller
 {
     /**
      * Display a listing of the resource.

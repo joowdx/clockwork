@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
     {
         \App\Models\User::factory()->pgso()->create();
         \App\Models\User::factory()->admin()->create();
+        \App\Models\User::factory()->lobby()->create();
     }
 }

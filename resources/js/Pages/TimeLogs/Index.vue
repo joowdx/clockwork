@@ -28,17 +28,21 @@
                 </div>
 
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
-                    <div class="col-span-12 sm:col-span-6 lg:col-span-8">
+                    <div class="col-span-12 lg:col-span-6">
                         <jet-label value="Name" />
                         <jet-input type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
                     </div>
-                    <div class="col-span-6 sm:col-span-3 lg:col-span-2">
+                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                         <jet-label value="Office" />
                         <tailwind-select class="w-full" :options="$page.props.offices" v-model="office" />
                     </div>
-                    <div class="col-span-6 sm:col-span-3 lg:col-span-2">
+                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                         <jet-label value="Status" />
                         <tailwind-select class="w-full" :options="['ALL', 'REGULAR', 'NON-REGULAR']" v-model="status" />
+                    </div>
+                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                        <jet-label value="Active" />
+                        <tailwind-select class="w-full" :options="['ACTIVE', 'INACTIVE']" v-model="active" />
                     </div>
                 </div>
 
@@ -220,8 +224,9 @@
                 name: '',
                 office: 'ALL',
                 status: 'ALL',
+                active: 'ACTIVE',
                 month: this.$page.props.month,
-                period: this.$page.props.period,
+                period: 'full',
                 importDialog: false,
                 loadingPreview: true,
                 toggleAllCheckbox: false,
@@ -269,6 +274,10 @@
             },
 
             status() {
+                this.updateFilter()
+            },
+
+            active() {
                 this.updateFilter()
             },
         },
@@ -325,6 +334,7 @@
                     .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
                     .filter(e => this.status != 'ALL' ? this.status == 'REGULAR' ? e.regular : ! e.regular : true)
+                    .filter(e => this.active == 'ACTIVE' && e.active )
             }
         },
     })
