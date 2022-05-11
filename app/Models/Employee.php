@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\SQLite\Employee as BackupEmployee;
+use App\Models\SQLite\TimeLog as BackupTimeLog;
 use App\Traits\HasNameAccessorAndFormatter;
 use Awobaz\Compoships\Compoships;
 use Awobaz\Compoships\Database\Eloquent\Relations\BelongsTo;
 use Awobaz\Compoships\Database\Eloquent\Relations\HasMany;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 
 class Employee extends Model
 {
     use Compoships;
-    use HasFactory;
     use HasNameAccessorAndFormatter;
     use Searchable;
 
@@ -30,14 +33,52 @@ class Employee extends Model
         'name' => 'object',
     ];
 
+    protected $with = [
+        'backup',
+    ];
+
+    protected $appends = [
+        'logs'
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function logs(): HasMany
+    public function getLogsAttribute(): ?EloquentCollection
+    {
+        return $this->relationLoaded('backupLogs') ? $this->backupLogs : ($this->relationLoaded('mainLogs') ? $this->mainLogs : null);
+    }
+
+    public function mainLogs(): HasMany
     {
         return $this->hasMany(TimeLog::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
+    }
+
+    public function backupLogs(): HasMany
+    {
+        return $this->hasMany(BackupTimeLog::class);
+    }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
+    public function getBackedUpAttribute(): ?bool
+    {
+        return $this->isBackedUp();
+    }
+
+    public function isBackedUp(): ?bool
+    {
+        return $this->backup?->active;
+    }
+
+    public function backup(): HasOne
+    {
+        return $this->hasOne(BackupEmployee::class);
     }
 
     public function toSearchableArray(): array
@@ -47,24 +88,29 @@ class Employee extends Model
         ];
     }
 
-    public function scopeRegular(Builder $query): void
+    public function scopeRegular(Builder $query, bool $regular = true): void
     {
-        $query->where('regular', 1);
+        $query->whereRegular($regular);
     }
 
-    public function scopeNonRegular(Builder $query): void
+    public function scopeActive(Builder $query, bool $active = true): void
     {
-        $query->where('regular', 0);
+        $query->whereActive($active);
     }
 
-    public function scopeActive(Builder $query): void
+    public function logsForTheDay(Carbon $date): Collection
     {
-        $query->where('active', 1);
+        return $this->logs->filter(fn ($t) => $t->time->isSameDay($date))->values();
     }
 
-    public function scopeInactive(Builder $query): void
+    public function getSchedule(Carbon $date): Schedule
     {
-        $query->where('active', 0);
+        return $this->schedules()
+            ->where('from', '<=', $date)
+            ->where('to', '>=', $date)
+            ->firstOrNew([], [
+                'in' => Schedule::DEFAULT_IN,
+                'out' => Schedule::DEFAULT_OUT,
+            ]);
     }
-
 }

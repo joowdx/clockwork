@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Contracts\BaseRepository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class EmployeeRepository extends BaseRepository
 {
@@ -16,20 +17,20 @@ class EmployeeRepository extends BaseRepository
 
     public function transformImportData(array $line, array $headers): array
     {
-        return $this->transformData([
+        return [
             'biometrics_id' => $line[$headers['SCANNER ID']],
             'name' => [
                 'last' => $line[$headers['FAMILY NAME']],
                 'first' => $line[$headers['GIVEN NAME']],
-                'middle' => $line[$headers['MIDDLE INITIAL']],
-                'extension' => $line[$headers['NAME EXTENSION']],
+                'middle' => @$line[$headers['MIDDLE INITIAL']],
+                'extension' => @$line[$headers['NAME EXTENSION']],
             ],
-            'office' => $line[$headers['OFFICE']],
+            'office' => @$line[$headers['OFFICE']],
             'regular' => (bool) $line[$headers['REGULAR']],
-            'active' => (bool) $line[$headers['ACTIVE']],
+            'active' => (bool) @$line[$headers['ACTIVE']],
             'user_id' => auth()->id(),
             'nameToJSON' => true,
-        ]);
+        ];
     }
 
     protected function transformData(array $payload): array

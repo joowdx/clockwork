@@ -2,7 +2,7 @@
     <app-layout title="Biometrics">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Biometrics
+                Biometrics <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
             </h2>
         </template>
 

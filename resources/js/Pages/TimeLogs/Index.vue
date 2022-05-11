@@ -2,7 +2,7 @@
     <app-layout title="Time Logs">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Time Logs
+                Time Logs <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
             </h2>
         </template>
 
@@ -144,13 +144,13 @@
                             </svg>
                             <div class="flex text-sm text-gray-600">
                                 <label for="file-upload" class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
-                                    <span> Upload a file </span>
-                                    <input id="file-upload" ref="file" type="file" class="sr-only" accept=".dat,.csv" @input="form.file = $event.target.files[0]">
+                                    <span @click="importFile"> Upload a file </span>
+                                    <!-- <input id="file-upload" ref="file" type="file" class="sr-only" accept=".dat,.csv" @input="form.file = $event.target.files[0]"> -->
                                 </label>
                                 <!-- <p class="pl-1 dark:text-gray-300">or drag and drop</p> -->
                             </div>
                             <p class="text-xs text-gray-600 dark:text-gray-400">
-                                CSV and DAT file up to 10MB
+                                DAT file up to 10MB
                             </p>
                         </div>
                     </div>
@@ -176,13 +176,13 @@
                     Cancel
                 </jet-secondary-button>
 
-                <jet-button :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing">
+                <jet-button :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing || waitForFile">
                     Import
                 </jet-button>
             </template>
         </jet-dialog-modal>
 
-        <iframe class="sr-only" ref="printPreview" :src="`/printpreview?month=${month}&period=${period}&${selected.map(e => `id[]=${e}&`).join('')}`" @load="printPreviewLoaded"/>
+        <iframe class="sr-only" ref="printPreview" :src="route('print', {month, period, id: selected})" @load="printPreviewLoaded"/>
     </app-layout>
 </template>
 
@@ -230,7 +230,7 @@
                 importDialog: false,
                 loadingPreview: true,
                 toggleAllCheckbox: false,
-
+                waitForFile: true,
                 form: this.$inertia.form({
                     file: null,
                 }),
@@ -302,6 +302,27 @@
                 this.form.reset()
             },
 
+            async importFile() {
+                this.waitForFile = true
+
+                const file = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'DAT File',
+                            accept: {
+                                'text/dat': '.dat'
+                            },
+                        },
+                    ],
+                    excludeAcceptAllOption: true,
+                    multiple: false,
+                })
+
+                this.form.file = await file[0].getFile()
+
+                this.waitForFile = false
+            },
+
             showImportDialog() {
                 this.importDialog = true
             },
@@ -334,7 +355,7 @@
                     .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
                     .filter(e => this.status != 'ALL' ? this.status == 'REGULAR' ? e.regular : ! e.regular : true)
-                    .filter(e => this.active == 'ACTIVE' && e.active )
+                    .filter(e => this.active != 'ALL' ? this.active == 'ACTIVE' ? e.active : ! e.active : true)
             }
         },
     })

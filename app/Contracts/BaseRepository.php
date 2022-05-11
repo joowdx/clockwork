@@ -16,7 +16,7 @@ abstract class BaseRepository implements Repository
 
     protected array $with = [];
 
-    public function __construct(private Model $model)
+    public function __construct(private readonly Model $model)
     {
         $this->builder = $this->model->newQuery();
 
@@ -135,7 +135,14 @@ abstract class BaseRepository implements Repository
             return;
         }
 
-        DB::transaction(fn () => $this->model()->insert($payload));
+        DB::transaction(function () use ($payload) {
+            $this->model()->insert(collect($payload)->map(fn ($e) => [
+                ...$this->generateUuid($this->hasUuidPrimaryKey()),
+                ...$this->transformData($e),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->toArray());
+        });
     }
 
     public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): void
@@ -156,6 +163,22 @@ abstract class BaseRepository implements Repository
             $this->model()->whereIn('id', $model)->update($data);
         }
 
+    }
+
+    public function upsert(array $payload, array $unique, array $except = [], ?Closure $upserter = null): void
+    {
+        if ($upserter) {
+            DB::transaction(fn() => $upserter($payload));
+
+            return;
+        }
+
+        DB::transaction(function () use ($payload, $unique, $except) {
+            $this->model()->upsert(collect($payload)->map(fn ($e) => [
+                ...$this->generateUuid($this->hasUuidPrimaryKey()),
+                ...collect($this->transformData($e))->except($except)->toArray(),
+            ])->toArray(), $unique);
+        });
     }
 
     public function delete(Model $model, ?Closure $deleter = null): void
@@ -179,11 +202,41 @@ abstract class BaseRepository implements Repository
             return;
         }
 
+        $this->destroying($payload);
+
         DB::transaction(fn () =>  $this->model()->destroy($payload));
+    }
+
+    public function truncate(?Closure $truncator = null): void
+    {
+        if ($truncator) {
+            $truncator($this->model());
+
+            return;
+        }
+
+        $this->model()->truncate();
+    }
+
+    public function query(?Closure $query = null): mixed
+    {
+        return $query ? $query($this->model()->with($this->with ?? [])) : $this->model();
     }
 
     protected function deleting(Model $model): void {}
 
+    protected function destroying(array $payload): void {}
+
     protected abstract function transformData(array $payload): array;
+
+    private function generateUuid(bool $generate) {
+        return $generate ? ['id' => str()->orderedUuid()] : [];
+    }
+
+    private function hasUuidPrimaryKey(): bool
+    {
+        return trait_exists(\App\Traits\HasUniversallyUniqueIdentifier::class)
+            && in_array(\App\Traits\HasUniversallyUniqueIdentifier::class, class_uses_recursive(get_class($this->model())));
+    }
 
 }

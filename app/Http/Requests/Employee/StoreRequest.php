@@ -17,6 +17,8 @@ class StoreRequest extends FormRequest
         return [
             'name.first.required' => 'The first name field is required.',
             'name.last.required' => 'The last name field is required.',
+            'regular.in' => 'Please select one.',
+            'regular.required' => 'Please select one.',
         ];
     }
 
@@ -36,7 +38,7 @@ class StoreRequest extends FormRequest
                 'name.middle' => 'nullable|string',
                 'name.extension' => 'nullable|string',
                 'office' => 'nullable|string',
-                'regular' => 'required|boolean',
+                'regular' => 'required|in:1,0,*',
             ];
     }
 }

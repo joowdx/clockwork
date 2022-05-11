@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +19,7 @@ class User extends Authenticatable
     use HasApiTokens;
     use HasFactory;
     use HasProfilePhoto;
+    use HasUniversallyUniqueIdentifier;
     use Notifiable;
     use TwoFactorAuthenticatable;
     use Searchable;
@@ -78,5 +79,10 @@ class User extends Authenticatable
     public function latest(): HasOne
     {
         return $this->hasOne(TimeLog::class)->latestOfMany('time');
+    }
+
+    public function latestImport(): HasOne
+    {
+        return $this->hasOne(TimeLogsImport::class)->latestOfMany();
     }
 }

@@ -178,6 +178,8 @@
     import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
     import TailwindSelect from '@/Tailwind/Select.vue'
 
+    import Swal from 'sweetalert2'
+
     export default defineComponent({
         components: {
             JetActionMessage,
@@ -193,7 +195,7 @@
             TailwindSelect,
         },
 
-        emits: ['close'],
+        emits: ['close', 'deleted', 'updated'],
 
         props: {
             show: {
@@ -264,12 +266,36 @@
             update() {
                 this.form.post(route('employees.update', { employee: this.form.id }), {
                     preserveScroll: true,
+                    onSuccess: () => {
+                        this.close()
+
+                        Swal.fire(
+                            'Update successful',
+                            'Selected employees are updated.',
+                            'success'
+                        )
+
+                        this.$emit('updated')
+                    }
                 });
             },
 
             destroy() {
                 this.form.delete(route('employees.destroy', { employee: this.form.id }), {
                     preserveScroll: true,
+                    onSuccess: () => {
+                        this.closeDeleteDialog()
+
+                        this.close()
+
+                        Swal.fire(
+                            'Delete successful',
+                            'Selected employees are deleted.',
+                            'success'
+                        )
+
+                        this.$emit('deleted')
+                    }
                 });
             },
 

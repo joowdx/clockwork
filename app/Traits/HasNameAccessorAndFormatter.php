@@ -2,10 +2,11 @@
 
 namespace App\Traits;
 
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 
-trait HasNameAccessorAndFormatter {
-
+trait HasNameAccessorAndFormatter
+{
     public function getFillable(): array
     {
         return array_merge($this->fillable, ['name']);
@@ -124,22 +125,22 @@ trait HasNameAccessorAndFormatter {
             ->orderBy('name->extension', 'desc');
     }
 
-    public function appendString(?string $string, string $append): string
+    private function appendString(?string $string, string $append): string
     {
         return $string ? "$string{$append}"  : '';
     }
 
-    public function initial(?string $string): string
+    private function initial(?string $string): string
     {
         return $string ? "{$string[0]}." : '';
     }
 
-    public function prependString(?string $string, string $prepend = ' '): string
+    private function prependString(?string $string, string $prepend = ' '): string
     {
         return $string ? "{$prepend}$string"  : '';
     }
 
-    public function removeExtraWhitespaces(?string $string): string
+    private function removeExtraWhitespaces(?string $string): string
     {
         return trim(preg_replace('/\s+/', ' ', $string));
     }

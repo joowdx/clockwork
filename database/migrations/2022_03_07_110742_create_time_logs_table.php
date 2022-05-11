@@ -14,9 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('time_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('biometrics_id');
-            $table->foreignId('user_id');
+            $table->uuid('id')->primary();
+            $table->unsignedSmallInteger('biometrics_id');
+            $table->foreignUuid('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
             $table->string('state');
             $table->timestamps();
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('logs');
+        Schema::dropIfExists('time_logs');
     }
 };

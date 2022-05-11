@@ -9,7 +9,7 @@
 
             <header class="shadow bg-gray-50 dark:bg-gray-900" v-if="$slots.header">
                 <div class="px-4 py-4 mx-auto text-gray-800 max-w-7xl sm:px-6 lg:px-8 dark:text-gray-200">
-                    <slot name="header"></slot>
+                    <slot name="header"> </slot>
                 </div>
             </header>
 

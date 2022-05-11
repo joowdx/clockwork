@@ -14,13 +14,13 @@ return new class extends Migration
     public function up()
     {
         Schema::create('employees', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->unsignedInteger('biometrics_id');
             $table->json('name');
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
-            $table->foreignId('user_id');
+            $table->foreignUuid('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['biometrics_id', 'user_id']);
         });

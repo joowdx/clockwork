@@ -66,7 +66,7 @@
                                 <label for="non-regular" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> Non Regular (Job Order, Contract of Service, etc.) </label>
                             </div>
                         </div>
-                        <jet-input-error :message="form.errors.status" class="mt-2" />
+                        <jet-input-error :message="form.errors.regular" class="mt-2" />
                     </div>
 
                     <jet-button class="hidden" :disabled="form.processing">
@@ -119,7 +119,7 @@
             TailwindSelect,
         },
 
-        emits: ['close'],
+        emits: ['close', 'created'],
 
         props: {
             show: {
@@ -147,7 +147,17 @@
             create() {
                 this.form.post(route('employees.store'), {
                     preserveScroll: true,
-                    onSuccess: () => this.form.reset(),
+                    onSuccess: () => {
+                        this.close()
+
+                        Swal.fire(
+                            'Delete successful',
+                            'Selected employees are deleted.',
+                            'success'
+                        )
+
+                        this.$emit('created')
+                    },
                 });
             },
 

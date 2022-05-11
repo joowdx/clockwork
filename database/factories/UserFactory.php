@@ -25,7 +25,6 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'assignee' => $this->faker->name(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];
@@ -81,6 +80,16 @@ class UserFactory extends Factory
             'assignee' => 'GENE PHILIP L. RELLANOS',
             'position' => 'ADMINISTRATIVE CLERK II',
             'username' => 'admin',
+            'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
+        ]);
+    }
+
+    public function accounting()
+    {
+        return $this->state([
+            'assignee' => 'GENE PHILIP L. RELLANOS',
+            'position' => 'ADMINISTRATIVE CLERK II',
+            'username' => 'accounting',
             'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
         ]);
     }

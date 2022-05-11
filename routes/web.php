@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\BiometricController;
 use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\PrintPreviewController;
+use App\Http\Controllers\PrintController;
 use App\Http\Controllers\TimeLogController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -32,7 +32,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function() {
     // Route::get('/dashboard', fn () => inertia('dashboard'))->name('dashboard');
     Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
-    Route::get('/printpreview', PrintPreviewController::class)->name('printpreview');
+    Route::get('/printpreview', PrintController::class)->name('print');
     Route::resource('biometrics', BiometricController::class)->except(['edit', 'create']);
     Route::resource('employees', EmployeeController::class)->except(['create', 'show', 'edit']);
     Route::resource('timelogs', TimeLogController::class)->only(['index', 'store']);

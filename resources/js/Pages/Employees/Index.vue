@@ -2,7 +2,7 @@
     <app-layout title="Employees">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Employees
+                Employees <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
             </h2>
         </template>
 
@@ -141,9 +141,9 @@
                                 <path class="text-gray-400 stroke-current" stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <div class="flex text-sm text-gray-600">
-                                <label for="file-upload" class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
-                                    <span> Upload a file </span>
-                                    <input id="file-upload" ref="file" type="file" class="sr-only" accept=".dat,.csv" @input="form.file = $event.target.files[0]">
+                                <label class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
+                                    <span @click="importFile"> Upload a file </span>
+                                    <!-- <input ref="file-upload" type="file" class="hidden sr-only" accept=".csv" @input="form.file = $event.target.files[0]" v-model="file"> -->
                                 </label>
                                 <!-- <p class="pl-1 dark:text-gray-300">or drag and drop</p> -->
                             </div>
@@ -159,8 +159,8 @@
                         </span>
                     </p>
                 </div>
-                <p class="text-sm text-red-600">
-                    Importing csv will replace all existing data with the new one.
+                <p class="text-sm text-red-600 uppercase">
+                    Warning: Importing csv will replace all existing data with the new one!
                 </p>
 
                 <jet-input-error :message="form.errors.file" class="mt-2" />
@@ -171,15 +171,15 @@
                     Cancel
                 </jet-secondary-button>
 
-                <jet-button :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing">
+                <jet-button :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing || waitForFile">
                     Import
                 </jet-button>
             </template>
         </jet-dialog-modal>
 
-        <create-form :show="createDialog" @close="closeCreateDialog" />
+        <create-form :show="createDialog" @close="closeCreateDialog" @created="reloadList" />
 
-        <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" />
+        <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" @deleted="clearSelection" @updated="reloadList" />
     </app-layout>
 </template>
 
@@ -237,6 +237,7 @@
                 form: this.$inertia.form({
                     file: null,
                 }),
+                waitForFile: true,
             }
         },
 
@@ -292,20 +293,20 @@
                     onSuccess: () => {
                         Swal.fire(
                             'Import successful',
-                            'Employees updated. Please refresh to see changes.',
+                            'Employees updated.',
                             'success'
                         )
                         this.closeImportDialog()
 
                         this.resetForm()
 
-                        this.$forceUpdate()
+                        this.reloadList()
                     },
                 });
             },
 
             resetForm() {
-                this.$refs.file.value = ''
+                // this.$refs.file.value = ''
 
                 this.form.reset()
 
@@ -326,6 +327,27 @@
 
             closeEditDialog() {
                 this.editDialog = false
+            },
+
+            async importFile() {
+                this.waitForFile = true
+
+                const file = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'CSV File',
+                            accept: {
+                                'text/csv': '.csv'
+                            },
+                        },
+                    ],
+                    excludeAcceptAllOption: true,
+                    multiple: false,
+                })
+
+                this.form.file = await file[0].getFile()
+
+                this.waitForFile = false
             },
 
             showImportDialog() {
@@ -362,7 +384,17 @@
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
                     .filter(e => this.status != 'ALL' ? this.status == 'REGULAR' ? e.regular : ! e.regular : true)
                     .filter(e => this.active != 'ALL' ? this.active == 'ACTIVE' ? e.active : ! e.active : true)
-            }
+            },
+
+            reloadList() {
+                this.employees = this.$page.props.employees
+            },
+
+            clearSelection() {
+                this.selected = []
+
+                this.reloadList()
+            },
         },
     })
 </script>

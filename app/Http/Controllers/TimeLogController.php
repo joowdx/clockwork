@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Import;
+use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\ImportRequest;
 use App\Services\EmployeeService;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,7 @@ class TimeLogController extends Controller
         // private RepositoryInterface $repository,
         private EmployeeService $employees,
     ) {
-        // $this->middleware('validate.timelog')->only('store');
+        $this->middleware(ValidateImports::class)->only('store');
     }
 
     /**

@@ -31,4 +31,8 @@ interface Repository
     public function delete(Model $model, ?Closure $deleter = null): void;
 
     public function destroy(array $payload, ?Closure $destroyer = null): void;
+
+    public function truncate(?Closure $truncator = null): void;
+
+    public function query(?Closure $query = null): mixed;
 }

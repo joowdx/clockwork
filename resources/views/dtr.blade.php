@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
         <style>
@@ -211,8 +211,8 @@
                                         {{  $date->format('D d-m-y') }}
                                     </td>
                                     @php $i = 0 @endphp
-                                    @foreach ($employee->logs->filter(fn ($t) => $t->time->isSameDay($date))->values() as $key => $log)
-                                        @if ((in_array($log->state, $log::IN) && $i % 2 == 0) || (in_array($log->state, $log::OUT) && $i % 2 == 1))
+                                    @foreach ($employee->logsForTheDay($date) as $key => $log)
+                                        @if ($log->in && $i % 2 == 0 || $log->out && $i % 2 == 1)
                                             @php $i++ @endphp
                                         @else
                                             <td class="xl7320299"></td>

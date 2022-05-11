@@ -4,20 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
+use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
 use App\Services\EmployeeService;
-use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Actions\ConfirmPassword;
 
 class EmployeeController extends Controller
 {
     public function __construct(
         private EmployeeService $employees,
         private Repository $repository,
-    ) { }
+    ) {
+        $this->middleware(ValidateImports::class)->only('store');
+    }
 
     /**
      * Display a listing of the resource.
@@ -68,21 +68,12 @@ class EmployeeController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Contracts\Auth\StatefulGuard  $guard
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, StatefulGuard $guard, string $id)
+    public function destroy(Request $request, string $id)
     {
-        $confirmed = app(ConfirmPassword::class)(
-            $guard, $request->user(), $request->password
-        );
-
-        if (! $confirmed) {
-            throw ValidationException::withMessages([
-                'password' => __('The password is incorrect.'),
-            ]);
-        }
+        $this->confirmPassword($request->password);
 
         $this->repository->destroy(explode(',', $id));
 

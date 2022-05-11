@@ -2,10 +2,14 @@
 
 namespace App\Providers;
 
+use App\Events\EmployeesImported;
+use App\Events\TimeLogsProcessed;
+use App\Listeners\BackUpAndSync;
+use App\Listeners\MarkActiveAndInactiveEmployees;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use Vendor\Flipper\Src\Switcher;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -38,5 +42,19 @@ class EventServiceProvider extends ServiceProvider
     public function shouldDiscoverEvents()
     {
         return false;
+    }
+
+    public function listens()
+    {
+        return [
+            ...$this->listen,
+            EmployeesImported::class => [
+                BackUpAndSync::class,
+            ],
+            TimeLogsProcessed::class => [
+                MarkActiveAndInactiveEmployees::class,
+                // BackUpAndSync::class,
+            ],
+        ];
     }
 }
