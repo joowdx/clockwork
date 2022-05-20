@@ -36,45 +36,41 @@
         },
 
         computed: {
-            navigation: function() {
-                return [
-                    {
-                        name: 'Dashboard',
-                        href: route('dashboard'),
-                        active: route().current('dashboard'),
-                        show: false,
-                    },
-                    {
-                        name: 'Biometrics',
-                        href: route('biometrics.index'),
-                        active: route().current('biometrics.*'),
-                        show: false,
-                    },
-                    {
-                        name: 'Employees',
-                        href: route('employees.index'),
-                        active: route().current('employees.*'),
-                        show: true,
-                    },
-                    {
-                        name: 'Time Logs',
-                        href: route('timelogs.index'),
-                        active: route().current('timelogs.*'),
-                        show: true,
-                    },
-                ]
-            },
+            navigation: () => [
+                {
+                    name: 'Dashboard',
+                    href: route('dashboard'),
+                    active: route().current('dashboard'),
+                    show: false,
+                },
+                {
+                    name: 'Scanners',
+                    href: route('scanners.index'),
+                    active: route().current('biometrics.*'),
+                    show: true,
+                },
+                {
+                    name: 'Employees',
+                    href: route('employees.index'),
+                    active: route().current('employees.*'),
+                    show: true,
+                },
+                {
+                    name: 'Time Logs',
+                    href: route('timelogs.index'),
+                    active: route().current('timelogs.*'),
+                    show: true,
+                },
+            ],
 
-            dropdown: function() {
-                return [
-                    {
-                        name: 'Settings',
-                        href: route('profile.show'),
-                        active: route().current('profile.show'),
-                        show: true,
-                    },
-                ]
-            }
+            dropdown: () => [
+                {
+                    name: 'Settings',
+                    href: route('profile.show'),
+                    active: route().current('profile.show'),
+                    show: true,
+                },
+            ],
         },
     })
 </script>

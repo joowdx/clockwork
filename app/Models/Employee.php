@@ -53,7 +53,7 @@ class Employee extends Model
 
     public function mainLogs(): HasMany
     {
-        return $this->hasMany(TimeLog::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
+        return $this->hasMany(TimeLog::class, ['scanner_id', 'user_id'], ['scanner_id', 'user_id']);
     }
 
     public function backupLogs(): HasMany

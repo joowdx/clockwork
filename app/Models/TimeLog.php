@@ -38,7 +38,7 @@ class TimeLog extends Model
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class, ['biometrics_id', 'user_id'], ['biometrics_id', 'user_id']);
+        return $this->belongsTo(Employee::class, ['scanner_id', 'user_id'], ['scanner_id', 'user_id']);
     }
 
     public function backup(): HasOne

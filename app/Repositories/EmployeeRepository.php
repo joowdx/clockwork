@@ -18,7 +18,7 @@ class EmployeeRepository extends BaseRepository
     public function transformImportData(array $line, array $headers): array
     {
         return [
-            'biometrics_id' => $line[$headers['SCANNER ID']],
+            'scanner_id' => $line[$headers['SCANNER ID']],
             'name' => [
                 'last' => $line[$headers['FAMILY NAME']],
                 'first' => $line[$headers['GIVEN NAME']],
@@ -43,7 +43,7 @@ class EmployeeRepository extends BaseRepository
         ];
 
         return [
-            'biometrics_id' => $payload['biometrics_id'],
+            'scanner_id' => $payload['scanner_id'],
             'name' => @$payload['nameToJSON'] ? json_encode($name) : $name,
             'office' => strtoupper($payload['office']),
             'regular' => (bool) $payload['regular'],

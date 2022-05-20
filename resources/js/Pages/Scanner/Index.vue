@@ -2,7 +2,7 @@
     <app-layout title="Biometrics">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Biometrics <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
+                Scanners <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
             </h2>
         </template>
 
@@ -11,16 +11,16 @@
                 <div class="flex flex-col">
                     <div class="flex items-center justify-end px-6 mb-5 space-x-3 sm:px-0">
                         <jet-input type="text" class="block w-full disabled:opacity-60" v-model="search" style="padding: .25rem .5em!important" autocomplete="name" placeholder="Search" />
-                        <Link class="flex-none" :href="route('biometrics.index')">
+                        <Link class="flex-none" :href="route('scanners.index')">
                             <jet-secondary-button>
-                                Register New Biometrics
+                                Add New Scanner
                             </jet-secondary-button>
                         </Link>
                     </div>
                 </div>
-                <div v-for="scanner in biometrics" :key=scanner.id>
+                <!-- <div v-for="scanner in biometrics" :key="scanner.id">
                     {{ scanner.username }}
-                </div>
+                </div> -->
             </div>
         </div>
     </app-layout>
@@ -54,7 +54,7 @@
 
         watch: {
             search: _.debounce(function(search) {
-                this.$inertia.get(route('biometrics.index'), search ? { search: search } : {}, {
+                this.$inertia.get(route('scanner.index'), search ? { search: search } : {}, {
                     preserveState: true,
                     preserveScroll: true,
                 })

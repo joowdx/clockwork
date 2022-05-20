@@ -15,14 +15,12 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->unsignedInteger('biometrics_id');
+            $table->foreignUuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->json('name');
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
-            $table->foreignUuid('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['biometrics_id', 'user_id']);
         });
     }
 
