@@ -64,7 +64,7 @@
                                                 Name
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Biometrics
+                                                Scanner ID
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Office
@@ -95,7 +95,7 @@
                                                 <div class="text-sm">
                                                     <div class="font-thin">
                                                         <p class="text-black uppercase dark:text-gray-100">
-                                                            {{ employee.biometrics_id.toString().padStart('4', 0) }} — {{ employee.user?.username }}
+                                                            {{ employee.biometrics_id.toString().padStart('4', 0) }}
                                                         </p>
                                                     </div>
                                                 </div>
