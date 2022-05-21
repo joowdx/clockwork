@@ -67,8 +67,8 @@ class UserFactory extends Factory
     public function jude()
     {
         return $this->state([
-            'name' => 'JUDE C. PINEDA',
-            'title' => 'PICT OFFICER',
+            'name' => 'Jude C. Pineda',
+            'title' => 'PICT Officer',
             'username' => 'jude',
             'password' => '$2y$10$7Z.IrLwDkXBA5fJB.i0n8O8LN9Sowb5mKKXDM7S6ZsixTLKq2Ht.S'
         ]);
@@ -77,8 +77,8 @@ class UserFactory extends Factory
     public function gene()
     {
         return $this->state([
-            'name' => 'GENE PHILIP L. RELLANOS',
-            'title' => 'ADMINISTRATIVE CLERK II',
+            'name' => 'Gene Philip L. Rellanos',
+            'title' => 'Administrative Clerk II',
             'username' => 'gene',
             'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
         ]);

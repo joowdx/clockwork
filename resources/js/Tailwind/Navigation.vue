@@ -54,7 +54,7 @@
         </div>
         <DisclosurePanel class="sm:hidden">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <Link v-for="item in navigation" :key="item.name" :href="item.href" :class="[item.active ? 'bg-indigo-500 text-white dark:bg-gray-800' : 'text-gray-600 hover:bg-indigo-400 hover:text-white dark:hover:bg-gray-900 hover:text-white dark:text-gray-300', 'block px-3 py-2 rounded-md text-base font-medium']" :aria-current="item.active ? 'page' : undefined">
+                <Link v-for="item in navigation" :key="item.name" :href="item.href" :class="[item.active ? 'bg-indigo-500 text-white dark:bg-gray-800' : 'text-gray-600 hover:bg-indigo-400 dark:hover:bg-gray-900 hover:text-white dark:text-gray-300', 'block px-3 py-2 rounded-md text-base font-medium']" :aria-current="item.active ? 'page' : undefined">
                     {{ item.name }}
                 </Link>
             </div>

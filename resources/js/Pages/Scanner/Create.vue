@@ -18,9 +18,6 @@
                         </Link>
                     </div>
                 </div>
-                <div v-for="scanner in scanners" :key="scanner.id">
-                    {{ scanner.username }}
-                </div>
             </div>
         </div>
     </app-layout>

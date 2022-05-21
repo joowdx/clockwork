@@ -44,12 +44,6 @@
                     show: false,
                 },
                 {
-                    name: 'Scanners',
-                    href: route('scanners.index'),
-                    active: route().current('biometrics.*'),
-                    show: true,
-                },
-                {
                     name: 'Employees',
                     href: route('employees.index'),
                     active: route().current('employees.*'),
@@ -65,7 +59,19 @@
 
             dropdown: () => [
                 {
-                    name: 'Settings',
+                    name: 'Scanners',
+                    href: route('scanners.index'),
+                    active: route().current('scanners.*'),
+                    show: true,
+                },
+                {
+                    name: 'Users',
+                    href: route('users.index'),
+                    active: route().current('users.*'),
+                    show: true,
+                },
+                {
+                    name: 'Account Settings',
                     href: route('profile.show'),
                     active: route().current('profile.show'),
                     show: true,

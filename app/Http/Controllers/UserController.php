@@ -2,16 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\Repository;
-use App\Models\Scanner;
+use App\Models\User;
 use Illuminate\Http\Request;
 
-class ScannerController extends Controller
+class UserController extends Controller
 {
-    public function __construct(
-        private Repository $repository,
-    ) { }
-
     /**
      * Display a listing of the resource.
      *
@@ -19,9 +14,7 @@ class ScannerController extends Controller
      */
     public function index()
     {
-        return inertia('Scanner/Index', [
-            'scanners' => $this->repository->all(),
-        ]);
+        //
     }
 
     /**
@@ -31,9 +24,7 @@ class ScannerController extends Controller
      */
     public function create()
     {
-        return inertia('Scanner/Index', [
-            'scanners' => $this->repository->all(),
-        ]);
+        //
     }
 
     /**
@@ -50,10 +41,10 @@ class ScannerController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Scanner  $scanner
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function show(Scanner $scanner)
+    public function show(User $user)
     {
         //
     }
@@ -61,10 +52,10 @@ class ScannerController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Scanner  $scanner
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function edit(Scanner $scanner)
+    public function edit(User $user)
     {
         //
     }
@@ -73,10 +64,10 @@ class ScannerController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Scanner  $scanner
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Scanner $scanner)
+    public function update(Request $request, User $user)
     {
         //
     }
@@ -84,10 +75,10 @@ class ScannerController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Scanner  $scanner
+     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Scanner $scanner)
+    public function destroy(User $user)
     {
         //
     }

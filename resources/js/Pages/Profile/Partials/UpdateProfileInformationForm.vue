@@ -41,24 +41,24 @@
                 <jet-input-error :message="form.errors.photo" class="mt-2" />
             </div>
 
-            <!-- Biometrics -->
+            <!-- Username -->
             <div class="col-span-6 sm:col-span-4">
-                <jet-label for="biometrics" value="Account" />
-                <jet-input id="biometrics" type="text" class="block w-full mt-1 uppercase bg-gray-100 disabled:opacity-50" v-model="user.username" autocomplete="biometrics" disabled />
+                <jet-label for="username" value="Username" />
+                <jet-input id="username" type="text" class="block w-full mt-1 bg-gray-100 disabled:opacity-50" v-model="user.username" autocomplete="biometrics" disabled />
             </div>
 
-            <!-- Assignee -->
+            <!-- Name -->
             <div class="col-span-6 sm:col-span-4">
-                <jet-label for="assignee" value="Assignee" />
-                <jet-input id="assignee" type="text" class="block w-full mt-1" v-model="form.assignee" autocomplete="assignee" />
-                <jet-input-error :message="form.errors.assignee" class="mt-2" />
+                <jet-label for="name" value="Name" />
+                <jet-input id="name" type="text" class="block w-full mt-1" v-model="form.name" autocomplete="name" />
+                <jet-input-error :message="form.errors.name" class="mt-2" />
             </div>
 
-            <!-- Position -->
+            <!-- title -->
             <div class="col-span-6 sm:col-span-4">
-                <jet-label for="position" value="Assignee Position" />
-                <jet-input id="position" type="text" class="block w-full mt-1" v-model="form.position" />
-                <jet-input-error :message="form.errors.position" class="mt-2" />
+                <jet-label for="title" value="Title" />
+                <jet-input id="title" type="text" class="block w-full mt-1" v-model="form.title" />
+                <jet-input-error :message="form.errors.title" class="mt-2" />
             </div>
         </template>
 
@@ -101,8 +101,9 @@
             return {
                 form: this.$inertia.form({
                     _method: 'PUT',
-                    assignee: this.user.assignee,
-                    position: this.user.position,
+                    username: this.user.username,
+                    name: this.user.name,
+                    title: this.user.title,
                     photo: null,
                 }),
 

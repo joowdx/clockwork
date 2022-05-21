@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('scanners', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name', 20);
+            $table->string('name', 20)->unique();
             $table->string('ip_address')->nullable();
             $table->enum('protocol', ['tcp', 'udp'])->nullable();
             $table->string('serial_number')->nullable();

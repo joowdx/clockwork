@@ -3,11 +3,9 @@
 namespace App\Models;
 
 use App\Traits\HasUniversallyUniqueIdentifier;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -31,8 +29,8 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
-        'assignee',
-        'position',
+        'name',
+        'title',
         'username',
         'password',
     ];
@@ -55,39 +53,23 @@ class User extends Authenticatable
      * @var array
      */
     protected $appends = [
-        'name',
         'profile_photo_url',
     ];
 
     public function toSearchableArray(): array
     {
         return [
-            'assignee' => $this->assignee,
+            'name' => $this->name,
             'username' => $this->username,
         ];
     }
 
-    public function name(): Attribute
+    public function employees(): HasManyThrough
     {
-        return new Attribute(fn () => $this->username);
+        return $this->hasManyThrough(Employee::class, Scanner::class);
     }
 
-    public function employees(): HasMany
-    {
-        return $this->hasMany(Employee::class);
-    }
-
-    public function latest(): HasOne
-    {
-        return $this->hasOne(TimeLog::class)->latestOfMany('time');
-    }
-
-    public function latestImport(): HasOne
-    {
-        return $this->hasOne(TimeLogsImport::class)->latestOfMany();
-    }
-
-    public function scanner(): BelongsToMany
+    public function scanners(): BelongsToMany
     {
         return $this->belongsToMany(Scanner::class);
     }
