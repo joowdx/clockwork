@@ -64,41 +64,23 @@ class UserFactory extends Factory
         );
     }
 
-    public function pgso()
+    public function jude()
     {
         return $this->state([
-            'assignee' => 'JUDE C. PINEDA',
-            'position' => 'PICT OFFICER',
-            'username' => 'pgso',
+            'name' => 'JUDE C. PINEDA',
+            'title' => 'PICT OFFICER',
+            'username' => 'jude',
             'password' => '$2y$10$7Z.IrLwDkXBA5fJB.i0n8O8LN9Sowb5mKKXDM7S6ZsixTLKq2Ht.S'
         ]);
     }
 
-    public function admin()
+    public function gene()
     {
         return $this->state([
-            'assignee' => 'GENE PHILIP L. RELLANOS',
-            'position' => 'ADMINISTRATIVE CLERK II',
-            'username' => 'admin',
+            'name' => 'GENE PHILIP L. RELLANOS',
+            'title' => 'ADMINISTRATIVE CLERK II',
+            'username' => 'gene',
             'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
-        ]);
-    }
-
-    public function accounting()
-    {
-        return $this->state([
-            'assignee' => 'GENE PHILIP L. RELLANOS',
-            'position' => 'ADMINISTRATIVE CLERK II',
-            'username' => 'accounting',
-            'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
-        ]);
-    }
-
-    public function lobby()
-    {
-        return $this->state([
-            'username' => 'lobby',
-            'password' => '$2y$10$CoLZ83/3QdiKmd4icWC6AeKpqtNTXHBM8zjcjNMZemtD4JfczwBQS'
         ]);
     }
 }

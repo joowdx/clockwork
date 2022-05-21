@@ -15,11 +15,18 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->json('name');
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('employee_scanner', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('scanner_uid');
+            $table->foreignUuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignUuid('employee_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -32,5 +39,7 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('employees');
+
+        Schema::dropIfExists('employee_scanner');
     }
 };

@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('time_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('scanner_id');
+            $table->unsignedInteger('scanner_uid');
+            $table->foreignUuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignUuid('employee_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
             $table->string('state');

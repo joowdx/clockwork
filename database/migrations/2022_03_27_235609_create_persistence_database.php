@@ -32,11 +32,6 @@ return new class extends Migration
             $table->string('state');
             $table->boolean('persist')->default(false);
         });
-
-        Schema::create('test', function (Blueprint $table) {
-            $table->id();
-            $table->boolean('[*]');
-        });
     }
 
     /**
