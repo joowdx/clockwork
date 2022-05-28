@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 class EmployeeRepository extends BaseRepository
 {
-    protected array $with = ['user'];
+    protected array $with = ['scanners'];
 
     protected function init(Builder &$builder): void
     {

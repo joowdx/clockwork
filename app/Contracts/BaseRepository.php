@@ -220,7 +220,7 @@ abstract class BaseRepository implements Repository
 
     public function query(?Closure $query = null): mixed
     {
-        return $query ? $query($this->model()->with($this->with ?? [])) : $this->model();
+        return $query ? $query($this->model()->with($this->with ?? [])) : $this->model()->with($this->with ?? []);
     }
 
     protected function deleting(Model $model): void {}
