@@ -22,11 +22,18 @@
                 </template>
 
                 <template #form>
-                    <!-- Biometrics ID -->
+                    <!-- Scanner -->
                     <div class="col-span-6 -mt-5" :class="{ hidden : multiple }">
-                        <jet-label for="biometrics_id" value="Biometrics ID" />
-                        <jet-input id="biometrics_id" type="text" class="block w-full mt-1" v-model="form.biometrics_id" />
-                        <jet-input-error :message="form.errors.biometrics_id" class="mt-2" />
+                        <jet-label for="biometrics_id" value="Scanner" />
+                        <tailwind-select class="w-full" :options="['ALL', 'ACTIVE', 'INACTIVE']" v-model="form.scanner.id" />
+                        <jet-input-error :message="form.errors['scanner.id']" class="mt-2" />
+                    </div>
+
+                    <!-- Scanner UID -->
+                    <div class="col-span-6" :class="{ hidden : multiple }">
+                        <jet-label for="biometrics_id" value="Scanner UID" />
+                        <jet-input id="biometrics_id" type="text" class="block w-full mt-1 disabled:opacity-50" v-model="form.scanner.uid" :disabled="form.scanner.id" />
+                        <jet-input-error :message="form.errors['scanner.uid']" class="mt-2" />
                     </div>
 
                     <!-- Last Name -->
@@ -64,44 +71,45 @@
                         <jet-input-error :message="form.errors.office" class="mt-2" />
                     </div>
 
-                    <!-- Status -->
-                    <div class="col-span-6">
-                        <jet-label for="office" value="Status" />
-                        <div class="mt-2 space-y-2">
-                            <div class="flex items-center" :class="{ hidden: ! multiple}">
-                                <input id="regular_no_change" name="regular" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="*" :disabled="! multiple" v-model="form.regular" />
-                                <label for="regular_no_change" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> * </label>
+                    <div class="grid grid-cols-2 col-span-6">
+                        <!-- Regular -->
+                        <div class="col-span-1">
+                            <jet-label for="office" value="Regular" />
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center" :class="{ hidden: ! multiple}">
+                                    <input id="regular_no_change" name="regular" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="*" :disabled="! multiple" v-model="form.regular" />
+                                    <label for="regular_no_change" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> * </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="regular" name="regular" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="1" v-model="form.regular" />
+                                    <label for="regular" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> Yes </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="non-regular" name="regular" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="0" v-model="form.regular" />
+                                    <label for="non-regular" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> No </label>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <input id="regular" name="regular" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="1" v-model="form.regular" />
-                                <label for="regular" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> Regular (Permanent, Casual, etc.) </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="non-regular" name="regular" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="0" v-model="form.regular" />
-                                <label for="non-regular" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> Non Regular (Job Order, Contract of Service, etc.) </label>
-                            </div>
+                            <jet-input-error :message="form.errors.status" class="mt-2" />
                         </div>
-                        <jet-input-error :message="form.errors.status" class="mt-2" />
-                    </div>
-
-                    <!-- Active -->
-                    <div class="col-span-6">
-                        <jet-label for="active" value="Active" />
-                        <div class="mt-2 space-y-2">
-                            <div class="flex items-center" :class="{ hidden: ! multiple}">
-                                <input id="active_no_change" name="active" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="*" :disabled="! multiple" v-model="form.active" />
-                                <label for="active_no_change" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> * </label>
+                        <!-- Active -->
+                        <div class="col-span-1">
+                            <jet-label for="active" value="Active" />
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center" :class="{ hidden: ! multiple}">
+                                    <input id="active_no_change" name="active" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="*" :disabled="! multiple" v-model="form.active" />
+                                    <label for="active_no_change" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> * </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="active" name="active" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="1" v-model="form.active" />
+                                    <label for="active" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> Yes </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="inactive" name="active" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="0" v-model="form.active" />
+                                    <label for="inactive" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> No </label>
+                                </div>
                             </div>
-                            <div class="flex items-center">
-                                <input id="active" name="active" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="1" v-model="form.active" />
-                                <label for="active" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> True </label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="inactive" name="active" type="radio" class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" value="0" v-model="form.active" />
-                                <label for="inactive" class="block ml-3 text-sm font-medium text-gray-700 dark:text-gray-400"> False </label>
-                            </div>
+                            <jet-input-error :message="form.errors.status" class="mt-2" />
                         </div>
-                        <jet-input-error :message="form.errors.status" class="mt-2" />
                     </div>
 
                     <jet-button class="hidden" :disabled="form.processing">
@@ -212,7 +220,10 @@
                 form: this.$inertia.form({
                     _method: 'PUT',
                     id: null,
-                    biometrics_id: '',
+                    scanner: {
+                        id: '',
+                        uid: '',
+                    },
                     name: {
                         first: '',
                         middle: '',

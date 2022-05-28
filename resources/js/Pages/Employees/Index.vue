@@ -64,13 +64,13 @@
                                                 Name
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Scanner ID
+                                                Scanner UID
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Office
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Status
+                                                Regular
                                             </th>
                                         </tr>
                                     </thead>
@@ -94,8 +94,22 @@
                                             <td class="px-6 whitespace-nowrap">
                                                 <div class="text-sm">
                                                     <div class="font-thin">
-                                                        <p class="text-black uppercase dark:text-gray-100">
-                                                            {{ employee.biometrics_id.toString().padStart('4', 0) }}
+                                                        <p class="tracking-tighter text-black dark:text-gray-100">
+                                                            <p v-for="scanner in employee.scanners" :key="scanner.id">
+                                                                {{ scanner.name + ': ' + scanner.pivot.scanner_uid.toString().padStart('4', 0) }}
+                                                            </p>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 whitespace-nowrap">
+                                                <div class="text-sm">
+                                                    <div class="font-thin">
+                                                        <p v-if="employee.office" class="text-black dark:text-gray-100">
+                                                            {{ employee.office }}
+                                                        </p>
+                                                        <p v-else class="text-gray-500 dark:text-gray-500">
+                                                            Not set
                                                         </p>
                                                     </div>
                                                 </div>
@@ -104,16 +118,7 @@
                                                 <div class="text-sm">
                                                     <div class="font-thin">
                                                         <p class="text-black dark:text-gray-100">
-                                                            {{ employee.office}}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="text-sm">
-                                                    <div class="font-thin">
-                                                        <p class="text-black dark:text-gray-100">
-                                                            {{ employee.regular ? 'REGULAR' : 'NON REGULAR'}}
+                                                            {{ employee.regular ? 'Yes' : 'No'}}
                                                         </p>
                                                     </div>
                                                 </div>
