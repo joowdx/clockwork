@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\File;
 class EmployeeService implements Import
 {
     const REQUIRED_HEADERS = [
-        'SCANNER ID',
-        'FAMILY NAME',
-        'GIVEN NAME',
+        'SCANNER UID',
+        'LAST NAME',
+        'FIRST NAME',
         'REGULAR',
     ];
 
@@ -40,13 +40,13 @@ class EmployeeService implements Import
             return false;
         }
 
-        $id = File::lines($file)->skip(1)->filter()->map(fn ($e) => str_getcsv($e)[$this->headers((string) File::lines($file)->first())['SCANNER ID']])->duplicates();
+        // $id = File::lines($file)->skip(1)->filter()->map(fn ($e) => str_getcsv($e)[$this->headers((string) File::lines($file)->first())['SCANNER ID']])->duplicates();
 
-        if ($id->isNotEmpty()) {
-            $this->error = "DUPLICATE IDS DETECTED: {$id->values()->toJSON()}. PLEASE CHECK AGAIN.";
+        // if ($id->isNotEmpty()) {
+        //     $this->error = "DUPLICATE IDS DETECTED: {$id->values()->toJSON()}. PLEASE CHECK AGAIN.";
 
-            return false;
-        }
+        //     return false;
+        // }
 
         return true;
     }
@@ -58,7 +58,7 @@ class EmployeeService implements Import
 
     public function parse(UploadedFile $file): void
     {
-        $this->repository->truncate(fn ($query) => $query->whereUserId(auth()->id())->delete());
+        // $this->repository->truncate(fn ($query) => $query->whereUserId(auth()->id())->delete());
 
         File::lines($file)
             ->skip(1)
@@ -68,7 +68,7 @@ class EmployeeService implements Import
             ->chunk(1000)
             ->each(fn ($e) => $this->repository->insert($e->toArray()));
 
-        event(new EmployeesImported(auth()->user(), $file));
+        // event(new EmployeesImported(auth()->user(), $file));
     }
 
     public function headers(string $line): array
