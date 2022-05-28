@@ -24,7 +24,7 @@ class Scanner extends Model
     public function employees(): BelongsToMany
     {
         return $this->belongsToMany(Employee::class)
-                ->using(new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
+                ->using(EmployeeScanner::class)
                 ->withPivot('scanner_uid')
                 ->withTimestamps();
     }
