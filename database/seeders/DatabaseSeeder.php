@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employee;
+use App\Models\Scanner;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -14,8 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        User::factory()->jude()->create();
+        Scanner::factory(1)->hasAttached(Employee::factory(1), ['scanner_uid' => rand()])->has(User::factory()->jude())->create();
 
-        User::factory()->gene()->create();
+        Scanner::factory(1)->hasAttached(Employee::factory(1), ['scanner_uid' => rand()])->has(User::factory()->gene())->create();
     }
 }
