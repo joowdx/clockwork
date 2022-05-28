@@ -16,6 +16,11 @@ class ScannerRepository extends BaseRepository
 
     protected function transformData(array $payload): array
     {
-        return $payload;
+        return [
+            'name' => strtolower($payload['name']),
+            'attlog' => $payload['attlog'],
+            'color' => $payload['color'],
+            'remarks' => $payload['remarks'],
+        ];
     }
 }
