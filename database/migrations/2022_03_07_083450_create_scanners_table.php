@@ -30,6 +30,7 @@ return new class extends Migration
             $table->uuid('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->uuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
+            $table->unique(['user_id', 'scanner_id']);
         });
     }
 
