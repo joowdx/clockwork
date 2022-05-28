@@ -96,7 +96,7 @@
                                                     <div class="font-thin">
                                                         <p class="tracking-tighter text-black dark:text-gray-100">
                                                             <p v-for="scanner in employee.scanners" :key="scanner.id">
-                                                                {{ scanner.name + ': ' + scanner.pivot.scanner_uid.toString().padStart('4', 0) }}
+                                                                {{ scanner.name + ': ' + scanner.pivot.uid.toString().padStart('4', 0) }}
                                                             </p>
                                                         </p>
                                                     </div>
