@@ -5,13 +5,16 @@ namespace App\Models;
 use App\Models\SQLite\Employee as BackupEmployee;
 use App\Models\SQLite\TimeLog as BackupTimeLog;
 use App\Traits\HasNameAccessorAndFormatter;
+use App\Traits\HasUniversallyUniqueIdentifier;
 use Awobaz\Compoships\Compoships;
 use Awobaz\Compoships\Database\Eloquent\Relations\BelongsTo;
 use Awobaz\Compoships\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 
@@ -33,17 +36,12 @@ class Employee extends Model
         'name' => 'object',
     ];
 
-    protected $with = [
-        'backup',
-    ];
-
-    protected $appends = [
-        'logs'
-    ];
-
-    public function user(): BelongsTo
+    public function scanners(): BelongsToMany
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(Scanner::class)
+                ->using( new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
+                ->withPivot('scanner_uid')
+                ->withTimestamps();
     }
 
     public function getLogsAttribute(): ?EloquentCollection

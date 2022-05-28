@@ -21,10 +21,6 @@ class TimeLog extends Model
         '1110'
     ];
 
-    protected $with = [
-        'employee',
-    ];
-
     protected $fillable = [
         'biometrics_id',
         'user_id',

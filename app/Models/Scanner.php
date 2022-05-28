@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Awobaz\Compoships\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Scanner extends Model
 {
@@ -20,13 +21,18 @@ class Scanner extends Model
         'library',
     ];
 
-    public function employees(): HasMany
+    public function employees(): BelongsToMany
     {
-        return $this->hasMany(Employee::class);
+        return $this->belongsToMany(Employee::class)
+                ->using(new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
+                ->withPivot('scanner_uid')
+                ->withTimestamps();
     }
 
-    public function user(): BelongsToMany
+    public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class)
+                ->using( new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
+                ->withTimestamps();
     }
 }
