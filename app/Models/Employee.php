@@ -36,6 +36,10 @@ class Employee extends Model
         'name' => 'object',
     ];
 
+    protected $appends = [
+        'full_name'
+    ];
+
     public function scanners(): BelongsToMany
     {
         return $this->belongsToMany(Scanner::class)
