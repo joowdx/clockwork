@@ -7,6 +7,7 @@ use App\Contracts\Repository;
 use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
+use App\Models\Scanner;
 use App\Services\EmployeeService;
 use Illuminate\Http\Request;
 
@@ -28,7 +29,7 @@ class EmployeeController extends Controller
     {
         return inertia('Employees/Index', [
             'employees' => $this->employees->all(),
-            'month' => today()->startOfMonth()->format('Y-m'),
+            'scanners' => Scanner::all(),
             'offices' => $this->employees->offices(),
         ]);
     }
