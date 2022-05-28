@@ -16,12 +16,13 @@ return new class extends Migration
         Schema::create('scanners', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name', 20)->unique();
-            $table->string('ip_address')->nullable();
-            $table->enum('protocol', ['tcp', 'udp'])->nullable();
-            $table->string('serial_number')->nullable();
-            $table->string('model')->nullable();
-            $table->string('version')->nullable();
-            $table->string('library')->nullable();
+            $table->string('attlog', 120)->nullable();
+            // $table->string('ip_address')->nullable();
+            // $table->enum('protocol', ['tcp', 'udp'])->nullable();
+            // $table->string('serial_number')->nullable();
+            // $table->string('model')->nullable();
+            // $table->string('version')->nullable();
+            // $table->string('library')->nullable();
             $table->timestamps();
         });
 
