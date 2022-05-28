@@ -15,7 +15,7 @@ class EmployeeScanner extends Pivot
     protected $touches = ['employee'];
 
     protected $fillable = [
-        'scanner_uid',
+        'uid',
     ];
 
     public function employee(): BelongsTo
