@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
+            $table->foreignUuid('created_by')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignUuid('last_updated_by')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
             $table->timestamps();
         });
 

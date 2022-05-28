@@ -48,6 +48,16 @@ class Employee extends Model
                 ->withTimestamps();
     }
 
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class);
+    }
+
+    public function lastUpdatedBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class);
+    }
+
     public function getLogsAttribute(): ?EloquentCollection
     {
         return $this->relationLoaded('backupLogs') ? $this->backupLogs : ($this->relationLoaded('mainLogs') ? $this->mainLogs : null);
