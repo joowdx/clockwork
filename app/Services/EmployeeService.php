@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Events\EmployeesImported;
+use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -76,14 +78,17 @@ class EmployeeService implements Import
 
     public function all()
     {
-        return $this->repository->query()->whereUserId(auth()->id())->get();
+        return $this->repository->query()->whereHas('scanners', function (Builder $query) {
+            $query->whereHas('users', function (Builder $query) {
+                $query->where('user_id', auth()->id());
+            });
+        })->get();
     }
 
     public function offices()
     {
         return $this->repository
             ->query()
-            ->whereUserId(auth()->id())
             ->select(['office', 'name'])
             ->get()
             ->map
