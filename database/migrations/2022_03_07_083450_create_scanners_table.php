@@ -19,12 +19,12 @@ return new class extends Migration
             $table->string('attlog', 120)->nullable();
             $table->string('color', 6)->nullable();
             $table->string('remarks')->nullable();
-            // $table->string('ip_address')->nullable();
-            // $table->enum('protocol', ['tcp', 'udp'])->nullable();
-            // $table->string('serial_number')->nullable();
-            // $table->string('model')->nullable();
-            // $table->string('version')->nullable();
-            // $table->string('library')->nullable();
+            $table->string('ip_address')->nullable();
+            $table->enum('protocol', ['tcp', 'udp'])->nullable();
+            $table->string('serial_number')->nullable();
+            $table->string('model')->nullable();
+            $table->string('version')->nullable();
+            $table->string('library')->nullable();
             $table->timestamps();
         });
 

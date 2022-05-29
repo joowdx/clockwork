@@ -14,14 +14,14 @@ class Scanner extends Model
     protected $fillable = [
         'name',
         'attlog_file',
-        'color',
+        'print_color',
         'remarks',
-        // 'ip_address',
-        // 'protocol',
-        // 'serial_number',
-        // 'model',
-        // 'version',
-        // 'library',
+        'ip_address',
+        'protocol',
+        'serial_number',
+        'model',
+        'version',
+        'library',
     ];
 
     public function employees(): BelongsToMany

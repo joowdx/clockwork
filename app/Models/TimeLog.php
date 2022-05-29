@@ -12,13 +12,17 @@ class TimeLog extends Model
     const GRACE_PERIOD = 15;
 
     const IN = [
-        '1000',
-        '1010'
+        1000,
+        1010,
+        0000,
+        0004,
     ];
 
     const OUT = [
-        '1100',
-        '1110'
+        1100,
+        1110,
+        0001,
+        0005,
     ];
 
     protected $fillable = [
