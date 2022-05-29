@@ -150,6 +150,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'pgso-1',
+            'remarks' => 'For regulars.'
         ]);
     }
 
@@ -157,6 +158,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'pgso-2',
+            'remarks' => 'For non-regulars.'
         ]);
     }
 
