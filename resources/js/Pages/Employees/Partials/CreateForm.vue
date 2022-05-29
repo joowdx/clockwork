@@ -120,6 +120,8 @@
         emits: ['close', 'created'],
 
         props: {
+            scanners: Array,
+
             show: {
                 default: false
             },

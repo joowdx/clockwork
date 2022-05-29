@@ -85,19 +85,15 @@
                                                 <input class="text-indigo-600 border-gray-300 rounded shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="employee.id" v-model="selected">
                                             </td>
                                             <td class="px-6 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {{ employee.name_format.fullStartLastInitialMiddle }}
-                                                    </div>
+                                                <div class="flex items-center text-base font-medium tracking-wide text-gray-900 dark:text-white">
+                                                    {{ employee.name_format.fullStartLastInitialMiddle }}
                                                 </div>
                                             </td>
                                             <td class="px-6 whitespace-nowrap">
                                                 <div class="text-sm">
                                                     <div class="font-thin">
-                                                        <p class="tracking-tighter text-black dark:text-gray-100">
-                                                            <p v-for="scanner in employee.scanners" :key="scanner.id">
-                                                                {{ scanner.name + ': ' + scanner.pivot.uid.toString().padStart('4', 0) }}
-                                                            </p>
+                                                        <p v-for="scanner in employee.scanners" :key="scanner.id" class="font-mono text-xs leading-none tracking-tighter text-black dark:text-gray-100">
+                                                            {{ scanner.name + ': ' + scanner.pivot.uid.toString().padStart('4', 0) }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -182,7 +178,7 @@
             </template>
         </jet-dialog-modal>
 
-        <create-form :show="createDialog" @close="closeCreateDialog" @created="reloadList" />
+        <create-form :scanners="$page.props.scanners" :show="createDialog" @close="closeCreateDialog" @created="reloadList" />
 
         <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" @deleted="clearSelection" @updated="reloadList" />
     </app-layout>
