@@ -25,8 +25,8 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'coliseum-1',
-            'attlog' => 'AF4C211360031_attlog',
-            'remarks' => 'Shared with to all offices without dedicated scanners at the coliseum.',
+            'attlog_file' => 'AF4C211360031_attlog',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
         ]);
     }
 
@@ -34,7 +34,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'coliseum-2',
-            'remarks' => 'Shared with to all offices without dedicated scanners at the coliseum.',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
         ]);
     }
 
@@ -42,7 +42,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'coliseum-3',
-            'remarks' => 'Shared with to all offices without dedicated scanners at the coliseum.',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
         ]);
     }
 

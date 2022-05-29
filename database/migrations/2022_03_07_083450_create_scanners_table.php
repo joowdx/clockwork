@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('scanners', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name', 20)->unique();
-            $table->string('attlog', 120)->nullable();
-            $table->string('color', 6)->nullable();
+            $table->string('attlog_file', 120)->nullable();
+            $table->string('print_color', 6)->nullable();
             $table->string('remarks')->nullable();
             $table->string('ip_address')->nullable();
             $table->enum('protocol', ['tcp', 'udp'])->nullable();
