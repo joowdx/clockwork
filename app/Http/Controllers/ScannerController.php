@@ -19,7 +19,7 @@ class ScannerController extends Controller
      */
     public function index()
     {
-        return inertia('Scanner/Index', [
+        return inertia('Scanners/Index', [
             'scanners' => $this->repository->all(),
         ]);
     }
@@ -31,7 +31,7 @@ class ScannerController extends Controller
      */
     public function create()
     {
-        return inertia('Scanner/Index', [
+        return inertia('Scanners/Index', [
             'scanners' => $this->repository->all(),
         ]);
     }
