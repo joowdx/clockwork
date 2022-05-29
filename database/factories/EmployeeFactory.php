@@ -24,4 +24,30 @@ class EmployeeFactory extends Factory
             'regular' => $this->faker->boolean(50),
         ];
     }
+
+    public function jude()
+    {
+        return $this->state([
+            'name' => [
+                'first' => 'Jude',
+                'middle' => 'Cabanilla',
+                'last' => 'Pineda'
+            ],
+            'regular' => false,
+            'office' => 'PGO-PICTO'
+        ]);
+    }
+
+    public function gene()
+    {
+        return $this->state([
+            'name' => [
+                'first' => 'Gene Philip',
+                'middle' => 'Largo',
+                'last' => 'Rellanos'
+            ],
+            'regular' => true,
+            'office' => 'PGO-PICTO'
+        ]);
+    }
 }

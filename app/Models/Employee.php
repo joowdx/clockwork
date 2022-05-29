@@ -25,7 +25,6 @@ class Employee extends Model
     use Searchable;
 
     protected $fillable = [
-        'biometrics_id',
         'name',
         'regular',
         'office',
