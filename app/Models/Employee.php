@@ -36,12 +36,26 @@ class Employee extends Model
         'name' => 'object',
     ];
 
+    protected $appends = [
+        'full_name'
+    ];
+
     public function scanners(): BelongsToMany
     {
         return $this->belongsToMany(Scanner::class)
-                ->using( new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
-                ->withPivot('scanner_uid')
+                ->using(EmployeeScanner::class)
+                ->withPivot('uid')
                 ->withTimestamps();
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class);
+    }
+
+    public function lastUpdatedBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class);
     }
 
     public function getLogsAttribute(): ?EloquentCollection

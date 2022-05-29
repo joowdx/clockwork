@@ -19,17 +19,19 @@ return new class extends Migration
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
+            $table->foreignUuid('created_by')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignUuid('last_updated_by')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
             $table->timestamps();
         });
 
         Schema::create('employee_scanner', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->unsignedInteger('scanner_uid');
+            $table->unsignedInteger('uid');
             $table->foreignUuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignUuid('employee_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['scanner_uid', 'scanner_id']);
-            $table->unique(['scanner_uid', 'employee_id']);
+            $table->unique(['uid', 'scanner_id']);
+            $table->unique(['uid', 'employee_id']);
             $table->unique(['scanner_id', 'employee_id']);
         });
     }

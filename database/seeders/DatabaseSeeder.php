@@ -16,8 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        Scanner::factory(1)->hasAttached(Employee::factory(1), ['scanner_uid' => rand()])->has(User::factory()->jude())->create();
+        Scanner::factory(1)->hasAttached(Employee::factory(1), ['uid' => rand()])->has(User::factory()->jude())->create();
 
-        Scanner::factory(1)->hasAttached(Employee::factory(1), ['scanner_uid' => rand()])->has(User::factory()->gene())->create();
+        Scanner::factory(1)->hasAttached(Employee::factory(1), ['uid' => rand()])->has(User::factory()->gene())->create();
     }
 }

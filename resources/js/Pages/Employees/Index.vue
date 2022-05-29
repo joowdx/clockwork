@@ -10,10 +10,10 @@
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="grid grid-cols-12 px-6 mb-6 justify-items-end gap-y-2 gap-x-3 sm:px-0">
                     <div class="flex self-end col-span-12 mt-3 space-x-3">
-                        <jet-secondary-button @click="showCreateDialog" style="width:66px">
+                        <jet-secondary-button class="hidden" @click="showCreateDialog" style="width:66px">
                             Add
                         </jet-secondary-button>
-                        <jet-secondary-button @click="showEditDialog" style="width:66px" :disabled="selected.length === 0">
+                        <jet-secondary-button class="hidden" @click="showEditDialog" style="width:66px" :disabled="selected.length === 0">
                             Edit
                         </jet-secondary-button>
                         <jet-secondary-button @click="showImportDialog" style="width:90px" :disabled="importDialog">
@@ -96,7 +96,7 @@
                                                     <div class="font-thin">
                                                         <p class="tracking-tighter text-black dark:text-gray-100">
                                                             <p v-for="scanner in employee.scanners" :key="scanner.id">
-                                                                {{ scanner.name + ': ' + scanner.pivot.scanner_uid.toString().padStart('4', 0) }}
+                                                                {{ scanner.name + ': ' + scanner.pivot.uid.toString().padStart('4', 0) }}
                                                             </p>
                                                         </p>
                                                     </div>

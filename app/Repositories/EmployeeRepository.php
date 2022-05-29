@@ -18,17 +18,16 @@ class EmployeeRepository extends BaseRepository
     public function transformImportData(array $line, array $headers): array
     {
         return [
-            'scanner_id' => $line[$headers['SCANNER ID']],
+            'scanner_uid' => $this->parseScannerUID($line[$headers['SCANNER UID']]),
             'name' => [
-                'last' => $line[$headers['FAMILY NAME']],
-                'first' => $line[$headers['GIVEN NAME']],
+                'last' => $line[$headers['LAST NAME']],
+                'first' => $line[$headers['FIRST NAME']],
                 'middle' => @$line[$headers['MIDDLE INITIAL']],
                 'extension' => @$line[$headers['NAME EXTENSION']],
             ],
             'office' => @$line[$headers['OFFICE']],
             'regular' => (bool) $line[$headers['REGULAR']],
             'active' => (bool) @$line[$headers['ACTIVE']],
-            'user_id' => auth()->id(),
             'nameToJSON' => true,
         ];
     }
@@ -38,17 +37,23 @@ class EmployeeRepository extends BaseRepository
         $name = [
             'last' => strtoupper($payload['name']['last']),
             'first' => strtoupper($payload['name']['first']),
-            'middle' => strtoupper($payload['name']['middle']),
-            'extension' => strtoupper($payload['name']['extension']),
+            'middle' => strtoupper(@$payload['name']['middle']),
+            'extension' => strtoupper(@$payload['name']['extension']),
         ];
 
         return [
-            'scanner_id' => $payload['scanner_id'],
             'name' => @$payload['nameToJSON'] ? json_encode($name) : $name,
             'office' => strtoupper($payload['office']),
             'regular' => (bool) $payload['regular'],
-            'active' => ((bool) @$payload['active']) ?? null,
-            'user_id' => $payload['user_id'],
+            'active' => (bool) @$payload['active'] ?? null,
         ];
+    }
+
+    private function parseScannerUID(string $scanner_uid)
+    {
+        return collect(str_getcsv($scanner_uid))
+                ->map(fn ($uid) => explode(':', $uid))
+                ->mapWithKeys(fn ($uid) => [$uid[0] => $uid[1]])
+                ->toArray();
     }
 }

@@ -46,6 +46,11 @@ trait HasNameAccessorAndFormatter
         ];
     }
 
+    public function getFullNameAttribute(): string
+    {
+        return $this->nameFormatFull();
+    }
+
     public function nameFormatFull(): string
     {
         $name = $this->name;
