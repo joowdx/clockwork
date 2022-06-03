@@ -31,6 +31,8 @@ return new class extends Migration
             $table->foreignUuid('employee_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['uid', 'scanner_id', 'employee_id']);
+            $table->unique(['uid', 'scanner_id']);
+            $table->unique(['scanner_id', 'employee_id']);
         });
     }
 
