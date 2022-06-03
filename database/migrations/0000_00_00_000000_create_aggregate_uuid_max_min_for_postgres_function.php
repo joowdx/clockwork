@@ -14,39 +14,41 @@ return new Class extends Migration {
         if(env('DB_CONNECTION') == 'pgsql') {
             DB::unprepared(<<<sql
 
-                CREATE OR REPLACE FUNCTION max (uuid, uuid)
-                RETURNS uuid AS $$
-                BEGIN
-                    IF $1 IS NULL OR $1 < $2 THEN
-                        RETURN $2;
-                    END IF;
+            create or replace function min(uuid, uuid)
+                returns uuid
+                immutable parallel safe
+                language plpgsql as
+            $$
+            begin
+                return least($1, $2);
+            end
+            $$;
 
-                    RETURN $1;
-                END;
-                $$ LANGUAGE plpgsql;
-
-
-                CREATE OR REPLACE AGGREGATE max (uuid) (
-                    sfunc = max,
-                    stype = uuid
+            create or replace aggregate min(uuid) (
+                sfunc = min,
+                stype = uuid,
+                combinefunc = min,
+                parallel = safe,
+                sortop = operator (<)
                 );
 
-                CREATE OR REPLACE FUNCTION min (uuid, uuid)
-                RETURNS uuid AS $$
-                BEGIN
-                    IF $1 IS NULL OR $1 > $2 THEN
-                        RETURN $2;
-                    END IF;
+            create or replace function max(uuid, uuid)
+                returns uuid
+                immutable parallel safe
+                language plpgsql as
+            $$
+            begin
+                return greatest($1, $2);
+            end
+            $$;
 
-                    RETURN $1;
-                END;
-                $$ LANGUAGE plpgsql;
-
-
-                CREATE OR REPLACE AGGREGATE min (uuid) (
-                    sfunc = min,
-                    stype = uuid
-                );
+            create or replace aggregate max(uuid) (
+                sfunc = max,
+                stype = uuid,
+                combinefunc = max,
+                parallel = safe,
+                sortop = operator (>)
+            );
             sql);
         }
     }
@@ -61,10 +63,10 @@ return new Class extends Migration {
         if(env('DB_CONNECTION') == 'pgsql') {
             DB::unprepared(<<<sql
 
-                DROP AGGREGATE IF EXISTS max(uuid);
-                DROP AGGREGATE IF EXISTS min(uuid);
-                DROP FUNCTION IF EXISTS max(uuid, uuid);
-                DROP FUNCTION IF EXISTS min(uuid, uuid);
+            drop aggregate if exists max(uuid);
+            drop aggregate if exists min(uuid);
+            drop function if exists max(uuid, uuid);
+            drop function if exists min(uuid, uuid);
             sql);
         }
     }
