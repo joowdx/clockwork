@@ -18,8 +18,46 @@
                         </Link>
                     </div>
                 </div>
-                <div v-for="scanner in scanners" :key="scanner.id">
-                    {{ scanner.username }}
+                <div class="overflow-hidden sm:rounded-lg">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="py-3 pr-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                    Scanner
+                                </th>
+                                <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                    Assigned Users
+                                </th>
+                                <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                    Assigned Users
+                                </th>
+                                <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                    Assigned Users
+                                </th>
+                                <th scope="col" class="py-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                    Remarks
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="scanner in scanners" :key="scanner.id">
+                                <td class="pr-6 whitespace-nowrap">
+                                    {{ scanner.name }}
+                                </td>
+                                <td class="pl-6 tracking-tighter text-gray-900 dark:text-gray-200">
+                                    <p v-for="user in scanner.users" :key="user.id">
+                                        {{ user.username }}
+                                    </p>
+                                </td>
+                                <td class="pl-6 tracking-tighter text-gray-900 dark:text-gray-200">
+                                    {{ scanner.remarks }}
+                                    <!-- <p v-if="user.verified_by" class="lowercase">
+                                        by <Link class="text-indigo-600 hover:text-indigo-900 dark:text-gray-400 dark:hover:text-gray-600" :href="route('users.show', user.verified_by.id)" v-html="'@' + user.verified_by.username" />
+                                    </p> -->
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
