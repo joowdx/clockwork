@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->json('name');
+            $table->jsonb('name')->unique();
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
