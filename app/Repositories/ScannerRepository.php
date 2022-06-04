@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ScannerRepository extends BaseRepository
 {
+    protected array $with = ['users'];
+
     protected function init(Builder &$builder): void
     {
         $builder->orderBy('name');
