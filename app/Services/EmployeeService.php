@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Events\EmployeesImported;
-use App\Models\Employee;
+use App\Models\EmployeeScanner;
+use App\Models\Scanner;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -66,7 +66,24 @@ class EmployeeService implements Import
             ->map(fn($e) => str_getcsv($e))
             ->map(fn ($e) => $this->repository->transformImportData($e, $this->headers((string) File::lines($file)->first())))
             ->chunk(1000)
-            ->each(fn ($e) => $this->repository->insert($e->toArray()));
+            ->each(function ($chunk) {
+                $this->repository->upsert($chunk->toArray(), upserter: function ($payload, $transformed) {
+                    $this->repository->query()->upsert(collect($payload)->map(fn ($e) => collect($e)->except('scanner_uid', 'nameToJSON')->toArray())->replaceRecursive($transformed)->toArray(), ['name'], ['id']);
+                });
+
+                $keys = $chunk->map->{'scanner_uid'}->flatMap(fn ($e) => array_keys($e))->unique()->mapWithKeys(fn ($e) => [$e => Scanner::firstOrCreate(['name' => $e])->id])->toArray();
+
+                $chunk->flatMap(function ($e) use ($keys) {
+                    return collect($e['scanner_uid'])->map(function ($f, $k) use ($e, $keys) {
+                        return [
+                            'id' => str()->orderedUuid(),
+                            'uid' => $f,
+                            'scanner_id' => $keys[$k],
+                            'employee_id' => $e['id'],
+                        ];
+                    })->toArray();
+                })->chunk(1000)->each(fn ($chunk) => EmployeeScanner::upsert($chunk->toArray(), ['uid', 'scanner_id'], ['employee_id']));
+            });
 
         // event(new EmployeesImported(auth()->user(), $file));
     }
