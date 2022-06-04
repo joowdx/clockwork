@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('attlog_file', 120)->nullable();
             $table->string('print_color', 6)->nullable();
             $table->string('remarks')->nullable();
+            $table->boolean('shared')->default(false);
             $table->string('ip_address')->nullable();
             $table->enum('protocol', ['tcp', 'udp'])->nullable();
             $table->string('serial_number')->nullable();
