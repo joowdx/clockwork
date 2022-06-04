@@ -26,6 +26,8 @@ interface Repository
 
     public function insert(array $payload, ?Closure $inserter = null): void;
 
+    public function upsert(array $payload, array $unique = [], array $update = [], array $except = [], ?Closure $upserter = null): void;
+
     public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): void;
 
     public function delete(Model $model, ?Closure $deleter = null): void;

@@ -137,7 +137,7 @@ abstract class BaseRepository implements Repository
 
         DB::transaction(function () use ($payload) {
             $this->model()->insert(collect($payload)->map(fn ($e) => [
-                ...$this->generateUuid($this->hasUuidPrimaryKey()),
+                ...$this->generateUuid(generate: $this->hasUuidPrimaryKey()),
                 ...$this->transformData($e),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -165,19 +165,19 @@ abstract class BaseRepository implements Repository
 
     }
 
-    public function upsert(array $payload, array $unique, array $except = [], ?Closure $upserter = null): void
+    public function upsert(array $payload, array $unique = [], array $update = [], array $except = [],  ?Closure $upserter = null): void
     {
         if ($upserter) {
-            DB::transaction(fn() => $upserter($payload));
+            DB::transaction(fn() => $upserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
 
             return;
         }
 
-        DB::transaction(function () use ($payload, $unique, $except) {
+        DB::transaction(function () use ($payload, $unique, $update, $except) {
             $this->model()->upsert(collect($payload)->map(fn ($e) => [
-                ...$this->generateUuid($this->hasUuidPrimaryKey()),
+                ...$this->generateUuid(generate: $this->hasUuidPrimaryKey()),
                 ...collect($this->transformData($e))->except($except)->toArray(),
-            ])->toArray(), $unique);
+            ])->toArray(), $unique, $update);
         });
     }
 
@@ -220,17 +220,23 @@ abstract class BaseRepository implements Repository
 
     public function query(?Closure $query = null): mixed
     {
-        return $query ? $query($this->model()->with($this->with ?? [])) : $this->model()->with($this->with ?? []);
+        return $query ? $query($this->builder()->with($this->with ?? [])) : $this->builder()->with($this->with ?? []);
+    }
+
+    public function newQuery(?Closure $query = null): mixed
+    {
+        return $query ? $query($this->builder()->with($this->with ?? [])) : $this->builder()->with($this->with ?? []);
     }
 
     protected function deleting(Model $model): void {}
 
     protected function destroying(array $payload): void {}
 
+
     protected abstract function transformData(array $payload): array;
 
-    private function generateUuid(bool $generate) {
-        return $generate ? ['id' => str()->orderedUuid()] : [];
+    private function generateUuid(string $column = 'id', bool $generate = true) {
+        return $generate ? [$column => str()->orderedUuid()] : [];
     }
 
     private function hasUuidPrimaryKey(): bool
