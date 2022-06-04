@@ -18,11 +18,12 @@ class EmployeeRepository extends BaseRepository
     public function transformImportData(array $line, array $headers): array
     {
         return [
+            'id' => str()->orderedUuid()->toString(),
             'scanner_uid' => $this->parseScannerUID($line[$headers['SCANNER UID']]),
             'name' => [
                 'last' => $line[$headers['LAST NAME']],
                 'first' => $line[$headers['FIRST NAME']],
-                'middle' => @$line[$headers['MIDDLE INITIAL']],
+                'middle' => @$line[$headers['MIDDLE NAME']],
                 'extension' => @$line[$headers['NAME EXTENSION']],
             ],
             'office' => @$line[$headers['OFFICE']],
