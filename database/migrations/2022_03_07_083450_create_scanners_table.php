@@ -22,9 +22,6 @@ return new class extends Migration
             $table->boolean('shared')->default(false);
             $table->string('ip_address')->nullable();
             $table->enum('protocol', ['tcp', 'udp'])->nullable();
-            $table->string('serial_number')->nullable();
-            $table->string('model')->nullable();
-            $table->string('version')->nullable();
             $table->string('library')->nullable();
             $table->timestamps();
         });

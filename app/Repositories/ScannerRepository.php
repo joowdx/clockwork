@@ -21,6 +21,10 @@ class ScannerRepository extends BaseRepository
             'attlog' => $payload['attlog'],
             'color' => $payload['color'],
             'remarks' => $payload['remarks'],
+            'shared' => (bool) $payload['remarks'],
+            'ip_address' => $payload['ip_address'],
+            'protocol' => $payload['protocol'],
+            'library' => $payload['library'],
         ];
     }
 }
