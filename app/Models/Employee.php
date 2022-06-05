@@ -2,25 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\SQLite\Employee as BackupEmployee;
-use App\Models\SQLite\TimeLog as BackupTimeLog;
 use App\Traits\HasNameAccessorAndFormatter;
-use App\Traits\HasUniversallyUniqueIdentifier;
-use Awobaz\Compoships\Compoships;
-use Awobaz\Compoships\Database\Eloquent\Relations\BelongsTo;
-use Awobaz\Compoships\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Laravel\Scout\Searchable;
 
 class Employee extends Model
 {
-    use Compoships;
     use HasNameAccessorAndFormatter;
     use Searchable;
 
@@ -44,7 +37,8 @@ class Employee extends Model
         return $this->belongsToMany(Scanner::class)
                 ->using(EmployeeScanner::class)
                 ->withPivot('uid')
-                ->withTimestamps();
+                ->withTimestamps()
+                ->orderBy('name');
     }
 
     public function createdBy(): BelongsTo
@@ -57,19 +51,10 @@ class Employee extends Model
         return $this->belongsTo(self::class);
     }
 
-    public function getLogsAttribute(): ?EloquentCollection
+    public function timelogs(): HasManyThrough
     {
-        return $this->relationLoaded('backupLogs') ? $this->backupLogs : ($this->relationLoaded('mainLogs') ? $this->mainLogs : null);
-    }
-
-    public function mainLogs(): HasMany
-    {
-        return $this->hasMany(TimeLog::class, ['scanner_id', 'user_id'], ['scanner_id', 'user_id']);
-    }
-
-    public function backupLogs(): HasMany
-    {
-        return $this->hasMany(BackupTimeLog::class);
+        return $this->hasManyThrough(TimeLog::class, EmployeeScanner::class, secondKey: 'employee_scanner_id')
+                ->orderBy('time');
     }
 
     public function schedules(): HasMany
@@ -80,16 +65,6 @@ class Employee extends Model
     public function getBackedUpAttribute(): ?bool
     {
         return $this->isBackedUp();
-    }
-
-    public function isBackedUp(): ?bool
-    {
-        return $this->backup?->active;
-    }
-
-    public function backup(): HasOne
-    {
-        return $this->hasOne(BackupEmployee::class);
     }
 
     public function toSearchableArray(): array
@@ -111,7 +86,7 @@ class Employee extends Model
 
     public function logsForTheDay(Carbon $date): Collection
     {
-        return $this->logs->filter(fn ($t) => $t->time->isSameDay($date))->values();
+        return $this->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->values();
     }
 
     public function getSchedule(Carbon $date): Schedule

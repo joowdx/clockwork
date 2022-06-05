@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\SQLite\Employee as BackupEmployee;
-use App\Models\SQLite\TimeLog as BackupTimeLog;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class TimeLog extends Model
 {
@@ -36,9 +34,14 @@ class TimeLog extends Model
         'time' => 'datetime'
     ];
 
-    public function employee(): BelongsTo
+    public function employee(): HasOneThrough
     {
-        return $this->belongsTo(Employee::class, ['scanner_id', 'user_id'], ['scanner_id', 'user_id']);
+        return $this->hasOneThrough(Employee::class, EmployeeScanner::class, 'id', 'id', 'employee_scanner_id', 'employee_id');
+    }
+
+    public function scanner(): HasOneThrough
+    {
+        return $this->hasOneThrough(Scanner::class, EmployeeScanner::class, 'id', 'id', 'employee_scanner_id', 'scanner_id');
     }
 
     public function backup(): HasOne
@@ -118,11 +121,6 @@ class TimeLog extends Model
     public function isUnderGracePeriod(): mixed
     {
         return $this->in ? $this->time->clone()->setTime($this->employee->getSchedule($this->time)->in, 0)->diffInMinutes($this->time) <= self::GRACE_PERIOD : null;
-    }
-
-    public function isBackup(): bool
-    {
-        return $this instanceof BackupTimeLog;
     }
 
     public function isBackedUp(): bool

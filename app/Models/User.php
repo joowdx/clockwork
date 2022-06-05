@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\ScannerUser;
 use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -63,11 +62,6 @@ class User extends Authenticatable
             'name' => $this->name,
             'username' => $this->username,
         ];
-    }
-
-    public function employees(): HasManyThrough
-    {
-        return $this->hasManyThrough(Employee::class, Scanner::class);
     }
 
     public function scanners(): BelongsToMany

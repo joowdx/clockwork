@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Scanner extends Model
@@ -14,7 +15,8 @@ class Scanner extends Model
     protected $fillable = [
         'name',
         'attlog_file',
-        'print_color',
+        'print_text_colour',
+        'print_background_colour',
         'remarks',
         'ip_address',
         'protocol',
@@ -37,5 +39,10 @@ class Scanner extends Model
         return $this->belongsToMany(User::class)
                 ->using( new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
                 ->withTimestamps();
+    }
+
+    public function timelogs(): HasManyThrough
+    {
+        return $this->hasManyThrough(TimeLog::class, EmployeeScanner::class, secondKey: 'employee_scanner_id');
     }
 }
