@@ -22,6 +22,12 @@ class EmployeeService implements Import
         'REGULAR',
     ];
 
+    const HEADERS = [
+        'MIDDLE NAME',
+        'OFFICE',
+        'ACTIVE',
+    ];
+
     private string $error = '';
 
     protected $header = [];
@@ -58,8 +64,6 @@ class EmployeeService implements Import
 
     public function parse(UploadedFile $file): void
     {
-        // $this->repository->truncate(fn ($query) => $query->whereUserId(auth()->id())->delete());
-
         File::lines($file)
             ->skip(1)
             ->filter()
@@ -68,7 +72,11 @@ class EmployeeService implements Import
             ->chunk(1000)
             ->each(function ($chunk) {
                 $this->repository->upsert($chunk->toArray(), upserter: function ($payload, $transformed) {
-                    $this->repository->query()->upsert(collect($payload)->map(fn ($e) => collect($e)->except('scanner_uid', 'nameToJSON')->toArray())->replaceRecursive($transformed)->toArray(), ['name'], ['id']);
+                    $this->repository->query()->upsert(
+                        collect($payload)->map(fn ($e) => collect($e)->except('scanner_uid', 'nameToJSON')->toArray())->replaceRecursive($transformed)->toArray(),
+                        ['name'],
+                        ['id'],
+                    );
                 });
 
                 $keys = $chunk->map->{'scanner_uid'}->flatMap(fn ($e) => array_keys($e))->unique()->mapWithKeys(fn ($e) => [$e => Scanner::firstOrCreate(['name' => $e])->id])->toArray();
@@ -76,16 +84,14 @@ class EmployeeService implements Import
                 $chunk->flatMap(function ($e) use ($keys) {
                     return collect($e['scanner_uid'])->map(function ($f, $k) use ($e, $keys) {
                         return [
-                            'id' => str()->orderedUuid(),
                             'uid' => $f,
                             'scanner_id' => $keys[$k],
                             'employee_id' => $e['id'],
+                            'id' => str()->orderedUuid(),
                         ];
                     })->toArray();
                 })->chunk(1000)->each(fn ($chunk) => EmployeeScanner::upsert($chunk->toArray(), ['uid', 'scanner_id'], ['employee_id']));
             });
-
-        // event(new EmployeesImported(auth()->user(), $file));
     }
 
     public function headers(string $line): array
@@ -93,7 +99,7 @@ class EmployeeService implements Import
         return array_flip(explode(',', strtoupper(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $line))));
     }
 
-    public function all()
+    public function get()
     {
         return $this->repository->query()->whereHas('scanners', function (Builder $query) {
             $query->whereHas('users', function (Builder $query) {

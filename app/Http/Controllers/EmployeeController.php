@@ -28,7 +28,7 @@ class EmployeeController extends Controller
     public function index()
     {
         return inertia('Employees/Index', [
-            'employees' => $this->employees->all(),
+            'employees' => $this->employees->get(),
             'scanners' => Scanner::all(),
             'offices' => $this->employees->offices(),
         ]);
