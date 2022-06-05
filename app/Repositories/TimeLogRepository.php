@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Contracts\BaseRepository;
-use Carbon\Carbon;
 
 class TimeLogRepository extends BaseRepository
 {

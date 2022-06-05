@@ -4,11 +4,10 @@ namespace App\Services;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Events\TimeLogsProcessed;
+use App\Models\EmployeeScanner;
 use App\Models\TimeLog;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 
@@ -47,17 +46,26 @@ class TimeLogService implements Import
 
     public function parse(Request $request): void
     {
-        // $this->truncate();
-
         File::lines($request->file)
             ->filter()
-            ->map(fn ($e) => $this->transformImportData(explode("\t", $e)))
-            ->dd()
+            ->unique()
+            ->map(fn ($e) => explode("\t", $e))
+            ->map(fn ($e) => $this->transformImportData($e, $request->scanner))
             ->chunk(1000)
-            ->map(fn ($e) => $e->toArray())
-            ->each(fn ($e) => $this->repository->insert($e));
+            ->each(function ($chunk) {
 
-        // event(new TimeLogsProcessed(auth()->user(), $request->file));
+                $keys = $chunk->unique('uid', 'scanner_id')->mapWithKeys(fn ($e) => [
+                    $e['uid'] => EmployeeScanner::firstWhere([
+                        'uid' => $e['uid'],
+                        'scanner_id' => $e['scanner'],
+                    ])?->id
+                ])->filter()->toArray();
+
+                $this->repository->upsert(
+                    $chunk->map(fn ($e) => [...$e, 'employee_scanner_id' => @$keys[$e['uid']]])->filter(fn ($r) => $r['employee_scanner_id'])->toArray(),
+                    ['employee_scanner_id', 'time', 'state']
+                );
+            });
     }
 
     public function accept(mixed &$accept): mixed
@@ -71,10 +79,12 @@ class TimeLogService implements Import
         return $accept;
     }
 
-    private function transformImportData(array $record): array
+    private function transformImportData(array $record, string $scanner): array
     {
         return [
             'id' => str()->orderedUuid()->toString(),
+            'uid' => trim($record[0]),
+            'scanner' => strtolower($scanner),
             'time' => Carbon::createFromTimeString($record[1]),
             'state' => join('', collect(array_slice($record, 2))->map(fn ($record) => $record > 1 ? 1 : $record)->toArray()),
         ];
