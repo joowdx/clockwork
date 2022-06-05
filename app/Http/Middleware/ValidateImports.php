@@ -22,7 +22,7 @@ class ValidateImports
     public function handle(Request $request, Closure $next)
     {
         if ($request->has('file')) {
-            abort_unless($this->import->validate($request->file), '400', $this->import->error());
+            abort_unless($this->import->validate($request), '400', $this->import->error());
         }
 
         return $next($request);

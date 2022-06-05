@@ -15,24 +15,6 @@ class EmployeeRepository extends BaseRepository
         $builder->sortByName();
     }
 
-    public function transformImportData(array $line, array $headers): array
-    {
-        return [
-            'id' => str()->orderedUuid()->toString(),
-            'scanner_uid' => $this->parseScannerUID($line[$headers['SCANNER UID']]),
-            'name' => [
-                'last' => $line[$headers['LAST NAME']],
-                'first' => $line[$headers['FIRST NAME']],
-                'middle' => @$line[$headers['MIDDLE NAME']],
-                'extension' => @$line[$headers['NAME EXTENSION']],
-            ],
-            'office' => @$line[$headers['OFFICE']],
-            'regular' => (bool) $line[$headers['REGULAR']],
-            'active' => (bool) @$line[$headers['ACTIVE']],
-            'nameToJSON' => true,
-        ];
-    }
-
     protected function transformData(array $payload): array
     {
         $name = [
@@ -48,13 +30,5 @@ class EmployeeRepository extends BaseRepository
             'regular' => (bool) $payload['regular'],
             'active' => (bool) @$payload['active'] ?? null,
         ];
-    }
-
-    private function parseScannerUID(string $scanner_uid)
-    {
-        return collect(str_getcsv($scanner_uid))
-                ->map(fn ($uid) => explode(':', $uid))
-                ->mapWithKeys(fn ($uid) => [$uid[0] => $uid[1]])
-                ->toArray();
     }
 }

@@ -6,10 +6,12 @@ use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\EmployeeScanner;
 use App\Models\Scanner;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 
@@ -36,9 +38,9 @@ class EmployeeService implements Import
         private Repository $repository
     ) { }
 
-    public function validate(UploadedFile $file): bool
+    public function validate(Request $request): bool
     {
-        $header = collect(self::REQUIRED_HEADERS)->every(fn ($header) => in_array($header, $this->headers((string) File::lines($file)->first())));
+        $header = collect(self::REQUIRED_HEADERS)->every(fn ($header) => in_array($header, $this->headers((string) File::lines($request->file)->first())));
 
         if ($header) {
             $this->error = 'FILE UNSUPPORTED.';
@@ -62,13 +64,13 @@ class EmployeeService implements Import
         return $this->error;
     }
 
-    public function parse(UploadedFile $file): void
+    public function parse(Request $request): void
     {
-        File::lines($file)
+        File::lines($request->file)
             ->skip(1)
             ->filter()
             ->map(fn($e) => str_getcsv($e))
-            ->map(fn ($e) => $this->repository->transformImportData($e, $this->headers((string) File::lines($file)->first())))
+            ->map(fn ($e) => $this->transformImportData($e, $this->headers((string) File::lines($request->file)->first())))
             ->chunk(1000)
             ->each(function ($chunk) {
                 $this->repository->upsert($chunk->toArray(), upserter: function ($payload, $transformed) {
@@ -137,14 +139,14 @@ class EmployeeService implements Import
         );
     }
 
-    public function markInactive(Authenticatable $user)
+    public function markInactive(Authenticatable|User $user)
     {
         $user->employees()->active()->whereDoesntHave('mainLogs', function ($q) {
             $q->whereDate('time', '>', today()->subMonth()->startOfMonth());
         })->update(['active' => 0]);
     }
 
-    public function markActive(Authenticatable $user)
+    public function markActive(Authenticatable|User $user)
     {
         $user->employees()->active(0)->whereHas('mainLogs', function ($q) {
             $q->whereDate('time', '<', today()->subMonth()->startOfMonth());
@@ -166,5 +168,31 @@ class EmployeeService implements Import
         $employees->reject->backedUp->map->load(['mainLogs' => fn ($q) => $q->whereBetween('time', [$from, $to])]);
 
         return $employees;
+    }
+
+    private  function transformImportData(array $line, array $headers): array
+    {
+        return [
+            'id' => str()->orderedUuid()->toString(),
+            'scanner_uid' => $this->parseScannerUID($line[$headers['SCANNER UID']]),
+            'name' => [
+                'last' => $line[$headers['LAST NAME']],
+                'first' => $line[$headers['FIRST NAME']],
+                'middle' => @$line[$headers['MIDDLE NAME']],
+                'extension' => @$line[$headers['NAME EXTENSION']],
+            ],
+            'office' => @$line[$headers['OFFICE']],
+            'regular' => (bool) $line[$headers['REGULAR']],
+            'active' => (bool) @$line[$headers['ACTIVE']],
+            'nameToJSON' => true,
+        ];
+    }
+
+    private function parseScannerUID(string $scanner_uid): array
+    {
+        return collect(str_getcsv($scanner_uid))
+                ->map(fn ($uid) => explode(':', $uid))
+                ->mapWithKeys(fn ($uid) => [$uid[0] => $uid[1]])
+                ->toArray();
     }
 }

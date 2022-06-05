@@ -7,6 +7,7 @@ use App\Contracts\Repository;
 use App\Events\TimeLogsProcessed;
 use App\Models\TimeLog;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
@@ -17,11 +18,11 @@ class TimeLogService implements Import
         private Repository $repository,
     ) { }
 
-    public function validate(UploadedFile $file): bool
+    public function validate(Request $request): bool
     {
         $time = now()->startOfMillennium();
 
-        return File::lines($file)->filter()
+        return File::lines($request->file)->filter()
             ->map(fn ($e) => explode("\t", $e))
             ->every(function ($line) use(&$time) {
                 try {
@@ -44,23 +45,19 @@ class TimeLogService implements Import
         return 'PLEASE CHECK THE IMPORTED FILE AND MAKE SURE IT IS VALID AND NOT TAMPERED WITH!';
     }
 
-    public function parse(UploadedFile $file): void
+    public function parse(Request $request): void
     {
-        $this->truncate();
+        // $this->truncate();
 
-        File::lines($file)
+        File::lines($request->file)
             ->filter()
-            ->map(fn ($e) => $this->repository->transformImportData(explode("\t", $e)))
+            ->map(fn ($e) => $this->transformImportData(explode("\t", $e)))
+            ->dd()
             ->chunk(1000)
             ->map(fn ($e) => $e->toArray())
             ->each(fn ($e) => $this->repository->insert($e));
 
-        event(new TimeLogsProcessed(auth()->user(), $file));
-    }
-
-    public function truncate(): void
-    {
-        $this->repository->query()->whereUserId(auth()->id())->delete();
+        // event(new TimeLogsProcessed(auth()->user(), $request->file));
     }
 
     public function accept(mixed &$accept): mixed
@@ -72,5 +69,14 @@ class TimeLogService implements Import
         $accept->persist = true;
 
         return $accept;
+    }
+
+    private function transformImportData(array $record): array
+    {
+        return [
+            'id' => str()->orderedUuid()->toString(),
+            'time' => Carbon::createFromTimeString($record[1]),
+            'state' => join('', collect(array_slice($record, 2))->map(fn ($record) => $record > 1 ? 1 : $record)->toArray()),
+        ];
     }
 }

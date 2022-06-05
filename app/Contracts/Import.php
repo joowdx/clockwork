@@ -2,13 +2,13 @@
 
 namespace App\Contracts;
 
-use Illuminate\Http\UploadedFile;
+use Illuminate\Http\Request;
 
 interface Import
 {
-    public function parse(UploadedFile $file): void;
+    public function parse(Request $request): void;
 
-    public function validate(UploadedFile $file): bool;
+    public function validate(Request $request): bool;
 
     public function error(): string;
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Import;
-use App\Contracts\Repository;
 use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\ImportRequest;
 use App\Services\EmployeeService;
@@ -16,7 +15,6 @@ class TimeLogController extends Controller
 {
 
     public function __construct(
-        private Repository $repository,
         private EmployeeService $employees,
         private ScannerService $scanners,
     ) {
@@ -32,9 +30,10 @@ class TimeLogController extends Controller
     public function index(Request $request): RedirectResponse|Response
     {
         return inertia('TimeLogs/Index', [
+            'scanners' => $this->scanners->get(),
             'employees' => $this->employees->get(),
-            'month' => today()->startOfMonth()->format('Y-m'),
             'offices' => $this->employees->offices(),
+            'month' => today()->startOfMonth()->format('Y-m'),
         ]);
     }
 
@@ -42,11 +41,12 @@ class TimeLogController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  App\Http\Requests\ImportRequest  $request
+     * @param  App\Contracts\Import  $import
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(ImportRequest $request, Import $import): RedirectResponse
     {
-        $import->parse($request->file);
+        $import->parse($request);
 
         return redirect()->back();
     }
