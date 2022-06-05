@@ -40,16 +40,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="scanner in scanners" :key="scanner.id">
+                            <tr v-for="scanner in scanners" :key="scanner.id" :class="[scanner.shared ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-200']" >
                                 <td class="pr-6 whitespace-nowrap">
                                     {{ scanner.name }}
                                 </td>
-                                <td class="pl-6 tracking-tighter text-gray-900 dark:text-gray-200">
-                                    <p v-for="user in scanner.users" :key="user.id">
-                                        {{ user.username }}
-                                    </p>
+                                <td class="pl-6 tracking-tighter">
+                                    {{ scanner.users.map(e => e.username).join(', ') }}
                                 </td>
-                                <td class="pl-6 tracking-tighter text-gray-900 dark:text-gray-200">
+                                <td class="pl-6 tracking-tighter">
                                     {{ scanner.remarks }}
                                     <!-- <p v-if="user.verified_by" class="lowercase">
                                         by <Link class="text-indigo-600 hover:text-indigo-900 dark:text-gray-400 dark:hover:text-gray-600" :href="route('users.show', user.verified_by.id)" v-html="'@' + user.verified_by.username" />
