@@ -4,7 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
         <style>
             @page {
-                margin: 10mm 10mm 0 10mm;
+                margin: 10mm;
                 scale: 100%;
             }
 
@@ -69,7 +69,7 @@
                 text-decoration: none;
                 font-family: Consolas, monospace;
                 text-align: left;
-                vertical-align: bottom;
+                vertical-align: center;
                 white-space: nowrap;
             }
 
@@ -80,7 +80,7 @@
                 text-decoration: none;
                 font-family: Consolas, monospace;
                 text-align: left;
-                vertical-align: bottom;
+                vertical-align: center;
                 white-space: nowrap;
             }
 
@@ -130,13 +130,14 @@
             }
 
             .xl8020299 {
+                padding-left: 12px;
                 font-size: 8.0pt;
                 font-weight: 400;
                 font-style: normal;
                 text-decoration: none;
                 font-family: Consolas, monospace;
-                text-align: right;
-                vertical-align: bottom;
+                text-align: left;
+                vertical-align: center;
                 white-space: nowrap;
                 text-transform: uppercase;
             }
@@ -172,11 +173,8 @@
                             <tr height="20" style="height:15.0pt"></tr>
                             <tr height="20" style="height:15.0pt">
                                 <td colspan="2" height="20" class="xl7920299" style="height:15.0pt">EMPLOYEE</td>
-                                <td colspan="6" class="xl7720299">
+                                <td colspan="8" class="xl7720299">
                                     {{ $employee->name_format->fullStartLastInitialMiddle }}
-                                </td>
-                                <td colspan="2" class="xl8020299">
-                                    {{ $employee->user->username }} — {{ str_pad($employee->biometrics_id, 4, 0, STR_PAD_LEFT) }}
                                 </td>
                             </tr>
                             <tr height="20" style="height:15.0pt"></tr>
@@ -218,26 +216,45 @@
                                             <td class="xl7320299"></td>
                                             @php $i+=2 @endphp
                                         @endif
-                                        <td class="xl7320299"> {{ $log->time->format('H:i') }} </td>
+                                        <td class="xl7320299" style="background-color:{{$log->scanner->print_background_colour }};color:{{$log->scanner->print_text_colour}};padding-left:12px;border-right:solid;border-color:white"> {{ $log->time->format('H:i') }} </td>
                                     @endforeach
                                     @if (8 - $i > 0)
                                         <td colspan="{{ 8 - $i }}" class="xl7320299"></td>
                                     @endif
                                 </tr>
                             @endforeach
-                            @for ($i = 31 - $days->count() + 5; $i > 0; $i--)
-                                <tr height="20" style="height:15.0pt"></tr>
+                            @for ($i = 31 - $days->count() + 1; $i > 0; $i--)
+                                <tr height="20" style="height:15.0pt">
+                                    @if ($i == 1)
+                                        <td class="xl6820299" colspan="10"></td>
+                                    @endif
+                                </tr>
                             @endfor
+                            <tr height="20" style="height:15.0pt">
+                                <td class="xl6820299" style="border-bottom: none">
+                                    SCANNERS
+                                </td>
+                            </tr>
+                            <tr height="20" style="height:15.0pt">
+                                @foreach ($employee->scanners as $scanner)
+                                    <td colspan="2" class="xl8020299" style="background-color:{{$scanner->print_background_colour }};color:{{$scanner->print_text_colour}};border-right:solid;border-color:white">
+                                        {{ $scanner->name }} ({{ str_pad($scanner->pivot->uid, 4, 0, STR_PAD_LEFT) }})
+                                    </td>
+                                @endforeach
+                            </tr>
+                            <tr height="20" style="height:15.0pt"></tr>
+                            <tr height="20" style="height:15.0pt"></tr>
+                            <tr height="20" style="height:15.0pt"></tr>
                             <tr height="20" style="height:15.0pt">
                                 <td colspan="6"></td>
                                 <td colspan="4" class="xl7120299">
-                                    {{ Auth::user()?->assignee }}
+                                    {{ Auth::user()?->name }}
                                 </td>
                             </tr>
                             <tr height="20" style="height:15.0pt">
                                 <td colspan="6"></td>
                                 <td colspan="4" class="xl8120299">
-                                    {{ Auth::user()?->position }}
+                                    {{ Auth::user()?->title }}
                                 </td>
                             </tr>
                             <tr height="20" style="height:15.0pt">
