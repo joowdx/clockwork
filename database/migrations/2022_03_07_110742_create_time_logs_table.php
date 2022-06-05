@@ -19,6 +19,7 @@ return new class extends Migration
             $table->dateTime('time');
             $table->unsignedTinyInteger('state');
             $table->timestamps();
+            $table->unique(['employee_scanner_id', 'time', 'state']);
         });
     }
 

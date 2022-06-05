@@ -27,6 +27,8 @@ class ScannerFactory extends Factory
             'name' => 'coliseum-1',
             'attlog_file' => 'AF4C211360031_attlog',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'print_text_colour' => '#ECF0F1',
+            'print_background_colour' => '#D61C4E',
             'shared' => true,
         ]);
     }
@@ -36,6 +38,8 @@ class ScannerFactory extends Factory
         return $this->state([
             'name' => 'coliseum-2',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'print_text_colour' => '#ECF0F1',
+            'print_background_colour' => '#FD5D5D',
             'shared' => true,
         ]);
     }
