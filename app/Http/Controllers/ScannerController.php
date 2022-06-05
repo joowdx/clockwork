@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\Repository;
 use App\Models\Scanner;
+use App\Services\ScannerService;
 use Illuminate\Http\Request;
 
 class ScannerController extends Controller
 {
     public function __construct(
-        private Repository $repository,
+        private ScannerService $scanners,
     ) { }
 
     /**
@@ -20,7 +20,7 @@ class ScannerController extends Controller
     public function index()
     {
         return inertia('Scanners/Index', [
-            'scanners' => $this->repository->all(),
+            'scanners' => $this->scanners->get(),
         ]);
     }
 
@@ -32,7 +32,7 @@ class ScannerController extends Controller
     public function create()
     {
         return inertia('Scanners/Index', [
-            'scanners' => $this->repository->all(),
+            'scanners' => $this->scanners->get(),
         ]);
     }
 
