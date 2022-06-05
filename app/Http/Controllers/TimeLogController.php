@@ -18,7 +18,7 @@ class TimeLogController extends Controller
         private EmployeeService $employees,
         private ScannerService $scanners,
     ) {
-        $this->middleware(ValidateImports::class)->only('store');
+        // $this->middleware(ValidateImports::class)->only('store');
     }
 
     /**

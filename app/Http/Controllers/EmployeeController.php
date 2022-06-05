@@ -43,7 +43,7 @@ class EmployeeController extends Controller
     public function store(StoreRequest $request, Import $import)
     {
         if ($request->has('file')) {
-            $import->parse($request->file);
+            $import->parse($request);
         } else {
             $this->repository->create([...$request->all(), 'user_id' => auth()->id()]);
         }
