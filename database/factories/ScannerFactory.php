@@ -27,6 +27,7 @@ class ScannerFactory extends Factory
             'name' => 'coliseum-1',
             'attlog_file' => 'AF4C211360031_attlog',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'shared' => true,
         ]);
     }
 
@@ -35,6 +36,7 @@ class ScannerFactory extends Factory
         return $this->state([
             'name' => 'coliseum-2',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'shared' => true,
         ]);
     }
 
@@ -51,6 +53,7 @@ class ScannerFactory extends Factory
         return $this->state([
             'name' => 'capitol-1',
             'remarks' => 'Shared with PLO, PESO, PSWDO, PP, and PHRMO.',
+            'shared' => true,
         ]);
     }
 
@@ -59,6 +62,7 @@ class ScannerFactory extends Factory
         return $this->state([
             'name' => 'capitol-2',
             'remarks' => 'Shared with PLO, PESO, PSWDO, PP, and PHRMO.',
+            'shared' => true,
         ]);
     }
 
