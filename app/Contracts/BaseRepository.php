@@ -121,7 +121,7 @@ abstract class BaseRepository implements Repository
     public function create(array $payload, ?Closure $creator = null): Model
     {
         if ($creator){
-            return $creator($payload);
+            return DB::transaction(fn () => $creator($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
         return $this->model()->create($this->transformData($payload));
@@ -130,7 +130,7 @@ abstract class BaseRepository implements Repository
     public function insert(array $payload, ?Closure $inserter = null): void
     {
         if ($inserter) {
-            DB::transaction(fn() => $inserter($payload));
+            DB::transaction(fn() => $inserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
 
             return;
         }
@@ -145,22 +145,20 @@ abstract class BaseRepository implements Repository
         });
     }
 
-    public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): void
+    public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): Model|EloquentCollection
     {
         if ($updater) {
-            $updater($model, $payload);
-
-            return;
+            return DB::transaction(fn () => $updater($model, $payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
         $data = collect($this->transformData($payload))->except($except)->toArray();
 
         if ($model instanceof Model) {
-            $model->update($data);
+            return $model->update($data);
         } else if ($model instanceof EloquentCollection) {
-            $model->toQuery()->update($data);
+            return $model->toQuery()->update($data);
         } else {
-            $this->model()->whereIn('id', $model)->update($data);
+            return $this->model()->whereIn('id', $model)->update($data);
         }
 
     }

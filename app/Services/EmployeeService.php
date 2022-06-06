@@ -17,16 +17,16 @@ use Illuminate\Support\Facades\File;
 class EmployeeService implements Import
 {
     const REQUIRED_HEADERS = [
-        'SCANNER UID',
-        'LAST NAME',
-        'FIRST NAME',
-        'REGULAR',
+        'last name',
+        'first name',
+        'regular',
     ];
 
-    const HEADERS = [
-        'MIDDLE NAME',
-        'OFFICE',
-        'ACTIVE',
+    const OPTIONAL_HEADERS = [
+        'name extension',
+        'middle name',
+        'office',
+        'active',
     ];
 
     private string $error = '';
@@ -65,25 +65,24 @@ class EmployeeService implements Import
 
     public function parse(Request $request): void
     {
-        File::lines($request->file)
-            ->skip(1)
+        $stream = File::lines($request->file);
+
+        $stream->skip(1)
             ->filter()
             ->map(fn($e) => str_getcsv($e))
-            ->map(fn ($e) => $this->transformImportData($e, $this->headers((string) File::lines($request->file)->first())))
+            ->map(fn ($e) => $this->transformImportData($e, $this->headers((string) $stream->first())))
             ->chunk(1000)
             ->each(function ($chunk) {
                 $this->repository->upsert($chunk->toArray(), upserter: function ($payload, $transformed) {
                     $this->repository->query()->upsert(
-                        collect($payload)->map(fn ($e) => collect($e)->except('scanner_uid', 'nameToJSON')->toArray())->replaceRecursive($transformed)->toArray(),
-                        ['name'],
-                        ['id'],
+                        collect($payload)->map(fn ($e) => collect($e)->except('scanners', 'nameToJSON')->toArray())->replaceRecursive($transformed)->toArray(), ['name'],
                     );
                 });
 
-                $keys = $chunk->map->{'scanner_uid'}->flatMap(fn ($e) => array_keys($e))->unique()->mapWithKeys(fn ($e) => [$e => Scanner::firstOrCreate(['name' => $e])->id])->toArray();
+                $keys = $chunk->map->{'scanners'}->filter()->flatMap(fn ($e) => array_keys($e))->unique()->mapWithKeys(fn ($e) => [$e => Scanner::firstOrCreate(['name' => $e])->id])->toArray();
 
                 $chunk->flatMap(function ($e) use ($keys) {
-                    return collect($e['scanner_uid'])->map(function ($f, $k) use ($e, $keys) {
+                    return collect($e['scanners'])->filter()->map(function ($f, $k) use ($e, $keys) {
                         return [
                             'uid' => $f,
                             'scanner_id' => $keys[$k],
@@ -91,13 +90,8 @@ class EmployeeService implements Import
                             'id' => str()->orderedUuid(),
                         ];
                     })->toArray();
-                })->chunk(1000)->each(fn ($chunk) => Enrollment::upsert($chunk->toArray(), ['uid', 'scanner_id'], ['employee_id']));
+                })->chunk(1000)->each(fn ($chunk) => Enrollment::upsert($chunk->toArray(), ['scanner_id', 'employee_id'], ['employee_id', 'scanner_id', 'uid']));
             });
-    }
-
-    public function headers(string $line): array
-    {
-        return array_flip(explode(',', strtoupper(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $line))));
     }
 
     public function get()
@@ -173,25 +167,32 @@ class EmployeeService implements Import
     {
         return [
             'id' => str()->orderedUuid()->toString(),
-            'scanner_uid' => $this->parseScannerUID($line[$headers['SCANNER UID']]),
+            'scanners' => $this->uids($line, $this->scanners($headers)),
             'name' => [
-                'last' => $line[$headers['LAST NAME']],
-                'first' => $line[$headers['FIRST NAME']],
-                'middle' => @$line[$headers['MIDDLE NAME']],
-                'extension' => @$line[$headers['NAME EXTENSION']],
+                'last' => $line[$headers['last name']],
+                'first' => $line[$headers['first name']],
+                'middle' => @$line[$headers['middle name']],
+                'extension' => @$line[$headers['name extension']],
             ],
-            'office' => @$line[$headers['OFFICE']],
-            'regular' => (bool) $line[$headers['REGULAR']],
-            'active' => (bool) @$line[$headers['ACTIVE']],
+            'office' => @$line[$headers['office']],
+            'regular' => (bool) $line[$headers['regular']],
+            'active' => (bool) @$line[$headers['active']],
             'nameToJSON' => true,
         ];
     }
 
-    private function parseScannerUID(string $scanner_uid): array
+    private function headers(string $first): array
     {
-        return collect(str_getcsv($scanner_uid))
-                ->map(fn ($uid) => explode(':', $uid))
-                ->mapWithKeys(fn ($uid) => [$uid[0] => $uid[1]])
-                ->toArray();
+        return array_flip(explode(',', strtolower(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $first))));
+    }
+
+    private function scanners(array $headers): array
+    {
+        return array_flip(array_diff(array_flip($headers), array_merge(self::REQUIRED_HEADERS, self::OPTIONAL_HEADERS)));
+    }
+
+    private function uids(array $line, array $scanners): array
+    {
+        return collect($scanners)->mapWithKeys(fn ($e, $f) => [$f => $line[$scanners[$f]]])->toArray();
     }
 }

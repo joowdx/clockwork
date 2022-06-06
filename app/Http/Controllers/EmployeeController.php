@@ -7,15 +7,16 @@ use App\Contracts\Repository;
 use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
-use App\Models\Scanner;
 use App\Services\EmployeeService;
+use App\Services\ScannerService;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
     public function __construct(
-        private EmployeeService $employees,
         private Repository $repository,
+        private EmployeeService $employees,
+        private ScannerService $scanners,
     ) {
         $this->middleware(ValidateImports::class)->only('store');
     }
@@ -29,7 +30,7 @@ class EmployeeController extends Controller
     {
         return inertia('Employees/Index', [
             'employees' => $this->employees->get(),
-            'scanners' => Scanner::all(),
+            'scanners' => $this->scanners->get(),
             'offices' => $this->employees->offices(),
         ]);
     }
@@ -45,7 +46,7 @@ class EmployeeController extends Controller
         if ($request->has('file')) {
             $import->parse($request);
         } else {
-            $this->repository->create([...$request->all(), 'user_id' => auth()->id()]);
+            $this->repository->create($request->all());
         }
 
         return redirect()->back();
