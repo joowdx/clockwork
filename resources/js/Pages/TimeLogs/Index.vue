@@ -143,7 +143,7 @@
                                 <!-- <p class="pl-1 dark:text-gray-300">or drag and drop</p> -->
                             </div>
                             <p class="text-xs text-gray-600 dark:text-gray-400">
-                                Select DAT file.
+                                Select attlog file.
                             </p>
                         </div>
                     </div>
@@ -156,7 +156,7 @@
                     <jet-input-error :message="form.errors.file" class="mt-2" />
                 </div>
 
-                <p class="text-yellow-600"> Notice that time logs with unrecognized uid are ignored. Please associate such uids to employees before uploading. </p>
+                <p class="text-yellow-600"> Notice that time logs with unrecognized uid are ignored. Please associate such uids to its corresponding employee before uploading. </p>
 
                 <!-- <progress class="w-full" v-if="form.progress" :value="form.progress?.percentage" max="100">
                     {{ form.progress?.percentage }}%
