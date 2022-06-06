@@ -34,8 +34,8 @@ class Employee extends Model
 
     public function scanners(): BelongsToMany
     {
-        return $this->belongsToMany(Scanner::class)
-                ->using(EmployeeScanner::class)
+        return $this->belongsToMany(Scanner::class, 'enrollments')
+                ->using(Enrollment::class)
                 ->withPivot('uid')
                 ->withTimestamps()
                 ->orderBy('name');
@@ -53,7 +53,7 @@ class Employee extends Model
 
     public function timelogs(): HasManyThrough
     {
-        return $this->hasManyThrough(TimeLog::class, EmployeeScanner::class, secondKey: 'employee_scanner_id')
+        return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id')
                 ->orderBy('time');
     }
 

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Models\EmployeeScanner;
+use App\Models\Enrollment;
 use App\Models\TimeLog;
 use Exception;
 use Illuminate\Http\Request;
@@ -55,15 +55,15 @@ class TimeLogService implements Import
             ->each(function ($chunk) {
 
                 $keys = $chunk->unique('uid', 'scanner_id')->mapWithKeys(fn ($e) => [
-                    $e['uid'] => EmployeeScanner::firstWhere([
+                    $e['uid'] => Enrollment::firstWhere([
                         'uid' => $e['uid'],
                         'scanner_id' => $e['scanner'],
                     ])?->id
                 ])->filter()->toArray();
 
                 $this->repository->upsert(
-                    $chunk->map(fn ($e) => [...$e, 'employee_scanner_id' => @$keys[$e['uid']]])->filter(fn ($r) => $r['employee_scanner_id'])->toArray(),
-                    ['employee_scanner_id', 'time', 'state']
+                    $chunk->map(fn ($e) => [...$e, 'enrollment_id' => @$keys[$e['uid']]])->filter(fn ($r) => $r['enrollment_id'])->toArray(),
+                    ['enrollment_id', 'time', 'state']
                 );
             });
     }

@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class EmployeeScanner extends Pivot
+class Enrollment extends Pivot
 {
     use HasUniversallyUniqueIdentifier;
 
     public $timestamps = true;
 
+    protected $table = 'enrollments';
+
     protected $touches = ['employee'];
 
-    protected $fillable = [
-        'uid',
-    ];
+    protected $fillable = ['uid'];
 
     public function employee(): BelongsTo
     {

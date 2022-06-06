@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Scanner extends Model
 {
@@ -28,21 +26,21 @@ class Scanner extends Model
 
     public function employees(): BelongsToMany
     {
-        return $this->belongsToMany(Employee::class)
-                ->using(EmployeeScanner::class)
+        return $this->belongsToMany(Employee::class, 'enrollments')
+                ->using(Enrollment::class)
                 ->withPivot('uid')
                 ->withTimestamps();
     }
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)
-                ->using( new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
+        return $this->belongsToMany(User::class, 'assignments')
+                ->using(Assignment::class)
                 ->withTimestamps();
     }
 
     public function timelogs(): HasManyThrough
     {
-        return $this->hasManyThrough(TimeLog::class, EmployeeScanner::class, secondKey: 'employee_scanner_id');
+        return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id');
     }
 }

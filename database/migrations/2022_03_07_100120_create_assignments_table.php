@@ -13,13 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('time_logs', function (Blueprint $table) {
+        Schema::create('assignments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('enrollment_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->dateTime('time');
-            $table->unsignedTinyInteger('state');
+            $table->uuid('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->uuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['enrollment_id', 'time', 'state']);
+            $table->unique(['user_id', 'scanner_id']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('time_logs');
+        Schema::dropIfExists('assignments');
     }
 };

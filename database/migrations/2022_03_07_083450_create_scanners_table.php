@@ -26,14 +26,6 @@ return new class extends Migration
             $table->string('library')->nullable();
             $table->timestamps();
         });
-
-        Schema::create('scanner_user', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->uuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->timestamps();
-            $table->unique(['user_id', 'scanner_id']);
-        });
     }
 
     /**
@@ -44,7 +36,5 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('scanners');
-
-        Schema::dropIfExists('scanner_user');
     }
 };

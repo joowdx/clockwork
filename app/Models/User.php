@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -66,9 +65,21 @@ class User extends Authenticatable
 
     public function scanners(): BelongsToMany
     {
-        return $this->belongsToMany(Scanner::class)
-                ->using(new class extends Pivot { use HasUniversallyUniqueIdentifier; } )
+        return $this->belongsToMany(Scanner::class, 'assignments')
+                ->using(Assignment::class)
                 ->withTimestamps();
     }
+
+    // public function employees(): HasManyThrough
+    // {
+    //     return $this->hasManyThrough(Employee::class, EmployeeScanner::class)->setQuery(
+    //         self::select('employees.*')
+    //             ->join('scanner_user', 'users.id', '=' , 'scanner_user.user_id')
+    //             ->join('employee_scanner', 'employee_scanner.scanner_id', '=', 'scanner_user.scanner_id')
+    //             ->join('employees', 'employee_scanner.employee_id', '=', 'employees.id')
+    //             ->distinct('employees.id')
+    //             ->getQuery()
+    //     );
+    // }
 
 }

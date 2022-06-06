@@ -23,17 +23,6 @@ return new class extends Migration
             $table->foreignUuid('last_updated_by')->nullable()->constrained('users')->cascadeOnUpdate()->nullOnDelete();
             $table->timestamps();
         });
-
-        Schema::create('employee_scanner', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->unsignedInteger('uid');
-            $table->foreignUuid('scanner_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignUuid('employee_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->timestamps();
-            $table->unique(['uid', 'scanner_id', 'employee_id']);
-            $table->unique(['uid', 'scanner_id']);
-            $table->unique(['scanner_id', 'employee_id']);
-        });
     }
 
     /**
@@ -44,7 +33,5 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('employees');
-
-        Schema::dropIfExists('employee_scanner');
     }
 };

@@ -36,12 +36,12 @@ class TimeLog extends Model
 
     public function employee(): HasOneThrough
     {
-        return $this->hasOneThrough(Employee::class, EmployeeScanner::class, 'id', 'id', 'employee_scanner_id', 'employee_id');
+        return $this->hasOneThrough(Employee::class, Enrollment::class, 'id', 'id', 'enrollment_id', 'employee_id');
     }
 
     public function scanner(): HasOneThrough
     {
-        return $this->hasOneThrough(Scanner::class, EmployeeScanner::class, 'id', 'id', 'employee_scanner_id', 'scanner_id');
+        return $this->hasOneThrough(Scanner::class, Enrollment::class, 'id', 'id', 'enrollment_id', 'scanner_id');
     }
 
     public function backup(): HasOne

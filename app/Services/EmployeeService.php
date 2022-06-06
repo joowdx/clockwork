@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Models\EmployeeScanner;
+use App\Models\Enrollment;
 use App\Models\Scanner;
 use App\Models\User;
 use Carbon\Carbon;
@@ -12,7 +12,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 
 class EmployeeService implements Import
@@ -92,7 +91,7 @@ class EmployeeService implements Import
                             'id' => str()->orderedUuid(),
                         ];
                     })->toArray();
-                })->chunk(1000)->each(fn ($chunk) => EmployeeScanner::upsert($chunk->toArray(), ['uid', 'scanner_id'], ['employee_id']));
+                })->chunk(1000)->each(fn ($chunk) => Enrollment::upsert($chunk->toArray(), ['uid', 'scanner_id'], ['employee_id']));
             });
     }
 
