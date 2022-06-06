@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\Pivots\ScannerUser;
 use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
