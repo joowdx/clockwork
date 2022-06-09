@@ -199,10 +199,9 @@
                                 <td class="xl6820299">OUT</td>
                                 <td class="xl6820299">IN</td>
                                 <td class="xl6820299">OUT</td>
-                                <td class="xl6820299"></td>
-                                <td class="xl6820299"></td>
+                                <td class="xl6820299">IN</td>
+                                <td class="xl6820299">OUT</td>
                             </tr>
-                            <tr height="20" style="height:15.0pt"></tr>
                             @foreach ($days = (Carbon\CarbonPeriod::create($from->clone()->addDays($x * 31), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 31))->lt($to) ? $end->subDay() : $to)) as $date)
                                 <tr height="20" @if ($date->isWeekend()) class="weekend" @endif style="height:15.0pt">
                                     <td colspan="2" height="20" class="xl7220299" style="height:15.0pt">
@@ -222,46 +221,45 @@
                                         <td colspan="{{ 8 - $i }}" class="xl7320299"></td>
                                     @endif
                                 </tr>
+                                @if ($loop->last)
+                                    <td class="xl6820299" colspan="10"></td>
+                                @endif
                             @endforeach
                             @for ($i = 31 - $days->count() + 1; $i > 0; $i--)
-                                <tr height="20" style="height:15.0pt">
-                                    @if ($i == 1)
-                                        <td class="xl6820299" colspan="10"></td>
-                                    @endif
-                                </tr>
+                                <tr height="20" style="height:15.0pt"> </tr>
                             @endfor
                             <tr height="20" style="height:15.0pt">
                                 <td class="xl6820299" style="border-bottom: none">
                                     SCANNERS
                                 </td>
                             </tr>
-                            <tr height="20" style="height:15.0pt">
-                                @foreach ($employee->scanners as $scanner)
-                                    <td colspan="2" class="xl8020299" style="background-color:{{$scanner->print_background_colour }};color:{{$scanner->print_text_colour}};border-right:solid;border-color:white">
-                                        {{ $scanner->name }} ({{ str_pad($scanner->pivot->uid, 4, 0, STR_PAD_LEFT) }})
-                                    </td>
-                                @endforeach
-                            </tr>
+                            @foreach ($employee->scanners->chunk(5) as $scanners)
+                                <tr height="20" style="height:15.0pt">
+                                    @foreach ($scanners as $scanner)
+                                        <td colspan="2" class="xl8020299" style="background-color:{{$scanner->print_background_colour }};color:{{$scanner->print_text_colour}};border-right:solid;border-color:white">
+                                            {{ $scanner->name }} ({{ str_pad($scanner->pivot->uid, 4, 0, STR_PAD_LEFT) }})
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            <tr height="20" style="height:15.0pt"></tr>
                             <tr height="20" style="height:15.0pt"></tr>
                             <tr height="20" style="height:15.0pt"></tr>
                             <tr height="20" style="height:15.0pt"></tr>
                             <tr height="20" style="height:15.0pt">
                                 <td colspan="6"></td>
                                 <td colspan="4" class="xl7120299">
-                                    {{ Auth::user()?->name }}
-                                </td>
-                            </tr>
-                            <tr height="20" style="height:15.0pt">
-                                <td colspan="6"></td>
-                                <td colspan="4" class="xl8120299">
-                                    {{ Auth::user()?->title }}
+                                    {{ auth()->user()?->name }}
                                 </td>
                             </tr>
                             <tr height="20" style="height:15.0pt">
                                 <td colspan="3" height="20" class="xl7520299" style="height:15.0pt">
                                     DATE PRINTED: <font class="xl6920299">{{ today()->format('d M Y') }}</font>
                                 </td>
-                                <td colspan="7"></td>
+                                <td colspan="3"></td>
+                                <td colspan="4" class="xl8120299">
+                                    {{ auth()->user()?->title }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
