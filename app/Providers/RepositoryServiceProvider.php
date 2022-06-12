@@ -43,14 +43,18 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->when([EmployeeService::class, EmployeeController::class])
             ->needs(Repository::class)
-            ->give(fn () => new EmployeeRepository(app(Employee::class)));
+            ->give(fn () => app(EmployeeRepository::class));
 
         $this->app->when([ScannerService::class, ScannerController::class])
             ->needs(Repository::class)
-            ->give(fn () => new ScannerRepository(app(Scanner::class)));
+            ->give(fn () => app(ScannerRepository::class));
 
         $this->app->when([TimeLogService::class, TimeLogController::class])
             ->needs(Repository::class)
             ->give(fn () => new TimeLogRepository(app(TimeLog::class)));
+
+        $this->app->bind(EmployeeRepository::class, fn () => new EmployeeRepository(app(Employee::class)));
+
+        $this->app->bind(ScannerRepository::class, fn () => new ScannerRepository(app(Scanner::class)));
     }
 }

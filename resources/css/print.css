@@ -1,0 +1,87 @@
+@page {
+    margin: 10mm;
+    scale: 100%;
+}
+
+@media print {
+    .pagebreak {
+        page-break-before: always;
+    }
+}
+
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 480pt;
+}
+
+tr, td {
+    height: 15pt;
+}
+
+.weekend {
+    background: #33333322;
+    border-color: transparent !important;
+}
+
+.scanner {
+    border-right: solid;
+    border-color: white;
+    padding-left: 10pt;
+}
+
+.bahnschrift {
+    font-family: Bahnschrift, sans-serif;;
+}
+
+.bahnschrift-light {
+    font-family: "Bahnschrift Light", sans-serif;
+}
+
+.cascadia {
+    font-family: "Cascadia Code", monospace;
+}
+
+.consolas {
+    font-family: Consolas, monospace;
+}
+
+.bold {
+    font-weight: 700;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.center {
+    text-align: center;
+}
+
+.bottom {
+    vertical-align: bottom;
+}
+
+.underline {
+    border-bottom: .5pt solid windowtext;
+}
+
+.font-xs {
+    font-size: 8.0pt;
+}
+
+.font-xl {
+    font-size: 20.0pt;
+}
+
+.font-md {
+    font-size: 11.0pt;
+}
+
+.font-sm {
+    font-size: 10.0pt;
+}

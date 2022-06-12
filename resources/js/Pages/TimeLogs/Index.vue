@@ -174,7 +174,7 @@
             </template>
         </jet-dialog-modal>
 
-        <iframe title="daily time record" class="sr-only" ref="printPreview" :src="route('print', {month, period, id: selected})" @load="printPreviewLoaded"/>
+        <iframe title="daily time record" class="sr-only" ref="printPreview" :src="route('print', {month, period, employees: selected, by: 'period', view: 'employee'})" @load="printPreviewLoaded"/>
     </app-layout>
 </template>
 

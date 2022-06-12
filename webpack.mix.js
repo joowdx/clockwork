@@ -22,6 +22,7 @@ mix.js(
         require('postcss-import'),
         require('tailwindcss'),
     ])
+    .copy('resources/css/print.css', 'public/css')
     .browserSync({
         open: false,
         notify: false,
