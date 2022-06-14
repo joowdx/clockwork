@@ -55,56 +55,56 @@ trait HasNameAccessorAndFormatter
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->first " . @$name->middle ."  $name->last" . $this->prependString(@$name->extension, ', '));
+        return $this->removeExtraWhitespaces("$name?->first " . @$name->middle ."  $name?->last" . $this->prependString(@$name->extension, ', '));
     }
 
     public function nameFormatFullInitialMiddle(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->first {$this->initial(@$name->middle)} $name->last" . $this->prependString(@$name->extension, ', '));
+        return $this->removeExtraWhitespaces("$name?->first {$this->initial(@$name->middle)} $name?->last" . $this->prependString(@$name->extension, ', '));
     }
 
     public function nameFormatFullStartLast(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->last, $name->first " . @$name->middle . "{$this->prependString(@$name->extension, ', ')}");
+        return $this->removeExtraWhitespaces("$name?->last, $name?->first " . @$name->middle . "{$this->prependString(@$name->extension, ', ')}");
     }
 
     public function nameFormatFullStartLastInitialMiddle(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->last, $name->first{$this->prependString($this->initial(@$name->middle))}{$this->prependString(@$name->extension, ', ')}");
+        return $this->removeExtraWhitespaces("$name?->last, $name?->first{$this->prependString($this->initial(@$name->middle))}{$this->prependString(@$name->extension, ', ')}");
     }
 
     public function nameFormatShort(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->first $name->last");
+        return $this->removeExtraWhitespaces("$name?->first $name?->last");
     }
 
     public function nameFormatShortInitialFirst(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("{$this->initial($name->first)} $name->last");
+        return $this->removeExtraWhitespaces("{$this->initial($name?->first)} $name?->last");
     }
 
     public function nameFormatShortStartLast(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->last, $name->first");
+        return $this->removeExtraWhitespaces("$name?->last, $name?->first");
     }
 
     public function nameFormatShortStartLastInitialFirst(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name->last, {$name->first[0]}.");
+        return $this->removeExtraWhitespaces("$name?->last, " . $this->initialWords(@$name?->first) . '.');
     }
 
     public function scopeSortByName(Builder $builder): Builder
@@ -138,6 +138,18 @@ trait HasNameAccessorAndFormatter
     private function initial(?string $string): string
     {
         return $string ? "{$string[0]}." : '';
+    }
+
+    private function initialWords(string $string): string
+    {
+        preg_match_all('/(?<=\b)[a-z]/i', $this->sanitize($string), $matches);
+
+        return strtoupper(implode('', $matches[0]));
+    }
+
+    private function sanitize(string $string): string
+    {
+        return str_replace('Ñ','N',$string);
     }
 
     private function prependString(?string $string, string $prepend = ' '): string
