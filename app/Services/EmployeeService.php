@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Actions\FileImport\InsertEmployees;
+use App\Actions\FileImport\InsertEnrollments;
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Models\Enrollment;
-use App\Models\Scanner;
+use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -34,7 +35,8 @@ class EmployeeService implements Import
     protected $header = [];
 
     public function __construct(
-        private Repository $repository
+        private Repository $repository,
+        private ScannerService $scanner,
     ) { }
 
     public function validate(Request $request): bool
@@ -67,30 +69,27 @@ class EmployeeService implements Import
     {
         $stream = File::lines($request->file);
 
+        $scanners = $this->scanner->nameAsKeysForId();
+
         $stream->skip(1)
             ->filter()
             ->map(fn($e) => str_getcsv($e))
             ->map(fn ($e) => $this->transformImportData($e, $this->headers((string) $stream->first())))
             ->chunk(1000)
-            ->each(function ($chunk) {
-                $this->repository->upsert($chunk->toArray(), upserter: function ($payload, $transformed) {
-                    $this->repository->query()->upsert(
-                        collect($payload)->map(fn ($e) => collect($e)->except('scanners', 'nameToJSON')->toArray())->replaceRecursive($transformed)->toArray(), ['name'],
-                    );
-                });
+            ->each(function ($chunk) use ($scanners) {
 
-                $keys = $chunk->map->{'scanners'}->filter()->flatMap(fn ($e) => array_keys($e))->unique()->mapWithKeys(fn ($e) => [$e => Scanner::firstOrCreate(['name' => $e])->id])->toArray();
+                app(InsertEmployees::class)($chunk->toArray());
 
-                $chunk->flatMap(function ($e) use ($keys) {
-                    return collect($e['scanners'])->filter()->map(function ($f, $k) use ($e, $keys) {
+                $chunk->flatMap(function ($e) use ($scanners) {
+                    return collect($e['scanners'])->filter()->map(function ($f, $k) use ($e, $scanners) {
                         return [
                             'uid' => $f,
-                            'scanner_id' => $keys[$k],
+                            'scanner_id' => $scanners[$k],
                             'employee_id' => $e['id'],
                             'id' => str()->orderedUuid(),
                         ];
                     })->toArray();
-                })->chunk(1000)->each(fn ($chunk) => Enrollment::upsert($chunk->toArray(), ['scanner_id', 'employee_id'], ['employee_id', 'scanner_id', 'uid']));
+                })->chunk(1000)->each(fn ($chunk) => app(InsertEnrollments::class)($chunk->toArray()));
             });
     }
 
@@ -100,7 +99,7 @@ class EmployeeService implements Import
             $query->whereHas('users', function (Builder $query) {
                 $query->where('user_id', auth()->id());
             });
-        })->get();
+        })->sortByName()->get();
     }
 
     public function offices()
@@ -117,19 +116,9 @@ class EmployeeService implements Import
             ->values();
     }
 
-    public function update(string $id, array $payload)
+    public function update(Employee $employee, array $payload)
     {
-        $this->repository->update($id = explode(',', $id), [
-            'user_id' => auth()->id(),
-            ...$payload,
-            'nameToJSON' => 1,
-        ], count($id) > 1
-            ? collect(request()->only('office', 'regular', 'active'))
-                ->filter(fn ($e) => $e == '*')
-                ->keys()->push('biometrics_id', 'name', 'user_id')
-                ->toArray()
-            : []
-        );
+        $this->repository->update($employee, $payload);
     }
 
     public function markInactive(Authenticatable|User $user)

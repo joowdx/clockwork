@@ -7,6 +7,7 @@ use App\Contracts\Repository;
 use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
+use App\Models\Employee;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
 use Illuminate\Http\Request;
@@ -15,8 +16,8 @@ class EmployeeController extends Controller
 {
     public function __construct(
         private Repository $repository,
-        private EmployeeService $employees,
-        private ScannerService $scanners,
+        private EmployeeService $employee,
+        private ScannerService $scanner,
     ) {
         $this->middleware(ValidateImports::class)->only('store');
     }
@@ -29,9 +30,9 @@ class EmployeeController extends Controller
     public function index()
     {
         return inertia('Employees/Index', [
-            'employees' => $this->employees->get(),
-            'scanners' => $this->scanners->get(),
-            'offices' => $this->employees->offices(),
+            'employees' => $this->employee->get(),
+            'scanners' => $this->scanner->get(),
+            'offices' => $this->employee->offices(),
         ]);
     }
 
@@ -59,11 +60,26 @@ class EmployeeController extends Controller
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateRequest $request, string $id)
+    public function update(UpdateRequest $request, Employee $employee)
     {
-        $this->employees->update($id, $request->all());
+        $this->employee->update($employee, $request->all());
 
         return redirect()->back();
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\Employee\UpdateRequest  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Employee $employee)
+    {
+        return inertia('Employees/Edit', [
+            'employee' => $employee->load('scanners'),
+            'scanners' => $this->scanner->get(),
+        ]);
     }
 
     /**

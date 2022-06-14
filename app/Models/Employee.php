@@ -21,7 +21,7 @@ class Employee extends Model
         'name',
         'regular',
         'office',
-        'user_id',
+        'active'
     ];
 
     protected $casts = [
@@ -36,7 +36,7 @@ class Employee extends Model
     {
         return $this->belongsToMany(Scanner::class, 'enrollments')
                 ->using(Enrollment::class)
-                ->withPivot('uid')
+                ->withPivot(['id', 'uid'])
                 ->withTimestamps()
                 ->orderBy('name');
     }

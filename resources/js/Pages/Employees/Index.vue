@@ -2,7 +2,7 @@
     <app-layout title="Employees">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Employees <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
+                Employees
             </h2>
         </template>
 
@@ -12,9 +12,6 @@
                     <div class="flex self-end col-span-12 mt-3 space-x-3">
                         <jet-secondary-button class="hidden" @click="showCreateDialog" style="width:66px">
                             Add
-                        </jet-secondary-button>
-                        <jet-secondary-button class="hidden" @click="showEditDialog" style="width:66px" :disabled="selected.length === 0">
-                            Edit
                         </jet-secondary-button>
                         <jet-secondary-button @click="showImportDialog" style="width:90px" :disabled="importDialog">
                             Import
@@ -35,41 +32,29 @@
                         <tailwind-select class="w-full" :options="$page.props.offices" v-model="office" />
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Status" />
-                        <tailwind-select class="w-full" :options="['ALL', 'REGULAR', 'NON-REGULAR']" v-model="status" />
+                        <jet-label value="Regular" />
+                        <tailwind-select class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NONREGULAR', value: 0}]" v-model="regular" />
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                         <jet-label value="Active" />
-                        <tailwind-select class="w-full" :options="['ALL', 'ACTIVE', 'INACTIVE']" v-model="active" />
+                        <tailwind-select class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
                     </div>
                 </div>
 
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray">
                     <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                         <div class="inline-block min-w-full py-2 align-middle">
-                            <div class="overflow-hidden sm:rounded-lg">
-                                <p v-if="selected.length" class="block text-sm font-medium text-right text-gray-700 dark:text-gray-400">
-                                    {{ `${selected.length} employee${selected.length != 1 ? 's':''} selected` }}
-                                </p>
-                                <p v-else class="block text-sm font-medium text-right text-gray-700 dark:text-gray-400">
-                                    no employees selected
-                                </p>
+                            <div class="overflow-hidden">
                                 <table class="min-w-full">
                                     <thead>
                                         <tr>
-                                            <th scope="col" class="w-1 py-2 sm:pl-1.5 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                <input class="text-indigo-600 border-gray-300 rounded shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" value="all" v-model="all" :disabled="employees.length === 0">
-                                            </th>
-                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                            <th scope="col" class="py-2 pr-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Name
-                                            </th>
-                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Scanner UID
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Office
                                             </th>
-                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                            <th scope="col" class="py-2 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Regular
                                             </th>
                                         </tr>
@@ -78,29 +63,19 @@
                                         <tr v-if="employees.length === 0">
                                             <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 WE'VE COME UP EMPTY!
-                                            </td>
+                                        </td>
                                         </tr>
-                                        <tr v-for="employee in employees" :key="employee.id">
-                                            <td class="sm:pl-1.5 pl-6 whitespace-nowrap">
-                                                <input class="text-indigo-600 border-gray-300 rounded shadow-sm dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="employee.id" v-model="selected">
-                                            </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="flex items-center text-base font-medium tracking-wide text-gray-900 dark:text-white">
-                                                    {{ employee.name_format.fullStartLastInitialMiddle }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="text-sm">
-                                                    <div class="font-thin">
-                                                        <p v-for="scanner in employee.scanners" :key="scanner.id" class="font-mono text-xs leading-none tracking-tighter text-black dark:text-gray-100">
-                                                            {{ scanner.name + ': ' + scanner.pivot.uid.toString().padStart('4', 0) }}
-                                                        </p>
+                                        <tr v-for="employee in employees" :key="employee.id" class="cursor-pointer dark:hover:bg-gray-700 hover:bg-gray-200">
+                                            <td class="pr-6 whitespace-nowrap">
+                                                <Link :href="route('employees.edit', employee.id)">
+                                                    <div class="flex items-center text-base font-medium tracking-wide text-gray-900 dark:text-white">
+                                                        {{ employee.name_format.fullStartLastInitialMiddle }}
                                                     </div>
-                                                </div>
+                                                </Link>
                                             </td>
                                             <td class="px-6 whitespace-nowrap">
-                                                <div class="text-sm">
-                                                    <div class="font-thin">
+                                                <Link :href="route('employees.edit', employee.id)">
+                                                    <div class="text-sm font-thin">
                                                         <p v-if="employee.office" class="text-black dark:text-gray-100">
                                                             {{ employee.office }}
                                                         </p>
@@ -108,16 +83,16 @@
                                                             Not set
                                                         </p>
                                                     </div>
-                                                </div>
+                                                </Link>
                                             </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="text-sm">
-                                                    <div class="font-thin">
+                                            <td class="pl-6 whitespace-nowrap">
+                                                <Link :href="route('employees.edit', employee.id)">
+                                                    <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">
                                                             {{ employee.regular ? 'Yes' : 'No'}}
                                                         </p>
                                                     </div>
-                                                </div>
+                                                </Link>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -144,9 +119,7 @@
                             <div class="flex text-sm text-gray-600">
                                 <label class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
                                     <span @click="importFile"> Upload a file </span>
-                                    <!-- <input ref="file-upload" type="file" class="hidden sr-only" accept=".csv" @input="form.file = $event.target.files[0]" v-model="file"> -->
                                 </label>
-                                <!-- <p class="pl-1 dark:text-gray-300">or drag and drop</p> -->
                             </div>
                             <p class="text-xs text-gray-600 dark:text-gray-400">
                                 CSV file up to 10MB
@@ -178,9 +151,9 @@
             </template>
         </jet-dialog-modal>
 
-        <create-form :scanners="$page.props.scanners" :show="createDialog" @close="closeCreateDialog" @created="reloadList" />
+        <create-form :scanners="$page.props.scanners" :show="createDialog" @close="closeCreateDialog" />
 
-        <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" @deleted="clearSelection" @updated="reloadList" />
+        <!-- <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" @deleted="clearSelection" /> -->
     </app-layout>
 </template>
 
@@ -221,13 +194,11 @@
 
         data() {
             return {
-                all: ! this.$page.props.employees.length,
                 selected: [],
-                employees: this.$page.props.employees,
                 name: '',
                 office: 'ALL',
-                status: 'ALL',
-                active: 'ACTIVE',
+                regular: -1,
+                active: 1,
                 month: this.$page.props.month,
                 period: 'full',
                 createDialog: false,
@@ -240,51 +211,6 @@
                 }),
                 waitForFile: true,
             }
-        },
-
-        watch: {
-            month() {
-                this.updatePrintPreview()
-            },
-
-            period() {
-                this.updatePrintPreview()
-            },
-
-            all() {
-                if(this.toggleAllCheckbox) {
-                    this.toggleAllCheckbox = false
-                    return
-                }
-
-                this.selected = this.all ? _.uniq(this.selected.concat(this.employees.map(e => e.id))) : this.selected.filter(e => ! this.employees.map(e => e.id).includes(e))
-            },
-
-            employees() {
-                this.updateToggledCheckbox()
-            },
-
-            selected() {
-                this.updateToggledCheckbox()
-
-                this.updatePrintPreview()
-            },
-
-            name() {
-                this.updateFilter()
-            },
-
-            office() {
-                this.updateFilter()
-            },
-
-            status() {
-                this.updateFilter()
-            },
-
-            active() {
-                this.updateFilter()
-            },
         },
 
         methods: {
@@ -300,15 +226,11 @@
                         this.closeImportDialog()
 
                         this.resetForm()
-
-                        this.reloadList()
                     },
                 });
             },
 
             resetForm() {
-                // this.$refs.file.value = ''
-
                 this.form.reset()
 
                 this.form.clearErrors()
@@ -320,14 +242,6 @@
 
             closeCreateDialog() {
                 this.createDialog = false
-            },
-
-            showEditDialog() {
-                this.editDialog = true
-            },
-
-            closeEditDialog() {
-                this.editDialog = false
             },
 
             async importFile() {
@@ -360,41 +274,15 @@
 
                 this.resetForm()
             },
+        },
 
-            printPreviewLoaded() {
-                this.loadingPreview = false
-            },
-
-            updatePrintPreview() {
-                this.loadingPreview = true
-            },
-
-            updateToggledCheckbox() {
-                if(this.all && ! this.employees.map(e => e.id).every(e => this.selected.includes(e))) {
-                    this.toggleAllCheckbox = true
-                    this.all = false
-                } else if (! this.all && this.employees.map(e => e.id).every(e => this.selected.includes(e))) {
-                    this.toggleAllCheckbox = true
-                    this.all = true
-                }
-            },
-
-            updateFilter() {
-                this.employees = this.$page.props.employees
+        computed: {
+            employees() {
+                return this.$page.props.employees
                     .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
-                    .filter(e => this.status != 'ALL' ? this.status == 'REGULAR' ? e.regular : ! e.regular : true)
-                    .filter(e => this.active != 'ALL' ? this.active == 'ACTIVE' ? e.active : ! e.active : true)
-            },
-
-            reloadList() {
-                this.employees = this.$page.props.employees
-            },
-
-            clearSelection() {
-                this.selected = []
-
-                this.reloadList()
+                    .filter(e => this.regular != -1 ? e.regular == this.regular : true)
+                    .filter(e => this.active != -1 ? e.active == this.active : true)
             },
         },
     })

@@ -28,7 +28,7 @@ class Scanner extends Model
     {
         return $this->belongsToMany(Employee::class, 'enrollments')
                 ->using(Enrollment::class)
-                ->withPivot('uid')
+                ->withPivot(['id', 'uid'])
                 ->withTimestamps();
     }
 

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
+use App\Models\Enrollment;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -35,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::get('/printpreview', PrintController::class)->name('print');
     Route::resource('users', ScannerController::class);
     Route::resource('scanners', ScannerController::class);
-    Route::resource('employees', EmployeeController::class)->except(['create', 'show', 'edit']);
+    Route::resource('employees', EmployeeController::class)->except(['create', 'show']);
     Route::resource('timelogs', TimeLogController::class)->only(['index', 'store']);
+    Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
 });

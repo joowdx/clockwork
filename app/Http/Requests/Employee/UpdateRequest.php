@@ -15,7 +15,8 @@ class UpdateRequest extends FormRequest
     public function messages()
     {
         return [
-
+            'name.first.required' => 'First name is required.',
+            'name.last.required' => 'Last name is required.',
         ];
     }
 
@@ -28,13 +29,13 @@ class UpdateRequest extends FormRequest
     {
         return [
             'biometrics_id' => ['nullable', 'numeric', Rule::unique('employees')->ignore(@$this->id[0])->where('user_id', auth()->id())],
-            'name.first' => 'nullable|string',
-            'name.last' => 'nullable|string',
+            'name.first' => 'required|string',
+            'name.last' => 'required|string',
             'name.middle' => 'nullable|string',
             'name.extension' => 'nullable|string',
             'office' => 'nullable|string',
-            'regular' => 'nullable|in:1,0,*',
-            'active' => 'nullable|in:1,0,*',
+            'regular' => 'nullable|boolean',
+            'active' => 'nullable|boolean',
         ];
     }
 }
