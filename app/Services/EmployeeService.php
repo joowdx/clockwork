@@ -36,8 +36,9 @@ class EmployeeService implements Import
 
     public function __construct(
         private Repository $repository,
-        private ScannerService $scanner,
-    ) { }
+    ) {
+        $this->scanner = app(ScannerService::class);
+    }
 
     public function validate(Request $request): bool
     {
