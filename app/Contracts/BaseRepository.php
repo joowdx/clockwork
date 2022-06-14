@@ -145,22 +145,15 @@ abstract class BaseRepository implements Repository
         });
     }
 
-    public function update(Model|EloquentCollection|array $model, array $payload, array $except = [], ?Closure $updater = null): Model|EloquentCollection
+    public function update(Model $model, array $payload, array $except = [], ?Closure $updater = null): Model
     {
         if ($updater) {
             return DB::transaction(fn () => $updater($model, $payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
-        $data = collect($this->transformData($payload))->except($except)->toArray();
+        $model->update(collect($this->transformData($payload))->except($except)->toArray());
 
-        if ($model instanceof Model) {
-            return $model->update($data);
-        } else if ($model instanceof EloquentCollection) {
-            return $model->toQuery()->update($data);
-        } else {
-            return $this->model()->whereIn('id', $model)->update($data);
-        }
-
+        return $model;
     }
 
     public function upsert(array $payload, array $unique = [], array $update = [], array $except = [],  ?Closure $upserter = null): void
@@ -221,11 +214,6 @@ abstract class BaseRepository implements Repository
         return $query ? $query($this->builder()->with($this->with ?? [])) : $this->builder()->with($this->with ?? []);
     }
 
-    public function newQuery(?Closure $query = null): mixed
-    {
-        return $query ? $query($this->builder()->with($this->with ?? [])) : $this->builder()->with($this->with ?? []);
-    }
-
     protected function deleting(Model $model): void {}
 
     protected function destroying(array $payload): void {}
@@ -233,7 +221,8 @@ abstract class BaseRepository implements Repository
 
     protected abstract function transformData(array $payload): array;
 
-    private function generateUuid(string $column = 'id', bool $generate = true) {
+    private function generateUuid(string $column = 'id', bool $generate = true)
+    {
         return $generate ? [$column => str()->orderedUuid()] : [];
     }
 

@@ -6,12 +6,8 @@ use App\Services\PrintService;
 
 class PrintController extends Controller
 {
-    public function __construct(
-        private PrintService $print
-    ) { }
-
-    public function __invoke()
+    public function __invoke(PrintService $print)
     {
-        return view($this->print->view(), $this->print->data());
+        return view($print->view(), $print->data());
     }
 }

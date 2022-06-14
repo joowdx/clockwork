@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Requests\PrintRequest;
+use App\Models\Employee;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,7 +50,7 @@ class PrintService
         return $this->query()->get();
     }
 
-    public function offices()
+    public function offices(): Collection
     {
         $offices = $this->query()->get()
             ->map(function ($employee) {
@@ -72,21 +73,19 @@ class PrintService
             ->get();
     }
 
-    private function query(): Builder
+    private function query(): Employee|Builder
     {
         $query = $this->employee->query();
 
         switch ($this->request->view) {
             case 'office': {
-                $query->with('timelogs', fn ($q) => $q->whereDate('time', $this->request->date));
-                $query->with('timelogs.scanner');
+                $query->with(['timelogs.scanner', 'timelogs' => fn ($q) => $q->whereDate('time', $this->request->date)]);
                 $query->whereHas('timelogs', fn ($q) => $q->whereDate('time', $this->request->date));
                 $query->whereIn('office', $this->request->offices);
                 break;
             };
             case 'employee': {
-                $query->with('timelogs', fn ($q) => $q->whereBetween('time', $this->range()));
-                $query->with('timelogs.scanner');
+                $query->with(['timelogs.scanner', 'timelogs' => fn ($q) => $q->whereBetween('time', $this->range())]);
                 $query->whereIn('id', $this->request->employees);
                 break;
             };
