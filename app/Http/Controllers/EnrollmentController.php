@@ -18,6 +18,8 @@ class EnrollmentController extends Controller
 
     public function store(EnrollmentRequest $request)
     {
+        $this->confirmPassword($request->password);
+
         $request->whenHas('employee', function () use ($request) {
 
             $this->enrollment->sync($this->employee->find($request->employee), $request->scanners);

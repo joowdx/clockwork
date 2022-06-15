@@ -1,5 +1,5 @@
 <template>
-    <JetFormSection @submitted="save">
+    <JetFormSection @submitted="showConfirmationDialog(true)">
         <template #title>
             Scanners
         </template>
@@ -14,7 +14,7 @@
                 <JetLabel class="uppercase" :for="`scanner.${scanner.id}`" :value="scanner.name" />
                 <div class="grid grid-cols-12 space-x-3 align-bottom">
                     <JetInput :id="`scanner.${scanner.id}`" type="text" class="block w-full col-span-9" v-model="form.scanners[scanner.id].uid" />
-                    <JetDangerButton class="col-span-3" @click="showDeleteDialog(scanner.pivot.id)" >
+                    <JetDangerButton class="col-span-3" @click="showConfirmationDialog(scanner.pivot.id)" >
                         Remove
                     </JetDangerButton>
                 </div>
@@ -37,35 +37,39 @@
         </template>
     </JetFormSection>
 
-    <!-- Delete Enrollment Modal -->
-    <jet-dialog-modal :show="destroy" @close="closeDeleteDialog">
+    <!-- Update/Delete Enrollment Confirmation Modal -->
+    <JetDialogModal :show="confirmation" @close="hideConfirmationDialog">
         <template #title>
-            Delete Enrollment
+            {{ confirmation === true ? 'Update' : 'Delete' }} Enrollment
         </template>
 
         <template #content>
-            To prevent any accidental deletion, please enter your password.
+            To prevent any accidental {{ confirmation === true ? 'modification' : 'deletion' }}, please enter your password.
 
             <div class="mt-4">
                 <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
                             ref="password"
                             v-model="form.password"
-                            @keyup.enter="remove" />
+                            @keyup.enter="confirmation === true ? save() : remove()" />
 
                 <jet-input-error :message="form.errors.password" class="mt-2" />
             </div>
         </template>
 
         <template #footer>
-            <jet-secondary-button @click="closeDeleteDialog">
+            <JetSecondaryButton @click="hideConfirmationDialog">
                 Cancel
-            </jet-secondary-button>
+            </JetSecondaryButton>
 
-            <jet-danger-button class="ml-3" @click="remove" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <JetSecondaryButton v-if="confirmation === true" class="ml-3" @click="save" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                Save
+            </JetSecondaryButton>
+
+            <JetDangerButton v-else class="ml-3" @click="remove" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Delete
-            </jet-danger-button>
+            </JetDangerButton>
         </template>
-    </jet-dialog-modal>
+    </JetDialogModal>
 </template>
 
 <script>
@@ -101,7 +105,7 @@
 
         data() {
             return {
-                destroy: false,
+                confirmation: false,
                 password: '',
                 form: this.$inertia.form({
                     password: '',
@@ -115,14 +119,17 @@
             save() {
                 this.form.post(route('enrollment.store'), {
                     preserveScroll: true,
+                    onSuccess: () => {
+                        this.hideConfirmationDialog()
+                    }
                 });
             },
             remove() {
                 this.form.transform(() => ({ password: this.form.password }))
-                    .delete(route('enrollment.destroy', { enrollment: this.destroy }), {
+                    .delete(route('enrollment.destroy', { enrollment: this.confirmation }), {
                         preserveScroll: true,
                         onSuccess: () => {
-                            this.closeDeleteDialog()
+                            this.hideConfirmationDialog()
 
                             Swal.fire(
                                 'Import successful',
@@ -132,13 +139,13 @@
                         }
                     });
             },
-            showDeleteDialog(enrollment) {
-                this.destroy = enrollment;
+            showConfirmationDialog(enrollment) {
+                this.confirmation = enrollment
 
                 setTimeout(() => this.$refs.password.focus(), 250)
             },
-            closeDeleteDialog() {
-                this.destroy = false
+            hideConfirmationDialog() {
+                this.confirmation = false
 
                 this.form.reset()
             },
