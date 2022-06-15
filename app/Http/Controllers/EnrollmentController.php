@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use App\Services\EnrollmentService;
+use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
@@ -33,7 +34,7 @@ class EnrollmentController extends Controller
         return redirect()->back();
     }
 
-    public function destroy(EnrollmentRequest $request, Enrollment $enrollment)
+    public function destroy(Request $request, Enrollment $enrollment)
     {
         $this->confirmPassword($request->password);
 

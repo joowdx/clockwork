@@ -8,37 +8,17 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class EnrollmentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
-    {
-        return true;
-    }
-
-    public function messages()
+    public function attributes()
     {
         return [
-            'scanners.*.uid.required' => 'UID must not be empty.',
+            'employees.*.uid' => 'UID',
+            'scanners.*.uid' => 'UID',
         ];
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
     public function rules()
     {
-        return $this->isMethod('delete')
-        ? [
-            'password' => [
-                'required',
-                'string',
-            ]
-        ] : [
+        return [
             'employee' => [
                 'required_without:scanner',
                 'exists:employees,id',
@@ -48,6 +28,7 @@ class EnrollmentRequest extends FormRequest
                 'array'
             ],
             'employees.*.uid' => [
+                'bail',
                 'sometimes',
                 'required',
                 'numeric',
@@ -62,6 +43,7 @@ class EnrollmentRequest extends FormRequest
                 'array',
             ],
             'scanners.*.uid' => [
+                'bail',
                 'sometimes',
                 'required',
                 'numeric',
@@ -70,48 +52,20 @@ class EnrollmentRequest extends FormRequest
         ];
     }
 
-    private function key(string $attribute): string
-    {
-        return explode('.', $attribute)[1];
-    }
-
     private function uid(string $attribute, mixed $value, Closure $fail): void
     {
-        $scanner = $this->scanner ?? $this->key($attribute);
+        $scanner = $this->scanner ?? explode('.', $attribute)[1];
 
-        $employee = $this->employee ?? $this->key($attribute);
+        $employee = $this->employee ?? explode('.', $attribute)[1];
 
         $enrollment = Enrollment::whereScannerId($scanner)->whereEmployeeId($employee)->first('uid');
 
-        #ignore no changes
-        if ($enrollment?->uid === (int) $value) {
+        if ($enrollment === null || $enrollment->uid === (int) $value) {
             return;
         }
 
-        switch ($enrollment->doesntExist()) {
-            #update
-            case false: {
-                if ($enrollment = $this->existing($scanner, $value)) {
-                    $fail('Selected UID is already taken by ' . $enrollment->employee->nameFormat->shortStartLastInitialFirst);
-                }
-                break;
-            }
-            #insert
-            default: {
-                if ($this->enrolled($scanner, $employee)) {
-                    $fail('Can only enroll in a single scanner device once.');
-                }
-            }
+        if ($existing = Enrollment::whereScannerId($scanner)->whereUid($value)->first()) {
+            $fail('Selected UID is already taken by ' . $existing->employee->nameFormat->shortStartLastInitialFirst);
         }
-    }
-
-    private function existing(string $scanner, string $uid): ?Enrollment
-    {
-        return Enrollment::whereScannerId($scanner)->whereUid($uid)->first();
-    }
-
-    private function enrolled(string $scanner, string $employee): bool
-    {
-        return Enrollment::whereScannerId($scanner)->whereEmployeeId($employee)->exists();
     }
 }
