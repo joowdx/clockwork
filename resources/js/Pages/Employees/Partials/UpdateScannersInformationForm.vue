@@ -27,7 +27,7 @@
                 Saved.
             </JetActionMessage>
 
-            <JetSecondaryButton class="mr-3" >
+            <JetSecondaryButton @click="showConfirmationDialog(Infinity)" class="mr-3" >
                 Add
             </JetSecondaryButton>
 
@@ -37,22 +37,33 @@
         </template>
     </JetFormSection>
 
-    <!-- Update/Delete Enrollment Confirmation Modal -->
+    <!-- Enrollment Confirmation Modal -->
     <JetDialogModal :show="confirmation" @close="hideConfirmationDialog">
         <template #title>
-            {{ confirmation === true ? 'Update' : 'Delete' }} Enrollment
+            {{ confirmation === true ? 'Update' : confirmation === Infinity ? 'New' : 'Delete' }} Enrollment
         </template>
 
         <template #content>
-            To prevent any accidental {{ confirmation === true ? 'modification' : 'deletion' }}, please enter your password.
+            <div v-if="confirmation === Infinity">
+                <div class="mt-4">
+                    <JetLabel value="Scanner" />
+                    <TailwindSelect class="block w-3/4 mb-2" :options="$page.props.scanners" v-model="scanner" />
+                    <JetLabel value="Please select unique identifier (UID) from this device." />
+                    <JetInput type="text" class="block w-3/4 mt-1" placeholder="New UID" v-model="uid" />
+                    <JetInputError :message="error" class="mt-2" />
+                </div>
+                <p class="mt-4"> Don't forget to click the save button to save changes. </p>
+            </div>
+            <div v-else class="mt-4">
+                To prevent any accidental {{ confirmation === true ? 'modification' : 'deletion' }}, please enter your password.
+                <div class="mt-2">
+                    <JetInput type="password" class="block w-3/4 mt-1" placeholder="Password"
+                                ref="password"
+                                v-model="form.password"
+                                @keyup.enter="confirmation === true ? save() : remove()" />
 
-            <div class="mt-4">
-                <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
-                            ref="password"
-                            v-model="form.password"
-                            @keyup.enter="confirmation === true ? save() : remove()" />
-
-                <jet-input-error :message="form.errors.password" class="mt-2" />
+                    <JetInputError :message="form.errors.password" class="mt-2" />
+                </div>
             </div>
         </template>
 
@@ -61,7 +72,11 @@
                 Cancel
             </JetSecondaryButton>
 
-            <JetSecondaryButton v-if="confirmation === true" class="ml-3" @click="save" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <JetSecondaryButton v-if="confirmation === Infinity" class="ml-3" @click="add" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                Add
+            </JetSecondaryButton>
+
+            <JetSecondaryButton v-else-if="confirmation === true" class="ml-3" @click="save" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
             </JetSecondaryButton>
 
@@ -106,9 +121,11 @@
         data() {
             return {
                 confirmation: false,
-                password: '',
+                scanner: null,
+                uid: null,
+                error: null,
                 form: this.$inertia.form({
-                    password: '',
+                    password: null,
                     employee: this.$page.props.employee.id,
                     scanners: _.mapValues(_.mapKeys(this.$page.props.employee.scanners, e => e.id), e => ({uid:e['pivot']['uid']})),
                 }),
@@ -116,12 +133,30 @@
         },
 
         methods: {
+            add() {
+                if (this.scanner && this.uid) {
+
+                    this.form.scanners[this.scanner.id] = {uid: this.uid }
+
+                    this.$page.props.employee.scanners.push(this.scanner)
+
+                    this.scanner = null
+
+                    this.uid = null
+
+                    this.error = null
+
+                    this.hideConfirmationDialog()
+
+                    return
+                }
+                this.error = 'Please complete the fields.'
+            },
             save() {
                 this.form.post(route('enrollment.store'), {
                     preserveScroll: true,
-                    onSuccess: () => {
-                        this.hideConfirmationDialog()
-                    }
+                    onSuccess: () => this.hideConfirmationDialog(),
+                    onError: e => ! e.password ? this.hideConfirmationDialog() : null
                 });
             },
             remove() {
@@ -142,12 +177,18 @@
             showConfirmationDialog(enrollment) {
                 this.confirmation = enrollment
 
-                setTimeout(() => this.$refs.password.focus(), 250)
+                if (enrollment !== Infinity) {
+                    setTimeout(() => this.$refs.password.focus(), 250)
+                }
             },
             hideConfirmationDialog() {
                 this.confirmation = false
 
-                this.form.reset()
+                this.form.reset('password')
+
+                this.form.clearErrors('password')
+
+                this.error = null
             },
         },
     })
