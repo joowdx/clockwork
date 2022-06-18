@@ -13,12 +13,18 @@
             <div v-for="scanner in $page.props.employee.scanners" :key="scanner.id" class="col-span-6 sm:col-span-4">
                 <JetLabel class="uppercase" :for="`scanner.${scanner.id}`" :value="scanner.name" />
                 <div class="grid grid-cols-12 space-x-3 align-bottom">
-                    <JetInput :id="`scanner.${scanner.id}`" type="text" class="block w-full col-span-9" v-model="form.scanners[scanner.id].uid" />
+                    <JetInput :id="`scanner.${scanner.id}`" type="text" class="block w-full" :class="{'col-span-12': scanner.new, 'col-span-9': !scanner.new}" v-model="form.scanners[scanner.id].uid" />
                     <JetDangerButton v-if="!scanner.new" class="col-span-3" @click="showConfirmationDialog(scanner.pivot.id)" >
                         Remove
                     </JetDangerButton>
                 </div>
                 <JetInputError :message="form.errors[`scanners.${scanner.id}.uid`]" class="mt-2" />
+            </div>
+            <div v-if="! $page.props.employee.scanners.length" class="col-span-6 sm:col-span-4">
+                <JetLabel class="uppercase" for="empty" value="empty" />
+                <div class="grid grid-cols-12 space-x-3 align-bottom">
+                    <JetInput id="empty" type="text" class="block w-full col-span-12" value='Please click the "add" button below.' disabled />
+                </div>
             </div>
         </template>
 
@@ -48,8 +54,8 @@
                 <div class="mt-4">
                     <JetLabel value="Scanner" />
                     <TailwindSelect class="block w-3/4 mb-2" :options="$page.props.scanners" v-model="scanner" />
-                    <JetLabel value="Please select unique identifier (UID) from this device." />
-                    <JetInput type="text" class="block w-3/4 mt-1" placeholder="New UID" v-model="uid" />
+                    <JetLabel value="Please select unique identifier (UID) for this device." />
+                    <JetInput type="text" class="block w-3/4 mt-1" placeholder="New UID" v-model="uid" @keyup.enter="add" />
                     <JetInputError :message="error" class="mt-2" />
                 </div>
                 <p class="mt-4"> Don't forget to click the save button to save changes. </p>
