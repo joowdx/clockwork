@@ -112,7 +112,6 @@ class EmployeeService implements Import
             ->map
             ->office
             ->unique()
-            ->prepend('ALL')
             ->filter()
             ->values();
     }
