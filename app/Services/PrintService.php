@@ -96,8 +96,10 @@ class PrintService
 
     private function range(): array
     {
-        switch ($this->request->by) {
-            case 'period': {
+        switch ($this->request->period) {
+            case 'full':
+            case '1st':
+            case '2nd': {
                 $month = Carbon::parse($this->request->month);
 
                 return [
@@ -105,7 +107,7 @@ class PrintService
                     'to' => $this->request->period == '1st' ? $month->clone()->setDay(15)->endOfDay() : $month->clone()->endOfMonth(),
                 ];
             };
-            case 'range': {
+            case 'custom': {
                 return [
                     'from' => Carbon::parse($this->request->from),
                     'to' => Carbon::parse($this->request->to),

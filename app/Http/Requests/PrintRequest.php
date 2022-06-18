@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Carbon;
 
 class PrintRequest extends FormRequest
 {
@@ -14,36 +13,32 @@ class PrintRequest extends FormRequest
                 'required',
                 'in:employee,office',
             ],
-            'by' => [
+            'period' => [
                 'required_if:view,employee',
-                'in:period,range',
+                'in:custom,full,1st,2nd,',
             ],
             'from' => [
-                'required_if:by,range',
+                'required_if:period,custom',
                 'required_with:to',
                 'date:Y-m-d',
             ],
             'to' => [
-                'required_if:by,range',
+                'required_if:period,custom',
                 'required_with:from',
                 'date:Y-m-d',
             ],
             'month' => [
-                'required_if:by,period',
-                'required_with:period',
+                'required_if:period,full',
+                'required_if:period,1st',
+                'required_if:period,2nd',
                 'date:Y-m',
-            ],
-            'period' => [
-                'required_if:by,period',
-                'required_with:month',
-                'in:full,1st,2nd',
             ],
             'date' => [
                 'required_if:view,office',
                 'date:Y-m-d',
             ],
             'offices' => [
-                'nullable',
+                'required_if:view,office',
                 'array',
             ],
             'offices.*' => [
