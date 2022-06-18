@@ -1,49 +1,88 @@
 <template>
-    <app-layout title="Time Logs">
+    <AppLayout title="Time Logs">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Time Logs <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
+                Time Logs
             </h2>
         </template>
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-3">
-                        <jet-label value="Month" />
-                        <jet-input class="w-full uppercase" type="month" v-model="month" required max="2022-03-31" />
+                    <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                        <JetLabel value="By" />
+                        <TailwindSelect class="w-full" :options="[{name: 'EMPLOYEE', value: 'employee'}, {name: 'OFFICE', value: 'office'}]" v-model="by" />
                     </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-3">
-                        <jet-label value="Period" />
-                        <tailwind-select class="w-full" :options="[{name: 'FULL', value: 'full'}, {name: '1ST HALF', value: '1st'}, {name: '2ND HALF', value: '2nd'}]" v-model="period" />
-                    </div>
-                    <div class="flex self-end col-span-12 mt-3 space-x-3 justify-self-end sm:col-span-4 lg:col-span-6">
-                        <jet-secondary-button @click="showImportDialog" style="width:90px" :disabled="importDialog">
+                    <template v-if="by === 'employee'">
+                        <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Period" />
+                            <TailwindSelect class="w-full" :options="[{name: 'CUSTOM', value: 'custom'}, {name: 'FULL', value: 'full'}, {name: '1ST HALF', value: '1st'}, {name: '2ND HALF', value: '2nd'}]" v-model="period" />
+                        </div>
+                        <template v-if="period === 'custom'">
+                            <div class="hidden col-span-4 sm:inline-block lg:hidden">
+
+                            </div>
+                            <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                                <JetLabel value="From" />
+                                <JetInput class="w-full uppercase" type="date" v-model="from" required />
+                            </div>
+                            <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                                <JetLabel value="To" />
+                                <JetInput class="w-full uppercase" type="date" v-model="to" required />
+                            </div>
+                            <div class="col-span-8 sm:hidden">
+
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="hidden col-span-4 sm:inline-block lg:hidden">
+
+                            </div>
+                            <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                                <JetLabel value="Month" />
+                                <JetInput class="w-full uppercase" type="month" v-model="month" required />
+                            </div>
+                            <div class="col-span-8 sm:col-span-4 lg:col-span-2">
+
+                            </div>
+                        </template>
+                    </template>
+                    <template v-else >
+                        <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Date" />
+                            <JetInput class="w-full uppercase" type="date" v-model="date" required />
+                        </div>
+                        <div class="col-span-8 sm:hidden lg:col-span-4 lg:inline-block"></div>
+                    </template>
+                    <div class="flex self-end col-span-4 mt-3 space-x-3 justify-self-end">
+                        <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                             Import
-                        </jet-secondary-button>
-                        <jet-secondary-button ref="print" class="items-center" @click="this.$refs.printPreview.contentWindow.print()" style="width:90px" :disabled="loadingPreview || selected.length === 0">
+                        </JetSecondaryButton>
+                        <JetSecondaryButton ref="print" class="items-center" @click="this.$refs.printPreview.contentWindow.print()" style="width:90px" :disabled="loadingPreview || selected.length === 0">
                             Print
-                        </jet-secondary-button>
+                        </JetSecondaryButton>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
-                    <div class="col-span-12 lg:col-span-6">
-                        <jet-label value="Name" />
-                        <jet-input type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
+                    <div class="col-span-12" :class="{'lg:col-span-6': by === 'employee'}">
+                        <JetLabel value="Name" />
+                        <JetInput type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
                     </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Office" />
-                        <tailwind-select class="w-full" :options="$page.props.offices" v-model="office" />
-                    </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Status" />
-                        <tailwind-select class="w-full" :options="['ALL', 'REGULAR', 'NON-REGULAR']" v-model="status" />
-                    </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Active" />
-                        <tailwind-select class="w-full" :options="['ACTIVE', 'INACTIVE']" v-model="active" />
-                    </div>
+                    <template v-if="by === 'employee'">
+                        <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Office" />
+                            <TailwindSelect class="w-full" :options="['ALL', ...$page.props.offices]" v-model="office" />
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Regular" />
+                            <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'YES', value: 1}, {name: 'NO', value: 0}]" v-model="regular" />
+                        </div>
+                        <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Active" />
+                            <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
+                        </div>
+                    </template>
                 </div>
 
                 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray">
@@ -51,64 +90,95 @@
                         <div class="inline-block min-w-full py-2 align-middle">
                             <div class="overflow-hidden sm:rounded-lg">
                                 <p v-if="selected.length" class="block text-sm font-medium text-right text-gray-700 dark:text-gray-400">
-                                    {{ `${selected.length} employee${selected.length != 1 ? 's':''} selected` }}
+                                    {{ `${selected.length} ${by}${selected.length != 1 ? 's':''} selected` }}
                                 </p>
                                 <p v-else class="block text-sm font-medium text-right text-gray-700 dark:text-gray-400">
-                                    no employees selected
+                                    no {{by}} selected
                                 </p>
                                 <table class="min-w-full">
                                     <thead>
-                                        <tr>
+                                        <template v-if="by === 'office'">
                                             <th scope="col" class="w-1 py-2 sm:pl-1.5 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" value="all" v-model="all" :disabled="employees.length === 0">
+                                                <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" value="all" v-model="all" :disabled="office.length === 0">
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Name
                                             </th>
-                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Office
-                                            </th>
-                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Status
-                                            </th>
-                                        </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr>
+                                                <th scope="col" class="w-1 py-2 sm:pl-1.5 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" value="all" v-model="all" :disabled="employees.length === 0">
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Name
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Office
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Regular
+                                                </th>
+                                            </tr>
+                                        </template>
                                     </thead>
                                     <tbody>
-                                        <tr v-if="employees.length === 0">
-                                            <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                WE'VE COME UP EMPTY!
-                                            </td>
-                                        </tr>
-                                        <tr v-for="employee in employees" :key="employee.id">
-                                            <td class="sm:pl-1.5 pl-6 whitespace-nowrap">
-                                                <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="employee.id" v-model="selected">
-                                            </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {{ employee.name_format.fullStartLastInitialMiddle }}
+                                        <template v-if="by === 'office'">
+                                            <tr v-if="offices.length === 0">
+                                                <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    WE'VE COME UP EMPTY!
+                                                </td>
+                                            </tr>
+                                            <tr v-for="office in offices" :key="office">
+                                                <td class="sm:pl-1.5 pl-6 whitespace-nowrap">
+                                                    <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="office" v-model="selected">
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {{ office }}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="text-sm">
-                                                    <div class="font-thin">
-                                                        <p class="text-black dark:text-gray-100">
-                                                            {{ employee.office }}
-                                                        </p>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else>
+                                            <tr v-if="employees.length === 0">
+                                                <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    WE'VE COME UP EMPTY!
+                                                </td>
+                                            </tr>
+                                            <tr v-for="employee in employees" :key="employee.id">
+                                                <td class="sm:pl-1.5 pl-6 whitespace-nowrap">
+                                                    <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="employee.id" v-model="selected">
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {{ employee.name_format.fullStartLastInitialMiddle }}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 whitespace-nowrap">
-                                                <div class="text-sm">
-                                                    <div class="font-thin">
-                                                        <p class="text-black dark:text-gray-100">
-                                                            {{ employee.regular ? 'REGULAR' : 'NON REGULAR' }}
-                                                        </p>
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
+                                                    <div class="text-sm">
+                                                        <div class="font-thin">
+                                                            <p class="text-black dark:text-gray-100">
+                                                                {{ employee.office }}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
+                                                    <div class="text-sm">
+                                                        <div class="font-thin">
+                                                            <p class="text-black dark:text-gray-100">
+                                                                {{ employee.regular ? 'YES' : 'NO' }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
                                     </tbody>
                                 </table>
                             </div>
@@ -118,7 +188,7 @@
             </div>
         </div>
 
-        <jet-dialog-modal :show="importDialog" @close="closeImportDialog">
+        <JetDialogModal :show="importDialog" @close="closeImportDialog">
             <template #title>
                 Upload
             </template>
@@ -126,9 +196,9 @@
             <template #content>
                 <div class="mb-3">
                     <div>
-                        <jet-label value="Scanner" />
-                        <tailwind-select class="w-full mb-2" :options="scanners" v-model="form.scanner" />
-                        <jet-input-error :message="form.errors.scanner" class="mt-2" />
+                        <JetLabel value="Scanner" />
+                        <TailwindSelect class="w-full mb-2" :options="scanners" v-model="form.scanner" />
+                        <JetInputError :message="form.errors.scanner" class="mt-2" />
                     </div>
                     <div class="flex justify-center px-6 pt-5 pb-6 mt-1 border-2 border-gray-300 border-dashed rounded-md">
                         <div class="space-y-1 text-center">
@@ -138,9 +208,7 @@
                             <div class="flex text-sm text-gray-600">
                                 <label for="file-upload" class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
                                     <span @click="importFile"> Upload a file </span>
-                                    <!-- <input id="file-upload" ref="file" type="file" class="sr-only" accept=".dat,.csv" @input="form.file = $event.target.files[0]"> -->
                                 </label>
-                                <!-- <p class="pl-1 dark:text-gray-300">or drag and drop</p> -->
                             </div>
                             <p class="text-xs text-gray-600 dark:text-gray-400">
                                 Select attlog file.
@@ -150,32 +218,29 @@
                     <p v-if="form.file" class="mt-1 text-lg tracking-tighter text-indigo-600 dark:text-white">
                         {{ form.file.name }}
                         <span class="float-right p-0">
-                            <jet-button class="rounded-md" style="padding:0.25em!important" @click="clearFile"> &nbsp;&times;&nbsp; </jet-button>
+                            <JetButton class="rounded-md" style="padding:0.25em!important" @click="clearFile"> &nbsp;&times;&nbsp; </JetButton>
                         </span>
                     </p>
-                    <jet-input-error :message="form.errors.file" class="mt-2" />
+                    <JetInputError :message="form.errors.file" class="mt-2" />
                 </div>
 
                 <p class="text-yellow-600"> Notice that time logs with unrecognized uid are ignored. Please associate such uids to its corresponding employee before uploading. </p>
 
-                <!-- <progress class="w-full" v-if="form.progress" :value="form.progress?.percentage" max="100">
-                    {{ form.progress?.percentage }}%
-                </progress> -->
             </template>
 
             <template #footer>
-                <jet-secondary-button @click="closeImportDialog">
+                <JetSecondaryButton @click="closeImportDialog">
                     Cancel
-                </jet-secondary-button>
+                </JetSecondaryButton>
 
-                <jet-button :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing">
+                <JetButton :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing">
                     Import
-                </jet-button>
+                </JetButton>
             </template>
-        </jet-dialog-modal>
+        </JetDialogModal>
 
-        <iframe title="daily time record" class="sr-only" ref="printPreview" :src="route('print', {month, period, employees: selected, by: 'period', view: 'employee'})" @load="printPreviewLoaded"/>
-    </app-layout>
+        <iframe title="daily time record" class="sr-only" ref="printPreview" :src="src" @load="printPreviewLoaded"/>
+    </AppLayout>
 </template>
 
 <script>
@@ -210,16 +275,20 @@
 
         data() {
             return {
+                src: '',
                 all: ! this.$page.props.employees.length,
                 selected: [],
-                employees: this.$page.props.employees,
+                by: 'employee',
                 name: '',
                 office: 'ALL',
-                status: 'ALL',
-                active: 'ACTIVE',
+                regular: -1,
+                active: 1,
+                period: 'custom',
+                date: this.$page.props.date,
                 month: this.$page.props.month,
+                from: this.$page.props.from,
+                to: this.$page.props.to,
                 scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
-                period: 'full',
                 importDialog: false,
                 loadingPreview: true,
                 toggleAllCheckbox: false,
@@ -232,12 +301,9 @@
         },
 
         watch: {
-            month() {
-                this.updatePrintPreview()
-            },
-
-            period() {
-                this.updatePrintPreview()
+            by() {
+                this.name = '';
+                this.selected = [];
             },
 
             all() {
@@ -246,10 +312,16 @@
                     return
                 }
 
-                this.selected = this.all ? _.uniq(this.selected.concat(this.employees.map(e => e.id))) : this.selected.filter(e => ! this.employees.map(e => e.id).includes(e))
+                this.selected = this.all
+                    ? _.uniq(this.selected.concat(this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e)))
+                    : this.selected.filter(e => ! this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).includes(e))
             },
 
             employees() {
+                this.updateToggledCheckbox()
+            },
+
+            offices() {
                 this.updateToggledCheckbox()
             },
 
@@ -259,21 +331,9 @@
                 this.updatePrintPreview()
             },
 
-            name() {
-                this.updateFilter()
-            },
-
-            office() {
-                this.updateFilter()
-            },
-
-            status() {
-                this.updateFilter()
-            },
-
-            active() {
-                this.updateFilter()
-            },
+            link() {
+                this.debounceLink()
+            }
         },
 
         methods: {
@@ -301,6 +361,10 @@
 
                 this.form.clearErrors()
             },
+
+            debounceLink: _.debounce(function () {
+                this.src = this.link
+            }, 500),
 
             async importFile() {
                 this.waitForFile = true
@@ -335,6 +399,7 @@
 
             closeImportDialog() {
                 this.importDialog = false
+
                 this.resetForm()
             },
 
@@ -347,22 +412,51 @@
             },
 
             updateToggledCheckbox() {
-                if(this.all && ! this.employees.map(e => e.id).every(e => this.selected.includes(e))) {
+                if(this.all && ! this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
                     this.toggleAllCheckbox = true
                     this.all = false
-                } else if (! this.all && this.employees.map(e => e.id).every(e => this.selected.includes(e))) {
+                } else if (! this.all && this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
                     this.toggleAllCheckbox = true
                     this.all = true
                 }
             },
+        },
 
-            updateFilter() {
-                this.employees = this.$page.props.employees
+        computed: {
+            employees() {
+                return this.$page.props.employees
                     .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
-                    .filter(e => this.status != 'ALL' ? this.status == 'REGULAR' ? e.regular : ! e.regular : true)
-                    .filter(e => this.active != 'ALL' ? this.active == 'ACTIVE' ? e.active : ! e.active : true)
+                    .filter(e => this.regular != -1 ? e.regular == this.regular : true)
+                    .filter(e => this.active != -1 ? e.active == this.active : true)
+            },
+
+            offices() {
+                return this.$page.props.offices
+                    .filter(e => this.name ? fuzzysort.single(this.name, e) : true )
+            },
+
+            link() {
+                switch (this.by) {
+                    case 'office': {
+                        return route('print', {
+                            view: this.by,
+                            date: this.date,
+                            offices: this.selected,
+                        });
+                    }
+                    case 'employee': {
+                        return route('print', {
+                            view: this.by,
+                            period: this.period,
+                            from: this.from,
+                            to: this.to,
+                            month: this.month,
+                            employees: this.selected,
+                        });
+                    }
+                }
             }
-        },
+        }
     })
 </script>
