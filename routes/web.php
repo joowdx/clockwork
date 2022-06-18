@@ -34,7 +34,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function() {
     // Route::get('/dashboard', fn () => inertia('dashboard'))->name('dashboard');
     Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
-    Route::get('/printpreview', PrintController::class)->name('print');
+    Route::get('/print', PrintController::class)->name('print');
     Route::resource('users', ScannerController::class);
     Route::resource('scanners', ScannerController::class);
     Route::resource('employees', EmployeeController::class)->except(['create', 'show']);
