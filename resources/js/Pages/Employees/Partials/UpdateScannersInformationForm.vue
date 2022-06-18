@@ -14,7 +14,7 @@
                 <JetLabel class="uppercase" :for="`scanner.${scanner.id}`" :value="scanner.name" />
                 <div class="grid grid-cols-12 space-x-3 align-bottom">
                     <JetInput :id="`scanner.${scanner.id}`" type="text" class="block w-full col-span-9" v-model="form.scanners[scanner.id].uid" />
-                    <JetDangerButton class="col-span-3" @click="showConfirmationDialog(scanner.pivot.id)" >
+                    <JetDangerButton v-if="!scanner.new" class="col-span-3" @click="showConfirmationDialog(scanner.pivot.id)" >
                         Remove
                     </JetDangerButton>
                 </div>
@@ -137,6 +137,8 @@
                 if (this.scanner && this.uid) {
 
                     this.form.scanners[this.scanner.id] = {uid: this.uid }
+
+                    this.scanner.new = true
 
                     this.$page.props.employee.scanners.push(this.scanner)
 
