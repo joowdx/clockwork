@@ -7,8 +7,8 @@ use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\ImportRequest;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
+use App\Services\TimeLogService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class TimeLogController extends Controller
@@ -17,6 +17,7 @@ class TimeLogController extends Controller
     public function __construct(
         private EmployeeService $employees,
         private ScannerService $scanners,
+        private TimeLogService $timelog,
     ) {
         // $this->middleware(ValidateImports::class)->only('store');
     }
@@ -24,16 +25,15 @@ class TimeLogController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request): RedirectResponse|Response
+    public function index(): RedirectResponse|Response
     {
         return inertia('TimeLogs/Index', [
             'scanners' => $this->scanners->get(),
             'employees' => $this->employees->get(),
             'offices' => $this->employees->offices(),
-            'month' => today()->startOfMonth()->format('Y-m'),
+            ...$this->timelog->dates(),
         ]);
     }
 

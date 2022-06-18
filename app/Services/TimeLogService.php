@@ -17,6 +17,16 @@ class TimeLogService implements Import
         private Repository $repository,
     ) { }
 
+    public function dates()
+    {
+        return [
+            'date' => today()->startOfWeek()->format('Y-m-d'),
+            'month' => today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m-d'),
+            'from' => today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d'),
+            'to' => today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d'),
+        ];
+    }
+
     public function validate(Request $request): bool
     {
         $time = now()->startOfMillennium();
