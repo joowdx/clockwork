@@ -1,5 +1,5 @@
 <template>
-    <app-layout title="Employees">
+    <AppLayout title="Employees">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
                 Employees
@@ -10,34 +10,34 @@
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="grid grid-cols-12 px-6 mb-6 justify-items-end gap-y-2 gap-x-3 sm:px-0">
                     <div class="flex self-end col-span-12 mt-3 space-x-3">
-                        <jet-secondary-button class="hidden" @click="showCreateDialog" style="width:66px">
-                            Add
-                        </jet-secondary-button>
-                        <jet-secondary-button @click="showImportDialog" style="width:90px" :disabled="importDialog">
+                        <JetSecondaryButton style="width:90px">
+                            Create
+                        </JetSecondaryButton>
+                        <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                             Import
-                        </jet-secondary-button>
-                        <jet-secondary-button style="width:90px" :disabled="true">
+                        </JetSecondaryButton>
+                        <JetSecondaryButton style="width:90px" :disabled="true">
                             Export
-                        </jet-secondary-button>
+                        </JetSecondaryButton>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
                     <div class="col-span-12 lg:col-span-6">
-                        <jet-label value="Name" />
-                        <jet-input type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
+                        <JetLabel value="Name" />
+                        <JetInput type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Office" />
-                        <tailwind-select class="w-full" :options="$page.props.offices" v-model="office" />
+                        <JetLabel value="Office" />
+                        <TailwindSelect class="w-full" :options="$page.props.offices" v-model="office" />
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Regular" />
-                        <tailwind-select class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NONREGULAR', value: 0}]" v-model="regular" />
+                        <JetLabel value="Regular" />
+                        <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NONREGULAR', value: 0}]" v-model="regular" />
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <jet-label value="Active" />
-                        <tailwind-select class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
+                        <JetLabel value="Active" />
+                        <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
                     </div>
                 </div>
 
@@ -104,7 +104,7 @@
             </div>
         </div>
 
-        <jet-dialog-modal :show="importDialog" @close="closeImportDialog">
+        <JetDialogModal :show="importDialog" @close="closeImportDialog">
             <template #title>
                 Upload
             </template>
@@ -129,7 +129,7 @@
                     <p v-if="form.file" class="mt-1 text-lg tracking-tighter text-indigo-600 dark:text-white">
                         {{ form.file.name }}
                         <span class="float-right p-0">
-                            <jet-button class="rounded-md" style="padding:0.25em!important" @click="resetForm"> &nbsp;&times;&nbsp; </jet-button>
+                            <JetButton class="rounded-md" style="padding:0.25em!important" @click="resetForm"> &nbsp;&times;&nbsp; </JetButton>
                         </span>
                     </p>
                 </div>
@@ -137,24 +137,24 @@
                     Warning: Importing csv will replace all existing data with the new one!
                 </p>
 
-                <jet-input-error :message="form.errors.file" class="mt-2" />
+                <JetInputError :message="form.errors.file" class="mt-2" />
             </template>
 
             <template #footer>
-                <jet-secondary-button @click="closeImportDialog">
+                <JetSecondaryButton @click="closeImportDialog">
                     Cancel
-                </jet-secondary-button>
+                </JetSecondaryButton>
 
-                <jet-button :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing || waitForFile">
+                <JetButton :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing || waitForFile">
                     Import
-                </jet-button>
+                </JetButton>
             </template>
-        </jet-dialog-modal>
+        </JetDialogModal>
 
         <create-form :scanners="$page.props.scanners" :show="createDialog" @close="closeCreateDialog" />
 
         <!-- <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" @deleted="clearSelection" /> -->
-    </app-layout>
+    </AppLayout>
 </template>
 
 <script>
