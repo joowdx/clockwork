@@ -283,7 +283,7 @@
                 office: 'ALL',
                 regular: -1,
                 active: 1,
-                period: 'custom',
+                period: this.$page.props.period,
                 date: this.$page.props.date,
                 month: this.$page.props.month,
                 from: this.$page.props.from,

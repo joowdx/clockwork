@@ -21,9 +21,10 @@ class TimeLogService implements Import
     {
         return [
             'date' => today()->startOfWeek()->format('Y-m-d'),
-            'month' => today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m-d'),
+            'month' => today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m'),
             'from' => today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d'),
             'to' => today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d'),
+            'period' => today()->day > 15 ? '1st' : 'full',
         ];
     }
 
