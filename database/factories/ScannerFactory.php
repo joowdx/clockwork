@@ -28,7 +28,7 @@ class ScannerFactory extends Factory
             'attlog_file' => 'AF4C211360031_attlog',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
             'print_text_colour' => '#ECF0F1',
-            'print_background_colour' => '#D61C4E',
+            'print_background_colour' => '#34B3F1',
             'shared' => true,
         ]);
     }
@@ -39,7 +39,7 @@ class ScannerFactory extends Factory
             'name' => 'coliseum-2',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
             'print_text_colour' => '#ECF0F1',
-            'print_background_colour' => '#FD5D5D',
+            'print_background_colour' => '#5FD068',
             'shared' => true,
         ]);
     }
@@ -158,7 +158,9 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'pgso-1',
-            'remarks' => 'For regulars.'
+            'attlog_file' => '3324211560119_attlog',
+            'remarks' => 'For regulars.',
+            'print_text_colour' => '#1F4287',
         ]);
     }
 
@@ -166,7 +168,9 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'pgso-2',
-            'remarks' => 'For non-regulars.'
+            'attlog_file' => '1_attlog',
+            'remarks' => 'For non-regulars.',
+            'print_text_colour' => '#B55400',
         ]);
     }
 
