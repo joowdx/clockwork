@@ -79,7 +79,7 @@
                                 <tr height="20">
                                     @foreach ($scanners as $scanner)
                                         <td colspan="2" class="uppercase font-xs nowrap consolas scanner bold {{ $scanner->name }}">
-                                            {{ $scanner->name }} ({{ str_pad($scanner->pivot->uid, 4, 0, STR_PAD_LEFT) }})
+                                            {{ $scanner->name }} ({{ str_pad($scanner->pivot->uid, 5, 0, STR_PAD_LEFT) }})
                                         </td>
                                     @endforeach
                                 </tr>
