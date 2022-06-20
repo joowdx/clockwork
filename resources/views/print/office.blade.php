@@ -11,6 +11,7 @@
                 $pages = ceil(max(count(@$employees['nonregular'] ?? []), count(@$employees['regular'] ?? [])) / 30);
             @endphp
             @for ($i = 0; $i < ($pages ? $pages : 1); $i++)
+                <div class="pagebreak"></div>
                 <div align="center">
                     <table border="0" cellpadding="0" cellspacing="0" width="640">
                         <tbody>
@@ -135,9 +136,6 @@
                         </tbody>
                     </table>
                 </div>
-                @if ($i < $pages - 1)
-                    <div class="pagebreak"></div>
-                @endif
             @endfor
         @endforeach
     </body>
