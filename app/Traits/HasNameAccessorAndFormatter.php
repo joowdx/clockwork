@@ -107,27 +107,13 @@ trait HasNameAccessorAndFormatter
         return $this->removeExtraWhitespaces("$name?->last, " . $this->initialWords(@$name?->first) . '.');
     }
 
-    public function scopeSortByName(Builder $builder): Builder
-    {
-        return $this->scopeSortByNameAsc($builder);
-    }
-
-    public function scopeSortByNameAsc(Builder $builder): Builder
+    public function scopeSortByName(Builder $builder, string $direction = 'asc'): Builder
     {
         return $builder
-            ->orderBy('name->last')
-            ->orderBy('name->first')
-            ->orderBy('name->middle')
-            ->orderBy('name->extension');
-    }
-
-    public function scopeSortByNameDesc(Builder $builder): Builder
-    {
-        return $builder
-            ->orderBy('name->last', 'desc')
-            ->orderBy('name->first', 'desc')
-            ->orderBy('name->middle', 'desc')
-            ->orderBy('name->extension', 'desc');
+            ->orderBy('name->last', $direction)
+            ->orderBy('name->first', $direction)
+            ->orderBy('name->middle', $direction)
+            ->orderBy('name->extension', $direction);
     }
 
     private function appendString(?string $string, string $append): string
@@ -142,14 +128,9 @@ trait HasNameAccessorAndFormatter
 
     private function initialWords(string $string): string
     {
-        preg_match_all('/(?<=\b)[a-z]/i', $this->sanitize($string), $matches);
+        preg_match_all('/(?<=\b)[a-z]/i', str_replace('Ñ','N',$string), $matches);
 
         return strtoupper(implode('', $matches[0]));
-    }
-
-    private function sanitize(string $string): string
-    {
-        return str_replace('Ñ','N',$string);
     }
 
     private function prependString(?string $string, string $prepend = ' '): string
