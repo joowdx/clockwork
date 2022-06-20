@@ -37,6 +37,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'coliseum-2',
+            'attlog_file' => 'AF4C211360029_attlog',
             'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
             'print_text_colour' => '#ECF0F1',
             'print_background_colour' => '#5FD068',
