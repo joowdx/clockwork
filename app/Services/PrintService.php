@@ -109,8 +109,8 @@ class PrintService
             };
             case 'custom': {
                 return [
-                    'from' => Carbon::parse($this->request->from),
-                    'to' => Carbon::parse($this->request->to),
+                    'from' => Carbon::parse($this->request->from)->startOfDay(),
+                    'to' => Carbon::parse($this->request->to)->endOfDay(),
                 ];
             };
             default: {
