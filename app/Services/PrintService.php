@@ -85,7 +85,7 @@ class PrintService
                 break;
             };
             case 'employee': {
-                $query->with(['timelogs.scanner', 'timelogs' => fn ($q) => $q->whereBetween('time', $this->range())]);
+                $query->with(['scanners', 'timelogs.scanner', 'timelogs' => fn ($q) => $q->whereBetween('time', $this->range())]);
                 $query->whereIn('id', $this->request->employees);
                 break;
             };

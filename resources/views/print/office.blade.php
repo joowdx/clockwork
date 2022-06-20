@@ -106,7 +106,7 @@
                                     @endif
                                 </td>
                             </tr>
-                            @foreach ($scanners->take(10)->chunk(5) as $chunk)
+                            @foreach (collect($employees)->flatten()->flatMap->scanners->unique('id')->chunk(5) as $chunk)
                                 <tr height="20">
                                     @foreach ($chunk as $scanner)
                                         <td colspan="2" class="uppercase font-xs nowrap consolas scanner bold {{ $scanner->name }}">
