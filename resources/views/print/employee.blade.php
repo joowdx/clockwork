@@ -19,7 +19,7 @@
                             <tr height="20">
                                 <td height="20" class="font-md bold bottom bahnschrift">NAME</td>
                                 <td colspan="9" class="uppercase font-md bottom consolas">
-                                    {{ $employee->nameFormat->fullStartLastInitialMiddle }}
+                                    {{ $employee->nameFormat->fullStartLast }}
                                 </td>
                             </tr>
                             <tr height="20">
