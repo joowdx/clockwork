@@ -4,7 +4,6 @@ namespace App\Contracts;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -218,15 +217,14 @@ abstract class BaseRepository implements Repository
 
     protected function destroying(array $payload): void {}
 
-
     protected abstract function transformData(array $payload): array;
 
-    private function generateUuid(string $column = 'id', bool $generate = true)
+    protected function generateUuid(string $column = 'id', bool $generate = true)
     {
         return $generate ? [$column => str()->orderedUuid()] : [];
     }
 
-    private function hasUuidPrimaryKey(): bool
+    protected function hasUuidPrimaryKey(): bool
     {
         return trait_exists(\App\Traits\HasUniversallyUniqueIdentifier::class)
             && in_array(\App\Traits\HasUniversallyUniqueIdentifier::class, class_uses_recursive(get_class($this->model())));

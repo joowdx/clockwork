@@ -16,7 +16,7 @@ class InsertEmployees
             $this->repository->query()->upsert(
                 collect($payload)->map(function ($e) {
 
-                    return collect($e)->except('scanners', 'nameToJSON')->toArray();
+                    return collect($e)->except('nameToJSON')->toArray();
 
                 })->replaceRecursive($transformed)->toArray(), ['name'],
             );

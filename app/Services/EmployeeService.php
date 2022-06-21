@@ -2,63 +2,52 @@
 
 namespace App\Services;
 
+use App\Actions\FileImport\DeleteDuplicateEmployeeEnrollment;
 use App\Actions\FileImport\InsertEmployees;
 use App\Actions\FileImport\InsertEnrollments;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
-use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Contracts\Auth\Authenticatable;
+use App\Pipes\CheckDuplicateUids;
+use App\Pipes\CheckHeaders;
+use App\Pipes\CheckNumericUid;
+use App\Pipes\CheckRequiredFields;
+use App\Pipes\GetScannerUids;
+use App\Pipes\GetCsvString;
+use App\Pipes\TransformEmployeeScannerData;
+use App\Traits\ParsesEmployeeImport;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
 
 class EmployeeService implements Import
 {
-    const REQUIRED_HEADERS = [
-        'last name',
-        'first name',
-        'regular',
-    ];
-
-    const OPTIONAL_HEADERS = [
-        'name extension',
-        'middle name',
-        'office',
-        'active',
-    ];
-
-    private string $error = '';
-
-    protected $header = [];
+    use ParsesEmployeeImport;
 
     public function __construct(
         private Repository $repository,
-    ) {
-        $this->scanner = app(ScannerService::class);
-    }
+    ) { }
 
     public function validate(Request $request): bool
     {
-        $header = collect(self::REQUIRED_HEADERS)->every(fn ($header) => in_array($header, $this->headers((string) File::lines($request->file)->first())));
+        return app(Pipeline::class)
+            ->send((object) [
+                'headers' => $this->headers((string) ($file = File::lines($request->file))->filter()->first()),
+                'lines' => $file,
+                'data' => app(GetCsvString::class)->parse($file->filter()->skip(1)),
+                'error' => null,
+            ])
+            ->through([
+                CheckHeaders::class,
+                CheckRequiredFields::class,
+                CheckNumericUid::class,
+                CheckDuplicateUids::class,
+            ])->then(function ($result) {
 
-        if ($header) {
-            $this->error = 'FILE UNSUPPORTED.';
+                return $result->error ? ! ($this->error = $result->error) : true;
 
-            return false;
-        }
-
-        // $id = File::lines($file)->skip(1)->filter()->map(fn ($e) => str_getcsv($e)[$this->headers((string) File::lines($file)->first())['SCANNER ID']])->duplicates();
-
-        // if ($id->isNotEmpty()) {
-        //     $this->error = "DUPLICATE IDS DETECTED: {$id->values()->toJSON()}. PLEASE CHECK AGAIN.";
-
-        //     return false;
-        // }
-
-        return true;
+            });
     }
 
     public function error(): string
@@ -68,30 +57,29 @@ class EmployeeService implements Import
 
     public function parse(Request $request): void
     {
-        $stream = File::lines($request->file);
+        app(Pipeline::class)
+            ->send(File::lines($request->file))
+            ->through([
+                GetCsvString::class,
+                TransformEmployeeScannerData::class,
+            ])->then(fn ($d) => $d->each(function ($chunked) {
 
-        $scanners = $this->scanner->nameAsKeysForId();
+                app(InsertEmployees::class)($chunked->map->employee->toArray());
 
-        $stream->skip(1)
-            ->filter()
-            ->map(fn($e) => str_getcsv($e))
-            ->map(fn ($e) => $this->transformImportData($e, $this->headers((string) $stream->first())))
-            ->chunk(1000)
-            ->each(function ($chunk) use ($scanners) {
+                app(Pipeline::class)
+                    ->send($chunked)
+                    ->through([
+                        GetScannerUids::class,
+                    ])->then(fn ($d) => $d->each(function ($chunked) {
 
-                app(InsertEmployees::class)($chunk->toArray());
+                        app(InsertEnrollments::class)($chunked->toArray());
 
-                $chunk->flatMap(function ($e) use ($scanners) {
-                    return collect($e['scanners'])->filter()->map(function ($f, $k) use ($e, $scanners) {
-                        return [
-                            'uid' => $f,
-                            'scanner_id' => $scanners[$k],
-                            'employee_id' => $e['id'],
-                            'id' => str()->orderedUuid(),
-                        ];
-                    })->toArray();
-                })->chunk(1000)->each(fn ($chunk) => app(InsertEnrollments::class)($chunk->toArray()));
-            });
+                        app(DeleteDuplicateEmployeeEnrollment::class)();
+
+                    })
+                );
+            })
+        );
     }
 
     public function get()
@@ -119,69 +107,5 @@ class EmployeeService implements Import
     public function update(Employee $employee, array $payload)
     {
         $this->repository->update($employee, $payload);
-    }
-
-    public function markInactive(Authenticatable|User $user)
-    {
-        $user->employees()->active()->whereDoesntHave('mainLogs', function ($q) {
-            $q->whereDate('time', '>', today()->subMonth()->startOfMonth());
-        })->update(['active' => 0]);
-    }
-
-    public function markActive(Authenticatable|User $user)
-    {
-        $user->employees()->active(0)->whereHas('mainLogs', function ($q) {
-            $q->whereDate('time', '<', today()->subMonth()->startOfMonth());
-        })->update(['active' => 1]);
-    }
-
-    public function loadLogs(Collection|array $employees, ?Carbon $from = null, ?Carbon $to = null): Collection
-    {
-        $from ??= today()->startOfMonth();
-
-        $to ??= today()->endOfMonth();
-
-        if (is_array($employees)) {
-            $employees = $this->repository->find($employees);
-        }
-
-        // $employees->filter->backedUp->map->load(['backupLogs' => fn ($q) => $q->whereBetween('time', [$from, $to])]);
-
-        // $employees->reject->backedUp->map->load(['mainLogs' => fn ($q) => $q->whereBetween('time', [$from, $to])]);
-
-        return $employees;
-    }
-
-    private  function transformImportData(array $line, array $headers): array
-    {
-        return [
-            'id' => str()->orderedUuid()->toString(),
-            'scanners' => $this->uids($line, $this->scanners($headers)),
-            'name' => [
-                'last' => $line[$headers['last name']],
-                'first' => $line[$headers['first name']],
-                'middle' => @$line[$headers['middle name']],
-                'extension' => @$line[$headers['name extension']],
-            ],
-            'office' => @$line[$headers['office']],
-            'regular' => (bool) $line[$headers['regular']],
-            'active' => (bool) @$line[$headers['active']],
-            'nameToJSON' => true,
-        ];
-    }
-
-    private function headers(string $first): array
-    {
-        return array_flip(explode(',', strtolower(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $first))));
-    }
-
-    private function scanners(array $headers): array
-    {
-        return array_flip(array_diff(array_flip($headers), array_merge(self::REQUIRED_HEADERS, self::OPTIONAL_HEADERS)));
-    }
-
-    private function uids(array $line, array $scanners): array
-    {
-        return collect($scanners)->mapWithKeys(fn ($e, $f) => [$f => $line[$scanners[$f]]])->toArray();
     }
 }

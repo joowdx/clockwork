@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Contracts\BaseRepository;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 
 class EmployeeRepository extends BaseRepository
 {

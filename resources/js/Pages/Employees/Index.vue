@@ -110,7 +110,7 @@
             </template>
 
             <template #content>
-                <div class="mb-3">
+                <div :class="{'mb-3': !form.errors.file }">
                     <div class="flex justify-center px-6 pt-5 pb-6 mt-1 border-2 border-gray-300 border-dashed rounded-md">
                         <div class="space-y-1 text-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -131,13 +131,10 @@
                         <span class="float-right p-0">
                             <JetButton class="rounded-md" style="padding:0.25em!important" @click="resetForm"> &nbsp;&times;&nbsp; </JetButton>
                         </span>
+                        <JetInputError :message="form.errors.file" />
                     </p>
                 </div>
-                <p class="text-sm text-red-600 uppercase">
-                    Warning: Importing csv will replace all existing data with the new one!
-                </p>
 
-                <JetInputError :message="form.errors.file" class="mt-2" />
             </template>
 
             <template #footer>

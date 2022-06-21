@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Contracts\Import;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ValidateImports
 {
@@ -22,7 +23,9 @@ class ValidateImports
     public function handle(Request $request, Closure $next)
     {
         if ($request->has('file')) {
-            abort_unless($this->import->validate($request), '400', $this->import->error());
+            if (! $this->import->validate($request)) {
+                throw ValidationException::withMessages(['file' => $this->import->error()]);
+            }
         }
 
         return $next($request);
