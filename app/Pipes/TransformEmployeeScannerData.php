@@ -29,6 +29,6 @@ class TransformEmployeeScannerData
                 ],
                 'scanners' => $this->uids($entry, $this->scanners($headers)),
             ];
-        })->chunk(500));
+        }));
     }
 }

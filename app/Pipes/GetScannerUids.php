@@ -26,6 +26,6 @@ class GetScannerUids
                     'uid' => $uid,
                 ];
             })->toArray();
-        })->chunk(500));
+        }));
     }
 }

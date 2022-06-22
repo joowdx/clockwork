@@ -12,8 +12,10 @@ use App\Pipes\CheckDuplicateUids;
 use App\Pipes\CheckHeaders;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckRequiredFields;
+use App\Pipes\Chunk;
 use App\Pipes\GetScannerUids;
-use App\Pipes\GetCsvString;
+use App\Pipes\Sanitize;
+use App\Pipes\SplitCsvString;
 use App\Pipes\TransformEmployeeScannerData;
 use App\Traits\ParsesEmployeeImport;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,7 +37,7 @@ class EmployeeService implements Import
             ->send((object) [
                 'headers' => $this->headers((string) ($file = File::lines($request->file))->filter()->first()),
                 'lines' => $file,
-                'data' => app(GetCsvString::class)->parse($file->filter()->skip(1)),
+                'data' => app(SplitCsvString::class)->parse($file->filter()->skip(1)),
                 'error' => null,
             ])
             ->through([
@@ -60,8 +62,10 @@ class EmployeeService implements Import
         app(Pipeline::class)
             ->send(File::lines($request->file))
             ->through([
-                GetCsvString::class,
+                Sanitize::class,
+                SplitCsvString::class,
                 TransformEmployeeScannerData::class,
+                Chunk::class,
             ])->then(fn ($d) => $d->each(function ($chunked) {
 
                 app(InsertEmployees::class)($chunked->map->employee->toArray());
@@ -69,7 +73,9 @@ class EmployeeService implements Import
                 app(Pipeline::class)
                     ->send($chunked)
                     ->through([
+                        Sanitize::class,
                         GetScannerUids::class,
+                        Chunk::class,
                     ])->then(fn ($d) => $d->each(function ($chunked) {
 
                         app(InsertEnrollments::class)($chunked->toArray());
