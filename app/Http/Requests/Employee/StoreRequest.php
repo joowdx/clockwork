@@ -2,11 +2,16 @@
 
 namespace App\Http\Requests\Employee;
 
+use App\Contracts\Import;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
+    public function __construct(
+        private Import $import
+    ) { }
+
     /**
      * Get custom messages for validator errors.
      *
@@ -30,8 +35,18 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return $this->has('file')
-            ? ['file' => 'required|file|mimes:csv',]
-            : [
+            ? [
+                'file' => [
+                    'required',
+                    'file',
+                    'mimes:csv',
+                    function ($attribute, $value, $fail) {
+                        if(!$this->import->validate($this)) {
+                            $fail($this->import->error());
+                        }
+                    }
+                ],
+            ] : [
                 'biometrics_id' => ['required', 'numeric', Rule::unique('employees')->where('user_id', auth()->id())],
                 'name.first' => 'required|string',
                 'name.last' => 'required|string',

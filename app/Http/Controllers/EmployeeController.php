@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Http\Middleware\ValidateImports;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
 use App\Models\Employee;
@@ -18,15 +17,13 @@ class EmployeeController extends Controller
         private Repository $repository,
         private EmployeeService $employee,
         private ScannerService $scanner,
-    ) {
-        $this->middleware(ValidateImports::class)->only('store');
-    }
+    ) { }
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
-     */
+    */
     public function index()
     {
         return inertia('Employees/Index', [

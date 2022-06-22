@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Import;
-use App\Http\Middleware\ValidateImports;
-use App\Http\Requests\ImportRequest;
+use App\Http\Requests\TimeLog\StoreRequest;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;
@@ -18,9 +17,7 @@ class TimeLogController extends Controller
         private EmployeeService $employees,
         private ScannerService $scanners,
         private TimeLogService $timelog,
-    ) {
-        $this->middleware(ValidateImports::class)->only('store');
-    }
+    ) { }
 
     /**
      * Display a listing of the resource.
@@ -40,11 +37,11 @@ class TimeLogController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  App\Http\Requests\ImportRequest  $request
+     * @param  App\Http\Requests\TimeLog\StoreRequest  $request
      * @param  App\Contracts\Import  $import
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(ImportRequest $request, Import $import): RedirectResponse
+    public function store(StoreRequest $request, Import $import): RedirectResponse
     {
         $import->parse($request);
 

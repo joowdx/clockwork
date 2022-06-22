@@ -1,13 +1,23 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\TimeLog;
 
+use App\Contracts\Import;
 use App\Models\Scanner;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ImportRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
+    public function __construct(
+        private Import $import
+    ) { }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
     public function messages()
     {
         return [
@@ -16,6 +26,11 @@ class ImportRequest extends FormRequest
         ];
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
     public function rules()
     {
         return [
@@ -38,6 +53,10 @@ class ImportRequest extends FormRequest
 
                     if(!$user->scanners()->find($scanner->id)) {
                         $fail('Not enough privilege.');
+                    }
+
+                    if(!$this->import->validate($this)) {
+                        $fail($this->import->error());
                     }
                 }
             ],
