@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Scanner extends Model
@@ -42,5 +43,13 @@ class Scanner extends Model
     public function timelogs(): HasManyThrough
     {
         return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id');
+    }
+
+    public function unrecognized(): HasMany
+    {
+        return $this->hasMany(TimeLog::class)
+                ->latest('time')
+                ->latest('id')
+                ->whereNull('enrollment_id');
     }
 }

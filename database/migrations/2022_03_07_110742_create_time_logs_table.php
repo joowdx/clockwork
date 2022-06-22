@@ -15,7 +15,9 @@ return new class extends Migration
     {
         Schema::create('time_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('enrollment_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->unsignedInteger('uid');
+            $table->foreignUuid('scanner_id')->nullable();
+            $table->foreignUuid('enrollment_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
             $table->unsignedTinyInteger('state');
             $table->timestamps();
