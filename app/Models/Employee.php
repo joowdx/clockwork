@@ -54,7 +54,8 @@ class Employee extends Model
     public function timelogs(): HasManyThrough
     {
         return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id')
-                ->orderBy('time');
+                ->latest('time')
+                ->latest('id');
     }
 
     public function schedules(): HasMany

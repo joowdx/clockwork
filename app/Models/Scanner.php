@@ -42,7 +42,9 @@ class Scanner extends Model
 
     public function timelogs(): HasManyThrough
     {
-        return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id');
+        return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id')
+                ->latest('time')
+                ->latest('id');
     }
 
     public function unrecognized(): HasMany
