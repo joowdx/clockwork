@@ -8,18 +8,15 @@ class CheckNumericUid
 {
     use ParsesEmployeeImport;
 
-    const ERROR = 'Invalid UID/s detected.';
+    const ERROR = 'Invalid or malformed file.';
 
     public function handle(mixed $request, \Closure $next)
     {
         if (! $request->error) {
             if (
-                ! collect($this->scanners($request->headers))
-                    ->every(fn ($h) =>
-                        $request->data->map(fn ($e) => $e[$h])
-                            ->filter()
-                            ->every(fn ($e) => is_numeric($e))
-                    )
+                @$request->headers
+                    ? ! collect($this->scanners($request->headers))->every(fn ($h) => $request->data->map->{$h}->filter()->every(fn ($e) => is_numeric($e)))
+                    : ! $request->data->map->{0}->every(fn ($e) => is_numeric($e))
             ) {
                 $request->error = self::ERROR;
             }

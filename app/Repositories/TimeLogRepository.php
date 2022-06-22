@@ -9,6 +9,7 @@ class TimeLogRepository extends BaseRepository
     protected function transformData(array $payload): array
     {
         return [
+            'uid' => $payload['uid'],
             'enrollment_id' => $payload['enrollment_id'],
             'time' => $payload['time'],
             'state' => $payload['state'],

@@ -19,7 +19,7 @@ class TimeLogController extends Controller
         private ScannerService $scanners,
         private TimeLogService $timelog,
     ) {
-        // $this->middleware(ValidateImports::class)->only('store');
+        $this->middleware(ValidateImports::class)->only('store');
     }
 
     /**

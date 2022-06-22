@@ -2,13 +2,18 @@
 
 namespace App\Services;
 
+use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Models\Enrollment;
 use App\Models\TimeLog;
-use Exception;
+use App\Pipes\CheckNumericUid;
+use App\Pipes\CheckStateEntries;
+use App\Pipes\Chunk;
+use App\Pipes\Sanitize;
+use App\Pipes\SplitAttlogString;
+use App\Pipes\TransformTimeLogData;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
 
 class TimeLogService implements Import
@@ -30,53 +35,40 @@ class TimeLogService implements Import
 
     public function validate(Request $request): bool
     {
-        $time = now()->startOfMillennium();
+        return app(Pipeline::class)
+            ->send((object) [
+                'lines' => $file = File::lines($request->file)->filter()->unique(),
+                'data' => app(SplitAttlogString::class)->split($file),
+                'error' => null,
+            ])->through([
+                CheckNumericUid::class,
+                CheckStateEntries::class,
+            ])->then(function ($result) {
 
-        return File::lines($request->file)->filter()
-            ->map(fn ($e) => explode("\t", $e))
-            ->every(function ($line) use(&$time) {
-                try {
-                    $log = Carbon::parse($line[1]);
+                return $result->error ? ! ($this->error = $result->error) : true;
 
-                    $check = $log->gte($time);
-
-                    $time = $log;
-
-                    return is_numeric($line[0]) && $check &&
-                        join('', collect(array_slice($line, 2))->map(fn ($d) => preg_replace('/[0-9]+/', 0, $d))->toArray()) === '0000';
-                } catch (Exception) {
-                    return false;
-                }
             });
     }
 
     public function error(): string
     {
-        return 'PLEASE CHECK THE IMPORTED FILE AND MAKE SURE IT IS VALID AND NOT TAMPERED WITH!';
+        return $this->error;
     }
 
     public function parse(Request $request): void
     {
-        File::lines($request->file)
-            ->filter()
-            ->unique()
-            ->map(fn ($e) => explode("\t", $e))
-            ->map(fn ($e) => $this->transformImportData($e, $request->scanner))
-            ->chunk(1000)
-            ->each(function ($chunk) {
+        app(Pipeline::class)
+            ->send(File::lines($request->file))
+            ->through([
+                Sanitize::class,
+                SplitAttlogString::class,
+                TransformTimeLogData::class,
+                Chunk::class,
+            ])->then(fn ($d) => $d->each(function ($chunked) {
 
-                $keys = $chunk->unique('uid', 'scanner_id')->mapWithKeys(fn ($e) => [
-                    $e['uid'] => Enrollment::firstWhere([
-                        'uid' => $e['uid'],
-                        'scanner_id' => $e['scanner'],
-                    ])?->id
-                ])->filter()->toArray();
+                app(InsertTimeLogs::class)($chunked->toArray());
 
-                $this->repository->upsert(
-                    $chunk->map(fn ($e) => [...$e, 'enrollment_id' => @$keys[$e['uid']]])->filter(fn ($r) => $r['enrollment_id'])->toArray(),
-                    ['enrollment_id', 'time', 'state']
-                );
-            });
+            }));
     }
 
     public function accept(mixed &$accept): mixed
@@ -88,16 +80,5 @@ class TimeLogService implements Import
         $accept->persist = true;
 
         return $accept;
-    }
-
-    private function transformImportData(array $record, string $scanner): array
-    {
-        return [
-            'id' => str()->orderedUuid()->toString(),
-            'uid' => trim($record[0]),
-            'scanner' => strtolower($scanner),
-            'time' => Carbon::createFromTimeString($record[1]),
-            'state' => join('', collect(array_slice($record, 2))->map(fn ($record) => $record > 1 ? 1 : $record)->toArray()),
-        ];
     }
 }

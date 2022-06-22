@@ -28,5 +28,4 @@ class CheckRequiredFields
 
         return $next($request);
     }
-
 }
