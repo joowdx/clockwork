@@ -40,8 +40,8 @@ class StoreRequest extends FormRequest
                     'required',
                     'file',
                     'mimes:csv',
-                    function ($attribute, $value, $fail) {
-                        if(!$this->import->validate($this)) {
+                    function ($attribute, $file, $fail) {
+                        if(!$this->import->validate($file)) {
                             $fail($this->import->error());
                         }
                     }

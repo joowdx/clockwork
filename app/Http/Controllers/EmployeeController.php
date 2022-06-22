@@ -42,7 +42,7 @@ class EmployeeController extends Controller
     public function store(StoreRequest $request, Import $import)
     {
         if ($request->has('file')) {
-            $import->parse($request);
+            $import->parse($request->file);
         } else {
             $this->repository->create($request->all());
         }

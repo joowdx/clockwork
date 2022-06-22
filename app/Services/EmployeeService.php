@@ -19,7 +19,7 @@ use App\Pipes\SplitCsvString;
 use App\Pipes\TransformEmployeeScannerData;
 use App\Traits\ParsesEmployeeImport;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
 
@@ -31,11 +31,11 @@ class EmployeeService implements Import
         private Repository $repository,
     ) { }
 
-    public function validate(Request $request): bool
+    public function validate(UploadedFile $file): bool
     {
         return app(Pipeline::class)
             ->send((object) [
-                'headers' => $this->headers((string) ($file = File::lines($request->file))->filter()->first()),
+                'headers' => $this->headers((string) ($file = File::lines($file))->filter()->first()),
                 'lines' => $file,
                 'data' => app(SplitCsvString::class)->parse($file->filter()->skip(1)),
                 'error' => null,
@@ -57,10 +57,10 @@ class EmployeeService implements Import
         return $this->error;
     }
 
-    public function parse(Request $request): void
+    public function parse(UploadedFile $file): void
     {
         app(Pipeline::class)
-            ->send(File::lines($request->file))
+            ->send(File::lines($file))
             ->through([
                 Sanitize::class,
                 SplitCsvString::class,

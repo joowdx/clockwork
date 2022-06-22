@@ -43,7 +43,7 @@ class TimeLogController extends Controller
      */
     public function store(StoreRequest $request, Import $import): RedirectResponse
     {
-        $import->parse($request);
+        $import->parse($request->file);
 
         return redirect()->back();
     }

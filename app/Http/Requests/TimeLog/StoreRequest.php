@@ -42,12 +42,13 @@ class StoreRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:csv,txt',
-                function ($attribute, $value, $fail) {
+                function ($attribute, $file, $fail) {
+
                     $scanner = Scanner::findOrFail($this->scanner);
 
                     $user = User::find(auth()->id());
 
-                    if (($attlog = $scanner->attlog_file) && pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME) !== $attlog) {
+                    if (($attlog = $scanner->attlog_file) && pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) !== $attlog) {
                         $fail('Please choose the correct file.');
                     }
 
@@ -55,7 +56,7 @@ class StoreRequest extends FormRequest
                         $fail('Not enough privilege.');
                     }
 
-                    if(!$this->import->validate($this)) {
+                    if(!$this->import->validate($file)) {
                         $fail($this->import->error());
                     }
                 }

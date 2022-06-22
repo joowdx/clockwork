@@ -12,7 +12,7 @@ use App\Pipes\Chunk;
 use App\Pipes\Sanitize;
 use App\Pipes\SplitAttlogString;
 use App\Pipes\TransformTimeLogData;
-use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
 
@@ -33,11 +33,11 @@ class TimeLogService implements Import
         ];
     }
 
-    public function validate(Request $request): bool
+    public function validate(UploadedFile $file): bool
     {
         return app(Pipeline::class)
             ->send((object) [
-                'lines' => $file = File::lines($request->file)->filter()->unique(),
+                'lines' => $file = File::lines($file)->filter()->unique(),
                 'data' => app(SplitAttlogString::class)->split($file),
                 'error' => null,
             ])->through([
@@ -55,10 +55,10 @@ class TimeLogService implements Import
         return $this->error;
     }
 
-    public function parse(Request $request): void
+    public function parse(UploadedFile $file): void
     {
         app(Pipeline::class)
-            ->send(File::lines($request->file))
+            ->send(File::lines($file))
             ->through([
                 Sanitize::class,
                 SplitAttlogString::class,
