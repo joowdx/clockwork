@@ -20,7 +20,7 @@
                 </div>
                 <JetInputError :message="form.errors[`scanners.${scanner.id}.uid`]" class="mt-2" />
             </div>
-            <div v-if="! $page.props.employee.scanners.length" class="col-span-6 sm:col-span-4">
+            <div v-if="! $page.props.employee.scanners?.length" class="col-span-6 sm:col-span-4">
                 <JetLabel class="uppercase" for="empty" value="empty" />
                 <div class="grid grid-cols-12 space-x-3 align-bottom">
                     <JetInput id="empty" type="text" class="block w-full col-span-12" value='Please click the "add" button below.' disabled />

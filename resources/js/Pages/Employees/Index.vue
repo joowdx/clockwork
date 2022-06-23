@@ -10,9 +10,11 @@
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="grid grid-cols-12 px-6 mb-6 justify-items-end gap-y-2 gap-x-3 sm:px-0">
                     <div class="flex self-end col-span-12 mt-3 space-x-3">
-                        <JetSecondaryButton style="width:90px">
-                            Create
-                        </JetSecondaryButton>
+                        <Link :href="route('employees.create')">
+                            <JetSecondaryButton style="width:90px">
+                                Create
+                            </JetSecondaryButton>
+                        </Link>
                         <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                             Import
                         </JetSecondaryButton>
@@ -147,10 +149,6 @@
                 </JetButton>
             </template>
         </JetDialogModal>
-
-        <create-form :scanners="$page.props.scanners" :show="createDialog" @close="closeCreateDialog" />
-
-        <!-- <edit-form :employee="employees.filter(e => selected.includes(e.id))" :show="editDialog" @close="closeEditDialog" @deleted="clearSelection" /> -->
     </AppLayout>
 </template>
 
@@ -167,9 +165,6 @@
     import JetInputError from '@/Jetstream/InputError.vue'
     import TailwindSelect from '@/Tailwind/Select.vue'
 
-    import CreateForm from '@/Pages/Employees/Partials/CreateForm.vue'
-    import EditForm from '@/Pages/Employees/Partials/EditForm.vue'
-
     import Swal from 'sweetalert2'
     import fuzzysort from 'fuzzysort'
 
@@ -185,8 +180,6 @@
             JetInputError,
             JetSecondaryButton,
             TailwindSelect,
-            CreateForm,
-            EditForm,
         },
 
         data() {

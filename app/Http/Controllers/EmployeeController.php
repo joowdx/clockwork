@@ -34,20 +34,36 @@ class EmployeeController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return inertia('Employees/Create');
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\Employee\StoreRequest  $request
+     * @param  \App\Contracts\Import    $import;
      * @return \Illuminate\Http\Response
      */
     public function store(StoreRequest $request, Import $import)
     {
-        if ($request->has('file')) {
-            $import->parse($request->file);
-        } else {
-            $this->repository->create($request->all());
-        }
+        switch ($request->has('file')) {
+            case true: {
+                $import->parse($request->file);
 
-        return redirect()->back();
+                return redirect()->back();
+            }
+            default: {
+                $employee = $this->repository->create($request->all());
+
+                return redirect()->route('employees.edit', $employee->id);
+            }
+        }
     }
 
     /**
@@ -86,12 +102,12 @@ class EmployeeController extends Controller
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(Employee $employee, Request $request)
     {
         $this->confirmPassword($request->password);
 
-        $this->repository->destroy(explode(',', $id));
+        $this->repository->delete($employee);
 
-        return redirect()->back();
+        return redirect()->route('employees.index');
     }
 }

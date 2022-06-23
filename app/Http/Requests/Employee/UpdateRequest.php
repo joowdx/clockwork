@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Employee;
 
+use App\Models\Employee;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,8 +16,10 @@ class UpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.first.required' => 'First name is required.',
-            'name.last.required' => 'Last name is required.',
+            'name.first.required' => 'The first name field is required.',
+            'name.last.required' => 'The last name field is required.',
+            'regular.in' => 'Please select one.',
+            'regular.required' => 'Please select one.',
         ];
     }
 
@@ -28,14 +31,26 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'biometrics_id' => ['nullable', 'numeric', Rule::unique('employees')->ignore(@$this->id[0])->where('user_id', auth()->id())],
-            'name.first' => 'required|string',
             'name.last' => 'required|string',
+            'name.first' => 'required|string',
             'name.middle' => 'nullable|string',
             'name.extension' => 'nullable|string',
             'office' => 'nullable|string',
-            'regular' => 'nullable|boolean',
+            'regular' => 'required|boolean',
             'active' => 'nullable|boolean',
+            'name' => function ($att, $name, $fail) {
+                if (
+                    Employee::query()
+                        ->where('name->last', strtoupper(@$name['last']) ?? '')
+                        ->where('name->first', strtoupper(@$name['first']) ?? '')
+                        ->where('name->middle', strtoupper(@$name['middle']) ?? '')
+                        ->where('name->extension', strtoupper(@$name['extension']) ?? '')
+                        ->whereNot('id', $this->id)
+                        ->exists()
+                ) {
+                    $fail('This employee already exists.');
+                }
+            }
         ];
     }
 }

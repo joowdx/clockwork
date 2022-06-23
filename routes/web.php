@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::get('/print', PrintController::class)->name('print');
     Route::resource('users', ScannerController::class);
     Route::resource('scanners', ScannerController::class);
-    Route::resource('employees', EmployeeController::class)->except(['create', 'show']);
+    Route::resource('employees', EmployeeController::class)->except(['show']);
     Route::resource('timelogs', TimeLogController::class)->only(['index', 'store']);
     Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
 });

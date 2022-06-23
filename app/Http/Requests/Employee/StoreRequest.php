@@ -3,8 +3,8 @@
 namespace App\Http\Requests\Employee;
 
 use App\Contracts\Import;
+use App\Models\Employee;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
@@ -47,13 +47,25 @@ class StoreRequest extends FormRequest
                     }
                 ],
             ] : [
-                'biometrics_id' => ['required', 'numeric', Rule::unique('employees')->where('user_id', auth()->id())],
-                'name.first' => 'required|string',
                 'name.last' => 'required|string',
+                'name.first' => 'required|string',
                 'name.middle' => 'nullable|string',
                 'name.extension' => 'nullable|string',
                 'office' => 'nullable|string',
-                'regular' => 'required|in:1,0,*',
+                'regular' => 'required|boolean',
+                'active' => 'nullable|boolean',
+                'name' => function ($att, $name, $fail) {
+                    if (
+                        Employee::query()
+                            ->where('name->last', strtoupper(@$name['last']) ?? '')
+                            ->where('name->first', strtoupper(@$name['first']) ?? '')
+                            ->where('name->middle', strtoupper(@$name['middle']) ?? '')
+                            ->where('name->extension', strtoupper(@$name['extension']) ?? '')
+                            ->exists()
+                    ) {
+                        $fail('This employee already exists.');
+                    }
+                }
             ];
     }
 }

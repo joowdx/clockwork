@@ -2,21 +2,13 @@
     <AppLayout title="Employees">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                <Link class="underline" :href="route('employees.index')">Employees</Link> / {{ $page.props.employee.name_format.shortStartLastInitialFirst }}
+                <Link class="underline" :href="route('employees.index')">Employees</Link> / Create
             </h2>
         </template>
 
         <div>
             <div class="py-10 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <EmployeeInformationFormVue />
-
-                <JetSectionBorder />
-
-                <ScannersInformationFormVue />
-
-                <JetSectionBorder />
-
-                <DeleteEmployeeFormVue />
             </div>
         </div>
     </AppLayout>
@@ -27,7 +19,6 @@
     import { Link } from '@inertiajs/inertia-vue3'
     import AppLayout from '@/Layouts/AppLayout.vue'
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
-    import DeleteEmployeeFormVue from './Partials/DeleteEmployeeForm.vue'
     import EmployeeInformationFormVue from './Partials/EmployeeInformationForm.vue'
     import ScannersInformationFormVue from './Partials/ScannersInformationForm.vue'
 
@@ -36,11 +27,8 @@
             AppLayout,
             Link,
             JetSectionBorder,
-            DeleteEmployeeFormVue,
             EmployeeInformationFormVue,
             ScannersInformationFormVue,
         },
-
-
     })
 </script>
