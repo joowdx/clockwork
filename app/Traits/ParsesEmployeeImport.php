@@ -7,13 +7,13 @@ trait ParsesEmployeeImport
     private static array $requiredHeaders = [
         'last name',
         'first name',
-        'regular',
     ];
 
     private static array $optionalHeaders = [
         'name extension',
         'middle name',
         'office',
+        'regular',
         'active',
     ];
 

@@ -8,7 +8,7 @@ class CheckRequiredFields
 {
     use ParsesEmployeeImport;
 
-    const ERROR = "Fields 'LAST NAME', 'FIRST NAME', and 'REGULAR' must not be blank or empty.";
+    const ERROR = "Fields 'LAST NAME', and 'FIRST NAME', must not be blank or empty.";
 
     public function handle(mixed $request, \Closure $next)
     {

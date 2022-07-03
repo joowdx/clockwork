@@ -23,7 +23,7 @@ class TransformEmployeeScannerData
                         'extension' => @$entry[$headers['name extension']],
                     ],
                     'office' => @$entry[$headers['office']],
-                    'regular' => (bool) $entry[$headers['regular']],
+                    'regular' => (bool) @$entry[$headers['regular']],
                     'active' => (bool) @$entry[$headers['active']],
                     'nameToJSON' => true,
                 ],
