@@ -128,7 +128,7 @@ trait HasNameAccessorAndFormatter
 
     private function initialWords(?string $string): string
     {
-        preg_match_all('/(?<=\b)[a-z]/i', str_replace('Ñ','N',$string), $matches);
+        preg_match_all('/(?<=\b)[a-z]/i', str_replace('Ñ','N', $string ?? ''), $matches);
 
         return strtoupper(implode('', $matches[0]));
     }
