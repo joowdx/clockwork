@@ -49,6 +49,18 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'coliseum-3',
+            'attlog_file' => 'AF4C211360014_attlog',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'print_text_colour' => '#ECF0F1',
+            'print_background_colour' => '#FAEA48',
+            'shared' => true,
+        ]);
+    }
+
+    public function coliseum_4()
+    {
+        return $this->state([
+            'name' => 'coliseum-3',
             'remarks' => 'Shared with PCO, PP, and PTDPO.'
         ]);
     }
@@ -148,13 +160,6 @@ class ScannerFactory extends Factory
         ]);
     }
 
-    public function ppdo()
-    {
-        return $this->state([
-            'name' => 'ppdo',
-        ]);
-    }
-
     public function pgso_1()
     {
         return $this->state([
@@ -179,6 +184,13 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'pgo-admin',
+        ]);
+    }
+
+    public function pgo_ppdo()
+    {
+        return $this->state([
+            'name' => 'pgo_ppdo',
         ]);
     }
 
