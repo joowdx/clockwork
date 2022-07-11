@@ -60,7 +60,7 @@
                                     @else
                                         @for ($k = 0; $k < 2; $k++)
                                             @php
-                                                $count = count($k == 0 ? @$employees['regular'] : @$employees['nonregular']);
+                                                $count = count($k == 0 ? @$employees['regular'] ?? []: @$employees['nonregular'] ?? []);
                                             @endphp
                                             @if ($j == 30 && $j + $i * 30 < $count)
                                                 <td colspan="5" height="20" class="font-sm nowrap consolas" style="height:15.0pt;">
@@ -121,7 +121,7 @@
                             <tr height="20">
                                 <td colspan="6"></td>
                                 <td colspan="4" class="underline uppercase bold center bottom nowrap bahnschrift">
-                                    {{ auth()->user()?->name }}
+                                    {{-- {{ auth()->user()?->name }} --}}
                                 </td>
                             </tr>
                             <tr height="20">
@@ -130,7 +130,8 @@
                                 </td>
                                 <td colspan="3"></td>
                                 <td colspan="4" class="center nowrap bahnschrift-light">
-                                    {{ auth()->user()?->title }}
+                                    {{-- {{ auth()->user()?->title }} --}}
+                                    PHRMO OFFICER
                                 </td>
                             </tr>
                         </tbody>
