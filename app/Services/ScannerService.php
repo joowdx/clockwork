@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Contracts\Repository;
-use App\Models\Scanner;
 
 class ScannerService
 {
@@ -14,8 +13,8 @@ class ScannerService
     public function get()
     {
         return $this->repository->query()
-            ->orWhereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
-            ->whereShared(true)
+            ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
+            ->orWhere(fn ($q) => $q->whereShared(true))
             ->get();
     }
 
