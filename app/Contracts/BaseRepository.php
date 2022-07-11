@@ -208,9 +208,15 @@ abstract class BaseRepository implements Repository
         $this->model()->truncate();
     }
 
-    public function query(?Closure $query = null): mixed
+    public function query(): mixed
     {
-        return $query ? $query($this->builder()->with($this->with ?? [])) : $this->builder()->with($this->with ?? []);
+        $builder = $this->builder()->with($this->with ?? []);
+
+        $this->builder = $this->model->newQuery();
+
+        $this->init($this->builder);
+
+        return $builder;
     }
 
     protected function deleting(Model $model): void {}
