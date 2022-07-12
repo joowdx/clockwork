@@ -29,13 +29,13 @@
                                     Assigned Users
                                 </th>
                                 <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Assigned Users
+                                    Remarks
                                 </th>
                                 <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Assigned Users
+                                    Created By
                                 </th>
                                 <th scope="col" class="py-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Remarks
+                                    Created At
                                 </th>
                             </tr>
                         </thead>
@@ -90,7 +90,7 @@
 
         watch: {
             search: _.debounce(function(search) {
-                this.$inertia.get(route('scanner.index'), search ? { search: search } : {}, {
+                this.$inertia.get(route('scanners.index'), search ? { search: search } : {}, {
                     preserveState: true,
                     preserveScroll: true,
                 })
