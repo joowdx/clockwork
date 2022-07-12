@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
 use App\Services\ScannerService;
 use Illuminate\Http\Request;
@@ -66,7 +67,9 @@ class ScannerController extends Controller
      */
     public function edit(Scanner $scanner)
     {
-        //
+        return inertia('Scanners/Edit', [
+            'scanner' => $scanner->load('users'),
+        ]);
     }
 
     /**
@@ -76,9 +79,11 @@ class ScannerController extends Controller
      * @param  \App\Models\Scanner  $scanner
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Scanner $scanner)
+    public function update(ScannerRequest $request, Scanner $scanner)
     {
-        //
+        $this->scanners->update($scanner, $request->all());
+
+        return redirect()->back();
     }
 
     /**

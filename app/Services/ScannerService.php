@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\Repository;
+use App\Models\Model;
+use Illuminate\Support\Collection;
 
 class ScannerService
 {
@@ -10,7 +12,7 @@ class ScannerService
         private Repository $repository
     ) { }
 
-    public function get()
+    public function get(): Collection
     {
         return $this->repository->query()
             ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
@@ -18,7 +20,12 @@ class ScannerService
             ->get();
     }
 
-    public function nameAsKeysForId()
+    public function update(Model $scanner, array $payload): Model
+    {
+        return $this->repository->update($scanner, $payload);
+    }
+
+    public function nameAsKeysForId(): array
     {
         return $this->repository->query()
             ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))

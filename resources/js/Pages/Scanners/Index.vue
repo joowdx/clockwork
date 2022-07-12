@@ -2,7 +2,7 @@
     <app-layout title="Biometrics">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                Scanners <small class="uppercase font-extralight"> ({{ $page.props.user.username }}) </small>
+                Scanners
             </h2>
         </template>
 
@@ -31,18 +31,12 @@
                                 <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                     Remarks
                                 </th>
-                                <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Created By
-                                </th>
-                                <th scope="col" class="py-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Created At
-                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="scanner in scanners" :key="scanner.id" :class="[scanner.shared ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-200']" >
                                 <td class="pr-6 whitespace-nowrap">
-                                    {{ scanner.name }}
+                                    <Link :href="route('scanners.edit', scanner.id)"> {{ scanner.name }} </Link>
                                 </td>
                                 <td class="pl-6 tracking-tighter">
                                     {{ scanner.users.map(e => e.username).join(', ') }}

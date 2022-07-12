@@ -18,13 +18,14 @@ class ScannerRepository extends BaseRepository
     {
         return [
             'name' => strtolower($payload['name']),
-            'attlog' => $payload['attlog'],
-            'color' => $payload['color'],
-            'remarks' => $payload['remarks'],
+            'attlog_file' => $payload['attlog_file'],
+            'remarks' => strtoupper($payload['remarks']),
             'shared' => (bool) $payload['remarks'],
-            'ip_address' => $payload['ip_address'],
-            'protocol' => $payload['protocol'],
-            'library' => $payload['library'],
+            'print_text_colour' => strtolower($payload['print_text_colour']),
+            'print_background_colour' => strtolower($payload['print_background_colour']),
+            'ip_address' => @$payload['ip_address'],
+            'protocol' => @$payload['protocol'],
+            'library' => @$payload['library'],
         ];
     }
 }
