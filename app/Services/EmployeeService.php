@@ -97,14 +97,16 @@ class EmployeeService implements Import
         })->sortByName()->get();
     }
 
-    public function offices()
+    public function offices(bool $all = true)
     {
         return $this->repository
             ->query()
             ->select(['office', 'name'])
-            ->whereHas('scanners', function (Builder $query) {
+            ->whereHas('scanners', function (Builder $query) use ($all) {
                 $query->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()));
-                $query->orWhere(fn ($q) => $q->whereShared(true));
+                $query->when($all, function ($query) {
+                    $query->orWhere(fn ($q) => $q->whereShared(true));
+                });
             })
             ->get()
             ->map

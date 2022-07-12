@@ -72,7 +72,7 @@
                     <template v-if="by === 'employee'">
                         <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                             <JetLabel value="Office" />
-                            <TailwindSelect class="w-full" :options="['ALL', ...$page.props.offices]" v-model="office" />
+                            <TailwindSelect class="w-full" :options="['ALL', ...offices]" v-model="office" />
                         </div>
                         <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                             <JetLabel value="Regular" />
@@ -412,6 +412,10 @@
             },
 
             updateToggledCheckbox() {
+                if (this.$page.props.employees === undefined) {
+                    return;
+                }
+
                 if(this.all && ! this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
                     this.toggleAllCheckbox = true
                     this.all = false
@@ -424,6 +428,10 @@
 
         computed: {
             employees() {
+                if (this.$page.props.employees === undefined) {
+                    return [];
+                }
+
                 return this.$page.props.employees
                     .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
@@ -432,8 +440,20 @@
             },
 
             offices() {
-                return this.$page.props.offices
-                    .filter(e => this.name ? fuzzysort.single(this.name, e) : true )
+                if (this.$page.props.employees === undefined) {
+                    return [];
+                }
+
+                switch (this.by) {
+                    case 'office': {
+                        return this.$page.props.offices
+                            .filter(e => this.name ? fuzzysort.single(this.name, e) : true )
+                    }
+                    case 'employee': {
+                        return this.$page.props.offices
+                            .filter(e => _.includes(_.uniq(this.$page.props.employees.map(e => e.office)), e))
+                    }
+                }
             },
 
             link() {
