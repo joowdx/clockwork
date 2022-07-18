@@ -74,7 +74,7 @@
                                                     {{ str_pad($j + $i * 30 + 1, 2, '0', STR_PAD_LEFT) . '. '. $employee->nameFormat->fullStartLastInitialMiddle }}
                                                 </td>
                                                 <td height="20">
-                                                    <div class="font-sm nowrap consolas bold {{ $employee->timelogs->first()->scanner->name }}">
+                                                    <div class="font-sm nowrap consolas bold {{ $employee->timelogs->sortBy('time')->first()->scanner->name }}">
                                                         {{ $employee->timelogs->first()->time->format('H:i') }}
                                                     </div>
                                                 </td>

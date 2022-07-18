@@ -79,9 +79,18 @@ class PrintService
 
         switch ($this->request->view) {
             case 'office': {
-                $query->with(['timelogs.scanner', 'timelogs' => fn ($q) => $q->whereDate('time', $this->request->date)]);
-                $query->whereHas('timelogs', fn ($q) => $q->whereDate('time', $this->request->date));
                 $query->whereIn('office', $this->request->offices);
+                $query->whereHas('timelogs', function ($q) {
+                    $q->whereDate('time', $this->request->date);
+                    $q->whereHas('scanner', fn ($q) => $q->whereIn('name', ['coliseum-1', 'coliseum-2', 'coliseum-3']));
+                });
+                $query->with([
+                    'timelogs.scanner',
+                    'timelogs' => function ($q) {
+                        $q->whereDate('time', $this->request->date);
+                        $q->whereHas('scanner', fn ($q) => $q->whereIn('name', ['coliseum-1', 'coliseum-2', 'coliseum-3']));
+                    }
+                ]);
                 break;
             };
             case 'employee': {

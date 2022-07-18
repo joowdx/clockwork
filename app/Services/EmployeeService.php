@@ -113,6 +113,7 @@ class EmployeeService implements Import
             ->office
             ->unique()
             ->filter()
+            ->sort()
             ->values();
     }
 
