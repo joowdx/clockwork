@@ -52,11 +52,11 @@ class StoreRequest extends FormRequest
                         $fail('Please choose the correct file.');
                     }
 
-                    if(!$user->scanners()->find($scanner->id)) {
+                    if($scanner->shared ?: ! $user->scanners()->exists($scanner->id)) {
                         $fail('Not enough privilege.');
                     }
 
-                    if(!$this->import->validate($file)) {
+                    if(! $this->import->validate($file)) {
                         $fail($this->import->error());
                     }
                 }
