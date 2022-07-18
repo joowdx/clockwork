@@ -20,6 +20,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => ['required', 'string', 'unique:users,username,' . $user->id, 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
+            'administrator' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
@@ -31,6 +32,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => $input['username'],
             'name' => $input['name'],
             'title' => $input['title'],
+            'administrator' => $input['administrator'],
         ])->save();
 
     }
