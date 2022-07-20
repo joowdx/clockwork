@@ -61,7 +61,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'coliseum-3',
-            'remarks' => 'Shared with PCO, PP, and PTDPO.'
+            'remarks' => 'Shared with PCO, PP, and PTDPO.',
         ]);
     }
 
@@ -187,10 +187,10 @@ class ScannerFactory extends Factory
         ]);
     }
 
-    public function pgo_ppdo()
+    public function ppdo()
     {
         return $this->state([
-            'name' => 'pgo_ppdo',
+            'name' => 'ppdo',
         ]);
     }
 

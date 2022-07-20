@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('title')->nullable();
             $table->string('username')->unique();
             $table->string('password');
-            $table->boolean('administrator');
+            $table->boolean('administrator')->nullable();
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();

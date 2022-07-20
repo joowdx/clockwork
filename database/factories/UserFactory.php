@@ -25,6 +25,7 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
+            'title' => 'PGO-PICT OFFICER',
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];
@@ -68,9 +69,9 @@ class UserFactory extends Factory
     {
         return $this->state([
             'name' => 'Jude C. Pineda',
-            'title' => 'PICT Officer',
             'username' => 'jude',
-            'password' => '$2y$10$7Z.IrLwDkXBA5fJB.i0n8O8LN9Sowb5mKKXDM7S6ZsixTLKq2Ht.S'
+            'administrator' => true,
+            'password' => '$2y$10$7Z.IrLwDkXBA5fJB.i0n8O8LN9Sowb5mKKXDM7S6ZsixTLKq2Ht.S',
         ]);
     }
 
@@ -78,9 +79,89 @@ class UserFactory extends Factory
     {
         return $this->state([
             'name' => 'Gene Philip L. Rellanos',
-            'title' => 'Administrative Clerk II',
             'username' => 'gene',
-            'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O'
+            'administrator' => true,
+            'password' => '$2y$10$wuXwNwXKmlQ4mPi1PIsfNOjnI2.rYOStzupp49v9FGIXcDBd88z8O',
+        ]);
+    }
+
+    public function edwin()
+    {
+        return $this->state([
+            'name' => 'Edwin R. Rojo Jr',
+            'username' => 'edwin',
+        ]);
+    }
+
+    public function rustell()
+    {
+        return $this->state([
+            'name' => 'Rustel June R. Dela Cruz',
+            'username' => 'rustell',
+        ]);
+    }
+
+    public function carl()
+    {
+        return $this->state([
+            'name' => 'Carl Dominic C. Anito',
+            'username' => 'carl',
+        ]);
+    }
+
+    public function ian()
+    {
+        return $this->state([
+            'name' => 'Ian L. Padillo',
+            'username' => 'ian',
+        ]);
+    }
+
+    public function reymar()
+    {
+        return $this->state([
+            'name' => 'John Reymar S. Remitar',
+            'username' => 'reymar',
+        ]);
+    }
+
+    public function roderick()
+    {
+        return $this->state([
+            'name' => 'Roderick T. Juarez',
+            'username' => 'roderick',
+        ]);
+    }
+
+    public function mark()
+    {
+        return $this->state([
+            'name' => 'Mark John F. Hernan',
+            'username' => 'mark',
+        ]);
+    }
+
+    public function merryloueshenarah()
+    {
+        return $this->state([
+            'name' => 'Merryloueshenarah D. Solis',
+            'username' => 'merryloueshenarah',
+        ]);
+    }
+
+    public function klouie()
+    {
+        return $this->state([
+            'name' => 'Klouie Niño H. Latog',
+            'username' => 'klouie',
+        ]);
+    }
+
+    public function jefferson()
+    {
+        return $this->state([
+            'name' => 'Jefferson Q. Ongkas',
+            'username' => 'jefferson',
         ]);
     }
 }
