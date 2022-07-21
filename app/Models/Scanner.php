@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,13 @@ class Scanner extends Model
         'version',
         'library',
     ];
+
+    public function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => strtoupper($value)
+        );
+    }
 
     public function employees(): BelongsToMany
     {
