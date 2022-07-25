@@ -21,9 +21,15 @@ class AssignmentController extends Controller
     {
         $request->whenHas('user', function () use ($request) {
 
+            abort_unless(auth()->user()->administrator || $this->user->find($request->user)?->is(auth()->user()), 403);
+
             $this->assignment->attach($this->user->find($request->user), $request->scanners);
 
         })->whenHas('scanner', function () use ($request) {
+
+            $scanner = $this->scanner->find($request->scanner);
+
+            abort_unless(auth()->user()->administrator || $scanner?->createdBy?->is(auth()->user()) || $scanner->users->contains(auth()->user()), 403);
 
             $this->assignment->attach($this->scanner->find($request->scanner), $request->users);
 
@@ -34,6 +40,8 @@ class AssignmentController extends Controller
 
     public function destroy(Request $request, Assignment $assignment)
     {
+        abort_unless(auth()->user()->administrator || $assignment->scanner?->createdBy?->is(auth()->user()), 403);
+
         $this->confirmPassword($request->password);
 
         $this->assignment->destroy($assignment);
