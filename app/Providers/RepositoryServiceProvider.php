@@ -39,7 +39,7 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->bind(UserRepositoryContract::class, fn () => new UserRepository(new User));
+        $this->app->bind(UserRepositoryContract::class, fn () => app(UserRepository::class));
 
         $this->app->when([EmployeeService::class, EmployeeController::class])
             ->needs(Repository::class)
@@ -52,6 +52,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->when([TimeLogService::class, TimeLogController::class])
             ->needs(Repository::class)
             ->give(fn () => app(TimeLogRepository::class));
+
+        $this->app->bind(UserRepository::class, fn () => new UserRepository(new User));
 
         $this->app->bind(EmployeeRepository::class, fn () => new EmployeeRepository(new Employee));
 
