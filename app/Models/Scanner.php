@@ -45,6 +45,7 @@ class Scanner extends Model
     {
         return $this->belongsToMany(User::class, 'assignments')
                 ->using(Assignment::class)
+                ->withPivot('id')
                 ->withTimestamps();
     }
 
