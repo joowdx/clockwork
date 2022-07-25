@@ -11,7 +11,14 @@
 
                 <ScannerInformation />
 
-                <!-- <JetSectionBorder /> -->
+                <JetSectionBorder />
+
+                <Assignees />
+
+                <JetSectionBorder />
+
+                <DeleteScannerForm />
+
             </div>
         </div>
     </AppLayout>
@@ -24,6 +31,7 @@
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import ScannerInformation from './Partials/ScannerInformation.vue'
     import Assignees from './Partials/Assignees.vue'
+    import DeleteScannerForm from './Partials/DeleteScannerForm.vue'
 
     export default defineComponent({
         components: {
@@ -32,6 +40,7 @@
             JetSectionBorder,
             ScannerInformation,
             Assignees,
+            DeleteScannerForm,
         },
 
 

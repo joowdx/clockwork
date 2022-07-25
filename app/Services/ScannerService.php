@@ -33,4 +33,9 @@ class ScannerService
             ->mapWithKeys(fn ($scanner) => [$scanner->name => $scanner->id])
             ->toArray();
     }
+
+    public function destroy(Model $scanner)
+    {
+        $scanner->delete();
+    }
 }

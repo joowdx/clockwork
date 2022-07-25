@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\UserRepository;
 use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
 use App\Services\ScannerService;
@@ -10,7 +11,8 @@ use Illuminate\Http\Request;
 class ScannerController extends Controller
 {
     public function __construct(
-        private ScannerService $scanners,
+        private ScannerService $scanner,
+        private UserRepository $user,
     ) { }
 
     /**
@@ -21,7 +23,7 @@ class ScannerController extends Controller
     public function index()
     {
         return inertia('Scanners/Index', [
-            'scanners' => $this->scanners->get(),
+            'scanners' => $this->scanner->get(),
         ]);
     }
 
@@ -33,7 +35,7 @@ class ScannerController extends Controller
     public function create()
     {
         return inertia('Scanners/Index', [
-            'scanners' => $this->scanners->get(),
+            'scanners' => $this->scanner->get(),
         ]);
     }
 
@@ -69,6 +71,7 @@ class ScannerController extends Controller
     {
         return inertia('Scanners/Edit', [
             'scanner' => $scanner->load('users'),
+            'users' => $this->user->get(),
         ]);
     }
 
@@ -81,7 +84,7 @@ class ScannerController extends Controller
      */
     public function update(ScannerRequest $request, Scanner $scanner)
     {
-        $this->scanners->update($scanner, $request->all());
+        $this->scanner->update($scanner, $request->all());
 
         return redirect()->back();
     }
@@ -89,11 +92,16 @@ class ScannerController extends Controller
     /**
      * Remove the specified resource from storage.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Scanner  $scanner
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Scanner $scanner)
+    public function destroy(Request $request, Scanner $scanner)
     {
-        //
+        $this->confirmPassword($request->password);
+
+        $this->scanner->destroy($scanner);
+
+        return redirect()->route('scanners.index');
     }
 }
