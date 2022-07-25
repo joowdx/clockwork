@@ -70,6 +70,11 @@ class User extends Authenticatable
                 ->withTimestamps();
     }
 
+    public function isAdministrator()
+    {
+        return $this->adminstrator;
+    }
+
     // public function employees(): HasManyThrough
     // {
     //     return $this->hasManyThrough(Employee::class, EmployeeScanner::class)->setQuery(
