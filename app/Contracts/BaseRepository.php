@@ -123,7 +123,7 @@ abstract class BaseRepository implements Repository
             return DB::transaction(fn () => $creator($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
-        return $this->model()->create($this->transformData($payload));
+        return DB::transaction(fn() => $this->model()->create($this->transformData($payload)));
     }
 
     public function insert(array $payload, ?Closure $inserter = null): void
@@ -150,7 +150,7 @@ abstract class BaseRepository implements Repository
             return DB::transaction(fn () => $updater($model, $payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
-        $model->update(collect($this->transformData($payload))->except($except)->toArray());
+        DB::transaction(fn() =>  $model->update(collect($this->transformData($payload))->except($except)->toArray()));
 
         return $model;
     }
@@ -181,7 +181,7 @@ abstract class BaseRepository implements Repository
 
         $this->deleting($model);
 
-        $model->delete();
+        DB::transaction(fn() => $model->delete());
     }
 
     public function destroy(array $payload, ?Closure $destroyer = null): void
