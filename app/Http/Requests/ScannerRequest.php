@@ -10,16 +10,6 @@ class ScannerRequest extends FormRequest
     use ConfirmsPassword;
 
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize()
-    {
-        return auth()->user()->administrator;
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, mixed>
@@ -28,7 +18,11 @@ class ScannerRequest extends FormRequest
     {
         return $this->isMethod('delete')
             ? [
-                'password' => fn ($attribute, $value, $fail) => $this->confirmPassword($value),
+                'password' => function ($attribute, $password, $fail) {
+                    if (! $this->validatePassword($password)) {
+                        $fail(__('The password is incorrect.'));
+                    }
+                },
             ] : [
                 'name' => 'required|string',
                 'remarks' => 'nullable|string',

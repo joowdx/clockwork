@@ -10,15 +10,18 @@ trait ConfirmsPassword
 {
     public function confirmPassword(?string $password)
     {
-        $confirmed = app(ConfirmPassword::class)(
-            app(StatefulGuard::class), auth()->user(), $password
-        );
-
-        if (! $confirmed) {
+        if (! $this->validatePassword($password)) {
             throw ValidationException::withMessages([
                 'password' => __('The password is incorrect.'),
             ]);
         }
+    }
+
+    public function validatePassword(?string $password)
+    {
+        return app(ConfirmPassword::class)(
+            app(StatefulGuard::class), auth()->user(), $password
+        );
     }
 
 }

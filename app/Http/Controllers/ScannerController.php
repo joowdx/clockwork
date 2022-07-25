@@ -13,7 +13,9 @@ class ScannerController extends Controller
     public function __construct(
         private ScannerService $scanner,
         private UserRepository $user,
-    ) { }
+    ) {
+        $this->authorizeResource(Scanner::class);
+    }
 
     /**
      * Display a listing of the resource.
