@@ -9,6 +9,7 @@ use App\Contracts\BaseRepository;
 use App\Contracts\UserRepository as RepositoryInterface;
 use Carbon\Carbon;
 use Closure;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,11 @@ use Laravel\Jetstream\Contracts\DeletesUsers;
 
 class UserRepository extends BaseRepository implements RepositoryInterface
 {
+    protected function init(Builder &$builder): void
+    {
+        $builder->orderBy('username');
+    }
+
     public function create(array $payload, ?Closure $create = null): Model
     {
         return parent::create($payload, fn($info) => (new CreateNewUser)->create($info));
