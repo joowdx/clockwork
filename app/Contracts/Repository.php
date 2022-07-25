@@ -37,4 +37,6 @@ interface Repository
     public function truncate(?Closure $truncator = null): void;
 
     public function query(): mixed;
+
+    public function model(): Model;
 }

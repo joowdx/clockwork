@@ -35,7 +35,7 @@ abstract class BaseRepository implements Repository
      *
      * @return Builder
      */
-    protected function model(): Model
+    public function model(): Model
     {
         return $this->model->replicate();
     }

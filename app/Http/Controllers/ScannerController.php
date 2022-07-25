@@ -22,10 +22,11 @@ class ScannerController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         return inertia('Scanners/Index', [
-            'scanners' => $this->scanner->get(),
+            'search' => $request->search,
+            'scanners' => $this->scanner->search($request->search),
         ]);
     }
 

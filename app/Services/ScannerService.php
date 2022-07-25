@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\Repository;
 use App\Models\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class ScannerService
@@ -11,6 +12,11 @@ class ScannerService
     public function __construct(
         private Repository $repository
     ) { }
+
+    public function search(?string $query): Collection|LengthAwarePaginator
+    {
+        return $this->repository->model()->search($query)->query(fn ($q) => $q->orderBy('name')->with('users'))->get();
+    }
 
     public function get(): Collection
     {
