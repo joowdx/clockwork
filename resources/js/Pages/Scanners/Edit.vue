@@ -42,7 +42,5 @@
             Assignees,
             DeleteScannerForm,
         },
-
-
     })
 </script>

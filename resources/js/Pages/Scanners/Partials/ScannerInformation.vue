@@ -101,7 +101,7 @@
             return {
                 form: this.$inertia.form({
                     id: this.$page.props.scanner?.id,
-                    name: this.$page.props.scanner.name,
+                    name: this.$page.props.scanner?.name,
                     remarks: this.$page.props.scanner?.remarks,
                     attlog_file: this.$page.props.scanner?.attlog_file,
                     print_text_colour: this.$page.props.scanner?.print_text_colour ?? '#000000',

@@ -2,6 +2,8 @@
 
 namespace App\Pipes;
 
+use App\Models\Scanner;
+use App\Repositories\ScannerRepository;
 use App\Services\ScannerService;
 use App\Traits\ParsesEmployeeImport;
 
@@ -22,10 +24,17 @@ class GetScannerUids
                 return [
                     'id' => str()->orderedUuid()->toString(),
                     'employee_id' => $entry['employee']['id'],
-                    'scanner_id' => $scanners[$scanner],
+                    'scanner_id' => @$scanners[strtoupper($scanner)] ?? $this->create($scanner)->id,
                     'uid' => $uid,
                 ];
             })->toArray();
         }));
+    }
+
+    private function create(string $name): Scanner
+    {
+        return app(ScannerRepository::class)->create([
+            'name' => $name,
+        ]);
     }
 }

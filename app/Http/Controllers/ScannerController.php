@@ -34,7 +34,7 @@ class ScannerController extends Controller
      */
     public function create()
     {
-        return inertia('Scanners/Index', [
+        return inertia('Scanners/Create', [
             'scanners' => $this->scanner->get(),
         ]);
     }
@@ -45,9 +45,11 @@ class ScannerController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ScannerRequest $request)
     {
-        //
+        $scanner = $this->scanner->create($request->all());
+
+        return redirect()->route('scanners.edit', $scanner->id);
     }
 
     /**
@@ -96,10 +98,8 @@ class ScannerController extends Controller
      * @param  \App\Models\Scanner  $scanner
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, Scanner $scanner)
+    public function destroy(ScannerRequest $request, Scanner $scanner)
     {
-        $this->confirmPassword($request->password);
-
         $this->scanner->destroy($scanner);
 
         return redirect()->route('scanners.index');

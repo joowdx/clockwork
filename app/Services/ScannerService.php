@@ -17,7 +17,13 @@ class ScannerService
         return $this->repository->query()
             ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
             ->orWhere(fn ($q) => $q->whereShared(true))
+            ->orWhere('created_by', auth()->id())
             ->get();
+    }
+
+    public function create(array $payload): Model
+    {
+        return $this->repository->create($payload);
     }
 
     public function update(Model $scanner, array $payload): Model
@@ -30,7 +36,7 @@ class ScannerService
         return $this->repository->query()
             ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
             ->get(['id', 'name'])
-            ->mapWithKeys(fn ($scanner) => [$scanner->name => $scanner->id])
+            ->mapWithKeys(fn ($scanner) => [strtoupper($scanner->name) => $scanner->id])
             ->toArray();
     }
 

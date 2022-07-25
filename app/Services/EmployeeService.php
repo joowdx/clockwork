@@ -94,6 +94,8 @@ class EmployeeService implements Import
             $query->whereHas('users', function (Builder $query) {
                 $query->where('user_id', auth()->id());
             });
+
+            $query->orWhere('created_by', auth()->id());
         })->sortByName()->get();
     }
 

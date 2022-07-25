@@ -33,11 +33,11 @@
                                     ref="password"
                                     v-model="form.password"
                                     @keyup.enter="deleteScanner"
-                                    :disabled="! administrator" />
+                                    :disabled="! allowed" />
 
                         <jet-input-error :message="form.errors.password" class="mt-2" />
 
-                        <jet-input-error v-if="! administrator" message="Not enough privilege." class="mt-2" />
+                        <jet-input-error v-if="! allowed" message="Not enough privilege." class="mt-2" />
                     </div>
                 </template>
 
@@ -46,7 +46,7 @@
                         Cancel
                     </jet-secondary-button>
 
-                    <jet-danger-button class="ml-3" @click="deleteScanner" :class="{ 'opacity-25': form.processing }" :disabled="form.processing || ! administrator">
+                    <jet-danger-button class="ml-3" @click="deleteScanner" :class="{ 'opacity-25': form.processing }" :disabled="form.processing || ! allowed">
                         Delete Scanner
                     </jet-danger-button>
                 </template>
@@ -76,7 +76,7 @@
 
         data() {
             return {
-                administrator: this.$page.props.user.administrator,
+                allowed: this.$page.props.user.administrator || this.$page.props.user.id === this.$page.props.scanner.created_by,
 
                 confirmingScannerDeletion: false,
 
