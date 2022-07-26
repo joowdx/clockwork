@@ -82,9 +82,9 @@
                 Cancel
             </JetSecondaryButton>
 
-            <JetSecondaryButton v-if="confirmation === true" class="ml-3" @click="add" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <JetButton v-if="confirmation === true" class="ml-3" @click="add" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
-            </JetSecondaryButton>
+            </JetButton>
 
             <JetDangerButton v-else class="ml-3" @click="remove" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Delete

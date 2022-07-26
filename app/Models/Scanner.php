@@ -32,7 +32,7 @@ class Scanner extends Model
     public function name(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => strtoupper($value)
+            get: fn ($value) => strtoupper($value ?? '')
         );
     }
 
