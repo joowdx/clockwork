@@ -37,10 +37,16 @@ class ScannerService
         return $this->repository->update($scanner, $payload);
     }
 
-    public function nameAsKeysForId(): array
+    public function nameAsKeysForId(bool $owned = true): array
     {
         return $this->repository->query()
-            ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
+            ->when(! auth()->user()->administrator, function ($query) use ($owned) {
+                $query->when($owned, function ($query) {
+                    $query->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))->orWhere('created_by', auth()->id());
+
+                    $query->orWhere('shared', true);
+                });
+            })
             ->get(['id', 'name'])
             ->mapWithKeys(fn ($scanner) => [strtoupper($scanner->name) => $scanner->id])
             ->toArray();
