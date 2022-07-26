@@ -83,6 +83,20 @@ class ScannerFactory extends Factory
         ]);
     }
 
+    public function opag()
+    {
+        return $this->state([
+            'name' => 'opag',
+        ]);
+    }
+
+    public function opag_coliseum()
+    {
+        return $this->state([
+            'name' => 'opag-coliseum',
+        ]);
+    }
+
     public function pacco()
     {
         return $this->state([

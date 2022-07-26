@@ -90,6 +90,7 @@ class UserFactory extends Factory
         return $this->state([
             'name' => 'Edwin R. Rojo Jr',
             'username' => 'edwin',
+            'administrator' => true,
         ]);
     }
 
@@ -98,6 +99,14 @@ class UserFactory extends Factory
         return $this->state([
             'name' => 'Rustel June R. Dela Cruz',
             'username' => 'rustell',
+        ]);
+    }
+
+    public function benz()
+    {
+        return $this->state([
+            'name' => 'Benz Andrievon M. Bajao',
+            'username' => 'Benz',
         ]);
     }
 

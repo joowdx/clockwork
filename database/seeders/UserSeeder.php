@@ -14,6 +14,7 @@ class UserSeeder extends Seeder
         'jude',
         'edwin',
         'rustell',
+        'benz',
         'carl',
         'reymar',
         'mark',
