@@ -139,7 +139,6 @@
                     .post(route('assignment.store'), {
                         preserveScroll: true,
                         onSuccess: () => this.hideConfirmationDialog(),
-                        onError: e => ! e.password ? this.hideConfirmationDialog() : null
                     });
             },
             remove() {

@@ -19,7 +19,7 @@ class AssignmentRequest extends FormRequest
         return $this->has('scanner')
                 ? [
                     'scanner' => ['exists:scanners,id', 'required_without:user'],
-                    'users' => ['array', 'required'],
+                    'users' => ['required'],
                     'users.*' => ['uuid', 'exists:users'],
                     'password' => function ($attribute, $password, $fail) {
                         if (! $this->validatePassword($password)) {
@@ -29,7 +29,7 @@ class AssignmentRequest extends FormRequest
                     ] : ($this->has('user')
                 ? [
                     'user' => ['exists:users', 'required_without:scanner,id'],
-                    'scanners' => ['array', 'required'],
+                    'scanners' => ['required'],
                     'scanners.*' => ['uuid', 'exists:scanners'],
                     'password' => function ($attribute, $password, $fail) {
                         if (! $this->validatePassword($password)) {
