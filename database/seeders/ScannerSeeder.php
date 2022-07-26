@@ -16,7 +16,7 @@ class ScannerSeeder extends Seeder
         'capitol_1',
         'capitol_2',
         'opag',
-        'opag-coliseum',
+        'opag_coliseum',
         'pacco',
         'passo',
         'pbo',
