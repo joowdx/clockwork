@@ -106,7 +106,7 @@ class UserFactory extends Factory
     {
         return $this->state([
             'name' => 'Benz Andrievon M. Bajao',
-            'username' => 'Benz',
+            'username' => 'benz',
         ]);
     }
 
