@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('scanners', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name', 12)->unique();
+            $table->string('name', 20)->unique();
             $table->string('attlog_file', 120)->unique()->nullable();
             $table->string('print_text_colour', 7)->nullable();
             $table->string('print_background_colour', 7)->nullable();
