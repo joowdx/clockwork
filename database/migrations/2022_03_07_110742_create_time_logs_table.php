@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignUuid('scanner_id')->nullable();
             $table->foreignUuid('enrollment_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
-            $table->unsignedTinyInteger('state');
+            $table->string('state', 20);
             $table->timestamps();
             $table->unique(['enrollment_id', 'time', 'state']);
         });
