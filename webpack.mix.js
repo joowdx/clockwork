@@ -14,9 +14,15 @@ const del = require('del');
 
 mix.js(
         mix.inProduction()
-            ? ['resources/js/app.js']
-            : ['resources/js/app.js', 'resources/js/browsersync.js'],
-        'public/js/app.js'
+            ? ['resources/js/inertia.js']
+            : ['resources/js/inertia.js', 'resources/js/browsersync.js'],
+        'public/js/inertia.js'
+    )
+    .js(
+        mix.inProduction()
+            ? ['resources/js/livewire.js']
+            : ['resources/js/livewire.js', 'resources/js/browsersync.js'],
+        'public/js/livewire.js'
     )
     .postCss('resources/css/app.css', 'public/css', [
         require('postcss-import'),
@@ -38,7 +44,8 @@ mix.js(
     .vue()
     .after(() => {
         if(mix.inProduction()) {
-            del('public/js/app.js.map');
+            del('public/js/livewire.js.map');
+            del('public/js/inertia.js.map');
             del('public/css/app.css.map');
         }
     });
