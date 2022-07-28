@@ -18,7 +18,7 @@ class ScannerPolicy
      */
     public function before(User $user)
     {
-        return $user->administrator;
+        return $user->administrator ?: null;
     }
 
     /**

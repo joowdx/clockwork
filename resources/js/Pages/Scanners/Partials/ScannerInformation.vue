@@ -19,7 +19,7 @@
             <!-- Remarks -->
             <div class="col-span-6 sm:col-span-4">
                 <JetLabel for="remarks" value="Remarks" />
-                <JetInput id="remarks" type="text" class="block w-full mt-1 uppercase" v-model="form.remarks" autocomplete="remarks" />
+                <JetInput id="remarks" type="text" class="block w-full mt-1" v-model="form.remarks" autocomplete="remarks" />
                 <JetInputError :message="form.errors.remarks" class="mt-2" />
             </div>
 

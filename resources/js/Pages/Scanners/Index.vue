@@ -19,29 +19,30 @@
                     </div>
                 </div>
                 <div class="overflow-hidden sm:rounded-lg">
-                    <table class="min-w-full">
+                    <table class="min-w-full table-fixed">
                         <thead>
                             <tr>
-                                <th scope="col" class="py-3 pr-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" class="overflow-hidden w-[20%] py-3 pr-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                     Scanner
                                 </th>
-                                <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Assigned Users
+                                <th scope="col" class="overflow-hidden w-[30%] px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                    Assignee
                                 </th>
-                                <th scope="col" class="px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                <th scope="col" class="overflow-hidden w-[50%] px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                     Remarks
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="scanner in scanners" :key="scanner.id" :class="[scanner.shared ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-200']" >
-                                <td class="pr-6 whitespace-nowrap">
-                                    <Link :href="route('scanners.edit', scanner.id)"> {{ scanner.name }} </Link>
+                            <tr v-for="scanner in scanners" :key="scanner.id" :class="[! scanner.users.map(e => e.id).includes($page.props.user.id) ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-200']" >
+                                <td class="pr-6 overflow-hidden truncate">
+                                    <Link v-if="$page.props.user.administrator || scanner.users.map(e => e.id).includes($page.props.user.id)" :href="route('scanners.edit', scanner.id)"> {{ scanner.name }} </Link>
+                                    <template v-else> {{ scanner.name }} </template>
                                 </td>
-                                <td class="pl-6 tracking-tighter">
+                                <td class="pl-6 overflow-hidden tracking-tighter">
                                     {{ scanner.users.map(e => e.username).join(', ') }}
                                 </td>
-                                <td class="pl-6 tracking-tighter">
+                                <td class="pl-6 overflow-hidden tracking-tighter truncate">
                                     {{ scanner.remarks }}
                                     <!-- <p v-if="user.verified_by" class="lowercase">
                                         by <Link class="text-indigo-600 hover:text-indigo-900 dark:text-gray-400 dark:hover:text-gray-600" :href="route('users.show', user.verified_by.id)" v-html="'@' + user.verified_by.username" />
