@@ -22,7 +22,9 @@ class ScannerService
     {
         return $this->repository->query()
             ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
-            ->orWhere(fn ($q) => $q->whereShared(true))
+            ->when(auth()->user()->administrator, function ($query) {
+                $query->orWhere(fn ($q) => $q->whereShared(true));
+            })
             ->orWhere('created_by', auth()->id())
             ->get();
     }
