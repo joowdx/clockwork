@@ -52,13 +52,21 @@ class StoreRequest extends FormRequest
                         $fail('Please choose the correct file.');
                     }
 
-                    if(! auth()->user()?->administrator ?: ! $scanner->shared ?: ! $user->scanners()->exists($scanner->id)) {
+                    if (
+                        auth()->user()?->administrator
+                            ? false
+                            : (
+                                $scanner->shared
+                                    ? false
+                                    : $user->scanners()->doesntExist($scanner->id)
+                            )
+                    ) {
                         $fail('Not enough privilege.');
                     }
 
-                    if(! $this->import->validate($file)) {
-                        $fail($this->import->error());
-                    }
+                    // if(! $this->import->validate($file)) {
+                    //     $fail($this->import->error());
+                    // }
                 }
             ],
         ];
