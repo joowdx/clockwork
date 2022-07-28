@@ -106,7 +106,7 @@
             </div>
         </div>
 
-        <JetDialogModal :show="importDialog" @close="closeImportDialog">
+        <JetDialogModal :show="importDialog" @close="closeImportDialog" :closeable="false">
             <template #title>
                 Upload
             </template>
@@ -140,7 +140,7 @@
             </template>
 
             <template #footer>
-                <JetSecondaryButton @click="closeImportDialog">
+                <JetSecondaryButton @click="closeImportDialog" :disabled="form.processing">
                     Cancel
                 </JetSecondaryButton>
 
