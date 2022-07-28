@@ -14,8 +14,8 @@ class TimeLogController extends Controller
 {
 
     public function __construct(
-        private EmployeeService $employees,
-        private ScannerService $scanners,
+        private EmployeeService $employee,
+        private ScannerService $scanner,
         private TimeLogService $timelog,
     ) { }
 
@@ -27,9 +27,11 @@ class TimeLogController extends Controller
     public function index(): RedirectResponse|Response
     {
         return inertia('TimeLogs/Index', [
-            'scanners' => $this->scanners->get(),
-            'employees' => $this->employees->get(),
-            'offices' => $this->employees->offices(),
+            'scanners' => $this->scanner->get(),
+            'employees' => $employees = $this->employee->get(),
+            'offices' => auth()->user()->administrator
+                ? $this->employee->offices(true)
+                : $employees->map->office->unique()->filter()->sort()->values(),
             ...$this->timelog->dates(),
         ]);
     }

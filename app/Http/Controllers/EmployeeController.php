@@ -28,9 +28,11 @@ class EmployeeController extends Controller
     {
         return inertia('Employees/Index', [
             'unenrolled' => (bool) $request->unenrolled,
-            'employees' => $this->employee->get($request->unenrolled),
+            'employees' => $employees = $this->employee->get($request->unenrolled),
+            'offices' => auth()->user()->administrator
+                ? $this->employee->offices(true)
+                : $employees->map->office->unique()->filter()->sort()->values(),
             'scanners' => $this->scanner->get(),
-            'offices' => $this->employee->offices(),
         ]);
     }
 

@@ -37,7 +37,7 @@
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                         <JetLabel value="Office" />
-                        <TailwindSelect class="w-full" :options="['ALL', ...$page.props.offices]" v-model="office" />
+                        <TailwindSelect class="w-full" :options="['ALL', ...$page.props.employees.map(e => e.office).filter((e, f, g) => e && g.indexOf(e) === f).sort()]" v-model="office" />
                     </div>
                     <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                         <JetLabel value="Regular" />
