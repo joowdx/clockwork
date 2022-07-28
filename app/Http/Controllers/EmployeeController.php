@@ -24,10 +24,11 @@ class EmployeeController extends Controller
      *
      * @return \Illuminate\Http\Response
     */
-    public function index()
+    public function index(Request $request)
     {
         return inertia('Employees/Index', [
-            'employees' => $this->employee->get(),
+            'unenrolled' => (bool) $request->unenrolled,
+            'employees' => $this->employee->get($request->unenrolled),
             'scanners' => $this->scanner->get(),
             'offices' => $this->employee->offices(),
         ]);
@@ -90,7 +91,7 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         return inertia('Employees/Edit', [
-            'employee' => $employee->load('scanners'),
+            'employee' => $employee->load(['scanners', 'scanners.users']),
             'scanners' => $this->scanner->get(),
         ]);
     }

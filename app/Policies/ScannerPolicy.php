@@ -33,18 +33,6 @@ class ScannerPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Scanner  $scanner
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function view(User $user, Scanner $scanner)
-    {
-        return $scanner->createdBy?->is($user) ?? $scanner->users->contains($user);
-    }
-
-    /**
      * Determine whether the user can create models.
      *
      * @param  \App\Models\User  $user

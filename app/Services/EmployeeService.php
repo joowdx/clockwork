@@ -88,14 +88,18 @@ class EmployeeService implements Import
         );
     }
 
-    public function get()
+    public function get(?bool $unenrolled = false)
     {
-        return $this->repository->query()->whereHas('scanners', function (Builder $query) {
-            $query->whereHas('users', function (Builder $query) {
-                $query->where('user_id', auth()->id());
-            });
+        return $this->repository->query()->when($unenrolled, function ($query) {
+            $query->whereDoesntHave('scanners');
+        }, function ($query) {
+            $query->whereHas('scanners', function (Builder $query) {
+                $query->whereHas('users', function (Builder $query) {
+                    $query->where('user_id', auth()->id());
+                });
 
-            $query->orWhere('created_by', auth()->id());
+                $query->orWhere('created_by', auth()->id());
+            });
         })->sortByName()->get();
     }
 
