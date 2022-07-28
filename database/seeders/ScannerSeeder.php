@@ -10,11 +10,12 @@ class ScannerSeeder extends Seeder
 {
 
     const SCANNERS = [
+        'capitol_1',
+        'capitol_2',
+        'coliseum',
         'coliseum_1',
         'coliseum_2',
         'coliseum_3',
-        'capitol_1',
-        'capitol_2',
         'opag',
         'opag_coliseum',
         'pacco',

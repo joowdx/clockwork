@@ -21,50 +21,6 @@ class ScannerFactory extends Factory
         ];
     }
 
-    public function coliseum_1()
-    {
-        return $this->state([
-            'name' => 'coliseum-1',
-            'attlog_file' => 'AF4C211360031_attlog',
-            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
-            'print_text_colour' => '#ECF0F1',
-            'print_background_colour' => '#34B3F1',
-            'shared' => true,
-        ]);
-    }
-
-    public function coliseum_2()
-    {
-        return $this->state([
-            'name' => 'coliseum-2',
-            'attlog_file' => 'AF4C211360029_attlog',
-            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
-            'print_text_colour' => '#ECF0F1',
-            'print_background_colour' => '#5FD068',
-            'shared' => true,
-        ]);
-    }
-
-    public function coliseum_3()
-    {
-        return $this->state([
-            'name' => 'coliseum-3',
-            'attlog_file' => 'AF4C211360014_attlog',
-            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
-            'print_text_colour' => '#ECF0F1',
-            'print_background_colour' => '#FAEA48',
-            'shared' => true,
-        ]);
-    }
-
-    public function coliseum_4()
-    {
-        return $this->state([
-            'name' => 'coliseum-3',
-            'remarks' => 'Shared with PCO, PP, and PTDPO.',
-        ]);
-    }
-
     public function capitol_1()
     {
         return $this->state([
@@ -79,6 +35,50 @@ class ScannerFactory extends Factory
         return $this->state([
             'name' => 'capitol-2',
             'remarks' => 'Shared with PLO, PESO, PSWDO, PP, and PHRMO.',
+            'shared' => true,
+        ]);
+    }
+
+    public function coliseum()
+    {
+        return $this->state([
+            'name' => 'coliseum',
+            'remarks' => 'Shared with PCO, PP, and PTDPO.',
+        ]);
+    }
+
+    public function coliseum_1()
+    {
+        return $this->state([
+            'name' => 'coliseum-1',
+            'attlog_file' => 'af4c211360031_attlog',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'print_text_colour' => '#ECF0F1',
+            'print_background_colour' => '#34B3F1',
+            'shared' => true,
+        ]);
+    }
+
+    public function coliseum_2()
+    {
+        return $this->state([
+            'name' => 'coliseum-2',
+            'attlog_file' => 'af4c211360029_attlog',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'print_text_colour' => '#ECF0F1',
+            'print_background_colour' => '#5FD068',
+            'shared' => true,
+        ]);
+    }
+
+    public function coliseum_3()
+    {
+        return $this->state([
+            'name' => 'coliseum-3',
+            'attlog_file' => 'af4c211360014_attlog',
+            'remarks' => 'Shared by all offices without dedicated scanners at the coliseum.',
+            'print_text_colour' => '#ECF0F1',
+            'print_background_colour' => '#FAEA48',
             'shared' => true,
         ]);
     }
@@ -188,7 +188,7 @@ class ScannerFactory extends Factory
     {
         return $this->state([
             'name' => 'pgso-2',
-            'attlog_file' => '1_attlog',
+            'attlog_file' => '74762_attlog',
             'remarks' => 'For non-regulars.',
             'print_text_colour' => '#B55400',
         ]);

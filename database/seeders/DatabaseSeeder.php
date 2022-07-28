@@ -20,7 +20,5 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ScannerSeeder::class,
         ]);
-
-        User::all()->each(fn ($e) => $e->scanners()->sync(Scanner::all()->map->id));
     }
 }
