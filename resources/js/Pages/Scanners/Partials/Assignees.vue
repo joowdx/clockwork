@@ -23,10 +23,7 @@
                 <JetInputError :message="form.errors[`users.${user.id}.uid`]" class="mt-2" />
             </div>
             <div v-if="! $page.props.scanner.users?.length" class="col-span-6 sm:col-span-4">
-                <JetLabel class="uppercase" for="empty" value="empty" />
-                <div class="grid grid-cols-12 space-x-3 align-bottom">
-                    <JetInput id="empty" type="text" class="block w-full col-span-12" value='Please click the "add" button below.' disabled />
-                </div>
+                <JetLabel class="text-gray-600 dark:text-gray-600" for="empty" value="No assignees for this device found." />
             </div>
         </template>
 

@@ -11,20 +11,20 @@
         <template #form>
             <!-- Scanners -->
             <div v-for="scanner in $page.props.employee.scanners" :key="scanner.id" class="col-span-6 sm:col-span-4">
-                <JetLabel class="uppercase" :for="`scanner.${scanner.id}`" :value="scanner.name" />
+                <Link v-if="canAccess(scanner)" :href="route('scanners.edit', scanner.id)">
+                    <JetLabel class="cursor-pointer" :for="`scanner.${scanner.id}`" :value="scanner.name" />
+                </Link>
+                <JetLabel v-else :for="`scanner.${scanner.id}`" :value="scanner.name" />
                 <div class="grid grid-cols-12 space-x-3 align-bottom">
-                    <JetInput :id="`scanner.${scanner.id}`" type="text" class="block w-full" :class="{'col-span-12': scanner.new, 'col-span-9': !scanner.new}" v-model="form.scanners[scanner.id].uid" />
-                    <JetDangerButton v-if="!scanner.new" class="col-span-3" @click="showConfirmationDialog(scanner.pivot.id)" >
+                    <JetInput :id="`scanner.${scanner.id}`" type="text" class="block w-full" :class="{'col-span-12': scanner.new, 'col-span-9': !scanner.new}" v-model="form.scanners[scanner.id].uid" :disabled="! canAccess(scanner)" />
+                    <JetDangerButton v-if="!scanner.new" class="col-span-3" @click="showConfirmationDialog(scanner.pivot.id)" :disabled="! canAccess(scanner)" >
                         Remove
                     </JetDangerButton>
                 </div>
                 <JetInputError :message="form.errors[`scanners.${scanner.id}.uid`]" class="mt-2" />
             </div>
             <div v-if="! $page.props.employee.scanners?.length" class="col-span-6 sm:col-span-4">
-                <JetLabel class="uppercase" for="empty" value="empty" />
-                <div class="grid grid-cols-12 space-x-3 align-bottom">
-                    <JetInput id="empty" type="text" class="block w-full col-span-12" value='Please click the "add" button below.' disabled />
-                </div>
+                <JetLabel class="text-gray-600 dark:text-gray-600" for="empty" value="This employee is not enrolled to any scanner device." />
             </div>
         </template>
 
@@ -37,7 +37,7 @@
                 Add
             </JetSecondaryButton>
 
-            <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing || ! $page.props.employee.scanners?.length">
                 Save
             </JetButton>
         </template>
@@ -95,6 +95,7 @@
 
 <script>
     import { defineComponent } from 'vue'
+    import { Link } from '@inertiajs/inertia-vue3'
     import JetActionMessage from '@/Jetstream/ActionMessage.vue'
     import JetActionSection from '@/Jetstream/ActionSection.vue'
     import JetButton from '@/Jetstream/Button.vue'
@@ -111,6 +112,7 @@
 
     export default defineComponent({
         components: {
+            Link,
             JetActionMessage,
             JetActionSection,
             JetButton,
@@ -173,12 +175,6 @@
                         preserveScroll: true,
                         onSuccess: () => {
                             this.hideConfirmationDialog()
-
-                            Swal.fire(
-                                'Import successful',
-                                'Employees updated.',
-                                'success'
-                            )
                         }
                     });
             },
@@ -198,6 +194,9 @@
 
                 this.error = null
             },
+            canAccess(scanner) {
+                return this.$page.props.user.administrator || scanner.users?.some(e => e.id === this.$page.props.user.id);
+            }
         },
     })
 </script>
