@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\Attendance\Main as Attendance;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PrintController;
@@ -41,4 +42,6 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::resource('timelogs', TimeLogController::class)->only(['index', 'store']);
     Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
     Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
+
+    Route::get('/attendance', Attendance::class);
 });

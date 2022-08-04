@@ -1,15 +1,15 @@
 @extends('app')
 
-@push('head')
+@section('head')
 
     <script src="{{ mix('js/inertia.js') }}" defer></script>
 
-@endpush
+@endsection
 
-@push('body')
+@section('body')
 
     @inertia
 
     @routes
 
-@endpush
+@endsection

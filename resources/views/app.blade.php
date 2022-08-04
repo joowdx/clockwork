@@ -12,13 +12,13 @@
 
         <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
-        @stack('head')
+        @yield('head')
 
     </head>
 
     <body class="font-sans antialiased">
 
-        @stack('body')
+        @yield('body')
 
     </body>
 </html>

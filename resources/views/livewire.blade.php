@@ -1,17 +1,41 @@
 @extends('app')
 
-@push('head')
+@section('head')
 
     <script src="{{ mix('js/livewire.js') }}" defer></script>
 
     @livewireStyles
 
-@endpush
+    @stack('head')
 
-@push('body')
+@endsection
 
-    {{ $slot }}
+@section('body')
+
+    <x-jet-banner />
+
+    <div class="min-h-screen bg-gray-100">
+        @include('navigation-menu')
+
+        <!-- Page Heading -->
+        @if (isset($header))
+            <header class="bg-white shadow">
+                <div class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    {{ $header }}
+                </div>
+            </header>
+        @endif
+
+        <!-- Page Content -->
+        <main>
+            {{ $slot }}
+        </main>
+    </div>
+
+    @stack('modals')
+
+    @stack('body')
 
     @livewireScripts
 
-@endpush
+@endsection
