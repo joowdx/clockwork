@@ -75,9 +75,9 @@
                                     SCANNERS
                                 </td>
                             </tr>
-                            @foreach ($employee->scanners->chunk(5) as $scanners)
+                            @foreach ($employee->scanners->chunk(5) as $chunked)
                                 <tr height="20">
-                                    @foreach ($scanners as $scanner)
+                                    @foreach ($chunked as $scanner)
                                         <td colspan="2" class="uppercase font-xs nowrap consolas scanner bold {{ $scanner->name }}">
                                             {{ $scanner->name }} ({{ str_pad($scanner->pivot->uid, 5, 0, STR_PAD_LEFT) }})
                                         </td>
@@ -111,7 +111,7 @@
         </div>
     </body>
     <style>
-        @foreach ($scanners as $scanner)
+        @foreach ($employee->scanners as $scanner)
             .{{$scanner->name}} {
                 background-color: {{$scanner->print_background_colour}};
                 color: {{$scanner->print_text_colour}};

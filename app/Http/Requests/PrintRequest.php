@@ -52,7 +52,16 @@ class PrintRequest extends FormRequest
             'employees.*' => [
                 'sometimes',
                 'exists:employees,id',
-            ]
+            ],
+            'scanners' => [
+                'nullable',
+                'array',
+            ],
+            'scanners.*' => [
+                'sometimes',
+                'uuid',
+                'exists:scanners,id',
+            ],
         ];
     }
 

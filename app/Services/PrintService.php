@@ -69,6 +69,7 @@ class PrintService
     public function scanners(): Collection
     {
         return $this->scanner->query()
+            ->when($this->request->has('scanners'), fn ($q) => $q->whereIn('id', $this->request->scanners))
             ->whereHas('employees', fn ($q) => $q->whereIn('office', $this->request->offices))
             ->get();
     }
@@ -82,19 +83,23 @@ class PrintService
                 $query->whereIn('office', $this->request->offices);
                 $query->whereHas('timelogs', function ($q) {
                     $q->whereDate('time', $this->request->date);
-                    $q->whereHas('scanner', fn ($q) => $q->whereIn('name', ['coliseum-1', 'coliseum-2', 'coliseum-3']));
+                    $q->whereHas('scanner', fn ($q) => $q->where('name', 'like', '%coliseum%'));
                 });
                 $query->with([
                     'timelogs.scanner',
                     'timelogs' => function ($q) {
                         $q->whereDate('time', $this->request->date);
-                        $q->whereHas('scanner', fn ($q) => $q->whereIn('name', ['coliseum-1', 'coliseum-2', 'coliseum-3']));
+                        $q->whereHas('scanner', fn ($q) => $q->where('name', 'like', '%coliseum%'));
                     }
                 ]);
                 break;
             };
             case 'employee': {
-                $query->with(['scanners', 'timelogs.scanner', 'timelogs' => fn ($q) => $q->whereBetween('time', $this->range())]);
+                $query->with([
+                    'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
+                    'timelogs' => fn ($q) => $q->whereHas('scanner', fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)))->whereBetween('time', $this->range()),
+                    'timelogs.scanner',
+                ]);
                 $query->whereIn('id', $this->request->employees);
                 break;
             };
