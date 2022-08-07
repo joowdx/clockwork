@@ -1,11 +1,11 @@
 /node_modules
 /public/hot
 /public/storage
-/public/css/app.css
-/public/css/print.css
-/public/js/app.js
-/public/css/app.css.map
-/public/js/app.js.map
+/public/css/app.css*
+/public/css/print.css*
+/public/js/app.js*
+/public/js/inertia.js*
+/public/js/livewire.js*
 /storage/*.key
 /vendor
 .env
