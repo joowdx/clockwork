@@ -50,25 +50,32 @@
                     show: true,
                 },
                 {
-                    name: 'Time Logs',
-                    href: route('timelogs.index'),
-                    active: route().current('timelogs.*'),
-                    show: true,
-                },
-            ],
-
-            dropdown: () => [
-                {
                     name: 'Scanners',
                     href: route('scanners.index'),
                     active: route().current('scanners.*'),
                     show: true,
                 },
                 {
+                    name: 'Time Logs',
+                    href: route('timelogs.index'),
+                    active: route().current('timelogs.*'),
+                    show: true,
+                },
+                {
+                    name: 'Attendance',
+                    href: route('attendance'),
+                    active: route().current('attendance'),
+                    show: true,
+                    refresh: true,
+                },
+            ],
+
+            dropdown: () => [
+                {
                     name: 'Users',
                     href: route('users.index'),
                     active: route().current('users.*'),
-                    show: true,
+                    show: false,
                 },
                 {
                     name: 'Account Settings',

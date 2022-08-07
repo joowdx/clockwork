@@ -18,9 +18,13 @@
                     <div class="hidden sm:block sm:ml-6">
                         <div class="flex space-x-4">
                             <template v-for="item in navigation" :key="item.name">
-                                <Link v-if="item.show" :href="item.href" :class="[item.active ? 'bg-indigo-500 text-white dark:bg-gray-800' : 'text-gray-600 hover:bg-indigo-400 dark:hover:bg-gray-900 hover:text-white dark:text-gray-300', 'px-3 py-2 rounded-md text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
+                                <Link v-if="item.show && ! item.refresh" :href="item.href" :class="[item.active ? 'bg-indigo-500 text-white dark:bg-gray-800' : 'text-gray-600 hover:bg-indigo-400 dark:hover:bg-gray-900 hover:text-white dark:text-gray-300', 'px-3 py-2 rounded-md text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
                                     {{ item.name }}
                                 </Link>
+
+                                <a v-if="item.refresh" :href="item.href" :class="[item.active ? 'bg-indigo-500 text-white dark:bg-gray-800' : 'text-gray-600 hover:bg-indigo-400 dark:hover:bg-gray-900 hover:text-white dark:text-gray-300', 'px-3 py-2 rounded-md text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
+                                    {{ item.name }}
+                                </a>
                             </template>
                         </div>
                     </div>
