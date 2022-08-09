@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Http\Requests\PrintRequest;
-use App\Models\Employee;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,22 +58,18 @@ class PrintService
             })
             ->groupBy(['office', 'regular']);
 
-        if ($offices->isEmpty()) {
-            return collect($this->request->offices)->mapWithKeys(fn ($o) => [$o => []]);
-        }
-
-        return $offices;
+        return collect($this->request->offices)->mapWithKeys(fn ($o) => [$o => []])->merge($offices);
     }
 
     public function scanners(): Collection
     {
         return $this->scanner->query()
-            ->when($this->request->has('scanners'), fn ($q) => $q->whereIn('id', $this->request->scanners))
             ->whereHas('employees', fn ($q) => $q->whereIn('office', $this->request->offices))
+            ->when($this->request->has('scanners'), fn ($q) => $q->whereIn('id', $this->request->scanners))
             ->get();
     }
 
-    private function query(): Employee|Builder
+    private function query(): Builder
     {
         $query = $this->employee->query();
 
@@ -83,13 +78,17 @@ class PrintService
                 $query->whereIn('office', $this->request->offices);
                 $query->whereHas('timelogs', function ($q) {
                     $q->whereDate('time', $this->request->date);
-                    $q->whereHas('scanner', fn ($q) => $q->where('name', 'like', '%coliseum%'));
+                    $q->whereHas('scanner', function ($q) {
+                        $q->when($this->request->has('scanners'), fn ($q) => $q->where('name', 'like', '%coliseum%'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners));
+                    });
                 });
                 $query->with([
                     'timelogs.scanner',
                     'timelogs' => function ($q) {
                         $q->whereDate('time', $this->request->date);
-                        $q->whereHas('scanner', fn ($q) => $q->where('name', 'like', '%coliseum%'));
+                        $q->whereHas('scanner', function ($q) {
+                            $q->when($this->request->has('scanners'), fn ($q) => $q->where('name', 'like', '%coliseum%'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners));
+                        });
                     }
                 ]);
                 break;

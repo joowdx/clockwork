@@ -106,7 +106,7 @@
                                     @endif
                                 </td>
                             </tr>
-                            @foreach (collect($employees)->flatten()->flatMap->scanners->unique('id')->chunk(5) as $chunk)
+                            @foreach ($scanners->chunk(5) as $chunk)
                                 <tr height="20">
                                     @foreach ($chunk as $scanner)
                                         <td colspan="2" class="uppercase font-xs nowrap consolas scanner bold {{ $scanner->name }}">
@@ -121,7 +121,7 @@
                             <tr height="20">
                                 <td colspan="6"></td>
                                 <td colspan="4" class="underline uppercase bold center bottom nowrap bahnschrift">
-                                    {{-- {{ auth()->user()?->name }} --}}
+                                    {{ auth()->user()?->name }}
                                 </td>
                             </tr>
                             <tr height="20">
@@ -130,8 +130,7 @@
                                 </td>
                                 <td colspan="3"></td>
                                 <td colspan="4" class="center nowrap bahnschrift-light">
-                                    {{-- {{ auth()->user()?->title }} --}}
-                                    PHRMO OFFICER
+                                    {{ auth()->user()?->title }}
                                 </td>
                             </tr>
                         </tbody>
