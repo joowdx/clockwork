@@ -29,7 +29,7 @@ class ScannerRepository extends BaseRepository
     {
         return [
             'name' => strtolower($payload['name'] ?? ''),
-            'attlog_file' => @$payload['attlog_file'] ?? '',
+            'attlog_file' => @$payload['attlog_file'] ?? null,
             'remarks' => @$payload['remarks'],
             'shared' => (bool) @$payload['remarks'],
             'print_text_colour' => strtolower(@$payload['print_text_colour'] ?? ''),
