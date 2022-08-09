@@ -61,7 +61,7 @@ return [
     |
     */
 
-    'home' => RouteServiceProvider::HOME,
+    'home' => fn () => auth()->user()->readonly ? route('attendance') : RouteServiceProvider::HOME,
 
     /*
     |--------------------------------------------------------------------------
