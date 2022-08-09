@@ -52,7 +52,6 @@ class ScannerRequest extends FormRequest
     {
         return $this->merge([
             'name' => strtolower($this->name),
-            'attlog_file' => strtolower($this->attlog_file),
         ]);
     }
 }

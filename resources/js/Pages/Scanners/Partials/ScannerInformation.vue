@@ -26,7 +26,7 @@
             <!-- Attlog File -->
             <div class="col-span-6 sm:col-span-4">
                 <JetLabel for="attlog_file" value="Attlog File" />
-                <JetInput id="attlog_file" type="text" class="block w-full mt-1 uppercase" v-model="form.attlog_file" autocomplete="attlog_file" />
+                <JetInput id="attlog_file" type="text" class="block w-full mt-1" v-model="form.attlog_file" autocomplete="attlog_file" />
                 <JetInputError :message="form.errors.attlog_file" class="mt-2" />
             </div>
 
