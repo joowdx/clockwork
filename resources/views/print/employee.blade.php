@@ -46,7 +46,7 @@
                                 <td class="underline bold bottom nowrap cascadia font-md">OUT</td>
                             </tr>
                             @foreach ($days = (Carbon\CarbonPeriod::create($from->clone()->addDays($x * 31), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 31))->lt($to) ? $end->subDay() : $to)) as $date)
-                                <tr height="20" @class(['weekend' => $date->isWeekend()])>
+                                <tr height="20" @class(['weekend' => $date->isWeekend(), 'absent' => $employee->absentForTheDay($date) && $date->isWeekDay()])>
                                     <td colspan="2" height="20" @class(['font-sm nowrap consolas',])>
                                         {{  $date->format('D d-m-y') }}
                                     </td>

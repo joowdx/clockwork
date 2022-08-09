@@ -28,6 +28,12 @@ tr, td {
     height: 15pt;
 }
 
+.absent {
+    background: #F38c8caa;
+    border-color: transparent !important;
+    text-decoration: line-through;
+}
+
 .weekend {
     background: #33333322;
     border-color: transparent !important;

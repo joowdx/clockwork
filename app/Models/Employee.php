@@ -90,6 +90,11 @@ class Employee extends Model
         return $this->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->values();
     }
 
+    public function absentForTheDay(Carbon $date): bool
+    {
+        return $this->logsForTheDay($date)->isEmpty();
+    }
+
     public function getSchedule(Carbon $date): Schedule
     {
         return $this->schedules()
