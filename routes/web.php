@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssignmentController;
-use App\Http\Controllers\Attendance;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PrintController;
@@ -46,5 +46,5 @@ Route::middleware(['auth', 'verified'])->group(function() {
     });
 
     Route::get('/print', PrintController::class)->name('print');
-    Route::get('/attendance', Attendance::class)->name('attendance');
+    Route::get('/attendance', AttendanceController::class)->name('attendance');
 });

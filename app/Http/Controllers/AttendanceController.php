@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
+use App\Services\OfficeService;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class Attendance extends Component
+class AttendanceController extends Component
 {
     use WithPagination;
 
@@ -17,7 +18,8 @@ class Attendance extends Component
         'start',
         'end',
         'active',
-        'office'
+        'office',
+        'status',
     ];
 
     public $url;
@@ -35,6 +37,8 @@ class Attendance extends Component
     public $selected;
 
     public $office;
+
+    public $status = '';
 
     public function mount()
     {
@@ -78,11 +82,24 @@ class Attendance extends Component
     public function updatedOffice()
     {
         $this->resetPage();
+
+        $this->selected['employees'] = [];
+    }
+
+    public function updatedStatus()
+    {
+        $this->resetPage();
+
+        $this->selected['employees'] = [];
     }
 
     public function updatedActive()
     {
         $this->resetPage();
+
+        $this->selected['employees'] = [];
+
+        $this->selected['offices'] = [];
     }
 
     public function render()
@@ -91,17 +108,20 @@ class Attendance extends Component
 
         $employee = app(EmployeeRepository::class);
 
+        $office = app(OfficeService::class);
+
         return view('attendance', [
             'scanners' => $scanner->query()
                 ->when($this->search, fn ($query) => $query->where('name', 'like', "%{$this->search}%"))
                 ->get(),
             'employees' => $this->from === 'employees'
                 ? $employee->query()
-                    ->when($this->active !== '', fn ($query) => $query->whereActive($this->active))
+                    ->when($this->active !== '', fn ($query) => $query->whereActive(filter_var($this->active, FILTER_VALIDATE_BOOLEAN)))
+                    ->when($this->status !== '', fn ($query) => $query->whereRegular(filter_var($this->status, FILTER_VALIDATE_BOOLEAN)))
                     ->when($this->office, fn ($query) => $query->whereOffice(strtoupper($this->office)))
-                    ->paginate(50)
+                    ->simplePaginate(30)
                 : [],
-            'offices' => ($offices = $employee->model()->select('office')->distinct('office')->get()->map->office)->empty() ? $offices->prepend('') : $offices->prepend('')->unique(),
+            'offices' => $office->query()->where('office', 'like', "%{$this->search}%")->pluck('office')->prepend(''),
         ]);
     }
 
@@ -123,8 +143,8 @@ class Attendance extends Component
             'selected.offices.*' => 'string|exists:employees,office',
             'selected.scanners' => 'required|array',
             'selected.scanners.*' => 'uuid|exists:scanners,id',
-            'start' => 'required|date:Y-m-d',
-            'end' => 'required_if:from,employees|date:Y-m-d',
+            'start' => 'required|date:Y-m-d|before_or_equal:' . ($this->from === 'offices' ? today()->endOfDay()->format('Y-m-d') :  'end'),
+            'end' => 'required_if:from,employees|date:Y-m-d|before_or_equal:' . today()->endOfMonth()->format('Y-m-d'),
         ];
     }
 
@@ -151,7 +171,7 @@ class Attendance extends Component
 
         $this->url = match ($this->from) {
             'employees' => route('print', [
-                'view' => 'employee',
+                'by' => 'employee',
                 'period' => 'custom',
                 'from' => $this->start,
                 'to' => $this->end,
@@ -167,7 +187,7 @@ class Attendance extends Component
                     ->toArray(),
             ]),
             'offices' => route('print', [
-                'view' => 'office',
+                'by' => 'office',
                 'date' => $this->start,
                 'offices' => collect(@$this->selected['offices'])
                     ->filter()
