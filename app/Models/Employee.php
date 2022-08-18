@@ -95,6 +95,11 @@ class Employee extends Model
         return $this->logsForTheDay($date)->isEmpty() && $date->lte(today());
     }
 
+    public function ellipsize(int $length = 30, string $format = 'fullStartLastInitialMiddle', string $ellipsis = '…')
+    {
+        return strlen($this->name_format->$format) > $length ? substr($this->name_format->$format, 0, $length) . $ellipsis : $this->name_format->$format;
+    }
+
     public function getSchedule(Carbon $date): Schedule
     {
         return $this->schedules()

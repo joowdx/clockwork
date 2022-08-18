@@ -71,7 +71,7 @@
                                                     $employee = ($k == 0 ? $employees['regular'] : $employees['nonregular'])[$j + $i * 30];
                                                 @endphp
                                                 <td colspan="4" height="20" class="font-sm nowrap consolas">
-                                                    {{ str_pad($j + $i * 30 + 1, 2, '0', STR_PAD_LEFT) . '. '. $employee->nameFormat->fullStartLastInitialMiddle }}
+                                                    {{ str_pad($j + $i * 30 + 1, 2, '0', STR_PAD_LEFT) . '. '. $employee->ellipsize() }}
                                                 </td>
                                                 <td height="20">
                                                     <div class="font-sm nowrap consolas bold {{ $employee->timelogs->sortBy('time')->first()->scanner->name }}">
