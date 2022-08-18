@@ -12,7 +12,7 @@
             <div class="grid grid-cols-12 gap-3 p-5" x-data="{ from: @entangle('from') }">
                 <div class="col-span-6 md:col-span-3">
                     <x-jet-label for="search" class="text-white uppercase" value="{{ __('Search') }}" />
-                    <x-jet-input id="search" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="text" name="search" :value="old('search')" required autofocus x-bind:placeholder="'Scanners / ' + from" wire:model.debounce.250ms="search" disabled="{{ (bool) $url }}" />
+                    <x-jet-input id="search" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="text" name="search" :value="old('search')" required autofocus x-bind:placeholder="'Scanners / ' + from" wire:model.debounce.100ms="search" disabled="{{ (bool) $url }}" />
                 </div>
                 <div class="col-span-6 md:col-span-3">
                     <x-jet-label for="from" class="text-white uppercase" value="{{ __('From') }}" />
@@ -23,12 +23,12 @@
                 </div>
                 <div class="col-span-6 md:col-span-3">
                     <x-jet-label for="start" class="text-white uppercase" value="{{ $from == 'offices' ? __('Date') : __('Start') }}" />
-                    <x-jet-input id="start" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" name="start" :value="old('start')" required autofocus x-bind:placeholder="from" wire:model="start" disabled="{{ (bool) $url }}" />
+                    <x-jet-input id="start" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" name="start" :value="old('start')" required autofocus x-bind:placeholder="from" wire:model="start" disabled="{{ (bool) $url }}" max="{{ $from === 'offices' ? today()->endOfDay()->format('Y-m-d') : $end }}" />
                 </div>
                 @if ($from !== 'offices')
                     <div class="col-span-6 md:col-span-3">
                         <x-jet-label for="end" class="text-white uppercase" value="{{ __('End') }}" />
-                        <x-jet-input id="end" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" name="end" :value="old('end')" required autofocus x-bind:placeholder="from" wire:model="end" disabled="{{ (bool) $url }}" />
+                        <x-jet-input id="end" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" name="end" :value="old('end')" required autofocus x-bind:placeholder="from" wire:model="end" disabled="{{ (bool) $url }}" min="{{ $start }}" max="{{ today()->endOfMonth()->format('Y-m-d') }}" />
                     </div>
                     <div class="col-span-6 md:col-span-3">
                         <x-jet-label for="office" class="text-white uppercase" value="{{ __('Office') }}" />
@@ -36,6 +36,14 @@
                             @foreach ($offices as $office)
                                 <option> {{ $office }} </option>
                             @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-6 md:col-span-3">
+                        <x-jet-label for="status" class="text-white uppercase" value="{{ __('Status') }}" />
+                        <select id="status" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" wire:model="status" @disabled($url) >
+                            <option></option>
+                            <option value="true"> Regular </option>
+                            <option value="false"> Non-regular </option>
                         </select>
                     </div>
                 @endif
@@ -73,7 +81,7 @@
                             <thead>
                                 <tr>
                                     <td colspan="2" class="font-bold uppercase">
-                                        Scanner ({{ collect($selected['scanners'])->filter()->count() }})
+                                        Scanners
                                     </td>
                                 </tr>
                             </thead>
@@ -81,7 +89,7 @@
                                 @forelse ($scanners as $scanner)
                                     <tr>
                                         <td class="w-1 pr-3">
-                                            <x-jet-checkbox wire:model="selected.scanners.{{ $scanner->id }}" />
+                                            <x-jet-checkbox wire:model.defer="selected.scanners.{{ $scanner->id }}" wire:target="generate" wire:loading.attr="disabled" />
                                         </td>
                                         <td>
                                             {{ $scanner->name }}
@@ -104,7 +112,7 @@
                                     <thead>
                                         <tr>
                                             <td colspan="2" class="font-bold uppercase">
-                                                Offices ({{ collect(@$selected['offices'])->filter()->count() }})
+                                                Offices
                                             </td>
                                         </tr>
                                     </thead>
@@ -112,7 +120,7 @@
                                         @forelse ($offices->filter() as $office)
                                             <tr>
                                                 <td class="w-1 pr-3">
-                                                    <x-jet-checkbox wire:model="selected.offices.{{ $office }}"/>
+                                                    <x-jet-checkbox wire:model.defer="selected.offices.{{ $office }}" wire:target="generate" wire:loading.attr="disabled" />
                                                 </td>
                                                 <td>
                                                     {{ $office }}
@@ -135,7 +143,7 @@
                                     <thead>
                                         <tr>
                                             <td colspan="2" class="font-bold uppercase">
-                                                Employees ({{ collect(@$selected['employees'])->filter()->count() }})
+                                                Employees
                                             </td>
                                         </tr>
                                     </thead>
@@ -143,7 +151,7 @@
                                         @forelse ($employees as $employee)
                                             <tr>
                                                 <td class="w-1 pr-3">
-                                                    <x-jet-checkbox wire:model="selected.employees.{{ $employee->id }}"/>
+                                                    <x-jet-checkbox wire:model.defer="selected.employees.{{ $employee->id }}" wire:target="generate" wire:loading.attr="disabled" />
                                                 </td>
                                                 <td>
                                                     {{ $employee->name_format->fullStartLastInitialMiddle }}
