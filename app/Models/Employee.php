@@ -92,7 +92,7 @@ class Employee extends Model
 
     public function absentForTheDay(Carbon $date): bool
     {
-        return $this->logsForTheDay($date)->isEmpty();
+        return $this->logsForTheDay($date)->isEmpty() && $date->lte(today());
     }
 
     public function getSchedule(Carbon $date): Schedule
