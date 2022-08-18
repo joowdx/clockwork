@@ -96,7 +96,7 @@ return [
     ],
 
     'ignore_paths' => [
-        'print',
+        'print*',
         'attendance',
         'nova-api*',
     ],
