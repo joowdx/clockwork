@@ -75,8 +75,8 @@
                             <TailwindSelect class="w-full" :options="['ALL', ...offices]" v-model="office" />
                         </div>
                         <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                            <JetLabel value="Regular" />
-                            <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'YES', value: 1}, {name: 'NO', value: 0}]" v-model="regular" />
+                            <JetLabel value="Status" />
+                            <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NON-REGULAR', value: 0}]" v-model="regular" />
                         </div>
                         <div class="col-span-12 sm:col-span-4 lg:col-span-2">
                             <JetLabel value="Active" />
@@ -117,7 +117,7 @@
                                                     Office
                                                 </th>
                                                 <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                    Regular
+                                                    Status
                                                 </th>
                                             </tr>
                                         </template>
@@ -172,7 +172,7 @@
                                                     <div class="text-sm">
                                                         <div class="font-thin">
                                                             <p class="text-black dark:text-gray-100">
-                                                                {{ employee.regular ? 'YES' : 'NO' }}
+                                                                {{ employee.regular ? 'Regular' : 'Non-regular' }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -460,14 +460,14 @@
                 switch (this.by) {
                     case 'office': {
                         return route('print', {
-                            view: this.by,
+                            by: this.by,
                             date: this.date,
                             offices: this.selected,
                         });
                     }
                     case 'employee': {
                         return route('print', {
-                            view: this.by,
+                            by: this.by,
                             period: this.period,
                             from: this.from,
                             to: this.to,
