@@ -117,9 +117,9 @@ class AttendanceController extends Component
                 ->get(),
             'employees' => $this->from === 'employees'
                 ? ($this->search ? Employee::search($this->search) : $employee->query())
-                    ->when($this->active !== '', fn ($query) => $query->whereActive(filter_var($this->active, FILTER_VALIDATE_BOOLEAN)))
-                    ->when($this->status !== '', fn ($query) => $query->whereRegular(filter_var($this->status, FILTER_VALIDATE_BOOLEAN)))
-                    ->when($this->office, fn ($query) => $query->whereOffice(strtoupper($this->office)))
+                    ->when($this->active !== '', fn ($query) => $query->where('active', filter_var($this->active, FILTER_VALIDATE_BOOLEAN)))
+                    ->when($this->status !== '', fn ($query) => $query->where('regular', filter_var($this->status, FILTER_VALIDATE_BOOLEAN)))
+                    ->when($this->office, fn ($query) => $query->where('office', strtoupper($this->office)))
                     ->simplePaginate(30)
                 : [],
             'offices' => $office->query()->where('name', 'like', "%{$this->search}%")->pluck('name')->prepend(''),
