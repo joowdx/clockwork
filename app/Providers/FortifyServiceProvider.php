@@ -10,6 +10,8 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -21,7 +23,18 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
+            public function toResponse($request)
+            {
+                return $request->wantsJson()
+                    ? response()->json(['two_factor' => false])
+                    : (
+                        $request->user()->readonly
+                            ? Inertia::location(route('attendance'))
+                            : redirect()->intended(Fortify::redirects('login'))
+                    );
+            }
+        });
     }
 
     /**
