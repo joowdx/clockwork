@@ -71,6 +71,7 @@ class Employee extends Model
     public function toSearchableArray(): array
     {
         return [
+            $this->getKeyName() => $this->getKey(),
             'name' => $this->name_format->full,
         ];
     }

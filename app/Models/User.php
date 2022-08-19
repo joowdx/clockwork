@@ -58,6 +58,7 @@ class User extends Authenticatable
     public function toSearchableArray(): array
     {
         return [
+            $this->getKeyName() => $this->getKey(),
             'name' => $this->name,
             'username' => $this->username,
         ];

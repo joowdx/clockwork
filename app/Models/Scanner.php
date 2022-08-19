@@ -75,7 +75,8 @@ class Scanner extends Model
     public function toSearchableArray(): array
     {
         return [
-            'name' => $this->name
+            $this->getKeyName() => $this->getKey(),
+            'name' => $this->name,
         ];
     }
 }

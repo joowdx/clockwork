@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use App\Services\OfficeService;
@@ -115,7 +116,7 @@ class AttendanceController extends Component
                 ->when($this->search, fn ($query) => $query->where('name', 'like', "%{$this->search}%"))
                 ->get(),
             'employees' => $this->from === 'employees'
-                ? $employee->query()
+                ? ($this->search ? Employee::search($this->search) : $employee->query())
                     ->when($this->active !== '', fn ($query) => $query->whereActive(filter_var($this->active, FILTER_VALIDATE_BOOLEAN)))
                     ->when($this->status !== '', fn ($query) => $query->whereRegular(filter_var($this->status, FILTER_VALIDATE_BOOLEAN)))
                     ->when($this->office, fn ($query) => $query->whereOffice(strtoupper($this->office)))

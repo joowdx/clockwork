@@ -16,6 +16,7 @@
         "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.7",
         "livewire/livewire": "^2.5",
+        "teamtnt/laravel-scout-tntsearch-driver": "^11.6",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
