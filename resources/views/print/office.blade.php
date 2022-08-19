@@ -10,7 +10,7 @@
             @php
                 $pages = ceil(max(count(@$employees['nonregular'] ?? []), count(@$employees['regular'] ?? [])) / 30);
             @endphp
-            @for ($i = 0; $i < ($pages ? $pages : 1); $i++)
+            @for ($i = 0; $i < ($pages ?: 1); $i++)
                 <div class="pagebreak"></div>
                 <div align="center">
                     <table border="0" cellpadding="0" cellspacing="0" width="640">
@@ -75,7 +75,7 @@
                                                 </td>
                                                 <td height="20">
                                                     <div class="font-sm nowrap consolas bold {{ $employee->timelogs->sortBy('time')->first()->scanner->name }}">
-                                                        {{ $employee->timelogs->first()->time->format('H:i') }}
+                                                        {{ $employee->timelogs->sortBy('time')->pluck('time')->first()->format('H:i') }}
                                                     </div>
                                                 </td>
                                             @elseif ($j == 0 && $j + $i * 30 >= $count)
@@ -101,12 +101,12 @@
                             <tr height="20"></tr>
                             <tr height="20">
                                 <td class="bold bottom nowrap cascadia font-md">
-                                    @if ($scanners->isNotEmpty())
+                                    @if (@$employees['scanners']?->isNotEmpty())
                                         SCANNERS
                                     @endif
                                 </td>
                             </tr>
-                            @foreach ($scanners->chunk(5) as $chunk)
+                            @foreach (@$employees['scanners']?->chunk(5) ?? [] as $chunk)
                                 <tr height="20">
                                     @foreach ($chunk as $scanner)
                                         <td colspan="2" class="uppercase font-xs nowrap consolas scanner bold {{ $scanner->name }}">
@@ -140,12 +140,14 @@
         @endforeach
     </body>
     <style>
-        @foreach ($scanners as $scanner)
-            .{{$scanner->name}} {
-                background-color: {{$scanner->print_background_colour}};
-                color: {{$scanner->print_text_colour}};
-                width: fit-content;
-            }
+        @foreach ($offices as $office => $employees)
+            @foreach (@$employees['scanners'] ?? [] as $scanner)
+                .{{$scanner->name}} {
+                    background-color: {{$scanner->print_background_colour}};
+                    color: {{$scanner->print_text_colour}};
+                    width: fit-content;
+                }
+            @endforeach
         @endforeach
     </style>
 </html>

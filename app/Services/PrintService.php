@@ -17,14 +17,9 @@ class PrintService
         private ScannerRepository $scanner,
     ) { }
 
-    public function view(): string
+    public function data(string $by): array
     {
-        return "print.{$this->request->view}";
-    }
-
-    public function data(): array
-    {
-        return $this->{$this->request->view}();
+        return $this->{$by}();
     }
 
     public function employee(): array
@@ -58,7 +53,11 @@ class PrintService
             })
             ->groupBy(['office', 'regular']);
 
-        return collect($this->request->offices)->mapWithKeys(fn ($o) => [$o => []])->merge($offices);
+        return collect($this->request->offices)
+            ->mapWithKeys(fn ($o) => [$o => ['scanners' => $this->scanner->query()->whereHas('employees', fn ($q) => $q->where('office', $o))->when($this->request->has('scanners'), fn ($q) => $q->whereIn('id', $this->request->scanners))->get()]])
+            ->map(function ($office, $key) use ($offices) {
+                return collect($office)->mergeRecursive($offices->first(fn ($d, $o) => $o === $key));
+            });
     }
 
     public function scanners(): Collection
@@ -73,13 +72,17 @@ class PrintService
     {
         $query = $this->employee->query();
 
-        switch ($this->request->view) {
+        switch ($this->request->by) {
             case 'office': {
                 $query->whereIn('office', $this->request->offices);
                 $query->whereHas('timelogs', function ($q) {
                     $q->whereDate('time', $this->request->date);
                     $q->whereHas('scanner', function ($q) {
-                        $q->when($this->request->has('scanners'), fn ($q) => $q->where('name', 'like', '%coliseum%'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners));
+                        $q->when(
+                            $this->request->has('scanners'),
+                            fn ($q) => $q->whereIn('scanners.id', $this->request->scanners),
+                            fn ($q) => $q->where('name', 'like', '%coliseum%'),
+                        );
                     });
                 });
                 $query->with([
@@ -87,7 +90,11 @@ class PrintService
                     'timelogs' => function ($q) {
                         $q->whereDate('time', $this->request->date);
                         $q->whereHas('scanner', function ($q) {
-                            $q->when($this->request->has('scanners'), fn ($q) => $q->where('name', 'like', '%coliseum%'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners));
+                            $q->when(
+                                $this->request->has('scanners'),
+                                fn ($q) => $q->whereIn('scanners.id', $this->request->scanners),
+                                fn ($q) => $q->where('name', 'like', '%coliseum%'),
+                            );
                         });
                     }
                 ]);
@@ -96,7 +103,11 @@ class PrintService
             case 'employee': {
                 $query->with([
                     'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
-                    'timelogs' => fn ($q) => $q->whereHas('scanner', fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)))->whereBetween('time', $this->range()),
+                    'timelogs' => function ($query) {
+                        $query->whereHas(
+                            'scanner', fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners))
+                        )->whereBetween('time', $this->range());
+                    },
                     'timelogs.scanner',
                 ]);
                 $query->whereIn('id', $this->request->employees);
@@ -109,26 +120,16 @@ class PrintService
 
     private function range(): array
     {
-        switch ($this->request->period) {
-            case 'full':
-            case '1st':
-            case '2nd': {
-                $month = Carbon::parse($this->request->month);
-
-                return [
-                    'from' => $month->setDay($this->request->period == '2nd' ? 16 : 1),
-                    'to' => $this->request->period == '1st' ? $month->clone()->setDay(15)->endOfDay() : $month->clone()->endOfMonth(),
-                ];
-            };
-            case 'custom': {
-                return [
-                    'from' => Carbon::parse($this->request->from)->startOfDay(),
-                    'to' => Carbon::parse($this->request->to)->endOfDay(),
-                ];
-            };
-            default: {
-                return [];
-            }
-        }
+        return match($this->request->period) {
+            'full', '1st', '2nd' => [
+                'from' => ($month = Carbon::parse($this->request->month))->setDay($this->request->period == '2nd' ? 16 : 1),
+                'to' => $this->request->period == '1st' ? $month->clone()->setDay(15)->endOfDay() : $month->clone()->endOfMonth(),
+            ],
+            'custom' => [
+                'from' => Carbon::parse($this->request->from)->startOfDay(),
+                'to' => Carbon::parse($this->request->to)->endOfDay(),
+            ],
+            default => []
+        };
     }
 }

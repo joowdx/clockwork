@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-        <link rel="stylesheet" href="css/print.css">
+        <link rel="stylesheet" href="{{ asset('css/print.css') }}">
         <title>DAILY TIME RECORD</title>
     </head>
     <body>

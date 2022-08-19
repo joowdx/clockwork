@@ -8,61 +8,25 @@ class PrintRequest extends FormRequest
 {
     public function rules()
     {
-        return [
-            'view' => [
-                'required',
-                'in:employee,office',
+        return match($this->route('by')) {
+            'office' => [
+                'date' => 'required|date:Y-m-d',
+                'offices' => 'required|array',
+                'offices.*' => 'string|exists:employees,office',
+                'scanners' => 'sometimes|required|array',
+                'scanners.*' => 'uuid|exists:scanners,id',
             ],
-            'period' => [
-                'required_if:view,employee',
-                'in:custom,full,1st,2nd,',
+            'employee' => [
+                'period' => 'required|in:custom,full,1st,2nd',
+                'month' => 'required_if:period,full,1st,2nd',
+                'from' => 'required_if:period,custom',
+                'to' => 'required_if:period,custom',
+                'employees' => 'required|array',
+                'employees.*' => 'uuid|exists:employees,id',
+                'scanners' => 'sometimes|required|array',
+                'scanners.*' => 'uuid|exists:scanners,id',
             ],
-            'from' => [
-                'required_if:period,custom',
-                'required_with:to',
-                'date:Y-m-d',
-            ],
-            'to' => [
-                'required_if:period,custom',
-                'required_with:from',
-                'date:Y-m-d',
-            ],
-            'month' => [
-                'required_if:period,full',
-                'required_if:period,1st',
-                'required_if:period,2nd',
-                'date:Y-m',
-            ],
-            'date' => [
-                'required_if:view,office',
-                'date:Y-m-d',
-            ],
-            'offices' => [
-                'required_if:view,office',
-                'array',
-            ],
-            'offices.*' => [
-                'sometimes',
-                'exists:employees,office',
-            ],
-            'employees' => [
-                'required_if:view,employee',
-                'array',
-            ],
-            'employees.*' => [
-                'sometimes',
-                'exists:employees,id',
-            ],
-            'scanners' => [
-                'nullable',
-                'array',
-            ],
-            'scanners.*' => [
-                'sometimes',
-                'uuid',
-                'exists:scanners,id',
-            ],
-        ];
+        };
     }
 
     protected function prepareForValidation()
