@@ -122,7 +122,7 @@ class AttendanceController extends Component
                     ->when($this->office, fn ($query) => $query->where('office', strtoupper($this->office)))
                     ->simplePaginate(30)
                 : [],
-            'offices' => $office->query()->where('name', 'like', "%{$this->search}%")->pluck('name')->prepend(''),
+            'offices' => $office->query()->when($this->from == 'office', fn ($q) => $q->where('name', 'like', "%{$this->search}%"))->pluck('name')->prepend(''),
         ]);
     }
 
