@@ -12,7 +12,7 @@
             <div class="grid grid-cols-12 gap-3 p-5" x-data="{ from: @entangle('from') }">
                 <div class="col-span-6 md:col-span-3">
                     <x-jet-label for="search" class="text-white uppercase" value="{{ __('Search') }}" />
-                    <x-jet-input id="search" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="text" name="search" :value="old('search')" required autofocus x-bind:placeholder="'Scanners / ' + from" wire:model.debounce.100ms="search" disabled="{{ (bool) $url }}" />
+                    <x-jet-input id="search" class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="text" name="search" :value="old('search')" required autofocus x-bind:placeholder="from" wire:model.debounce.100ms="search" disabled="{{ (bool) $url }}" />
                 </div>
                 <div class="col-span-6 md:col-span-3">
                     <x-jet-label for="from" class="text-white uppercase" value="{{ __('From') }}" />

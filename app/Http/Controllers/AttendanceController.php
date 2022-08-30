@@ -56,6 +56,8 @@ class AttendanceController extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+
+        $this->selected['employees'] = [];
     }
 
     public function updatedFrom()
@@ -113,7 +115,7 @@ class AttendanceController extends Component
 
         return view('attendance', [
             'scanners' => $scanner->query()
-                ->when($this->search, fn ($query) => $query->where('name', 'like', "%{$this->search}%"))
+                // ->when($this->search, fn ($query) => $query->where('name', 'like', "%{$this->search}%"))
                 ->get(),
             'employees' => $this->from === 'employees'
                 ? ($this->search ? Employee::search($this->search) : $employee->query())
