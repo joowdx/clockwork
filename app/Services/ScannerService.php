@@ -15,7 +15,10 @@ class ScannerService
 
     public function search(?string $query): Collection|LengthAwarePaginator
     {
-        return $this->repository->model()->search($query)->query(fn ($q) => $q->orderBy('name')->with('users'))->get();
+        return match ($query) {
+            null => $this->get(),
+            default => $this->repository->model()->search($query)->query(fn ($q) => $q->orderBy('name')->with('users'))->get()
+        };
     }
 
     public function get(): Collection
@@ -25,7 +28,7 @@ class ScannerService
             ->when(auth()->user()->administrator, function ($query) {
                 $query->orWhere(fn ($q) => $q->whereShared(true));
             })
-            ->orWhere('created_by', auth()->id())
+            ->orWhereDoesntHave('users')
             ->get();
     }
 
