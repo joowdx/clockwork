@@ -67,11 +67,6 @@ class Scanner extends Model
                 ->whereNull('enrollment_id');
     }
 
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by', 'id');
-    }
-
     public function toSearchableArray(): array
     {
         return [

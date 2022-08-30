@@ -16,15 +16,6 @@ class ScannerRepository extends BaseRepository
         $builder->orderBy('name');
     }
 
-    public function create(array $payload, ?Closure $creator = null): Model
-    {
-        $scanner = parent::create(array_merge($payload));
-
-        $scanner->forceFill(['created_by' => auth()->id()])->save(['timestamps' => false]);
-
-        return $scanner;
-    }
-
     protected function transformData(array $payload): array
     {
         return [
@@ -37,7 +28,6 @@ class ScannerRepository extends BaseRepository
             'ip_address' => @$payload['ip_address'],
             'protocol' => @$payload['protocol'],
             'library' => @$payload['library'],
-            'created_by' => @$payload['created_by'],
         ];
     }
 }

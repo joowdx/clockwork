@@ -41,16 +41,6 @@ class Employee extends Model
                 ->orderBy('name');
     }
 
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(self::class);
-    }
-
-    public function lastUpdatedBy(): BelongsTo
-    {
-        return $this->belongsTo(self::class);
-    }
-
     public function timelogs(): HasManyThrough
     {
         return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id')

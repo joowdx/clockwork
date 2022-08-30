@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('ip_address')->nullable();
             $table->enum('protocol', ['tcp', 'udp'])->nullable();
             $table->string('library')->nullable();
-            $table->foreignUuid('created_by')->nullable()->references('id')->on('users')->cascadeOnUpdate()->nullOnDelete();
             $table->timestamps();
         });
     }
