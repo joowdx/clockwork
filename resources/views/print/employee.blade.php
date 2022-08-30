@@ -111,7 +111,7 @@
         </div>
     </body>
     <style>
-        @foreach ($employee->scanners as $scanner)
+        @foreach ($employees->flatMap->scanners as $scanner)
             .{{$scanner->name}} {
                 background-color: {{$scanner->print_background_colour}};
                 color: {{$scanner->print_text_colour}};
