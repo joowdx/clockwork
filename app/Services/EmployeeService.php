@@ -82,6 +82,8 @@ class EmployeeService implements Import
 
                         app(DeleteDuplicateEmployeeEnrollment::class)();
 
+                        $this->repository->all()->searchable();
+
                     })
                 );
             })
