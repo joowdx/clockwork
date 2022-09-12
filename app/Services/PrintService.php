@@ -22,6 +22,11 @@ class PrintService
         return $this->{$by}();
     }
 
+    public function dtr()
+    {
+        return [...$this->employee(), 'month' => Carbon::parse($this->request->month)];
+    }
+
     public function employee(): array
     {
         return [
@@ -100,6 +105,7 @@ class PrintService
                 ]);
                 break;
             };
+            case 'dtr':
             case 'employee': {
                 $query->with([
                     'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
@@ -110,7 +116,8 @@ class PrintService
                     },
                     'timelogs.scanner',
                 ]);
-                $query->whereIn('id', $this->request->employees);
+                $query->when($this->request->filled('offices'), fn ($q) => $q->whereIn('office', $this->request->offices), fn ($q) => $q->whereIn('id', $this->request->employees));
+                $query->when($this->request->filled('regular'), fn ($q) => $q->whereRegular((bool) $this->request->regular));
                 break;
             };
         }
@@ -129,7 +136,11 @@ class PrintService
                 'from' => Carbon::parse($this->request->from)->startOfDay(),
                 'to' => Carbon::parse($this->request->to)->endOfDay(),
             ],
-            default => []
+            null => [
+                'from' => Carbon::parse($this->request->month)->startOfMonth(),
+                'to' => Carbon::parse($this->request->month)->endOfMonth(),
+            ],
+            default => [],
         };
     }
 }

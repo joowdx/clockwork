@@ -6,10 +6,9 @@ use App\Traits\HasNameAccessorAndFormatter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Scout\Searchable;
 
 class Employee extends Model
@@ -48,14 +47,31 @@ class Employee extends Model
                 ->latest('id');
     }
 
-    public function schedules(): HasMany
+    public function shifts(): BelongsToMany
     {
-        return $this->hasMany(Schedule::class);
+        return $this->belongsToMany(Shift::class, 'schedules')
+                ->using(Schedule::class)
+                ->withPivot(['id', 'from', 'to', 'days']);
     }
 
-    public function getBackedUpAttribute(): ?bool
+    public function shift(): HasOne
     {
-        return $this->isBackedUp();
+        return $this->hasOne(Schedule::class)->ofMany([
+            'id' => 'max'
+        ], function ($query) {
+            $query->active();
+        })->withDefault(function ($schedule) {
+            $schedule->default = true;
+
+            $schedule->days = Schedule::DEFAULT_DAYS;
+
+            $schedule->shift = (object) [
+                'in1' => Shift::DEFAULT_IN1,
+                'in2' => Shift::DEFAULT_IN2,
+                'out1' => Shift::DEFAULT_OUT1,
+                'out2' => Shift::DEFAULT_OUT2,
+            ];
+        });
     }
 
     public function toSearchableArray(): array
@@ -83,22 +99,11 @@ class Employee extends Model
 
     public function absentForTheDay(Carbon $date): bool
     {
-        return $this->logsForTheDay($date)->isEmpty() && $date->lte(today());
+        return $this->logsForTheDay($date)->isEmpty() && $date->clone()->startOfDay()->lte(today());
     }
 
     public function ellipsize(int $length = 30, string $format = 'fullStartLastInitialMiddle', string $ellipsis = '…')
     {
         return strlen($this->name_format->$format) > $length ? substr($this->name_format->$format, 0, $length) . $ellipsis : $this->name_format->$format;
-    }
-
-    public function getSchedule(Carbon $date): Schedule
-    {
-        return $this->schedules()
-            ->where('from', '<=', $date)
-            ->where('to', '>=', $date)
-            ->firstOrNew([], [
-                'in' => Schedule::DEFAULT_IN,
-                'out' => Schedule::DEFAULT_OUT,
-            ]);
     }
 }

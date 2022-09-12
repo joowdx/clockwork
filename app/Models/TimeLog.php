@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class TimeLog extends Model
@@ -24,7 +23,7 @@ class TimeLog extends Model
     ];
 
     protected $fillable = [
-        'biometrics_id',
+        'scanner_id',
         'user_id',
         'time',
         'state',
@@ -42,11 +41,6 @@ class TimeLog extends Model
     public function scanner(): HasOneThrough
     {
         return $this->hasOneThrough(Scanner::class, Enrollment::class, 'id', 'id', 'enrollment_id', 'scanner_id');
-    }
-
-    public function backup(): HasOne
-    {
-        return $this->hasOne(BackupTimeLog::class);
     }
 
     protected function getArrayableAppends(): array
@@ -93,11 +87,6 @@ class TimeLog extends Model
         return $this->isUnderGracePeriod();
     }
 
-    public function getBackedUpAttribute(): ?bool
-    {
-        return $this->isBackedUp();
-    }
-
     public function isTimeIn(): bool
     {
         return in_array($this->state, self::IN);
@@ -123,11 +112,6 @@ class TimeLog extends Model
         return $this->in ? $this->time->clone()->setTime($this->employee->getSchedule($this->time)->in, 0)->diffInMinutes($this->time) <= self::GRACE_PERIOD : null;
     }
 
-    public function isBackedUp(): bool
-    {
-        return $this->backup !== null;
-    }
-
     public function isSame(self $timeLog, bool $strict = false): bool
     {
         return $this->time->{$strict ? 'eq' : 'isSameDay'}($timeLog)
@@ -135,4 +119,13 @@ class TimeLog extends Model
             && $this->employee_id === $timeLog->employee_id
             && $this->user_id === $timeLog->user_id;
     }
+}
+
+
+enum TimeLogStates
+{
+    case IN1;
+    case IN2;
+    case OUT1;
+    case OUT2;
 }

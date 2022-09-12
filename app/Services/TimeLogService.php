@@ -5,13 +5,16 @@ namespace App\Services;
 use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Models\TimeLog;
+use App\Models\Employee;
+use App\Models\Schedule;
+use App\Models\Shift;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
 use App\Pipes\Sanitize;
 use App\Pipes\SplitAttlogString;
 use App\Pipes\TransformTimeLogData;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
@@ -71,14 +74,43 @@ class TimeLogService implements Import
             }));
     }
 
-    public function accept(mixed &$accept): mixed
+    public function arrivalTime(Employee $employee, Carbon $date, ?string $shift = null): ?Carbon
     {
-        $accept->time->setHour($accept->time->clone()->setHour($accept->employee->getSchedule($accept->time)->in)->hour);
+        return $this->logsForTheDay($employee, $date)->first(fn ($log) => $log->in)?->time;
+    }
 
-        $accept->time->setMinutes(random_int(-TimeLog::GRACE_PERIOD, 0));
+    public function departureTime(Employee $employee, Carbon $date, ?string $shift = null): ?Carbon
+    {
+        return $this->logsForTheDay($employee, $date)->first(fn ($log) => $log->out)?->time;
+    }
 
-        $accept->persist = true;
+    public function calculateUnderTimeForTheDay(Employee $employee, Carbon $date)
+    {
 
-        return $accept;
+    }
+
+    protected function logsForTheDay(Employee $employee, Carbon $date)
+    {
+        return $employee->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->values();
+    }
+
+    protected function asdasd(Employee $employee, Carbon $date)
+    {
+        $employee->hasOne(Schedule::class)->ofMany([
+            'id' => 'max'
+        ], function ($query) use ($date) {
+            $query->active($date);
+        })->withDefault(function ($schedule) {
+            $schedule->default = true;
+
+            $schedule->days = Schedule::DEFAULT_DAYS;
+
+            $schedule->shift = (object) [
+                'in1' => Shift::DEFAULT_IN1,
+                'in2' => Shift::DEFAULT_IN2,
+                'out1' => Shift::DEFAULT_OUT1,
+                'out2' => Shift::DEFAULT_OUT2,
+            ];
+        });
     }
 }

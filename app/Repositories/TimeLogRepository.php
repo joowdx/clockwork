@@ -10,6 +10,7 @@ class TimeLogRepository extends BaseRepository
     {
         return [
             'uid' => $payload['uid'],
+            'scanner_id' => strtolower($payload['scanner_id']),
             'enrollment_id' => $payload['enrollment_id'],
             'time' => $payload['time'],
             'state' => $payload['state'],

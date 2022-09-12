@@ -47,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function() {
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
     });
 
-    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['office', 'employee'])->name('print');
+    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee'])->name('print');
     Route::get('/attendance', AttendanceController::class)->name('attendance');
 });
+
+Route::get('dtr', fn () => view('print.dtr'));

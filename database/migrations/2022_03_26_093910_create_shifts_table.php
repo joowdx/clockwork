@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Employee;
 use App\Models\Shift;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,15 +14,22 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('schedules', function (Blueprint $table) {
+        Schema::create('shifts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->date('from')->nullable();
-            $table->date('to')->nullable();
-            $table->json('days')->default('[1,2,3,4,5]');
-            $table->foreignIdFor(Employee::class)->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignIdFor(Shift::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->time('in1')->nullable();
+            $table->time('in2')->nullable();
+            $table->time('out1')->nullable();
+            $table->time('out2')->nullable();
             $table->timestamps();
         });
+
+        Shift::create([
+            'id' => str()->orderedUuid(),
+            'in1' => '08:00',
+            'out1' => '11:00',
+            'in2' => '13:00',
+            'out2' => '16:00',
+        ]);
     }
 
     /**
@@ -33,6 +39,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('schedules');
+        Schema::dropIfExists('shifts');
     }
 };
