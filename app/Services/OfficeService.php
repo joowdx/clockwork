@@ -20,7 +20,8 @@ class OfficeService
                 ->select('office as name')
                 ->where('name', '<>', '', 'or')
                 ->whereNotNull('name', 'or'),
-        )->distinct('name');
+        )->distinct('name')
+        ->orderBy('name');
     }
 
     public function get(): Collection
