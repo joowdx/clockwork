@@ -76,6 +76,11 @@ class Employee extends Model
         $query->whereActive($active);
     }
 
+    public function scopeUnenrolled(Builder $query): void
+    {
+        $query->whereDoesntHave('scanners');
+    }
+
     public function logsForTheDay(Carbon $date): Collection
     {
         return $this->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->values();
