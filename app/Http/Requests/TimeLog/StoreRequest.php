@@ -43,20 +43,19 @@ class StoreRequest extends FormRequest
                 'file',
                 'mimes:csv,txt',
                 function ($attribute, $file, $fail) {
-
-                    $scanner = Scanner::findOrFail($this->scanner);
+                    $scanner = Scanner::find($this->scanner);
 
                     $user = User::find(auth()->id());
 
-                    if (($attlog = $scanner->attlog_file) && pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) !== $attlog) {
-                        $fail('Please choose the correct file.');
+                    if (($attlog = $scanner?->attlog_file) && pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) !== $attlog) {
+                        $fail("Please choose the correct $attribute.");
                     }
 
                     if (
                         auth()->user()?->administrator
                             ? false
                             : (
-                                $scanner->shared
+                                $scanner?->shared
                                     ? false
                                     : $user->scanners()->doesntExist($scanner->id)
                             )
