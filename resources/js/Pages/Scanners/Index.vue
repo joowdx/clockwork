@@ -36,7 +36,7 @@
                         <tbody>
                             <tr v-for="scanner in scanners" :key="scanner.id" :class="[! scanner.users.map(e => e.id).includes($page.props.user.id) ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-200']" >
                                 <td class="pr-6 overflow-hidden truncate">
-                                    <Link v-if="$page.props.user.administrator || scanner.users.map(e => e.id).includes($page.props.user.id)" :href="route('scanners.edit', scanner.id)"> {{ scanner.name }} </Link>
+                                    <Link v-if="$page.props.user.administrator || scanner.shared || ! scanner.users.length || scanner.users.map(e => e.id).includes($page.props.user.id)" :href="route('scanners.edit', scanner.id)"> {{ scanner.name }} </Link>
                                     <template v-else> {{ scanner.name }} </template>
                                 </td>
                                 <td class="pl-6 overflow-hidden tracking-tighter">
