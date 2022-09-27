@@ -8,7 +8,7 @@ class CheckNumericUid
 {
     use ParsesEmployeeImport;
 
-    const ERROR = 'Invalid or malformed file.';
+    const ERROR = 'Invalid or malformed file. Non-numeric UIDs detected.';
 
     public function handle(mixed $request, \Closure $next)
     {
