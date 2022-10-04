@@ -658,7 +658,7 @@
     </head>
     <body>
         <div align=center>
-            @foreach ($employees as $employee)
+            @foreach ($employees->load('shift') as $employee)
                 <table border=0 cellpadding=0 cellspacing=0 width=732 class=xl6616797 style='border-collapse:collapse;table-layout:fixed;width:548pt'>
                     <tr height=19 style='height:14.25pt'>
                         <td colspan=8 class=xl7316797>&nbsp;</td>
@@ -770,28 +770,30 @@
 
                         @php($date = $month->clone()->setDay($day))
 
+                        @php(['in1' => $in1, 'in2' => $in2, 'out1' => $out1, 'out2' => $out2] = $timelog->logsForTheDay($employee, $date))
+
                         <tr height=21 style='height:15.75pt'>
                             @for($side = 1; $side <= 2; $side++)
                                 <td class=xl9616797 style='border-top:none'>{{ $day }}</td>
 
                                 {{-- IN1 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-
+                                    {{ $in1?->time->format('H:i') }}
                                 </td>
 
                                 {{-- OUT1 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-
+                                    {{ $out1?->time->format('H:i') }}
                                 </td>
 
                                 {{-- IN2 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-
+                                    {{ $in2?->time->format('H:i') }}
                                 </td>
 
                                 {{-- OUT2 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-
+                                    {{ $out2?->time->format('H:i') }}
                                 </td>
 
                                 {{-- UNDERTIME HOURS --}}

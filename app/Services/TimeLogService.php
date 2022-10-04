@@ -6,8 +6,6 @@ use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
-use App\Models\Schedule;
-use App\Models\Shift;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
@@ -17,6 +15,7 @@ use App\Pipes\TransformTimeLogData;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
 class TimeLogService implements Import
@@ -74,43 +73,36 @@ class TimeLogService implements Import
             }));
     }
 
-    public function arrivalTime(Employee $employee, Carbon $date, ?string $shift = null): ?Carbon
+    public function logsForTheDay(Employee $employee, Carbon $date): array
     {
-        return $this->logsForTheDay($employee, $date)->first(fn ($log) => $log->in)?->time;
+        $logs = $employee->logsForTheDay($date);
+
+        return [
+            'in1' => $in1 = $this->filterTime($logs, $employee->shift->shift->in1, lead: 1),
+            'out1' => $out1 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id])), $employee->shift->shift->out1, trail: -1),
+            'in2' => $in2 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id])), $employee->shift->shift->in2, lead: -1),
+            'out2' => $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id, $in2?->id])), $employee->shift->shift->out2, trail: 1),
+        ];
     }
 
-    public function departureTime(Employee $employee, Carbon $date, ?string $shift = null): ?Carbon
+    protected function filterTime(Collection $logs, string $time, int $range = 2, int $lead = 0, int $trail = 0): mixed
     {
-        return $this->logsForTheDay($employee, $date)->first(fn ($log) => $log->out)?->time;
-    }
+        [ $hour, $minute ] = explode(':', $time);
 
-    public function calculateUnderTimeForTheDay(Employee $employee, Carbon $date)
-    {
+        if (! $lead && ! $trail) {
+            // return $logs->filter(fn ($-e) => $e->time->diffInHours($e->time->clone()->startOfDay()->setHours($hour)->setMinutes($minute)) <= $range)->first();
+        }
 
-    }
-
-    protected function logsForTheDay(Employee $employee, Carbon $date)
-    {
-        return $employee->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->values();
-    }
-
-    protected function asdasd(Employee $employee, Carbon $date)
-    {
-        $employee->hasOne(Schedule::class)->ofMany([
-            'id' => 'max'
-        ], function ($query) use ($date) {
-            $query->active($date);
-        })->withDefault(function ($schedule) {
-            $schedule->default = true;
-
-            $schedule->days = Schedule::DEFAULT_DAYS;
-
-            $schedule->shift = (object) [
-                'in1' => Shift::DEFAULT_IN1,
-                'in2' => Shift::DEFAULT_IN2,
-                'out1' => Shift::DEFAULT_OUT1,
-                'out2' => Shift::DEFAULT_OUT2,
-            ];
-        });
+        if ($lead) {
+            return match ($lead) {
+                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
+                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first()
+            };
+        } else {
+            return match ($trail) {
+                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
+                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
+            };
+        }
     }
 }
