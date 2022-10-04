@@ -65,12 +65,12 @@ class Employee extends Model
 
             $schedule->days = Schedule::DEFAULT_DAYS;
 
-            $schedule->shift = (object) [
+            $schedule->shift = Shift::make([
                 'in1' => Shift::DEFAULT_IN1,
                 'in2' => Shift::DEFAULT_IN2,
                 'out1' => Shift::DEFAULT_OUT1,
                 'out2' => Shift::DEFAULT_OUT2,
-            ];
+            ]);
         });
     }
 
@@ -90,6 +90,11 @@ class Employee extends Model
     public function scopeActive(Builder $query, bool $active = true): void
     {
         $query->whereActive($active);
+    }
+
+    public function scopeUnenrolled(Builder $query): void
+    {
+        $query->whereDoesntHave('scanners');
     }
 
     public function logsForTheDay(Carbon $date): Collection

@@ -86,6 +86,8 @@ class EmployeeService implements Import
 
                     })
                 );
+
+                $this->repository->model()->unenrolled()->delete();
             })
         );
     }
