@@ -12,9 +12,9 @@ class Shift extends Model
 
     const DEFAULT_IN1 = '08:00';
 
-    const DEFAULT_IN2 = '12:00';
+    const DEFAULT_OUT1 = '12:00';
 
-    const DEFAULT_OUT1 = '13:00';
+    const DEFAULT_IN2 = '13:00';
 
     const DEFAULT_OUT2 = '17:00';
 
@@ -23,6 +23,7 @@ class Shift extends Model
         'in2',
         'out1',
         'out2',
+        'default',
     ];
 
     public function employees(): BelongsToMany

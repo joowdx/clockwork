@@ -20,6 +20,7 @@ return new class extends Migration
             $table->time('in2')->nullable();
             $table->time('out1')->nullable();
             $table->time('out2')->nullable();
+            $table->boolean('default')->default(false);
             $table->timestamps();
         });
 
