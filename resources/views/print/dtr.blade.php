@@ -654,11 +654,35 @@
                 background: #33333322;
                 border-color: transparent !important;
             }
+            @media print {
+                .pagebreak {
+                    page-break-before: always;
+                }
+
+                /* Hide telescope toolbar */
+                .sf-toolbar {
+                    display: none !important;
+                }
+            }
+            .weekend {
+                background: #33333322;
+                border-color: transparent !important;
+            }
+            .absent {
+                background: #F38c8caa;
+                border-color: transparent !important;
+                text-decoration: line-through;
+            }
+            body{
+                -webkit-print-color-adjust:exact !important;
+                print-color-adjust:exact !important;
+            }
         </style>
     </head>
     <body>
         <div align=center>
             @foreach ($employees->load('shift') as $employee)
+                <div class="pagebreak"></div>
                 <table border=0 cellpadding=0 cellspacing=0 width=732 class=xl6616797 style='border-collapse:collapse;table-layout:fixed;width:548pt'>
                     <tr height=19 style='height:14.25pt'>
                         <td colspan=8 class=xl7316797>&nbsp;</td>
@@ -770,30 +794,38 @@
 
                         @php($date = $month->clone()->setDay($day))
 
-                        @php(['in1' => $in1, 'in2' => $in2, 'out1' => $out1, 'out2' => $out2] = $timelog->logsForTheDay($employee, $date))
+                        @php(['in1' => $in1, 'in2' => $in2, 'out1' => $out1, 'out2' => $out2] = $timelog->logsForTheDay($employee, $month->clone()->setDay($day)))
 
-                        <tr height=21 style='height:15.75pt'>
+                        <tr height=21 style='height:15.75pt' @class(["weekend" => $date->isWeekend()])>
                             @for($side = 1; $side <= 2; $side++)
                                 <td class=xl9616797 style='border-top:none'>{{ $day }}</td>
 
                                 {{-- IN1 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-                                    {{ $in1?->time->format('H:i') }}
+                                    <div class="font-sm nowrap consolas bold {{ $in1?->scanner->name }}">
+                                        {{ $in1?->time->format('H:i') }}
+                                    </div>
                                 </td>
 
                                 {{-- OUT1 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-                                    {{ $out1?->time->format('H:i') }}
+                                    <div class="font-sm nowrap consolas bold {{ $out1?->scanner->name }}">
+                                        {{ $out1?->time->format('H:i') }}
+                                    </div>
                                 </td>
 
                                 {{-- IN2 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-                                    {{ $in2?->time->format('H:i') }}
+                                    <div class="font-sm nowrap consolas bold {{ $in2?->scanner->name }}">
+                                        {{ $in2?->time->format('H:i') }}
+                                    </div>
                                 </td>
 
                                 {{-- OUT2 --}}
                                 <td class=xl9116797 style='border-top:none;border-left:none'>
-                                    {{ $out2?->time->format('H:i') }}
+                                    <div class="font-sm nowrap consolas bold {{ $out2?->scanner->name }}">
+                                        {{ $out2?->time->format('H:i') }}
+                                    </div>
                                 </td>
 
                                 {{-- UNDERTIME HOURS --}}
@@ -807,8 +839,8 @@
                                 </td>
 
                                 @if($side == 1)
-                                    <td class=xl7316797></td>
-                                    <td class=xl7416797 style='border-left:none'></td>
+                                    <td class="xl7316797" style="background-color:#ffff;"></td>
+                                    <td class="xl7416797" style="background-color:#ffff;border-left:none;"></td>
                                 @endif
                             @endfor
                         </tr>
@@ -909,4 +941,13 @@
             @endforeach
         </div>
     </body>
+    <style>
+        @foreach ($employees->flatMap->scanners->unique('name') as $scanner)
+            .{{$scanner->name}} {
+                background-color: {{$scanner->printBackgroundColour}};
+                color: {{$scanner->printTextColour}};
+                width: fit-content;
+            }
+        @endforeach
+    </style>
 </html>

@@ -36,6 +36,21 @@ class Scanner extends Model
         );
     }
 
+    public function printTextColour(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ?? "#000",
+        );
+    }
+
+    public function printBackgroundColour(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, $attributes) => in_array(strtolower(@$attributes['print_background_colour'] ?? ""), ['#ffffff', '#fff', null]) ? "transparent" : strtolower(@$attributes['print_background_colour']),
+            set: fn ($value, $attributes) => in_array(strtolower(@$attributes['print_background_colour'] ?? ""), ['#ffffff', '#fff', null]) ? null : strtolower(@$attributes['print_background_colour']),
+        );
+    }
+
     public function employees(): BelongsToMany
     {
         return $this->belongsToMany(Employee::class, 'enrollments')
