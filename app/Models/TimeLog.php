@@ -44,11 +44,6 @@ class TimeLog extends Model
         return $this->hasOneThrough(Scanner::class, Enrollment::class, 'id', 'id', 'enrollment_id', 'scanner_id');
     }
 
-    public function backup(): HasOne
-    {
-        return $this->hasOne(BackupTimeLog::class);
-    }
-
     protected function getArrayableAppends(): array
     {
         $appends = array_merge($this->appends, ['in', 'out']);
