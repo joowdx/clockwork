@@ -20,6 +20,7 @@ class OfficeService
                 ->select('office as name')
                 ->where('name', '<>', '', 'or')
                 ->whereNotNull('name', 'or'),
+            'office'
         )->distinct('name')
         ->orderBy('name');
     }
@@ -28,5 +29,12 @@ class OfficeService
     {
         return $this->query()
             ->pluck('office');
+    }
+
+    public function rename(string $from, string $to): void
+    {
+        $this->database()
+            ->whereOffice($from)
+            ->update(['office' => strtoupper($to)]);
     }
 }

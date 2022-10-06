@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Employee;
+use App\Models\Shift;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,11 +17,11 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('employee_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->date('from');
-            $table->date('to');
-            $table->string('in', 2);
-            $table->string('out', 2);
+            $table->date('from')->nullable();
+            $table->date('to')->nullable();
+            $table->json('days')->default('[1,2,3,4,5]');
+            $table->foreignIdFor(Employee::class)->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignIdFor(Shift::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
     }

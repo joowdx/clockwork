@@ -2,21 +2,48 @@
 
 namespace App\Models;
 
-class Schedule extends Model
+use App\Traits\HasUniversallyUniqueIdentifier;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Carbon;
+
+class Schedule extends Pivot
 {
-    const DEFAULT_IN = '08';
-    const DEFAULT_OUT = '16';
+    use HasUniversallyUniqueIdentifier;
+
+    const DEFAULT_DAYS = [
+        1, 2, 3, 4, 5,
+    ];
+
+    protected $table = 'schedules';
 
     protected $fillable = [
         'from',
         'to',
-        'in',
-        'out',
-        'employee_id',
+        'days',
     ];
 
-    public function employee()
+    protected $casts = [
+        'days' => 'array',
+    ];
+
+    public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    public function scopeActive(Builder $query, ?Carbon $date = null): void
+    {
+        $date ??= today();
+
+        $query->whereDate('from', '<=', $date);
+
+        $query->whereDate('to', '>', $date->clone()->endOfDay());
     }
 }

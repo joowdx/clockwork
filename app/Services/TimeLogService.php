@@ -5,15 +5,17 @@ namespace App\Services;
 use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
-use App\Models\TimeLog;
+use App\Models\Employee;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
 use App\Pipes\Sanitize;
 use App\Pipes\SplitAttlogString;
 use App\Pipes\TransformTimeLogData;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
 class TimeLogService implements Import
@@ -71,14 +73,36 @@ class TimeLogService implements Import
             }));
     }
 
-    public function accept(mixed &$accept): mixed
+    public function logsForTheDay(Employee $employee, Carbon $date): array
     {
-        $accept->time->setHour($accept->time->clone()->setHour($accept->employee->getSchedule($accept->time)->in)->hour);
+        $logs = $employee->logsForTheDay($date);
 
-        $accept->time->setMinutes(random_int(-TimeLog::GRACE_PERIOD, 0));
+        return [
+            'in1' => $in1 = $this->filterTime($logs, $employee->shift->shift->in1, lead: 1),
+            'out1' => $out1 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id])), $employee->shift->shift->out1, trail: -1),
+            'in2' => $in2 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id])), $employee->shift->shift->in2, lead: -1),
+            'out2' => $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id, $in2?->id])), $employee->shift->shift->out2, trail: 1),
+        ];
+    }
 
-        $accept->persist = true;
+    protected function filterTime(Collection $logs, string $time, int $range = 2, int $lead = 0, int $trail = 0): mixed
+    {
+        [ $hour, $minute ] = explode(':', $time);
 
-        return $accept;
+        if (! $lead && ! $trail) {
+            // return $logs->filter(fn ($-e) => $e->time->diffInHours($e->time->clone()->startOfDay()->setHours($hour)->setMinutes($minute)) <= $range)->first();
+        }
+
+        if ($lead) {
+            return match ($lead) {
+                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
+                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first()
+            };
+        } else {
+            return match ($trail) {
+                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
+                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
+            };
+        }
     }
 }

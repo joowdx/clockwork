@@ -26,7 +26,7 @@ class TimeLog extends Model
     ];
 
     protected $fillable = [
-        'biometrics_id',
+        'scanner_id',
         'user_id',
         'time',
         'state',
@@ -131,4 +131,13 @@ class TimeLog extends Model
             && $this->employee_id === $timeLog->employee_id
             && $this->user_id === $timeLog->user_id;
     }
+}
+
+
+enum TimeLogStates
+{
+    case IN1;
+    case IN2;
+    case OUT1;
+    case OUT2;
 }

@@ -6,6 +6,6 @@ class Chunk
 {
     public function handle(mixed $request, \Closure $next)
     {
-        return $next($request->chunk(1000));
+        return $next($request->chunk(10000));
     }
 }
