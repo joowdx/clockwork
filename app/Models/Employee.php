@@ -6,7 +6,6 @@ use App\Traits\HasNameAccessorAndFormatter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -43,19 +42,19 @@ class Employee extends Model
 
     public function timelogs(): HasManyThrough
     {
-        return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id')
-                ->latest('time')
-                ->latest('id');
+        return $this->hasManyThrough(TimeLog::class, Enrollment::class, 'employees.id', 'uid', secondLocalKey: 'uid')
+            ->join($this->getTable(), function ($join) {
+                $join->on('employees.id', 'enrollments.employee_id');
+                $join->on('enrollments.scanner_id', 'time_logs.scanner_id');
+            })
+            ->select('time_logs.*')
+            ->latest('time')
+            ->latest('time_logs.id');
     }
 
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
-    }
-
-    public function getBackedUpAttribute(): ?bool
-    {
-        return $this->isBackedUp();
     }
 
     public function toSearchableArray(): array

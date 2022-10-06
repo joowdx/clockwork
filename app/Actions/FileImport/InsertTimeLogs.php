@@ -12,6 +12,6 @@ class InsertTimeLogs
 
     public function __invoke(array $payload)
     {
-        $this->timelog->upsert($payload, ['enrollment_id', 'time', 'state']);
+        $this->timelog->upsert($payload, ['scanner_id', 'time', 'state']);
     }
 }
