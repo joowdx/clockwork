@@ -23,7 +23,7 @@ return new class extends Migration
             $table->dateTime('time');
             $table->string('state', 20);
             $table->timestamps();
-            $table->unique(['enrollment_id', 'time', 'state']);
+            $table->unique(['scanner_id', 'time', 'state']);
         });
     }
 

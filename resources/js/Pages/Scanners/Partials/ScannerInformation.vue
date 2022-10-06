@@ -42,14 +42,14 @@
             <!-- Print Text Colour -->
             <div class="col-span-6 sm:col-span-4">
                 <JetLabel for="print_text_colour" value="Print Text Colour" />
-                <JetInput id="print_text_colour" type="color" class="block w-full mt-1 uppercase" style="height:42px" v-model="form.print_text_colour" autocomplete="print_text_colour" />
+                <JetInput id="print_text_colour" type="color" class="block w-full px-2 py-1 mt-1 uppercase" style="height:42px" v-model="form.print_text_colour" autocomplete="print_text_colour" />
                 <JetInputError :message="form.errors.print_text_colour" class="mt-2" />
             </div>
 
             <!-- Print Background Colour -->
             <div class="col-span-6 sm:col-span-4">
                 <JetLabel for="print_background_colour" value="Print Background Colour" />
-                <JetInput id="print_background_colour" type="color" class="block w-full mt-1 uppercase" style="height:42px" v-model="form.print_background_colour" autocomplete="print_background_colour" />
+                <JetInput id="print_background_colour" type="color" class="block w-full px-2 py-1 mt-1 uppercase" style="height:42px" v-model="form.print_background_colour" autocomplete="print_background_colour" />
                 <JetInputError :message="form.errors.print_background_colour" class="mt-2" />
             </div>
 

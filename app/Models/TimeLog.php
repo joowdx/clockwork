@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class TimeLog extends Model
@@ -35,12 +38,21 @@ class TimeLog extends Model
 
     public function employee(): HasOneThrough
     {
-        return $this->hasOneThrough(Employee::class, Enrollment::class, 'id', 'id', 'enrollment_id', 'employee_id');
+        return $this->hasOneThrough(Employee::class, Enrollment::class, 'time_logs.id', 'id', secondLocalKey: 'employee_id')
+            ->join($this->getTable(), function ($join) {
+                $join->on('enrollments.uid', 'time_logs.uid');
+                $join->on('enrollments.scanner_id', 'time_logs.scanner_id');
+            });
     }
 
     public function scanner(): HasOneThrough
     {
-        return $this->hasOneThrough(Scanner::class, Enrollment::class, 'id', 'id', 'enrollment_id', 'scanner_id');
+        return $this->hasOneThrough(Scanner::class, Enrollment::class, 'scanners.id', 'id', 'scanner_id', 'scanner_id');
+    }
+
+    public function scopeUnrecognized(Builder $query): void
+    {
+        $query->whereNull('enrollment_id');
     }
 
     protected function getArrayableAppends(): array

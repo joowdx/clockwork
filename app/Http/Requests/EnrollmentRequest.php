@@ -54,6 +54,10 @@ class EnrollmentRequest extends FormRequest
 
     private function uid(string $attribute, mixed $value, Closure $fail): void
     {
+        if ($this->scanner === null) {
+            return;
+        }
+
         $scanner = $this->scanner ?? explode('.', $attribute)[1];
 
         $employee = $this->employee ?? explode('.', $attribute)[1];

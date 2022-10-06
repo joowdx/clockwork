@@ -24,11 +24,13 @@ class ScannerService
     public function get(): Collection
     {
         return $this->repository->query()
-            ->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
-            ->when(auth()->user()->administrator, function ($query) {
-                $query->orWhere(fn ($q) => $q->whereShared(true));
+            ->when(! request()->routeIs('scanners.index'), function ($query) {
+                $query->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))
+                    ->when(auth()->user()->administrator, function ($query) {
+                        $query->orWhere(fn ($q) => $q->whereShared(true));
+                    })
+                    ->orWhereDoesntHave('users');
             })
-            ->orWhereDoesntHave('users')
             ->get();
     }
 

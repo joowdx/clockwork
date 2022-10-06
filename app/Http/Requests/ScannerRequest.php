@@ -22,6 +22,7 @@ class ScannerRequest extends FormRequest
     {
         return $this->isMethod('delete')
             ? [
+                'timelogs' => ['nullable', 'boolean'],
                 'password' => function ($attribute, $password, $fail) {
                     if (! $this->validatePassword($password)) {
                         $fail(__('The password is incorrect.'));
@@ -46,12 +47,5 @@ class ScannerRequest extends FormRequest
                 'print_text_colour' => 'nullable|color',
                 'print_background_colour' => 'nullable|color',
             ];
-    }
-
-    protected function prepareForValidation()
-    {
-        return $this->merge([
-            'name' => strtolower($this->name),
-        ]);
     }
 }
