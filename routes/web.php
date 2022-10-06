@@ -7,9 +7,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
