@@ -17,6 +17,10 @@
 
                 <JetSectionBorder />
 
+                <ClearTimeLogsForm />
+
+                <JetSectionBorder />
+
                 <DeleteScannerForm />
 
             </div>
@@ -32,6 +36,7 @@
     import ScannerInformation from './Partials/ScannerInformation.vue'
     import Assignees from './Partials/Assignees.vue'
     import DeleteScannerForm from './Partials/DeleteScannerForm.vue'
+    import ClearTimeLogsForm from './Partials/ClearTimeLogsForm.vue'
 
     export default defineComponent({
         components: {
@@ -41,6 +46,7 @@
             ScannerInformation,
             Assignees,
             DeleteScannerForm,
+            ClearTimeLogsForm,
         },
     })
 </script>

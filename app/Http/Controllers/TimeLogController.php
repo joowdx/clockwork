@@ -12,27 +12,20 @@ use Inertia\Response;
 
 class TimeLogController extends Controller
 {
-
-    public function __construct(
-        private EmployeeService $employee,
-        private ScannerService $scanner,
-        private TimeLogService $timelog,
-    ) { }
-
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(): RedirectResponse|Response
+    public function index(EmployeeService $employee, ScannerService $scanner, TimeLogService $timelog): RedirectResponse|Response
     {
         return inertia('TimeLogs/Index', [
-            'scanners' => $this->scanner->get(),
-            'employees' => $employees = $this->employee->get(),
+            'scanners' => $scanner->get(),
+            'employees' => $employees = $employee->get(),
             'offices' => auth()->user()->administrator
-                ? $this->employee->offices(true)
+                ? $employee->offices(true)
                 : $employees->map->office->unique()->filter()->sort()->values(),
-            ...$this->timelog->dates(),
+            ...$timelog->dates(),
         ]);
     }
 

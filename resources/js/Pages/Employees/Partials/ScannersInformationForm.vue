@@ -195,7 +195,7 @@
                 this.error = null
             },
             canAccess(scanner) {
-                return this.$page.props.user.administrator || scanner.users?.some(e => e.id === this.$page.props.user.id);
+                return this.$page.props.user.administrator || scanner.shared || ! scanner.users || ! scanner.users.length || scanner.users?.some(e => e.id === this.$page.props.user.id);
             }
         },
     })

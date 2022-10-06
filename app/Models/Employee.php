@@ -42,9 +42,14 @@ class Employee extends Model
 
     public function timelogs(): HasManyThrough
     {
-        return $this->hasManyThrough(TimeLog::class, Enrollment::class, secondKey: 'enrollment_id')
-                ->latest('time')
-                ->latest('id');
+        return $this->hasManyThrough(TimeLog::class, Enrollment::class, 'employees.id', 'uid', secondLocalKey: 'uid')
+            ->join($this->getTable(), function ($join) {
+                $join->on('employees.id', 'enrollments.employee_id');
+                $join->on('enrollments.scanner_id', 'time_logs.scanner_id');
+            })
+            ->select('time_logs.*')
+            ->latest('time')
+            ->latest('time_logs.id');
     }
 
     public function shifts(): BelongsToMany
@@ -53,7 +58,7 @@ class Employee extends Model
                 ->using(Schedule::class)
                 ->withPivot(['id', 'from', 'to', 'days']);
     }
-
+    
     public function shift(): HasOne
     {
         return $this->hasOne(Schedule::class)->ofMany([
@@ -73,7 +78,7 @@ class Employee extends Model
             ]);
         });
     }
-
+    
     public function toSearchableArray(): array
     {
         return [
