@@ -14,6 +14,11 @@
     }
 }
 
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
 html, body {
     margin: 0;
 }
@@ -35,7 +40,7 @@ tr, td {
 }
 
 .weekend {
-    background: #33333322;
+    background: #33333344;
     border-color: transparent !important;
 }
 
@@ -43,6 +48,10 @@ tr, td {
     border-right: solid;
     border-color: white;
     padding-left: 8pt;
+}
+
+.arial {
+    font-family: Arial, sans-serif;
 }
 
 .bahnschrift {
@@ -61,12 +70,16 @@ tr, td {
     font-family: Consolas, monospace;
 }
 
+.courier {
+    font-family: "Courier New", monospace;
+}
+
 .bold {
     font-weight: 700;
 }
 
-.nowrap {
-    white-space: nowrap;
+.italic {
+    font-style: italic;
 }
 
 .uppercase {
@@ -77,26 +90,61 @@ tr, td {
     text-align: center;
 }
 
+.right {
+    text-align: right;
+}
+
 .bottom {
     vertical-align: bottom;
 }
 
-.underline {
-    border-bottom: .5pt solid windowtext;
+.middle {
+    vertical-align: middle;
 }
 
 .font-xs {
     font-size: 8.0pt;
 }
 
-.font-xl {
-    font-size: 20.0pt;
+.font-sm {
+    font-size: 10.0pt;
 }
 
 .font-md {
     font-size: 11.0pt;
 }
 
-.font-sm {
-    font-size: 10.0pt;
+.font-lg {
+    font-size: 13.0pt;
+}
+
+.font-xl {
+    font-size: 20.0pt;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.wrap {
+    white-space: normal;
+}
+
+.midline {
+    border-top: none;
+    border-right: .5pt dashed windowtext;
+    border-bottom: none;
+    border-left: none;
+}
+
+.border {
+    border: .5pt solid windowtext;
+}
+
+.overline {
+    border-top: .5pt solid windowtext;
+}
+
+.underline {
+    border-bottom: .5pt solid windowtext;
 }
