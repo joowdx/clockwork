@@ -59,7 +59,7 @@
                                             <th scope="col" class="py-2 pr-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Name
                                             </th>
-                                            <th v-if="employees[0]?.scanners.length" scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Scanners
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
@@ -87,7 +87,7 @@
                                                     </div>
                                                 </Link>
                                             </td>
-                                            <td v-if="employee.scanners.length" class="px-6 whitespace-nowrap">
+                                            <td class="px-6 whitespace-nowrap">
                                                 <Link :href="route('employees.edit', employee.id)">
                                                     <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">

@@ -120,7 +120,13 @@
                                                     Office
                                                 </th>
                                                 <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Scanners
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                     Status
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Print Format
                                                 </th>
                                             </tr>
                                         </template>
@@ -158,7 +164,9 @@
                                                 <td class="px-6 whitespace-nowrap">
                                                     <div class="flex items-center">
                                                         <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {{ employee.name_format.fullStartLastInitialMiddle }}
+                                                            <Link :href="route('employees.edit', employee.id)">
+                                                                {{ employee.name_format.fullStartLastInitialMiddle }}
+                                                            </Link>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -172,12 +180,31 @@
                                                     </div>
                                                 </td>
                                                 <td class="px-6 whitespace-nowrap">
+                                                    <div class="text-sm font-thin">
+                                                        <p class="text-black dark:text-gray-100">
+                                                            {{
+                                                                employee.scanners
+                                                                    .map(e => e.name.toLowerCase().startsWith('coliseum-') ? 'coliseum-x' : e.name.toLowerCase())
+                                                                    .filter((e, f, g) => g.indexOf(e) === f)
+                                                                    .join(', ')
+                                                            }}
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
                                                     <div class="text-sm">
                                                         <div class="font-thin">
                                                             <p class="text-black dark:text-gray-100">
                                                                 {{ employee.regular ? 'Regular' : 'Non-regular' }}
                                                             </p>
                                                         </div>
+                                                    </div>
+                                                </td>
+                                                <td class="pl-6 whitespace-nowrap">
+                                                    <div class="text-sm font-thin">
+                                                        <p class="text-black dark:text-gray-100">
+                                                            {{ employee.dtr_format ? 'CSC Form No. 48' : 'Old format'}}
+                                                        </p>
                                                     </div>
                                                 </td>
                                             </tr>
