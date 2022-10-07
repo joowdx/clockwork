@@ -27,7 +27,8 @@ class EmployeeRepository extends BaseRepository
             'name' => @$payload['nameToJSON'] ? json_encode($name) : $name,
             'office' => strtoupper(@$payload['office']),
             'regular' => (bool) $payload['regular'],
-            'active' => (bool) @$payload['active'] ?? null,
+            'active' => @$payload['active'] === null ? true : (bool) @$payload['active'],
+            'dtr_format' => (bool) @$payload['dtr_format'] ?? null,
         ];
     }
 }

@@ -68,6 +68,9 @@
                                             <th scope="col" class="py-2 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 Regular
                                             </th>
+                                            <th scope="col" class="py-2 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                Print Format
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -114,6 +117,15 @@
                                                     <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">
                                                             {{ employee.regular ? 'Yes' : 'No'}}
+                                                        </p>
+                                                    </div>
+                                                </Link>
+                                            </td>
+                                            <td class="pl-6 whitespace-nowrap">
+                                                <Link :href="route('employees.edit', employee.id)">
+                                                    <div class="text-sm font-thin">
+                                                        <p class="text-black dark:text-gray-100">
+                                                            {{ employee.dtr_format ? 'CSC FORM' : 'OLD FORM'}}
                                                         </p>
                                                     </div>
                                                 </Link>

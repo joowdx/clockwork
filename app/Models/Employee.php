@@ -20,7 +20,8 @@ class Employee extends Model
         'name',
         'regular',
         'office',
-        'active'
+        'active',
+        'dtr_format',
     ];
 
     protected $casts = [
@@ -58,7 +59,7 @@ class Employee extends Model
                 ->using(Schedule::class)
                 ->withPivot(['id', 'from', 'to', 'days']);
     }
-    
+
     public function shift(): HasOne
     {
         return $this->hasOne(Schedule::class)->ofMany([
@@ -78,7 +79,7 @@ class Employee extends Model
             ]);
         });
     }
-    
+
     public function toSearchableArray(): array
     {
         return [

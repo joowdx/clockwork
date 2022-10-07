@@ -62,6 +62,16 @@
                 </div>
             </div>
 
+            <div class="col-span-6 sm:col-span-4">
+                <!-- DTR Format -->
+                <div class="col-span-6">
+                    <JetLabel for="biometrics_id" value="Preferred DTR Print Format" />
+                    <TailwindSelect class="w-full" :options="[{name: 'USE STANDARD CSC FORM NO. 48 FORMAT.', value: true}, {name: 'USE OLD FORMAT.', value: false}]" v-model="form.active" />
+                    <JetInputError :message="form.errors.active" class="mt-2" />
+                </div>
+            </div>
+
+
             <JetButton class="hidden" :disabled="form.processing">
                 Save
             </JetButton>

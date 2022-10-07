@@ -55,6 +55,9 @@
                         <div class="col-span-8 sm:hidden lg:col-span-4 lg:inline-block"></div>
                     </template>
                     <div class="flex self-end col-span-4 mt-3 space-x-3 justify-self-end">
+                        <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
+                            Reset
+                        </Link>
                         <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                             Import
                         </JetSecondaryButton>
