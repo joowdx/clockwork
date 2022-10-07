@@ -46,6 +46,7 @@ class ScannerRequest extends FormRequest
                 'shared' => 'nullable|boolean',
                 'print_text_colour' => 'nullable|color',
                 'print_background_colour' => 'nullable|color',
+                'ip_address' => 'nullable|ip'
             ];
     }
 }
