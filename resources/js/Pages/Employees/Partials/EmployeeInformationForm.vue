@@ -56,8 +56,8 @@
             <div class="col-span-6 sm:col-span-4">
                 <!-- Active -->
                 <div class="col-span-6">
-                    <JetLabel for="biometrics_id" value="Active" />
-                    <TailwindSelect class="w-full" :options="[{name: 'ACTIVE', value: true}, {name: 'INACTIVE', value: false}]" v-model="form.active" />
+                    <JetLabel for="active" value="Active" />
+                    <TailwindSelect id="active" class="w-full" :options="[{name: 'ACTIVE', value: true}, {name: 'INACTIVE', value: false}]" v-model="form.active" />
                     <JetInputError :message="form.errors.active" class="mt-2" />
                 </div>
             </div>
@@ -65,9 +65,9 @@
             <div class="col-span-6 sm:col-span-4">
                 <!-- DTR Format -->
                 <div class="col-span-6">
-                    <JetLabel for="biometrics_id" value="Preferred DTR Print Format" />
-                    <TailwindSelect class="w-full" :options="[{name: 'USE STANDARD CSC FORM NO. 48 FORMAT.', value: true}, {name: 'USE OLD FORMAT.', value: false}]" v-model="form.active" />
-                    <JetInputError :message="form.errors.active" class="mt-2" />
+                    <JetLabel for="dtr_format" value="Preferred DTR Print Format" />
+                    <TailwindSelect id="dtr_format" class="w-full" :options="[{name: 'USE STANDARD CSC FORM NO. 48 FORMAT.', value: true}, {name: 'USE OLD FORMAT.', value: false}]" v-model="form.dtr_format" />
+                    <JetInputError :message="form.errors.dtr_format" class="mt-2" />
                 </div>
             </div>
 
