@@ -24,7 +24,7 @@ class PrintService
 
     public function dtr()
     {
-        return [...$this->employee(), 'month' => Carbon::parse($this->request->month)];
+        return [...$this->employee(), 'month' => Carbon::parse($this->request->month), 'csc_format' => $this->request->cscFormat];
     }
 
     public function employee(): array

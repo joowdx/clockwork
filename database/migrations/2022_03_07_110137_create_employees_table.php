@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('office')->nullable();
             $table->boolean('regular');
             $table->boolean('active')->default(true);
-            $table->boolean('dtr_format')->default(true);
+            $table->boolean('csc_format')->default(true);
             $table->timestamps();
         });
     }

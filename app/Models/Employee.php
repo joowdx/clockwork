@@ -21,7 +21,7 @@ class Employee extends Model
         'regular',
         'office',
         'active',
-        'dtr_format',
+        'csc_format',
     ];
 
     protected $casts = [

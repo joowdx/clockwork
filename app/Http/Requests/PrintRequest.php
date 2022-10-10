@@ -40,6 +40,7 @@ class PrintRequest extends FormRequest
                 'scanners' => 'sometimes|required|array',
                 'scanners.*' => 'uuid|exists:scanners,id',
                 'regular' => 'nullable|boolean',
+                'csc_format' => 'nullable|boolean',
             ],
         };
     }

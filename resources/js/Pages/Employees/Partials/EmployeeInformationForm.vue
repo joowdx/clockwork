@@ -63,11 +63,11 @@
             </div>
 
             <div class="col-span-6 sm:col-span-4">
-                <!-- DTR Format -->
+                <!-- CSC Format -->
                 <div class="col-span-6">
-                    <JetLabel for="dtr_format" value="Preferred DTR Print Format" />
-                    <TailwindSelect id="dtr_format" class="w-full" :options="[{name: 'USE STANDARD CSC FORM NO. 48 FORMAT.', value: true}, {name: 'USE OLD FORMAT.', value: false}]" v-model="form.dtr_format" />
-                    <JetInputError :message="form.errors.dtr_format" class="mt-2" />
+                    <JetLabel for="csc_format" value="Use CSC DTR Print Format" />
+                    <TailwindSelect id="csc_format" class="w-full" :options="[{name: 'Yes.', value: true}, {name: 'No.', value: false}]" v-model="form.csc_format" />
+                    <JetInputError :message="form.errors.csc_format" class="mt-2" />
                 </div>
             </div>
 
@@ -129,6 +129,7 @@
                     office: this.$page.props.employee?.office,
                     regular: this.$page.props.employee?.regular,
                     active: this.$page.props.employee?.active,
+                    csc_format: this.$page.props.employee?.csc_format
                 }),
             }
         },
