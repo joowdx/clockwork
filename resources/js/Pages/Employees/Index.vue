@@ -125,7 +125,7 @@
                                                 <Link :href="route('employees.edit', employee.id)">
                                                     <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">
-                                                            {{ employee.dtr_format ? 'CSC FORM' : 'OLD FORM'}}
+                                                            {{ employee.csc_format ? 'CSC FORM' : 'OLD FORM'}}
                                                         </p>
                                                     </div>
                                                 </Link>
