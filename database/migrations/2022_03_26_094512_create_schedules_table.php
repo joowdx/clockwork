@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Employee;
+use App\Models\Schedule;
 use App\Models\Shift;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -24,6 +25,11 @@ return new class extends Migration
             $table->foreignIdFor(Shift::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
+
+        Schedule::create([
+            'id' => str()->orderedUuid(),
+            'shift_id' => Shift::first(),
+        ]);
     }
 
     /**

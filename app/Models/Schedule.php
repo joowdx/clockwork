@@ -22,6 +22,7 @@ class Schedule extends Pivot
         'from',
         'to',
         'days',
+        'shift_id',
     ];
 
     protected $casts = [

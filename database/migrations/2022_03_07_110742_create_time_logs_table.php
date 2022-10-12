@@ -19,7 +19,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->unsignedInteger('uid');
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignIdFor(Enrollment::class, 'enrollment_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
             $table->string('state', 20);
             $table->timestamps();

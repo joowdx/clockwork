@@ -6,6 +6,10 @@ use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
+use App\Models\Scanner;
+use App\Models\Schedule;
+use App\Models\Shift;
+use App\Models\TimeLog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
@@ -75,34 +79,95 @@ class TimeLogService implements Import
 
     public function logsForTheDay(Employee $employee, Carbon $date): array
     {
-        $logs = $employee->logsForTheDay($date);
+        $logs = $employee->logsForTheDay($date)->sort(fn ($log) => (int) in_array($log->scanner->name, Scanner::PRIORITIES));
 
-        return [
-            'in1' => $in1 = $this->filterTime($logs, $employee->shift->shift->in1, lead: 1),
-            'out1' => $out1 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id])), $employee->shift->shift->out1, trail: -1),
-            'in2' => $in2 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id])), $employee->shift->shift->in2, lead: -1),
-            'out2' => $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id, $in2?->id])), $employee->shift->shift->out2, trail: 1),
-        ];
+        $in = $logs->filter->in
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00') . (in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name))
+            ->sortBy('time');
+
+        $out = $logs->filter->out
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00') . (in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name))
+            ->sortByDesc('time');
+
+        $in1 = $this->filterTime($in, $employee->shift->shift->in1, TimeLog::IN1);
+
+        $out1 = $this->filterTime($out, $employee->shift->shift->out1, TimeLog::OUT1);
+
+        $in2 = $this->filterTime($in->reject(fn ($log) => $in1?->time->gte($log->time)), $employee->shift->shift->in2, TimeLog::IN2);
+
+        $out2 = $this->filterTime($out->reject(fn ($log) => $out1?->time->gte($log->time)), $employee->shift->shift->out2, TimeLog::OUT2);
+
+        return [...compact('in1', 'in2', 'out1', 'out2'), ...$this->calculateUndertime($employee->shift, $date, $in1, $in2, $out1, $out2)];
     }
 
-    protected function filterTime(Collection $logs, string $time, int $range = 2, int $lead = 0, int $trail = 0): mixed
+    protected function filterTime(Collection $logs, string $time, int $state = null, int $range = 120): mixed
     {
         [ $hour, $minute ] = explode(':', $time);
 
-        if (! $lead && ! $trail) {
-            // return $logs->filter(fn ($-e) => $e->time->diffInHours($e->time->clone()->startOfDay()->setHours($hour)->setMinutes($minute)) <= $range)->first();
+        return match ($state) {
+            TimeLog::IN1 => $logs
+                ->sort(fn ($log) => (int) ! in_array($log->scanner->name, Scanner::PRIORITIES))
+                ->first(fn ($log) => $log->time->clone()->setTime($hour, $minute)->diffInMinutes($log->time, false) <= $range),
+            TimeLog::IN2 => $logs->first(fn ($log) => $log->time->clone()->setTime($hour, $minute)->diffInMinutes($log->time) <= $range),
+            TimeLog::OUT1 => $logs->first(fn ($log) => $log->time->diffInMinutes($log->time->clone()->setTime($hour, $minute)) <= $range),
+            TimeLog::OUT2 => $logs->first(fn ($log) => $log->time->diffInMinutes($log->time->clone()->setTime($hour, $minute), false) <= $range),
+            default => $logs->first(),
+        };
+    }
+
+    protected function calculateUndertime(Schedule $schedule, Carbon $date, TimeLog $in1 = null, TimeLog $in2 = null, TimeLog $out1 = null, TimeLog $out2 = null): mixed
+    {
+        [$in1hour, $in1minute] = explode(':', $schedule->shift->in1);
+
+        [$out1hour, $out1minute] = explode(':', $schedule->shift->out1);
+
+        [$in2hour, $in2minute] = explode(':', $schedule->shift->in2);
+
+        [$out2hour, $out2minute] = explode(':', $schedule->shift->out2);
+
+        if (! in_array($date->dayOfWeek, $schedule->days)) {
+            return [];
         }
 
-        if ($lead) {
-            return match ($lead) {
-                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
-                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first()
-            };
-        } else {
-            return match ($trail) {
-                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
-                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
-            };
-        }
+        if ($in1 && $in2 && $out1 && $out2) {
+
+            $in1minutes = $in1->time->setTime($in1hour, $in1minute)->diffInMinutes($in1->time);
+
+            $out1minutes = $out1->time->diffInMinutes($out1->time->setTime($out1hour, $out1minute));
+
+            $in2minutes = $in2->time->setTime($in2hour, $in2minute)->diffInMinutes($in2->time);
+
+            $out2minutes = $out2->time->diffInMinutes($out2->time->setTime($out2hour, $out2minute));
+
+            // dd($in1minutes, $out1minutes, $in2minutes, $out2minutes);
+
+            return [
+                'hours' => $in1->time->diffInMinutes(),
+                'minutes' => ''
+            ];
+        } else if ($in1 && $out2) {
+
+            $in1minutes = $in1->time->setTime($in1hour, $in1minute)->diffInMinutes($in1->time, false);
+
+            $out2minutes = $out2->time->diffInMinutes($out2->time->setTime($out2hour, $out2minute), false);
+
+            $total = ($in1minutes >= 0 ? $in1minutes : 0) + ($out2minutes ? 0 >= $out2minutes : 0);
+
+            // if ($in1->time->format('H:i') == '07:47') {
+            //     // dd($in1minutes);
+            // };
+
+            return [
+                // 'hours' => intval($total / 60) > 0 ? intval($total / 60) : '',
+                // 'minutes' => $total % 60 > 0 ? $total % 60 : '',
+            ];
+
+        } else if ($in1 && $out1) {
+
+        } else if ($in2 && $out2) {
+
+        };
+
+        return [];
     }
 }

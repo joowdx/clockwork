@@ -30,6 +30,7 @@ return new class extends Migration
             'out1' => '11:00',
             'in2' => '13:00',
             'out2' => '16:00',
+            'default' => true,
         ]);
     }
 

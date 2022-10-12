@@ -497,7 +497,7 @@
                     }
                     case 'employee': {
                         return route('print', {
-                            by: this.by,
+                            by: 'dtr',
                             period: this.period,
                             from: this.from,
                             to: this.to,

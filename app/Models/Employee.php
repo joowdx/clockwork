@@ -71,12 +71,7 @@ class Employee extends Model
 
             $schedule->days = Schedule::DEFAULT_DAYS;
 
-            $schedule->shift = Shift::make([
-                'in1' => Shift::DEFAULT_IN1,
-                'in2' => Shift::DEFAULT_IN2,
-                'out1' => Shift::DEFAULT_OUT1,
-                'out2' => Shift::DEFAULT_OUT2,
-            ]);
+            $schedule->shift = Shift::default();
         });
     }
 

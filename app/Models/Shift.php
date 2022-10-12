@@ -18,6 +18,13 @@ class Shift extends Model
 
     const DEFAULT_OUT2 = '17:00';
 
+    private static self $default;
+
+    public static function default()
+    {
+        return self::$default ??= Shift::whereDefault(true)->latest()->first();
+    }
+
     protected $fillable = [
         'in1',
         'in2',
