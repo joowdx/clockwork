@@ -29,7 +29,7 @@ class PrintRequest extends FormRequest
                 'offices.*' => 'string|exists:employees,office',
                 'scanners' => 'sometimes|required|array',
                 'scanners.*' => 'uuid|exists:scanners,id',
-                'regular' => 'nullable|boolean',
+                'regular' => 'sometimes|boolean|exclude_with:employees',
             ],
             default => [
                 'month' => 'required|date|date_format:Y-m',
@@ -39,17 +39,27 @@ class PrintRequest extends FormRequest
                 'offices.*' => 'string|exists:employees,office',
                 'scanners' => 'sometimes|required|array',
                 'scanners.*' => 'uuid|exists:scanners,id',
-                'regular' => 'nullable|boolean',
-                'csc_format' => 'nullable|boolean',
+                'regular' => 'sometimes|boolean|exclude_with:employees',
+                'csc_format' => 'sometimes|boolean',
             ],
         };
     }
 
     protected function prepareForValidation(): mixed
     {
-        return $this->filled('offices') ? $this->merge([
-            'offices' => collect($this->offices)->map(fn ($o) => strtoupper($o))->toArray(),
-        ]) : [];
+        return $this->whenFilled('offices', function ($offices) {
+            $this->merge([
+                'offices' => collect($offices)->map(fn ($o) => strtoupper($o))->toArray(),
+            ]);
+        })->whenFilled('regular', function ($regular) {
+            $this->merge([
+                'regular' => filter_var($regular, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            ]);
+        })->whenFilled('csc_format', function ($csc_format) {
+            $this->merge([
+                'csc_format' => filter_var($csc_format, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            ]);
+        });
     }
 
     protected function failedValidation(Validator $validator): never
