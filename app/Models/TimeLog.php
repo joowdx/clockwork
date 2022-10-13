@@ -25,8 +25,6 @@ class TimeLog extends Model
         0005,
     ];
 
-    const IN1 = 0, OUT1 = 1, IN2 = 3, OUT2 = 4;
-
     protected $fillable = [
         'scanner_id',
         'user_id',

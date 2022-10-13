@@ -25,6 +25,7 @@ class TransformEmployeeScannerData
                     'office' => @$entry[$headers['office']],
                     'regular' => (bool) @$entry[$headers['regular']],
                     'active' => (bool) @$entry[$headers['active']],
+                    'csc_format' => @$entry[$headers['csc format']] === null ? true : filter_var(@$entry[$headers['csc format']], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
                     'nameToJSON' => true,
                 ],
                 'scanners' => $this->uids($entry, $this->scanners($headers)),

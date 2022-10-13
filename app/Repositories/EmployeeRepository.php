@@ -28,7 +28,7 @@ class EmployeeRepository extends BaseRepository
             'office' => strtoupper(@$payload['office']),
             'regular' => (bool) $payload['regular'],
             'active' => @$payload['active'] === null ? true : (bool) @$payload['active'],
-            'csc_format' => (bool) @$payload['csc_format'] ?? null,
+            'csc_format' => ((bool) @$payload['csc_format']) ?? true,
         ];
     }
 }

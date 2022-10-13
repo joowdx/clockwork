@@ -19,7 +19,7 @@
     </head>
     <body>
         <div align=center>
-            @foreach ($employees->load('shift') as $employee)
+            @foreach ($employees as $employee)
                 @if($csc_format || $employee->csc_format)
                     <div class="pagebreak"></div>
                     <table border=0 cellpadding=0 cellspacing=0 width=732 style='border-collapse:collapse;table-layout:fixed;width:548pt'>
