@@ -203,7 +203,7 @@
                                                 <td class="pl-6 whitespace-nowrap">
                                                     <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">
-                                                            {{ employee.dtr_format ? 'CSC Form No. 48' : 'Old format'}}
+                                                            {{ employee.csc_format ? 'CSC Form No. 48' : 'Old format'}}
                                                         </p>
                                                     </div>
                                                 </td>
