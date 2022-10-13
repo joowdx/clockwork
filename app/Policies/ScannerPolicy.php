@@ -52,7 +52,7 @@ class ScannerPolicy
      */
     public function update(User $user, Scanner $scanner)
     {
-        return $scanner->createdBy?->is($user) ?: $scanner->shared ?: $scanner->users->contains($user) ?: $scanner->users->isEmpty();
+        return true; #$scanner->createdBy?->is($user) ?: $scanner->shared ?: $scanner->users->contains($user) ?: $scanner->users->isEmpty();
     }
 
     /**
@@ -64,6 +64,6 @@ class ScannerPolicy
      */
     public function delete(User $user, Scanner $scanner)
     {
-        return $scanner->createdBy?->is($user);
+        return true; #$scanner->createdBy?->is($user);
     }
 }
