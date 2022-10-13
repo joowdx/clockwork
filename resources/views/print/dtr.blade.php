@@ -20,7 +20,7 @@
     <body>
         <div align=center>
             @foreach ($employees as $employee)
-                @if($csc_format || $employee->csc_format)
+                @if($csc_format ?? $employee->csc_format)
                     <div class="pagebreak"></div>
                     <table border=0 cellpadding=0 cellspacing=0 width=732 style='border-collapse:collapse;table-layout:fixed;width:548pt'>
                         <tr height=19>
@@ -130,12 +130,12 @@
                         </tr>
                         <tr height=21 style='height:15.75pt'>
                             @for ($side = 1; $side <=2; $side++)
-                                <td class="border font-md cascadia center middle" style='border-top:none;border-left:none'>Arr.</td>
-                                <td class="border font-md cascadia center middle" style='border-top:none;border-left:none'>Dept.</td>
-                                <td class="border font-md cascadia center middle" style='border-top:none;border-left:none'>Arr.</td>
-                                <td class="border font-md cascadia center middle" style='border-top:none;border-left:none'>Dept.</td>
-                                <td class="border font-md cascadia center middle" style='border-top:none;border-left:none'>Hr.</td>
-                                <td class="border font-md cascadia center middle" style='border-top:none;border-left:none'>Min.</td>
+                                <td class="border font-md cascadia center middle">Arr.</td>
+                                <td class="border font-md cascadia center middle">Dept.</td>
+                                <td class="border font-md cascadia center middle">Arr.</td>
+                                <td class="border font-md cascadia center middle">Dept.</td>
+                                <td class="border font-md cascadia center middle">Hr.</td>
+                                <td class="border font-md cascadia center middle">Min.</td>
                                 @if ($side == 1)
                                     <td class="midline"></td>
                                     <td></td>
@@ -146,7 +146,7 @@
 
                             @php($date = $month->clone()->setDay($day))
 
-                            @php(@['in1' => $in1, 'in2' => $in2, 'out1' => $out1, 'out2' => $out2, 'hours' => $hrs, 'minutes' => $mnts] = $timelog->logsForTheDay($employee, $date))
+                            @php(@['in1' => $in1, 'in2' => $in2, 'out1' => $out1, 'out2' => $out2] = $timelog->logsForTheDay($employee, $date))
 
                             <tr height=21 style='height:15.75pt' @class(["weekend" => $date->format('d') == $day && $date->isWeekend()])>
                                 @for($side = 1; $side <= 2; $side++)
@@ -187,14 +187,14 @@
                                     {{-- UNDERTIME HOURS --}}
                                     <td class="border consolas font-sm" style='border-top:none;border-left:none;position:relative;'>
                                         <div class="font-sm nowrap consolas right" style="margin: 0 auto; padding-right: 4pt;">
-                                            {{ $hrs }}
+
                                         </div>
                                     </td>
 
                                     {{-- UNDERTIME MINUTES --}}
                                     <td class="border consolas font-sm" style='border-top:none;border-left:none;position:relative;'>
                                         <div class="font-sm nowrap consolas right" style="margin: 0 auto; padding-right: 4pt;">
-                                            {{ $mnts }}
+
                                         </div>
                                     </td>
 

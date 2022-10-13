@@ -58,6 +58,7 @@
                         <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
                             Reset
                         </Link>
+                        <TailwindSelect class="w-full" :options="[{name: 'PREFERRED', value: 'null'}, {name: 'DEFAULT', value: false}, {name: 'CSC FORM', value: true}]" v-model="csc_format" style="min-width:145px;" />
                         <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                             Import
                         </JetSecondaryButton>
@@ -254,8 +255,6 @@
                     <JetInputError :message="form.errors.file" class="mt-2" />
                 </div>
 
-                <p class="text-yellow-600"> Notice that time logs with unrecognized uid are ignored. Please associate such uids to its corresponding employee before uploading. </p>
-
             </template>
 
             <template #footer>
@@ -318,6 +317,7 @@
                 month: this.$page.props.month,
                 from: this.$page.props.from,
                 to: this.$page.props.to,
+                csc_format: 'null',
                 scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
                 importDialog: false,
                 loadingPreview: true,
@@ -496,14 +496,20 @@
                         });
                     }
                     case 'employee': {
-                        return route('print', {
+                        let args = {
                             by: 'dtr',
                             period: this.period,
                             from: this.from,
                             to: this.to,
                             month: this.month,
                             employees: this.selected,
-                        });
+                        }
+
+                        if (this.csc_format != 'null') {
+                            args['csc_format'] = this.csc_format
+                        }
+
+                        return route('print', args);
                     }
                 }
             }
