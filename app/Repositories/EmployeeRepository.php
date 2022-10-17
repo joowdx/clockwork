@@ -23,12 +23,15 @@ class EmployeeRepository extends BaseRepository
             'extension' => strtoupper(@$payload['name']['extension']),
         ];
 
-        return [
+        return collect([
             'name' => @$payload['nameToJSON'] ? json_encode($name) : $name,
             'office' => strtoupper(@$payload['office']),
             'regular' => (bool) $payload['regular'],
-            'active' => @$payload['active'] === null ? true : (bool) @$payload['active'],
             'csc_format' => ((bool) @$payload['csc_format']) ?? true,
-        ];
+        ])->when(@$payload['active'] !== null, function($data) use ($payload) {
+            $data->put(
+                'active', @$payload['active'],
+            );
+        })->toArray();
     }
 }
