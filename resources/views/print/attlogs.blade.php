@@ -1,12 +1,13 @@
 @inject('period', 'Carbon\CarbonPeriod')
 <article style="width:100%;">
     @for ($x = 0; $x < $pages = ceil($period->create($from, $to)->count() / 31); $x++)
-        <div class="pagebreak" style="margin:25pt auto;width:fit-content;">
+        <div class="pagebreak" style="padding:25pt;margin:auto;width:fit-content;">
             <table border="0" cellpadding="0" cellspacing="0" width="640">
                 <tbody>
                     <tr height="20">
                         <td colspan="10" rowspan="2" height="40" class="bold center bahnschrift font-xl" width="640" style="height:30.0pt;width:480pt">DAILY TIME RECORD</td>
                     </tr>
+                    <tr height="20"></tr>
                     <tr height="20"></tr>
                     <tr height="20">
                         <td height="20" class="font-md bold bottom bahnschrift">NAME</td>
@@ -28,6 +29,8 @@
                         </td>
                     </tr>
                     <tr height="20"></tr>
+                    <tr height="20"></tr>
+                    <tr height="20"></tr>
                     <tr height="22" style="height:16.5pt">
                         <td colspan="2" height="22" class="underline bold bottom nowrap cascadia font-md" style="height:16.5pt">DATE</td>
                         <td class="underline bottom nowrap cascadia font-xs" colspan="1">
@@ -39,9 +42,14 @@
                         <td class="underline bottom nowrap cascadia font-xs" colspan="6"></td>
                     </tr>
                     @foreach ($days = ($period->create($from->clone()->addDays($x * 33), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 33))->lt($to) ? $end->subDay() : $to)) as $date)
-                        <tr height="20" @class(['weekend' => $date->isWeekend(), 'absent' => $employee->absentForTheDay($date) && $date->isWeekDay()])>
-                            <td colspan="2" height="20" @class(['font-sm nowrap consolas',])>
-                                {{  $date->format('D d-m-y') }}
+                        <tr height="20" @class(['weekend' => $date->isWeekend(), 'absent' => $absent = $employee->absentForTheDay($date) && $date->isWeekDay()])>
+                            <td colspan="@if($absent) 10 @else 2 @endif" height="20" @class(['font-sm nowrap consolas',]) style="overflow:hidden;">
+                                {{$date->format('D d-m-y')}}
+                                @if ($absent)
+                                    @for ($l = 0; $l < 38; $l++)
+                                        &nbsp;
+                                    @endfor
+                                @endif
                             </td>
                             @php($i = 0)
                             @foreach ($employee->logsForTheDay($date) as $key => $log)
@@ -80,6 +88,9 @@
                             @endforeach
                         </tr>
                     @endforeach
+                    @if ($employee->scanners->chunk(5)->count() == 1)
+                        <tr height="20"></tr>
+                    @endif
                     <tr height="20"></tr>
                     <tr height="20"></tr>
                     <tr height="20"></tr>
