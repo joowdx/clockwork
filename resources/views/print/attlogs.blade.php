@@ -1,9 +1,7 @@
-@inject('timelog', 'App\Services\TimeLogService')
 @inject('period', 'Carbon\CarbonPeriod')
-
-<article style="width:100%">
+<article style="width:100%;">
     @for ($x = 0; $x < $pages = ceil($period->create($from, $to)->count() / 31); $x++)
-        <div class="pagebreak" style="margin-top:20pt;">
+        <div class="pagebreak" style="margin:25pt auto;width:fit-content;">
             <table border="0" cellpadding="0" cellspacing="0" width="640">
                 <tbody>
                     <tr height="20">
@@ -16,6 +14,7 @@
                             {{ $employee->nameFormat->fullStartLast }}
                         </td>
                     </tr>
+                    <tr height="20"></tr>
                     <tr height="20">
                         <td height="20" class="font-md bold bottom bahnschrift">FROM</td>
                         <td colspan="9" class="uppercase font-md bottom consolas">
@@ -28,32 +27,32 @@
                             {{ $to->format('D d-M-Y') }}
                         </td>
                     </tr>
+                    <tr height="20"></tr>
                     <tr height="22" style="height:16.5pt">
                         <td colspan="2" height="22" class="underline bold bottom nowrap cascadia font-md" style="height:16.5pt">DATE</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">IN</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">OUT</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">IN</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">OUT</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">IN</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">OUT</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">IN</td>
-                        <td class="underline bold bottom nowrap cascadia font-md">OUT</td>
+                        <td class="underline bottom nowrap cascadia font-xs" colspan="1">
+                            <sup>i</sup> = in
+                        </td>
+                        <td class="underline bottom nowrap cascadia font-xs" colspan="1">
+                            <sup>o</sup> = out
+                        </td>
+                        <td class="underline bottom nowrap cascadia font-xs" colspan="6"></td>
                     </tr>
-                    @foreach ($days = ($period->create($from->clone()->addDays($x * 31), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 31))->lt($to) ? $end->subDay() : $to)) as $date)
+                    @foreach ($days = ($period->create($from->clone()->addDays($x * 33), $x < $pages && ($end = $from->clone()->addDays(($x + 1) * 33))->lt($to) ? $end->subDay() : $to)) as $date)
                         <tr height="20" @class(['weekend' => $date->isWeekend(), 'absent' => $employee->absentForTheDay($date) && $date->isWeekDay()])>
                             <td colspan="2" height="20" @class(['font-sm nowrap consolas',])>
                                 {{  $date->format('D d-m-y') }}
                             </td>
                             @php($i = 0)
                             @foreach ($employee->logsForTheDay($date) as $key => $log)
-                                @if ($log->in && $i % 2 == 0 || $log->out && $i % 2 == 1)
-                                    @php($i++)
-                                @else
-                                    <td></td>
-                                    @php($i+=2)
-                                @endif
-                                <td>
-                                    <div class="font-sm nowrap consolas bold {{ $log->scanner->name }}"> {{ $log->time->format('H:i') }} </div>
+                                @php($i++)
+                                <td style="position:relative;">
+                                    <div class="font-sm nowrap consolas bold {{ $log->scanner->name }}" style="padding:0;">
+                                        {{ $log->time->format('H:i') }}
+                                    </div>
+                                    <small class="center" style="position:absolute;top:-2pt;left:28pt;width:5pt;text-align:center;">
+                                        {{ $log->in ? 'i' : 'o' }}
+                                    </small>
                                 </td>
                             @endforeach
                             @if (8 - $i > 0)
@@ -61,9 +60,12 @@
                             @endif
                         </tr>
                     @endforeach
-                    @for ($i = 31 - $days->count() + 1; $i > 0; $i--)
+                    @for ($i = 33 - $days->count() + 1; $i > 0; $i--)
                         <tr height="20"> </tr>
                     @endfor
+                    <tr height="20"></tr>
+                    <tr height="20"></tr>
+                    <tr height="20"></tr>
                     <tr height="20">
                         <td class="bold bottom nowrap cascadia font-md" style="border-bottom: none">
                             SCANNERS
