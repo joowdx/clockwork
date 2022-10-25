@@ -7,8 +7,6 @@ use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
 use App\Models\Scanner;
-use App\Models\Schedule;
-use App\Models\Shift;
 use App\Models\TimeLog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
@@ -93,7 +91,28 @@ class TimeLogService implements Import
             'in1' => $in1 = $this->filterTime($in, 'in', 'am'),
             'out1' => $out1 = $this->filterTime($out, 'out', 'am'),
             'in2' => $in2 = $this->filterTime($in->reject(fn ($log) => $in1?->time->gt($log->time) || $out1?->time->gt($log->time)), 'in', 'pm'),
-            'out2' => $this->filterTime($out->reject(fn ($log) => $in2?->time->gt($log->time) || $out1?->time->gt($log->time)), 'out', 'pm'),
+            'out2' => $out2 = $this->filterTime($out->reject(fn ($log) => $in2?->time->gt($log->time) || $out1?->time->gt($log->time)), 'out', 'pm'),
+            'ut' => $this->calculateUndertime($date, $in1, $out1, $in2, $out2, @request()->weekends['regular'] ? ! request()->weekends['regular'] : $employee->regular),
+        ];
+    }
+
+    public function time(): mixed
+    {
+        $request = request();
+
+        $parse = function (string $week) use ($request) {
+            if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
+                return "{$request->$week['am']['in']}-{$request->$week['am']['out']} {$request->$week['pm']['in']}-{$request->$week['pm']['out']}";
+            } else if($request->filled(["$week.am.in", "$week.pm.out"])) {
+                return "{$request->$week['am']['in']}-{$request->$week['pm']['out']}";
+            };
+
+            return 'as required';
+        };
+
+        return (object) [
+            'weekdays' => $parse('weekdays'),
+            'weekends' => $parse('weekends'),
         ];
     }
 
@@ -119,6 +138,47 @@ class TimeLogService implements Import
                     ->first(fn ($log) => $log->time->clone()->setTime('13', '00')->lte($log->time)),
                 default => null,
             },
+            default => null,
+        };
+    }
+
+    protected function calculateUndertime(Carbon $date, ?TimeLog $in1, ?TimeLog $out1, ?TimeLog $in2, ?TimeLog $out2, bool $excludeWeekends = true): object|int|null
+    {
+        $calculate = function () use ($date, $in1, $out1, $in2, $out2) {
+
+            $week = $date->isWeekday() ? 'weekdays' : 'weekends';
+
+            if (request()->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
+                if (! $in1 || !$out1 || !$in2 || !$out2) {
+                    return null;
+                }
+
+                return (object) [
+                    'in1' => $in1 = max($in1->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'in2' => $in2 = max($in2->time->clone()->setTime(...explode(':', request()->$week['pm']['in']))->diffInMinutes($in2->time, false), 0),
+                    'out1' => $out1 = max($out1->time->setSeconds(0)->diffInMinutes($out1->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['am']['out'])), false), 0),
+                    'out2' => $out2 = max($out2->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
+                    'total' => $in1 + $out1 + $in2 + $out2,
+                ];
+
+            } else if (request()->filled(["$week.am.in", "$week.pm.out"])) {
+                if (!$in1 || !$out2) {
+                    return null;
+                }
+
+                return (object) [
+                    'in1' => $in1 =  max($in1->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'out2' => $out2 = max($out2->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
+                    'total' => $in1 + $out2,
+                ];
+            }
+
+            return 0;
+        };
+
+        return match ($date->isWeekday()) {
+            true => $calculate (),
+            false => $excludeWeekends ? null : $calculate (),
             default => null,
         };
     }

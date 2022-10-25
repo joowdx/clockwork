@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class TimeLog extends Model
@@ -25,12 +23,15 @@ class TimeLog extends Model
         0005,
     ];
 
+    public int $undertime;
+
     protected $fillable = [
         'scanner_id',
         'user_id',
         'time',
         'state',
     ];
+
 
     protected $casts = [
         'time' => 'datetime'

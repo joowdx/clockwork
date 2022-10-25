@@ -7,7 +7,22 @@
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
+            <div class="mx-auto space-y-3 max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
+                <div class="flex self-end justify-end col-span-4 mt-3 space-x-3 justify-self-end">
+                    <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
+                        Reset
+                    </Link>
+                    <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
+                        Set Time
+                    </JetSecondaryButton>
+                    <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
+                        Import
+                    </JetSecondaryButton>
+                    <JetSecondaryButton ref="print" class="items-center" @click="this.$refs.printPreview.contentWindow.print()" style="width:90px" :disabled="loadingPreview || selected.length === 0">
+                        Print
+                    </JetSecondaryButton>
+                </div>
+
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
                     <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                         <JetLabel value="By" />
@@ -35,17 +50,15 @@
                             </div>
                         </template>
                         <template v-else>
-                            <div class="hidden col-span-4 sm:inline-block lg:hidden">
-
-                            </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="Month" />
                                 <JetInput class="w-full uppercase" type="month" v-model="month" required />
                             </div>
-                            <div class="col-span-8 sm:col-span-4 lg:col-span-2">
-
-                            </div>
                         </template>
+                        <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Print Format" />
+                            <TailwindSelect class="w-full" :options="[{name: 'PREFERRED', value: 'null'}, {name: 'DEFAULT', value: false}, {name: 'CSC FORM', value: true}]" v-model="csc_format" style="min-width:145px;" />
+                        </div>
                     </template>
                     <template v-else >
                         <div class="col-span-6 sm:col-span-4 lg:col-span-2">
@@ -54,18 +67,6 @@
                         </div>
                         <div class="col-span-8 sm:hidden lg:col-span-4 lg:inline-block"></div>
                     </template>
-                    <div class="flex self-end col-span-4 mt-3 space-x-3 justify-self-end">
-                        <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
-                            Reset
-                        </Link>
-                        <TailwindSelect class="w-full" :options="[{name: 'PREFERRED', value: 'null'}, {name: 'DEFAULT', value: false}, {name: 'CSC FORM', value: true}]" v-model="csc_format" style="min-width:145px;" />
-                        <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
-                            Import
-                        </JetSecondaryButton>
-                        <JetSecondaryButton ref="print" class="items-center" @click="this.$refs.printPreview.contentWindow.print()" style="width:90px" :disabled="loadingPreview || selected.length === 0">
-                            Print
-                        </JetSecondaryButton>
-                    </div>
                 </div>
 
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
@@ -219,6 +220,83 @@
             </div>
         </div>
 
+        <JetDialogModal :show="configTimeDialog" @close="closeConfigTimeDialog">
+            <template #title>
+                Configure Time
+            </template>
+
+            <template #content>
+                <div>
+                    <p class="mt-3"> Weekdays </p>
+                    <div class="grid grid-cols-12 col-span-12 rounded-md lg:col-span-6 gap-y-2 gap-x-3">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">AM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.am.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.am.out" />
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">PM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.pm.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.pm.out" />
+                            </div>
+                        </fieldset>
+                    </div>
+                    <p class="mt-3"> Weekends </p>
+                    <div class="grid grid-cols-12 col-span-12 rounded-md lg:col-span-6 gap-y-2 gap-x-3">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">AM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.am.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.am.out" />
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">PM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.pm.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.pm.out" />
+                            </div>
+                        </fieldset>
+                    </div>
+                    <label class="flex items-center mt-4">
+                        <JetCheckbox name="remember" v-model:checked="weekends.regular" />
+                        <span class="ml-2 text-sm">Enable calculation for weekends for regular employees.</span>
+                    </label>
+                </div>
+
+            </template>
+
+            <template #footer>
+                <JetSecondaryButton @click="clearTime">
+                    Clear
+                </JetSecondaryButton>
+                <JetSecondaryButton class="ml-3" @click="closeConfigTimeDialog">
+                    Close
+                </JetSecondaryButton>
+            </template>
+        </JetDialogModal>
+
         <JetDialogModal :show="importDialog" @close="closeImportDialog" :closeable="false">
             <template #title>
                 Upload
@@ -312,6 +390,25 @@
                 office: 'ALL',
                 regular: -1,
                 active: 1,
+                weekdays: {
+                    am: {
+                        in: '08:00',
+                    },
+                    pm: {
+                        out: '16:00',
+                    },
+                },
+                weekends: {
+                    am: {
+                        in: '08:00',
+                        out: '12:00',
+                    },
+                    pm: {
+                        in: '13:00',
+                        out: '17:00',
+                    },
+                    regular: false,
+                },
                 period: this.$page.props.period,
                 date: this.$page.props.date,
                 month: this.$page.props.month,
@@ -320,6 +417,7 @@
                 csc_format: 'null',
                 scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
                 importDialog: false,
+                configTimeDialog: false,
                 loadingPreview: true,
                 toggleAllCheckbox: false,
                 waitForFile: true,
@@ -433,6 +531,26 @@
                 this.resetForm()
             },
 
+            showConfigTimeDialog() {
+                this.configTimeDialog = true
+            },
+
+            closeConfigTimeDialog() {
+                this.configTimeDialog = false
+            },
+
+            clearTime() {
+                this.weekdays.am.in = null
+                this.weekdays.am.out = null
+                this.weekdays.pm.in = null
+                this.weekdays.pm.out = null
+                this.weekends.am.in = null
+                this.weekends.am.out = null
+                this.weekends.pm.in = null
+                this.weekends.pm.out = null
+                this.weekends.regular = false
+            },
+
             printPreviewLoaded() {
                 this.loadingPreview = false
             },
@@ -503,6 +621,27 @@
                             to: this.to,
                             month: this.month,
                             employees: this.selected,
+                            weekdays: {
+                                am: {
+                                    in: this.weekdays.am.in,
+                                    out: this.weekdays.am.out,
+                                },
+                                pm: {
+                                    in: this.weekdays.pm.in,
+                                    out: this.weekdays.pm.out,
+                                },
+                            },
+                            weekends: {
+                                am: {
+                                    in: this.weekends.am.in,
+                                    out: this.weekends.am.out,
+                                },
+                                pm: {
+                                    in: this.weekends.pm.in,
+                                    out: this.weekends.pm.out,
+                                },
+                                regular: this.weekends.regular,
+                            },
                         }
 
                         if (this.csc_format != 'null') {

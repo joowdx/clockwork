@@ -1,9 +1,9 @@
-@page {
-    margin: 10mm;
-    scale: 100%;
-}
-
 @media print {
+    @page {
+        margin: 0;
+        size: 8.5in 13in;
+    }
+
     .pagebreak {
         page-break-before: always;
     }
@@ -39,6 +39,11 @@ tr, td {
     text-decoration: line-through;
 }
 
+.empty {
+    background: #777777cc;
+    border-color: transparent !important;
+}
+
 .weekend {
     background: #33333344;
     border-color: transparent !important;
@@ -47,6 +52,10 @@ tr, td {
 .holiday {
     background: #18749844;
     border-color: transparent !important;
+}
+
+.invalid {
+    background-color: #FF6D2844;
 }
 
 .scanner {
@@ -152,4 +161,20 @@ tr, td {
 
 .underline {
     border-bottom: .5pt solid windowtext;
+}
+
+.undertime-badge {
+    position:absolute;
+    top:0pt;
+    right:0pt;
+    color:red;
+    border-radius: 999999999pt;
+    background-color: #3333;
+    width: 10pt;
+    height: 10pt;
+    font-size: 6pt;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }

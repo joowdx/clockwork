@@ -8,6 +8,6 @@ class PrintController extends Controller
 {
     public function __invoke(PrintService $print, string $by)
     {
-        return view("print.{$by}", $print->data($by));
+        return view($by === 'office' ? 'print.office' : 'print.printout', $print->data($by));
     }
 }

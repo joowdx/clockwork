@@ -24,7 +24,10 @@ class PrintService
 
     public function dtr()
     {
-        return [...$this->employee(), 'month' => Carbon::parse($this->request->month), 'csc_format' => $this->request->csc_format];
+        return [
+            ...$this->employee(),
+            'csc_format' => $this->request->csc_format,
+        ];
     }
 
     public function employee(): array
@@ -110,9 +113,12 @@ class PrintService
                 $query->with([
                     'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
                     'timelogs' => function ($query) {
+                        ['from' => $from, 'to' => $to] = $this->range();
+
                         $query->whereHas(
                             'scanner', fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners))
-                        )->whereBetween('time', $this->range());
+                        )->whereBetween('time', [$from->subDay(), $to->addDay()]);
+
                     },
                     'timelogs.scanner',
                 ]);
