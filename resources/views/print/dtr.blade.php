@@ -1,4 +1,4 @@
-<article style="width:100%">
+<article style="width:100%;">
     @foreach($months as $month)
 
         @php($start = $month->isSameMonth($from) ? max($from->clone()->setMonth($month->month), $month->clone()->startOfMonth()) : $month->clone()->startOfMonth())
@@ -209,13 +209,13 @@
                         </tr>
                         <tr>
                             <td colspan=3></td>
-                            <td class="underline font-sm center bold consolas" colspan=3>
+                            <td class="underline font-sm center bottom bold consolas" colspan=3>
                                 {{ auth()?->user()?->name }}
                             </td>
                         </tr>
                         <tr>
                             <td colspan=3></td>
-                            <td class="font-xs center arial" colspan=3>
+                            <td class="font-xs center arial top" colspan=3>
                                 {{ auth()?->user()?->title }}
                             </td>
                         </tr>

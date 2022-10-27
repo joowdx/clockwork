@@ -98,16 +98,16 @@
                     <tr height="20"></tr>
                     <tr height="20">
                         <td colspan="6"></td>
-                        <td colspan="4" class="underline uppercase bold center bottom nowrap bahnschrift">
+                        <td colspan="4" class="underline font-sm bold center bottom nowrap consolas">
                             {{ auth()->user()?->name }}
                         </td>
                     </tr>
                     <tr height="20">
-                        <td colspan="3" height="20" class="font-sm nowrap consolas bold">
+                        <td colspan="3" height="20" class="font-xs nowrap consolas bold">
                             DATE: <span class="uppercase">{{ now()->format('d M Y H:i') }}</span>
                         </td>
                         <td colspan="3"></td>
-                        <td colspan="4" class="center nowrap bahnschrift-light">
+                        <td colspan="4" class="center nowrap font-xs arial top">
                             {{ auth()->user()?->title }}
                         </td>
                     </tr>
