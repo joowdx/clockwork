@@ -9,6 +9,10 @@
         <div class="py-12">
             <div class="mx-auto space-y-3 max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="flex self-end justify-end col-span-4 mt-3 space-x-3 justify-self-end">
+                    <label class="flex items-center">
+                        <JetCheckbox v-model:checked="transmittal" />
+                        <span class="ml-2 text-sm text-gray-600">Generate transmittal</span>
+                    </label>
                     <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
                         Reset
                     </Link>
@@ -409,6 +413,7 @@
                     },
                     regular: false,
                 },
+                transmittal: false,
                 period: this.$page.props.period,
                 date: this.$page.props.date,
                 month: this.$page.props.month,
@@ -642,6 +647,7 @@
                                 },
                                 regular: this.weekends.regular,
                             },
+                            transmittal: this.transmittal,
                         }
 
                         if (this.csc_format != 'null') {

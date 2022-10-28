@@ -12,6 +12,22 @@
     .sf-toolbar {
         display: none !important;
     }
+
+    .hide-on-print {
+        visibility: hidden !important;
+    }
+
+    .show-on-print {
+        visibility: visible !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
 }
 
 * {
@@ -31,6 +47,22 @@ table {
 
 tr, td {
     height: 15pt;
+}
+
+.print-only {
+    display: none;
+}
+
+.no-print {
+    display: block;
+}
+
+.hide-on-print {
+    visibility: visible;
+}
+
+.show-on-print {
+    visibility: hidden;
 }
 
 .absent {
@@ -106,6 +138,10 @@ tr, td {
 
 .right {
     text-align: right;
+}
+
+.top {
+    vertical-align: top;
 }
 
 .bottom {

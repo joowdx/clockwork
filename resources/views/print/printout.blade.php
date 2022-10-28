@@ -8,13 +8,26 @@
     </head>
     <body>
         <main align=center>
-            @foreach ($employees as $employee)
-                @if($csc_format ?? $employee->csc_format)
-                    <livewire:print.dtr :employee="$employee" :from="$from" :to="$to" />
-                @else
-                    <livewire:print.attlogs :employee="$employee" :from="$from" :to="$to" />
-                @endif
-            @endforeach
+            @if ($transmittal)
+                <livewire:print.transmittal :employees="$employees" :from="$from" :to="$to" />
+                @foreach ($employees->groupBy('office') as $office => $employeeGroup)
+                    @foreach ($employeeGroup as $employee)
+                        @if($csc_format ?? $employee->csc_format)
+                            <livewire:print.dtr :employee="$employee" :from="$from" :to="$to" />
+                        @else
+                            <livewire:print.attlogs :employee="$employee" :from="$from" :to="$to" />
+                        @endif
+                    @endforeach
+                @endforeach
+            @else
+                @foreach ($employees as $employee)
+                    @if($csc_format ?? $employee->csc_format)
+                        <livewire:print.dtr :employee="$employee" :from="$from" :to="$to" />
+                    @else
+                        <livewire:print.attlogs :employee="$employee" :from="$from" :to="$to" />
+                    @endif
+                @endforeach
+            @endif
         </main>
         @livewireScripts()
         @stack('scripts')
