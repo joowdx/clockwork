@@ -152,6 +152,10 @@ tr, td {
     vertical-align: middle;
 }
 
+.font-xxs {
+    font-size: 6.0pt;
+}
+
 .font-xs {
     font-size: 8.0pt;
 }

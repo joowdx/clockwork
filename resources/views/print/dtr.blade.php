@@ -38,7 +38,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan=6></td>
+                            <td class="consolas top center font-xs" colspan=6>
+                                Employee
+                            </td>
                         </tr>
                         <tr>
                             <td class="arial font-xs bottom right" colspan=2 style="padding-bottom:2.5pt;padding-right:10pt;">For the month of:</td>
@@ -142,9 +144,9 @@
                                         </div>
                                     </td>
                                 </tr>
-                                @php($utTotal += (@$ut?->total ?? 0))
+                                {{-- @php($utTotal += (@$ut?->total ?? 0)) --}}
 
-                                @php($daysTotal += $ut ? 1 : 0)
+                                {{-- @php($daysTotal += $ut ? 1 : 0) --}}
 
                             @elseif($date->format('d') == $day)
                                 <tr>
@@ -165,8 +167,9 @@
                         </tr>
                         <tr>
                             <td colspan=2 class="font-md cascadia right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
-                            <td colspan=2 class="underline consolas font-md left bold"> {{ ($daysTotal ? "{$daysTotal} days " : '') }} </td>
-                            <td colspan=2 class="underline consolas font-sm right"> {{ ($utTotal ? "t\u = {$utTotal} mins" : '') }} </td>
+                            <td colspan=4 class="underline consolas font-md left bold"> </td>
+                            {{-- <td colspan=2 class="underline consolas font-md left bold"> {{ ($daysTotal ? "{$daysTotal} days " : '') }} </td> --}}
+                            {{-- <td colspan=2 class="underline consolas font-sm right"> {{ ($utTotal ? "t\u = {$utTotal} mins" : '') }} </td> --}}
                         </tr>
                         <tr>
                             <td class="italic font-xs arial" colspan=6 rowspan=3>
@@ -181,43 +184,45 @@
                             <td colspan=6></td>
                         </tr>
                         <tr>
+                            <td class="underline" colspan=6></td>
+                        </tr>
+                        <tr>
+                            <td class="bahnschrift-light top center font-sm" colspan=6>Employee's Signature</td>
+                        </tr>
+                        <tr>
+                            <td class="italic arial font-xs" colspan=6>Verified as to the prescribed office hours:</td>
+                        </tr>
+                        <tr>
+                            <td colspan=6></td>
+                        </tr>
+                        <tr>
                             <td colspan=6></td>
                         </tr>
                         <tr>
                             <td class="underline" colspan=6></td>
                         </tr>
                         <tr>
-                            <td colspan=6></td>
-                        </tr>
-                        <tr>
-                            <td class="italic arial font-sm" colspan=6>Verified as to the prescribed office hours:</td>
+                            <td class="bahnschrift-light top center font-sm" colspan=6>Office/Department Head</td>
                         </tr>
                         <tr>
                             <td colspan=6></td>
                         </tr>
-                        <tr>
+                        <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
                             <td colspan=6></td>
                         </tr>
                         <tr>
-                            <td class="underline" colspan=6></td>
-                        </tr>
-                        <tr>
-                            <td colspan=6></td>
-                        </tr>
-                        <tr>
-                            <td colspan=6></td>
-                        </tr>
-                        <tr>
-                            <td colspan=3></td>
-                            <td class="underline font-sm center bottom bold consolas" colspan=3>
+                            <td colspan=1></td>
+                            <td class="underline font-xs center bottom bold consolas" colspan=4 style="color:#000A;border-color:#000A!important;">
                                 {{ auth()?->user()?->name }}
                             </td>
+                            <td colspan=1></td>
                         </tr>
                         <tr>
-                            <td colspan=3></td>
-                            <td class="font-xs center arial top" colspan=3>
+                            <td colspan=1></td>
+                            <td class="font-xxs center arial top" colspan=4 style="color:#000A;">
                                 {{ auth()?->user()?->title }}
                             </td>
+                            <td colspan=1></td>
                         </tr>
                     </table>
                 </div>
