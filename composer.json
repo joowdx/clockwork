@@ -7,7 +7,7 @@
     "require": {
         "php": "^8.0.2",
         "guzzlehttp/guzzle": "^7.2",
-        "inertiajs/inertia-laravel": "^0.6.0",
+        "inertiajs/inertia-laravel": "^0.6.3",
         "kaishiyoku/laravel-color-validation": "^2.1",
         "laravel/framework": "^9.2",
         "laravel/jetstream": "^2.6",

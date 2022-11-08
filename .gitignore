@@ -21,3 +21,4 @@ yarn-error.log
 /storage/*.index*
 /public/mix-manifest.json
 /public/vendor/*
+/public/build/*

@@ -2,7 +2,7 @@
     <head>
         <title>PRINTOUT</title>
         <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
-        <link rel="stylesheet" href="{{ asset('css/print.css') }}">
+        @vite(['resources/css/print.css'])
         @livewireStyles()
         @stack('styles')
     </head>

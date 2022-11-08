@@ -7,31 +7,28 @@ delete colors.trueGray;
 delete colors.coolGray;
 delete colors.blueGray;
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-    mode: 'jit',
-
-    darkMode: 'class',
-
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-        './vendor/laravel/jetstream/**/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
     ],
 
     theme: {
-        colors: {
-            ...colors,
-            gray: colors.neutral
-        },
-
         extend: {
             fontFamily: {
                 sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                ...colors,
+                gray: colors.neutral,
+            }
         },
     },
 
-    plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
+    plugins: [
+        require("@tailwindcss/typography"),
+    ],
 };

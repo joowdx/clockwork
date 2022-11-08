@@ -43,7 +43,7 @@
                             </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="From" />
-                                <JetInput class="w-full uppercase" type="date" v-model="from" required />
+                                <input class="w-full uppercase inline-flex items-center px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" v-model="from" required />
                             </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="To" />
