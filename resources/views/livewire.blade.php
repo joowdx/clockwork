@@ -2,7 +2,7 @@
 
 @section('head')
 
-    @vite(['resources/css/app.css', 'resources/js/livewire.js'])
+    @vite(['resources/js/livewire.js'])
 
     @livewireStyles
 

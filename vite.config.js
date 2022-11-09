@@ -5,7 +5,6 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     plugins: [
         laravel([
-            'resources/css/app.css',
             'resources/css/print.css',
             'resources/js/inertia.js',
             'resources/js/livewire.js',

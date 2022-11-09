@@ -2,7 +2,7 @@
 
 @section('head')
 
-    @vite(['resources/css/app.css', 'resources/js/inertia.js'])
+    @vite(['resources/js/inertia.js'])
 
 @endsection
 
