@@ -233,13 +233,6 @@
                             </td>
                             <td colspan=1></td>
                         </tr>
-                        <tr style="height:5pt;">
-                            <td colspan=1></td>
-                            <td class="font-xxs center arial top" colspan=4 style="color:#000A;">
-                                {{ auth()?->user()?->title }}
-                            </td>
-                            <td colspan=1></td>
-                        </tr>
                     </table>
                 </div>
             @endfor
