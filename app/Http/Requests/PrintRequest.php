@@ -44,15 +44,20 @@ class PrintRequest extends FormRequest
                 'scanners.*' => 'uuid|exists:scanners,id',
                 'regular' => 'sometimes|boolean|exclude_with:employees',
                 'csc_format' => 'sometimes|boolean',
+                'calculate' => 'sometimes|boolean',
+                'weekdays.excluded' => 'sometimes|boolean',
                 'weekdays.am.in' => 'sometimes|nullable|date_format:H:i',
                 'weekdays.am.out' => 'sometimes|nullable|string|date_format:H:i',
                 'weekdays.pm.in' => 'sometimes|nullable|string|date_format:H:i',
                 'weekdays.pm.out' => 'sometimes|nullable|date_format:H:i',
+                'weekends.excluded' => 'sometimes|boolean',
                 'weekends.am.in' => 'sometimes|nullable|string|date_format:H:i',
                 'weekends.am.out' => 'sometimes|nullable|string|date_format:H:i',
                 'weekends.pm.in' => 'sometimes|nullable|string|date_format:H:i',
                 'weekends.pm.out' => 'sometimes|nullable|string|date_format:H:i',
                 'weekends.regular' => 'sometimes|boolean',
+                'days' => 'array|nullable',
+                'days.*' => 'integer|min:1|max:31|distinct',
             ],
         };
     }
@@ -74,6 +79,18 @@ class PrintRequest extends FormRequest
         })->whenFilled('weekends.regular', function ($regular) {
             $this->merge([
                 'weekends.regular' => filter_var($regular, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            ]);
+        })->whenFilled('weekdays.excluded', function ($exclude) {
+            $this->merge([
+                'weekdays.excluded' => filter_var($exclude, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            ]);
+        })->whenFilled('weekends.excluded', function ($exclude) {
+            $this->merge([
+                'weekends.excluded' => filter_var($exclude, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+            ]);
+        })->whenFilled('calculate', function ($calculate) {
+            $this->merge([
+                'calculate' => filter_var($calculate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
             ]);
         });
     }

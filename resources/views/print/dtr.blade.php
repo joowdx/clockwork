@@ -11,7 +11,9 @@
                     <table border=0 cellpadding=0 cellspacing=0 style="border-collapse:collapse;table-layout:fixed;width:fit-content;margin:auto!important;">
                         <col width=57 span=6>
                         <tr>
-                            <td colspan=6></td>
+                            <td colspan=6 style="position:relative;">
+                                <img src="{{ url('img/davao-del-sur(300x300).png') }}" alt="davao-del-sur" style="position:absolute;width:36pt;opacity:0.1;top:15pt;right:0;">
+                            </td>
                         </tr>
                         <tr>
                             <td class="italic font-xs arial" colspan=6 >Civil Service Form No. 48</td>
@@ -144,9 +146,11 @@
                                         </div>
                                     </td>
                                 </tr>
-                                {{-- @php($utTotal += (@$ut?->total ?? 0)) --}}
+                                @if (@$calculate)
+                                    @php($utTotal += (@$ut?->total ?? 0))
 
-                                {{-- @php($daysTotal += $ut ? 1 : 0) --}}
+                                    @php($daysTotal += $ut ? 1 : 0)
+                                @endif
 
                             @elseif($date->format('d') == $day)
                                 <tr>
@@ -167,9 +171,12 @@
                         </tr>
                         <tr>
                             <td colspan=2 class="font-md cascadia right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
-                            <td colspan=4 class="underline consolas font-md left bold"> </td>
-                            {{-- <td colspan=2 class="underline consolas font-md left bold"> {{ ($daysTotal ? "{$daysTotal} days " : '') }} </td> --}}
-                            {{-- <td colspan=2 class="underline consolas font-sm right"> {{ ($utTotal ? "t\u = {$utTotal} mins" : '') }} </td> --}}
+                            @if (@$calculate)
+                                <td colspan=2 class="underline consolas font-md left bold"> {{ ($daysTotal ? "{$daysTotal} days " : '') }} </td>
+                                <td colspan=2 class="underline consolas font-sm right"> {{ ($utTotal ? "t\u = {$utTotal} mins" : '') }} </td>
+                            @else
+                                <td colspan=4 class="underline consolas font-md left bold"> </td>
+                            @endif
                         </tr>
                         <tr>
                             <td class="italic font-xs arial" colspan=6 rowspan=3>
@@ -208,7 +215,9 @@
                             <td colspan=6></td>
                         </tr>
                         <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
-                            <td colspan=6></td>
+                            <td colspan=6 style="position:relative;">
+                                <img src="{{ url('img/pgo-picto(300x300).png') }}" alt="pgo-picto" style="position:absolute;width:36pt;opacity:0.15;margin:auto;left:0;right:0;">
+                            </td>
                         </tr>
                         <tr>
                             <td colspan=1></td>
@@ -218,6 +227,13 @@
                             <td colspan=1></td>
                         </tr>
                         <tr>
+                            <td colspan=1></td>
+                            <td class="font-xxs center arial top" colspan=4 style="color:#000A;">
+                                {{ auth()?->user()?->title }}
+                            </td>
+                            <td colspan=1></td>
+                        </tr>
+                        <tr style="height:5pt;">
                             <td colspan=1></td>
                             <td class="font-xxs center arial top" colspan=4 style="color:#000A;">
                                 {{ auth()?->user()?->title }}

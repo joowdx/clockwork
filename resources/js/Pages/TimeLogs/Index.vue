@@ -17,7 +17,7 @@
                         Reset
                     </Link>
                     <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
-                        Set Time
+                        Set time
                     </JetSecondaryButton>
                     <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                         Import
@@ -43,7 +43,7 @@
                             </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="From" />
-                                <input class="w-full uppercase inline-flex items-center px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" v-model="from" required />
+                                <input class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" v-model="from" required />
                             </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="To" />
@@ -231,9 +231,12 @@
 
             <template #content>
                 <div>
-                    <p class="mt-3"> Weekdays </p>
-                    <div class="grid grid-cols-12 col-span-12 rounded-md lg:col-span-6 gap-y-2 gap-x-3">
-                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                    <label class="flex items-center mt-3">
+                        <JetCheckbox v-model:checked="weekdays.excluded" />
+                        <span class="ml-2">Weekdays</span>
+                    </label>
+                    <div class="grid grid-cols-12 col-span-12 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
                             <legend class="ml-3 text-xs">AM</legend>
                             <div class="col-span-6">
                                 <JetLabel value="IN" />
@@ -245,7 +248,7 @@
                             </div>
                         </fieldset>
 
-                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
                             <legend class="ml-3 text-xs">PM</legend>
                             <div class="col-span-6">
                                 <JetLabel value="IN" />
@@ -257,9 +260,12 @@
                             </div>
                         </fieldset>
                     </div>
-                    <p class="mt-3"> Weekends </p>
-                    <div class="grid grid-cols-12 col-span-12 rounded-md lg:col-span-6 gap-y-2 gap-x-3">
-                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                    <label class="flex items-center mt-3">
+                        <JetCheckbox v-model:checked="weekends.excluded" />
+                        <span class="ml-2">Weekends</span>
+                    </label>
+                    <div class="grid grid-cols-12 col-span-12 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
                             <legend class="ml-3 text-xs">AM</legend>
                             <div class="col-span-6">
                                 <JetLabel value="IN" />
@@ -271,7 +277,7 @@
                             </div>
                         </fieldset>
 
-                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md lg:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
                             <legend class="ml-3 text-xs">PM</legend>
                             <div class="col-span-6">
                                 <JetLabel value="IN" />
@@ -284,8 +290,40 @@
                         </fieldset>
                     </div>
                     <label class="flex items-center mt-4">
-                        <JetCheckbox name="remember" v-model:checked="weekends.regular" />
-                        <span class="ml-2 text-sm">Enable calculation for weekends for regular employees.</span>
+                        <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" v-model="daysSelection" onclick="return false;" >
+                        <span class="ml-2">Days</span>
+                    </label>
+                    <div class="rounded-md">
+                        <fieldset class="grid grid-cols-7 gap-3 p-3 border border-gray-800 rounded-md dark:border-gray-700">
+                            <legend class="mb-0 ml-3 text-xs">Filter days of the month</legend>
+                            <div v-for="day in 31" class="col-span-2 border border-gray-800 rounded-md sm:col-span-1 dark:border-gray-700">
+                                <label class="flex items-center justify-center py-2 cursor-pointer">
+                                    <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="day" v-model="days">
+                                    <span class="ml-2">{{ String(day).padStart(2, '0') }}</span>
+                                </label>
+                            </div>
+                            <div class="hidden sm:block sm:col-span-2">
+
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <JetButton @click="resetDays" class="w-full h-full">
+                                    Clear
+                                </JetButton>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <JetButton @click="selectAllDays" class="w-full h-full">
+                                    All
+                                </JetButton>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <label class="flex items-center mt-3">
+                        <JetCheckbox v-model:checked="calculate" />
+                        <span class="ml-2">Calculate</span>
+                    </label>
+                    <label class="flex items-center mt-4">
+                        <JetCheckbox v-model:checked="weekends.regular" />
+                        <span class="ml-2">Enable calculation for weekends for regular employees.</span>
                     </label>
                 </div>
 
@@ -388,12 +426,14 @@
             return {
                 src: '',
                 all: ! this.$page.props.employees.length,
+                daysSelection: false,
                 selected: [],
                 by: 'employee',
                 name: '',
                 office: 'ALL',
                 regular: -1,
                 active: 1,
+                calculate: false,
                 weekdays: {
                     am: {
                         in: '08:00',
@@ -401,6 +441,7 @@
                     pm: {
                         out: '16:00',
                     },
+                    excluded: true,
                 },
                 weekends: {
                     am: {
@@ -411,8 +452,10 @@
                         in: '13:00',
                         out: '17:00',
                     },
+                    excluded: true,
                     regular: false,
                 },
+                days: [],
                 transmittal: false,
                 period: this.$page.props.period,
                 date: this.$page.props.date,
@@ -424,7 +467,6 @@
                 importDialog: false,
                 configTimeDialog: false,
                 loadingPreview: true,
-                toggleAllCheckbox: false,
                 waitForFile: true,
                 form: this.$inertia.form({
                     file: null,
@@ -448,6 +490,10 @@
                 this.selected = this.all
                     ? _.uniq(this.selected.concat(this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e)))
                     : this.selected.filter(e => ! this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).includes(e))
+            },
+
+            days() {
+                this.daysSelection = this.days.length > 0
             },
 
             employees() {
@@ -553,7 +599,16 @@
                 this.weekends.am.out = null
                 this.weekends.pm.in = null
                 this.weekends.pm.out = null
-                this.weekends.regular = false
+                this.weekends.regular = null
+                this.days = []
+            },
+
+            resetDays() {
+                this.days = []
+            },
+
+            selectAllDays() {
+                this.days = Array.from({length: 31}, (_, i) => i + 1)
             },
 
             printPreviewLoaded() {
@@ -627,6 +682,7 @@
                             month: this.month,
                             employees: this.selected,
                             weekdays: {
+                                excluded: ! this.weekdays.excluded,
                                 am: {
                                     in: this.weekdays.am.in,
                                     out: this.weekdays.am.out,
@@ -637,6 +693,7 @@
                                 },
                             },
                             weekends: {
+                                excluded: ! this.weekends.excluded,
                                 am: {
                                     in: this.weekends.am.in,
                                     out: this.weekends.am.out,
@@ -654,10 +711,22 @@
                             args['csc_format'] = this.csc_format
                         }
 
+                        if (this.transmittal) {
+                            args['transmittal'] = this.transmittal
+                        }
+
+                        if (this.days.length > 0) {
+                            args['days'] = this.days
+                        }
+
+                        if (this.calculate) {
+                            args['calculate'] = true
+                        }
+
                         return route('print', args);
                     }
                 }
-            }
+            },
         }
     })
 </script>
