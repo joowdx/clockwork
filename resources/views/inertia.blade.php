@@ -2,7 +2,7 @@
 
 @section('head')
 
-    <script src="{{ mix('js/inertia.js') }}" defer></script>
+    @vite(['resources/js/inertia.js'])
 
 @endsection
 

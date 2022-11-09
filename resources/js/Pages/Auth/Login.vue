@@ -1,12 +1,12 @@
 <template>
     <Head title="Log in" />
 
-    <jet-authentication-card>
+    <JetAuthenticationCard>
         <template #logo>
-            <jet-authentication-card-logo />
+            <JetAuthenticationCardLogo />
         </template>
 
-        <jet-validation-errors class="mb-4" />
+        <JetValidationErrors class="mb-4" />
 
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
@@ -14,18 +14,18 @@
 
         <form @submit.prevent="submit">
             <div>
-                <jet-label for="username" value="Username" />
-                <jet-input id="username" type="text" class="block w-full mt-1" v-model="form.username" required autofocus />
+                <JetLabel for="username" value="Username" />
+                <JetInput id="username" type="text" class="block w-full mt-1" v-model="form.username" required autofocus />
             </div>
 
             <div class="mt-4">
-                <jet-label for="password" value="Password" />
-                <jet-input id="password" type="password" class="block w-full mt-1" v-model="form.password" required autocomplete="current-password" />
+                <JetLabel for="password" value="Password" />
+                <JetInput id="password" type="password" class="block w-full mt-1" v-model="form.password" required autocomplete="current-password" />
             </div>
 
             <div class="block mt-4">
                 <label class="flex items-center">
-                    <jet-checkbox name="remember" v-model:checked="form.remember" />
+                    <JetCheckbox name="remember" v-model:checked="form.remember" />
                     <span class="ml-2 text-sm text-gray-600">Remember me</span>
                 </label>
             </div>
@@ -35,12 +35,12 @@
                     Forgot your password?
                 </Link>
 
-                <jet-button class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                     Log in
-                </jet-button>
+                </JetButton>
             </div>
         </form>
-    </jet-authentication-card>
+    </JetAuthenticationCard>
 </template>
 
 <script>

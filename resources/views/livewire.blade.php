@@ -2,7 +2,7 @@
 
 @section('head')
 
-    <script src="{{ mix('js/livewire.js') }}" defer></script>
+    @vite(['resources/js/livewire.js'])
 
     @livewireStyles
 

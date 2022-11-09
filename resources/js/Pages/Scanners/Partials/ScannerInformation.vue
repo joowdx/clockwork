@@ -30,6 +30,13 @@
                 <JetInputError :message="form.errors.attlog_file" class="mt-2" />
             </div>
 
+            <!-- IP Address -->
+            <div class="col-span-6 sm:col-span-4">
+                <JetLabel for="ip_address" value="IP Address" />
+                <JetInput id="ip_address" type="text" class="block w-full mt-1" v-model="form.ip_address" autocomplete="ip_address" />
+                <JetInputError :message="form.errors.ip_address" class="mt-2" />
+            </div>
+
             <div class="col-span-6 sm:col-span-4">
                 <!-- Shared -->
                 <div class="col-span-6">
@@ -104,6 +111,7 @@
                     name: this.$page.props.scanner?.name,
                     remarks: this.$page.props.scanner?.remarks,
                     attlog_file: this.$page.props.scanner?.attlog_file,
+                    ip_address: this.$page.props.scanner?.ip_address,
                     print_text_colour: this.$page.props.scanner?.print_text_colour ?? '#000000',
                     print_background_colour: this.$page.props.scanner?.print_background_colour ?? '#FFFFFF',
                     shared: this.$page.props.scanner?.shared,

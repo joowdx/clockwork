@@ -20,7 +20,8 @@ class Employee extends Model
         'name',
         'regular',
         'office',
-        'active'
+        'active',
+        'csc_format',
     ];
 
     protected $casts = [
@@ -52,33 +53,6 @@ class Employee extends Model
             ->latest('time_logs.id');
     }
 
-    public function shifts(): BelongsToMany
-    {
-        return $this->belongsToMany(Shift::class, 'schedules')
-                ->using(Schedule::class)
-                ->withPivot(['id', 'from', 'to', 'days']);
-    }
-    
-    public function shift(): HasOne
-    {
-        return $this->hasOne(Schedule::class)->ofMany([
-            'id' => 'max'
-        ], function ($query) {
-            $query->active();
-        })->withDefault(function ($schedule) {
-            $schedule->default = true;
-
-            $schedule->days = Schedule::DEFAULT_DAYS;
-
-            $schedule->shift = Shift::make([
-                'in1' => Shift::DEFAULT_IN1,
-                'in2' => Shift::DEFAULT_IN2,
-                'out1' => Shift::DEFAULT_OUT1,
-                'out2' => Shift::DEFAULT_OUT2,
-            ]);
-        });
-    }
-    
     public function toSearchableArray(): array
     {
         return [

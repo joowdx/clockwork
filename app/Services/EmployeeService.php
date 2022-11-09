@@ -102,7 +102,7 @@ class EmployeeService implements Import
                     $query->where('user_id', auth()->id());
                 });
             });
-        })->sortByName()->get();
+        })->get();
     }
 
     public function offices(bool $all = true)

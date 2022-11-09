@@ -19,3 +19,6 @@ yarn-error.log
 /.idea
 /.vscode
 /storage/*.index*
+/public/mix-manifest.json
+/public/vendor/*
+/public/build/*

@@ -74,8 +74,8 @@
                                                     {{ str_pad($j + $i * 30 + 1, 2, '0', STR_PAD_LEFT) . '. '. $employee->ellipsize() }}
                                                 </td>
                                                 <td height="20">
-                                                    <div class="font-sm nowrap consolas bold {{ $employee->timelogs->sortBy('time')->first()->scanner->name }}">
-                                                        {{ $employee->timelogs->sortBy('time')->pluck('time')->first()->format('H:i') }}
+                                                    <div class="font-sm nowrap consolas bold {{ $employee->timelogs->sortBy('time')->first()?->scanner->name }}">
+                                                        {{ $employee->timelogs->sortBy('time')->pluck('time')->first()?->format('H:i') }}
                                                     </div>
                                                 </td>
                                             @elseif ($j == 0 && $j + $i * 30 >= $count)

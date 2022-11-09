@@ -154,7 +154,7 @@
                                                     <x-jet-checkbox wire:model.defer="selected.employees.{{ $employee->id }}" wire:target="generate" wire:loading.attr="disabled" />
                                                 </td>
                                                 <td>
-                                                    {{ $employee->name_format->fullStartLastInitialMiddle }}
+                                                    <a href="{{ route('employees.edit', $employee->id) }}"> {{ $employee->name_format->fullStartLastInitialMiddle }} </a>
                                                 </td>
                                             </tr>
                                         @empty

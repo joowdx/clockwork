@@ -1,9 +1,9 @@
-@page {
-    margin: 10mm;
-    scale: 100%;
-}
-
 @media print {
+    @page {
+        margin: 0;
+        size: 8.5in 13in;
+    }
+
     .pagebreak {
         page-break-before: always;
     }
@@ -12,6 +12,27 @@
     .sf-toolbar {
         display: none !important;
     }
+
+    .hide-on-print {
+        visibility: hidden !important;
+    }
+
+    .show-on-print {
+        visibility: visible !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
+
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 html, body {
@@ -28,21 +49,55 @@ tr, td {
     height: 15pt;
 }
 
+.print-only {
+    display: none;
+}
+
+.no-print {
+    display: block;
+}
+
+.hide-on-print {
+    visibility: visible;
+}
+
+.show-on-print {
+    visibility: hidden;
+}
+
 .absent {
     background: #F38c8caa;
     border-color: transparent !important;
     text-decoration: line-through;
 }
 
-.weekend {
-    background: #33333322;
+.empty {
+    background: #777777cc;
     border-color: transparent !important;
+}
+
+.weekend {
+    background: #33333344;
+    border-color: transparent !important;
+}
+
+.holiday {
+    background: #18749844;
+    border-color: transparent !important;
+}
+
+.invalid {
+    background-color: #FF6D2844;
 }
 
 .scanner {
     border-right: solid;
     border-color: white;
     padding-left: 8pt;
+}
+
+.arial {
+    font-family: Arial, sans-serif;
 }
 
 .bahnschrift {
@@ -61,12 +116,16 @@ tr, td {
     font-family: Consolas, monospace;
 }
 
+.courier {
+    font-family: "Courier New", monospace;
+}
+
 .bold {
     font-weight: 700;
 }
 
-.nowrap {
-    white-space: nowrap;
+.italic {
+    font-style: italic;
 }
 
 .uppercase {
@@ -77,26 +136,85 @@ tr, td {
     text-align: center;
 }
 
+.right {
+    text-align: right;
+}
+
+.top {
+    vertical-align: top;
+}
+
 .bottom {
     vertical-align: bottom;
 }
 
-.underline {
-    border-bottom: .5pt solid windowtext;
+.middle {
+    vertical-align: middle;
+}
+
+.font-xxs {
+    font-size: 6.0pt;
 }
 
 .font-xs {
     font-size: 8.0pt;
 }
 
-.font-xl {
-    font-size: 20.0pt;
+.font-sm {
+    font-size: 10.0pt;
 }
 
 .font-md {
     font-size: 11.0pt;
 }
 
-.font-sm {
-    font-size: 10.0pt;
+.font-lg {
+    font-size: 13.0pt;
+}
+
+.font-xl {
+    font-size: 20.0pt;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.wrap {
+    white-space: normal;
+}
+
+.midline {
+    border-top: none;
+    border-right: .5pt dashed windowtext;
+    border-bottom: none;
+    border-left: none;
+}
+
+.border {
+    border: .5pt solid windowtext;
+}
+
+.overline {
+    border-top: .5pt solid windowtext;
+}
+
+.underline {
+    border-bottom: .5pt solid windowtext;
+}
+
+.undertime-badge {
+    position:absolute;
+    top:0pt;
+    right:0pt;
+    color:red;
+    border-radius: 999999999pt;
+    background-color: #3333;
+    width: 10pt;
+    height: 10pt;
+    font-size: 6pt;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }

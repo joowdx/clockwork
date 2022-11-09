@@ -49,7 +49,7 @@ class ScannerService
         return $this->repository->query()
             ->when(! auth()->user()->administrator, function ($query) use ($owned) {
                 $query->when($owned, function ($query) {
-                    $query->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()))->orWhere('created_by', auth()->id());
+                    $query->whereHas('users', fn ($q) => $q->whereUserId(auth()->id()));
 
                     $query->orWhere('shared', true);
                 });

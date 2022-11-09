@@ -56,11 +56,21 @@
             <div class="col-span-6 sm:col-span-4">
                 <!-- Active -->
                 <div class="col-span-6">
-                    <JetLabel for="biometrics_id" value="Active" />
-                    <TailwindSelect class="w-full" :options="[{name: 'ACTIVE', value: true}, {name: 'INACTIVE', value: false}]" v-model="form.active" />
+                    <JetLabel for="active" value="Active" />
+                    <TailwindSelect id="active" class="w-full" :options="[{name: 'ACTIVE', value: true}, {name: 'INACTIVE', value: false}]" v-model="form.active" />
                     <JetInputError :message="form.errors.active" class="mt-2" />
                 </div>
             </div>
+
+            <div class="col-span-6 sm:col-span-4">
+                <!-- CSC Format -->
+                <div class="col-span-6">
+                    <JetLabel for="csc_format" value="Use CSC DTR Print Format" />
+                    <TailwindSelect id="csc_format" class="w-full" :options="[{name: 'Yes.', value: true}, {name: 'No.', value: false}]" v-model="form.csc_format" />
+                    <JetInputError :message="form.errors.csc_format" class="mt-2" />
+                </div>
+            </div>
+
 
             <JetButton class="hidden" :disabled="form.processing">
                 Save
@@ -119,6 +129,7 @@
                     office: this.$page.props.employee?.office,
                     regular: this.$page.props.employee?.regular,
                     active: this.$page.props.employee?.active,
+                    csc_format: this.$page.props.employee?.csc_format
                 }),
             }
         },

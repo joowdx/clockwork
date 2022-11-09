@@ -7,7 +7,26 @@
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
+            <div class="mx-auto space-y-3 max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
+                <div class="flex self-end justify-end col-span-4 mt-3 space-x-3 justify-self-end">
+                    <label class="flex items-center">
+                        <JetCheckbox v-model:checked="transmittal" />
+                        <span class="ml-2 text-sm text-gray-600">Generate transmittal</span>
+                    </label>
+                    <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
+                        Reset
+                    </Link>
+                    <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
+                        Set time
+                    </JetSecondaryButton>
+                    <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
+                        Import
+                    </JetSecondaryButton>
+                    <JetSecondaryButton ref="print" class="items-center" @click="this.$refs.printPreview.contentWindow.print()" style="width:90px" :disabled="loadingPreview || selected.length === 0">
+                        Print
+                    </JetSecondaryButton>
+                </div>
+
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
                     <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                         <JetLabel value="By" />
@@ -24,7 +43,7 @@
                             </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="From" />
-                                <JetInput class="w-full uppercase" type="date" v-model="from" required />
+                                <input class="inline-flex items-center w-full px-4 py-2 mt-1 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-800 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25" type="date" v-model="from" required />
                             </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="To" />
@@ -35,17 +54,15 @@
                             </div>
                         </template>
                         <template v-else>
-                            <div class="hidden col-span-4 sm:inline-block lg:hidden">
-
-                            </div>
                             <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                                 <JetLabel value="Month" />
                                 <JetInput class="w-full uppercase" type="month" v-model="month" required />
                             </div>
-                            <div class="col-span-8 sm:col-span-4 lg:col-span-2">
-
-                            </div>
                         </template>
+                        <div class="col-span-6 sm:col-span-4 lg:col-span-2">
+                            <JetLabel value="Print Format" />
+                            <TailwindSelect class="w-full" :options="[{name: 'PREFERRED', value: 'null'}, {name: 'DEFAULT', value: false}, {name: 'CSC FORM', value: true}]" v-model="csc_format" style="min-width:145px;" />
+                        </div>
                     </template>
                     <template v-else >
                         <div class="col-span-6 sm:col-span-4 lg:col-span-2">
@@ -54,14 +71,6 @@
                         </div>
                         <div class="col-span-8 sm:hidden lg:col-span-4 lg:inline-block"></div>
                     </template>
-                    <div class="flex self-end col-span-4 mt-3 space-x-3 justify-self-end">
-                        <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
-                            Import
-                        </JetSecondaryButton>
-                        <JetSecondaryButton ref="print" class="items-center" @click="this.$refs.printPreview.contentWindow.print()" style="width:90px" :disabled="loadingPreview || selected.length === 0">
-                            Print
-                        </JetSecondaryButton>
-                    </div>
                 </div>
 
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
@@ -117,7 +126,13 @@
                                                     Office
                                                 </th>
                                                 <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Scanners
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                     Status
+                                                </th>
+                                                <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    Print Format
                                                 </th>
                                             </tr>
                                         </template>
@@ -155,7 +170,9 @@
                                                 <td class="px-6 whitespace-nowrap">
                                                     <div class="flex items-center">
                                                         <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {{ employee.name_format.fullStartLastInitialMiddle }}
+                                                            <Link :href="route('employees.edit', employee.id)">
+                                                                {{ employee.name_format.fullStartLastInitialMiddle }}
+                                                            </Link>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -169,12 +186,31 @@
                                                     </div>
                                                 </td>
                                                 <td class="px-6 whitespace-nowrap">
+                                                    <div class="text-sm font-thin">
+                                                        <p class="text-black dark:text-gray-100">
+                                                            {{
+                                                                employee.scanners
+                                                                    .map(e => e.name.toLowerCase().startsWith('coliseum-') ? 'coliseum-x' : e.name.toLowerCase())
+                                                                    .filter((e, f, g) => g.indexOf(e) === f)
+                                                                    .join(', ')
+                                                            }}
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
                                                     <div class="text-sm">
                                                         <div class="font-thin">
                                                             <p class="text-black dark:text-gray-100">
                                                                 {{ employee.regular ? 'Regular' : 'Non-regular' }}
                                                             </p>
                                                         </div>
+                                                    </div>
+                                                </td>
+                                                <td class="pl-6 whitespace-nowrap">
+                                                    <div class="text-sm font-thin">
+                                                        <p class="text-black dark:text-gray-100">
+                                                            {{ employee.csc_format ? 'CSC Form No. 48' : 'Old format'}}
+                                                        </p>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -187,6 +223,121 @@
                 </div>
             </div>
         </div>
+
+        <JetDialogModal :show="configTimeDialog" @close="closeConfigTimeDialog">
+            <template #title>
+                Configure Time
+            </template>
+
+            <template #content>
+                <div>
+                    <label class="flex items-center mt-3">
+                        <JetCheckbox v-model:checked="weekdays.excluded" />
+                        <span class="ml-2">Weekdays</span>
+                    </label>
+                    <div class="grid grid-cols-12 col-span-12 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">AM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.am.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.am.out" />
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">PM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.pm.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekdays.pm.out" />
+                            </div>
+                        </fieldset>
+                    </div>
+                    <label class="flex items-center mt-3">
+                        <JetCheckbox v-model:checked="weekends.excluded" />
+                        <span class="ml-2">Weekends</span>
+                    </label>
+                    <div class="grid grid-cols-12 col-span-12 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">AM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.am.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.am.out" />
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
+                            <legend class="ml-3 text-xs">PM</legend>
+                            <div class="col-span-6">
+                                <JetLabel value="IN" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.pm.in" />
+                            </div>
+                            <div class="col-span-6">
+                                <JetLabel value="OUT" />
+                                <JetInput type="time" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="TIME" v-model="weekends.pm.out" />
+                            </div>
+                        </fieldset>
+                    </div>
+                    <label class="flex items-center mt-4">
+                        <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" v-model="daysSelection" onclick="return false;" >
+                        <span class="ml-2">Days</span>
+                    </label>
+                    <div class="rounded-md">
+                        <fieldset class="grid grid-cols-7 gap-3 p-3 border border-gray-800 rounded-md dark:border-gray-700">
+                            <legend class="mb-0 ml-3 text-xs">Filter days of the month</legend>
+                            <div v-for="day in 31" class="col-span-2 border border-gray-800 rounded-md sm:col-span-1 dark:border-gray-700">
+                                <label class="flex items-center justify-center py-2 cursor-pointer">
+                                    <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="day" v-model="days">
+                                    <span class="ml-2">{{ String(day).padStart(2, '0') }}</span>
+                                </label>
+                            </div>
+                            <div class="hidden sm:block sm:col-span-2">
+
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <JetButton @click="resetDays" class="w-full h-full">
+                                    Clear
+                                </JetButton>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <JetButton @click="selectAllDays" class="w-full h-full">
+                                    All
+                                </JetButton>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <label class="flex items-center mt-3">
+                        <JetCheckbox v-model:checked="calculate" />
+                        <span class="ml-2">Calculate</span>
+                    </label>
+                    <label class="flex items-center mt-4">
+                        <JetCheckbox v-model:checked="weekends.regular" />
+                        <span class="ml-2">Enable calculation for weekends for regular employees.</span>
+                    </label>
+                </div>
+
+            </template>
+
+            <template #footer>
+                <JetSecondaryButton @click="clearTime">
+                    Clear
+                </JetSecondaryButton>
+                <JetSecondaryButton class="ml-3" @click="closeConfigTimeDialog">
+                    Close
+                </JetSecondaryButton>
+            </template>
+        </JetDialogModal>
 
         <JetDialogModal :show="importDialog" @close="closeImportDialog" :closeable="false">
             <template #title>
@@ -223,8 +374,6 @@
                     </p>
                     <JetInputError :message="form.errors.file" class="mt-2" />
                 </div>
-
-                <p class="text-yellow-600"> Notice that time logs with unrecognized uid are ignored. Please associate such uids to its corresponding employee before uploading. </p>
 
             </template>
 
@@ -277,21 +426,47 @@
             return {
                 src: '',
                 all: ! this.$page.props.employees.length,
+                daysSelection: false,
                 selected: [],
                 by: 'employee',
                 name: '',
                 office: 'ALL',
                 regular: -1,
                 active: 1,
+                calculate: false,
+                weekdays: {
+                    am: {
+                        in: '08:00',
+                    },
+                    pm: {
+                        out: '16:00',
+                    },
+                    excluded: true,
+                },
+                weekends: {
+                    am: {
+                        in: '08:00',
+                        out: '12:00',
+                    },
+                    pm: {
+                        in: '13:00',
+                        out: '17:00',
+                    },
+                    excluded: true,
+                    regular: false,
+                },
+                days: [],
+                transmittal: false,
                 period: this.$page.props.period,
                 date: this.$page.props.date,
                 month: this.$page.props.month,
                 from: this.$page.props.from,
                 to: this.$page.props.to,
+                csc_format: 'null',
                 scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
                 importDialog: false,
+                configTimeDialog: false,
                 loadingPreview: true,
-                toggleAllCheckbox: false,
                 waitForFile: true,
                 form: this.$inertia.form({
                     file: null,
@@ -315,6 +490,10 @@
                 this.selected = this.all
                     ? _.uniq(this.selected.concat(this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e)))
                     : this.selected.filter(e => ! this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).includes(e))
+            },
+
+            days() {
+                this.daysSelection = this.days.length > 0
             },
 
             employees() {
@@ -403,6 +582,35 @@
                 this.resetForm()
             },
 
+            showConfigTimeDialog() {
+                this.configTimeDialog = true
+            },
+
+            closeConfigTimeDialog() {
+                this.configTimeDialog = false
+            },
+
+            clearTime() {
+                this.weekdays.am.in = null
+                this.weekdays.am.out = null
+                this.weekdays.pm.in = null
+                this.weekdays.pm.out = null
+                this.weekends.am.in = null
+                this.weekends.am.out = null
+                this.weekends.pm.in = null
+                this.weekends.pm.out = null
+                this.weekends.regular = null
+                this.days = []
+            },
+
+            resetDays() {
+                this.days = []
+            },
+
+            selectAllDays() {
+                this.days = Array.from({length: 31}, (_, i) => i + 1)
+            },
+
             printPreviewLoaded() {
                 this.loadingPreview = false
             },
@@ -466,17 +674,59 @@
                         });
                     }
                     case 'employee': {
-                        return route('print', {
-                            by: this.by,
+                        let args = {
+                            by: 'dtr',
                             period: this.period,
                             from: this.from,
                             to: this.to,
                             month: this.month,
                             employees: this.selected,
-                        });
+                            weekdays: {
+                                excluded: ! this.weekdays.excluded,
+                                am: {
+                                    in: this.weekdays.am.in,
+                                    out: this.weekdays.am.out,
+                                },
+                                pm: {
+                                    in: this.weekdays.pm.in,
+                                    out: this.weekdays.pm.out,
+                                },
+                            },
+                            weekends: {
+                                excluded: ! this.weekends.excluded,
+                                am: {
+                                    in: this.weekends.am.in,
+                                    out: this.weekends.am.out,
+                                },
+                                pm: {
+                                    in: this.weekends.pm.in,
+                                    out: this.weekends.pm.out,
+                                },
+                                regular: this.weekends.regular,
+                            },
+                            transmittal: this.transmittal,
+                        }
+
+                        if (this.csc_format != 'null') {
+                            args['csc_format'] = this.csc_format
+                        }
+
+                        if (this.transmittal) {
+                            args['transmittal'] = this.transmittal
+                        }
+
+                        if (this.days.length > 0) {
+                            args['days'] = this.days
+                        }
+
+                        if (this.calculate) {
+                            args['calculate'] = true
+                        }
+
+                        return route('print', args);
                     }
                 }
-            }
+            },
         }
     })
 </script>

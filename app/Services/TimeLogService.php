@@ -6,6 +6,8 @@ use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
+use App\Models\Scanner;
+use App\Models\TimeLog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
@@ -75,34 +77,109 @@ class TimeLogService implements Import
 
     public function logsForTheDay(Employee $employee, Carbon $date): array
     {
-        $logs = $employee->logsForTheDay($date);
+        $logs = $employee->logsForTheDay($date)->sort(fn ($log) => (int) in_array($log->scanner->name, Scanner::PRIORITIES));
+
+        $in = $logs->filter->in
+            ->sortBy('time')
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00') . (in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
+
+        $out = $logs->filter->out
+            ->sortByDesc('time')
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00') . (in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
 
         return [
-            'in1' => $in1 = $this->filterTime($logs, $employee->shift->shift->in1, lead: 1),
-            'out1' => $out1 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id])), $employee->shift->shift->out1, trail: -1),
-            'in2' => $in2 = $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id])), $employee->shift->shift->in2, lead: -1),
-            'out2' => $this->filterTime($logs->reject(fn ($e) => in_array($e->id, [$in1?->id, $out1?->id, $in2?->id])), $employee->shift->shift->out2, trail: 1),
+            'in1' => $in1 = $this->filterTime($in, 'in', 'am'),
+            'out1' => $out1 = $this->filterTime($out, 'out', 'am'),
+            'in2' => $in2 = $this->filterTime($in->reject(fn ($log) => $in1?->time->gt($log->time) || $out1?->time->gt($log->time)), 'in', 'pm'),
+            'out2' => $out2 = $this->filterTime($out->reject(fn ($log) => $in2?->time->gt($log->time) || $out1?->time->gt($log->time)), 'out', 'pm'),
+            'ut' => $this->calculateUndertime($date, $in1, $out1, $in2, $out2, @request()->weekends['regular'] ? ! request()->weekends['regular'] : $employee->regular),
         ];
     }
 
-    protected function filterTime(Collection $logs, string $time, int $range = 2, int $lead = 0, int $trail = 0): mixed
+    public function time(): mixed
     {
-        [ $hour, $minute ] = explode(':', $time);
+        $request = request();
 
-        if (! $lead && ! $trail) {
-            // return $logs->filter(fn ($-e) => $e->time->diffInHours($e->time->clone()->startOfDay()->setHours($hour)->setMinutes($minute)) <= $range)->first();
-        }
+        $parse = function (string $week) use ($request) {
+            if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
+                return "{$request->$week['am']['in']}-{$request->$week['am']['out']} {$request->$week['pm']['in']}-{$request->$week['pm']['out']}";
+            } else if($request->filled(["$week.am.in", "$week.pm.out"])) {
+                return "{$request->$week['am']['in']}-{$request->$week['pm']['out']}";
+            };
 
-        if ($lead) {
-            return match ($lead) {
-                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
-                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first()
-            };
-        } else {
-            return match ($trail) {
-                1 =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
-                default =>  $logs->filter(fn ($e) => $e->time->clone()->setHours($hour)->setMinutes($minute)->diffInHours($e->time) <= $range)->first(),
-            };
-        }
+            return 'as required';
+        };
+
+        return (object) [
+            'weekdays' => $parse('weekdays'),
+            'weekends' => $parse('weekends'),
+        ];
+    }
+
+    protected function filterTime(Collection $logs, string $state = null, string $shift = null): mixed
+    {
+
+        return match ($state) {
+            'in' => match ($shift) {
+                'am' => $logs
+                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? -1 : 1)
+                    ->first(fn ($log) => $log->time->clone()->setTime('12', '00')->gt($log->time)),
+                'pm' => $logs
+                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? -1 : 1)
+                    ->first(fn ($log) => $log->time->clone()->setTime('12', '00')->lt($log->time)),
+                default => null,
+            },
+            'out' => match ($shift) {
+                'am' => $logs
+                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? 1 : -1)
+                    ->first(fn ($log) => $log->time->clone()->setTime('13', '00')->gte($log->time)),
+                'pm' => $logs
+                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? 1 : -1)
+                    ->first(fn ($log) => $log->time->clone()->setTime('13', '00')->lte($log->time)),
+                default => null,
+            },
+            default => null,
+        };
+    }
+
+    protected function calculateUndertime(Carbon $date, ?TimeLog $in1, ?TimeLog $out1, ?TimeLog $in2, ?TimeLog $out2, bool $excludeWeekends = true): object|int|null
+    {
+        $calculate = function () use ($date, $in1, $out1, $in2, $out2) {
+
+            $week = $date->isWeekday() ? 'weekdays' : 'weekends';
+
+            if (request()->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
+                if (! $in1 || !$out1 || !$in2 || !$out2) {
+                    return null;
+                }
+
+                return (object) [
+                    'in1' => $in1 = max($in1->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'in2' => $in2 = max($in2->time->clone()->setTime(...explode(':', request()->$week['pm']['in']))->diffInMinutes($in2->time, false), 0),
+                    'out1' => $out1 = max($out1->time->setSeconds(0)->diffInMinutes($out1->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['am']['out'])), false), 0),
+                    'out2' => $out2 = max($out2->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
+                    'total' => $in1 + $out1 + $in2 + $out2,
+                ];
+
+            } else if (request()->filled(["$week.am.in", "$week.pm.out"])) {
+                if (!$in1 || !$out2) {
+                    return null;
+                }
+
+                return (object) [
+                    'in1' => $in1 =  max($in1->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'out2' => $out2 = max($out2->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
+                    'total' => $in1 + $out2,
+                ];
+            }
+
+            return 0;
+        };
+
+        return match ($date->isWeekday()) {
+            true => $calculate (),
+            false => $excludeWeekends ? null : $calculate (),
+            default => null,
+        };
     }
 }
