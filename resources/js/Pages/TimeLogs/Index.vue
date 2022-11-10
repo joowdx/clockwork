@@ -17,7 +17,10 @@
                         Reset
                     </Link>
                     <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
-                        Set time
+                        Scanner
+                    </JetSecondaryButton>
+                    <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
+                        Config
                     </JetSecondaryButton>
                     <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
                         Import
@@ -226,7 +229,7 @@
 
         <JetDialogModal :show="configTimeDialog" @close="closeConfigTimeDialog">
             <template #title>
-                Configure Time
+                Configurations
             </template>
 
             <template #content>
@@ -235,6 +238,7 @@
                         <JetCheckbox v-model:checked="weekdays.excluded" />
                         <span class="ml-2">Weekdays</span>
                     </label>
+                    <span class="text-sm text-yellow-500">Uncheck to exclude weekdays from printouts. Clear fields below to disable calculations.</span>
                     <div class="grid grid-cols-12 col-span-12 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
                         <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
                             <legend class="ml-3 text-xs">AM</legend>
@@ -264,6 +268,7 @@
                         <JetCheckbox v-model:checked="weekends.excluded" />
                         <span class="ml-2">Weekends</span>
                     </label>
+                    <span class="text-sm text-yellow-500">Uncheck to exclude weekends from printouts. Clear fields below to disable calculations.</span>
                     <div class="grid grid-cols-12 col-span-12 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
                         <fieldset class="grid grid-cols-12 col-span-12 p-3 border border-gray-800 rounded-md sm:col-span-6 gap-y-2 gap-x-3 dark:border-gray-700">
                             <legend class="ml-3 text-xs">AM</legend>
@@ -293,24 +298,22 @@
                         <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" v-model="daysSelection" onclick="return false;" >
                         <span class="ml-2">Days</span>
                     </label>
+                    <span class="text-sm text-yellow-500">Unchecked days are excluded on printout, unless, none is checked.</span>
                     <div class="rounded-md">
-                        <fieldset class="grid grid-cols-7 gap-3 p-3 border border-gray-800 rounded-md dark:border-gray-700">
-                            <legend class="mb-0 ml-3 text-xs">Filter days of the month</legend>
-                            <div v-for="day in 31" class="col-span-2 border border-gray-800 rounded-md sm:col-span-1 dark:border-gray-700">
-                                <label class="flex items-center justify-center py-2 cursor-pointer">
+                        <fieldset class="grid grid-cols-10 gap-3 p-3 border border-gray-800 rounded-md dark:border-gray-700">
+                            <legend class="mb-0 ml-3 text-xs">Days of the month</legend>
+                            <div v-for="day in 31" class="col-span-2 border-gray-800 rounded-md sm:col-span-1 dark:border-gray-700">
+                                <label class="flex items-center justify-center py-1 cursor-pointer">
                                     <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="day" v-model="days">
                                     <span class="ml-2">{{ String(day).padStart(2, '0') }}</span>
                                 </label>
                             </div>
-                            <div class="hidden sm:block sm:col-span-2">
-
-                            </div>
-                            <div class="col-span-2 sm:col-span-1">
+                            <div class="col-span-4 sm:col-span-2">
                                 <JetButton @click="resetDays" class="w-full h-full">
                                     Clear
                                 </JetButton>
                             </div>
-                            <div class="col-span-2 sm:col-span-1">
+                            <div class="col-span-4 sm:col-span-2">
                                 <JetButton @click="selectAllDays" class="w-full h-full">
                                     All
                                 </JetButton>
@@ -319,12 +322,14 @@
                     </div>
                     <label class="flex items-center mt-3">
                         <JetCheckbox v-model:checked="calculate" />
-                        <span class="ml-2">Calculate</span>
+                        <span class="ml-2">Calculate total days and tardy/undertime</span>
                     </label>
+                    <span class="text-sm text-yellow-500">Total days and tardy/undertime calculation is disabled by default.</span>
                     <label class="flex items-center mt-4">
                         <JetCheckbox v-model:checked="weekends.regular" />
-                        <span class="ml-2">Enable calculation for weekends for regular employees.</span>
+                        <span class="ml-2">Calculate weekends for regular employees</span>
                     </label>
+                    <span class="text-sm text-yellow-500">Weekends are not calcuated in regular employees by default.</span>
                 </div>
 
             </template>
