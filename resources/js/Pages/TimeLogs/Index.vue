@@ -16,9 +16,9 @@
                     <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
                         Reset
                     </Link>
-                    <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
+                    <!-- <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showScannerDialog" style="width:90px" :disabled="importDialog">
                         Scanner
-                    </JetSecondaryButton>
+                    </JetSecondaryButton> -->
                     <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
                         Config
                     </JetSecondaryButton>
@@ -338,11 +338,63 @@
                 <JetSecondaryButton @click="clearTime">
                     Clear
                 </JetSecondaryButton>
+                <JetSecondaryButton class="ml-3" @click="resetConfig">
+                    Reset
+                </JetSecondaryButton>
                 <JetSecondaryButton class="ml-3" @click="closeConfigTimeDialog">
                     Close
                 </JetSecondaryButton>
             </template>
         </JetDialogModal>
+
+        <!-- <JetDialogModal :show="scannerDialog" @close="closeScannerDialog">
+            <template #title>
+                Scanners
+            </template>
+
+            <template #content>
+                <div class="mb-3">
+                    <div>
+                        <JetLabel value="Scanner" />
+                        <TailwindSelect class="w-full mb-2" :options="scanners" v-model="form.scanner" />
+                        <JetInputError :message="form.errors.scanner" class="mt-2" />
+                    </div>
+                    <div class="flex justify-center px-6 pt-5 pb-6 mt-1 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path class="text-gray-400 stroke-current" stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="file-upload" class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
+                                    <span @click="importFile"> Upload a file </span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                                Select attlog file.
+                            </p>
+                        </div>
+                    </div>
+                    <p v-if="form.file" class="mt-1 text-lg tracking-tighter text-indigo-600 dark:text-white">
+                        {{ form.file.name }}
+                        <span class="float-right p-0">
+                            <JetButton class="rounded-md" style="padding:0.25em!important" @click="clearFile"> &nbsp;&times;&nbsp; </JetButton>
+                        </span>
+                    </p>
+                    <JetInputError :message="form.errors.file" class="mt-2" />
+                </div>
+
+            </template>
+
+            <template #footer>
+                <JetSecondaryButton @click="closeImportDialog" :disabled="form.processing">
+                    Cancel
+                </JetSecondaryButton>
+
+                <JetButton :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing">
+                    Import
+                </JetButton>
+            </template>
+        </JetDialogModal> -->
 
         <JetDialogModal :show="importDialog" @close="closeImportDialog" :closeable="false">
             <template #title>
@@ -439,6 +491,7 @@
                 regular: -1,
                 active: 1,
                 calculate: false,
+                scannerDialog: false,
                 weekdays: {
                     am: {
                         in: '08:00',
@@ -587,6 +640,15 @@
                 this.resetForm()
             },
 
+            // showScannerDialog()
+            // {
+            //     this.scannerDialog = true
+            // },
+
+            // closeScannerDialog() {
+            //     this.scannerDialog = false
+            // },
+
             showConfigTimeDialog() {
                 this.configTimeDialog = true
             },
@@ -605,6 +667,21 @@
                 this.weekends.pm.in = null
                 this.weekends.pm.out = null
                 this.weekends.regular = null
+                this.calculate = null
+                this.days = []
+            },
+
+            resetConfig() {
+                this.weekdays.am.in = '08:00'
+                this.weekdays.am.out = null
+                this.weekdays.pm.in = null
+                this.weekdays.pm.out = '16:00'
+                this.weekends.am.in = '08:00'
+                this.weekends.am.out = '12:00'
+                this.weekends.pm.in = '13:00'
+                this.weekends.pm.out = '16:00'
+                this.weekends.regular = null
+                this.calculate = null
                 this.days = []
             },
 
