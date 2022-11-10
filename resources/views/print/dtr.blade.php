@@ -212,22 +212,32 @@
                             <td class="bahnschrift-light top center font-sm" colspan=6>Office/Department Head</td>
                         </tr>
                         <tr>
-                            <td colspan=6></td>
-                        </tr>
-                        <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
-                            <td colspan=6 style="position:relative;">
-                                <img src="{{ url('img/pgo-picto(300x300).png') }}" alt="pgo-picto" style="position:absolute;width:36pt;opacity:0.15;margin:auto;left:0;right:0;">
+                            <td colspan=6>
                             </td>
                         </tr>
-                        <tr>
+                        <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
+                            <td colspan=1 style="position:relative;">
+                                <div class="font-xxs consolas" style="position:absolute;opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
+                                    {{ $week }}
+                                </div>
+                                <div class="consolas" style="position:absolute;opacity:0.3;font-size:5pt;top:0pt;">
+                                    {{ collect($days)->sort()->map(fn($e) => str_pad($e, 2, '0', STR_PAD_LEFT))->join(', ') }}
+                                </div>
+                            </td>
+                            <td colspan=4 style="position:relative;">
+                                <img src="{{ url('img/pgo-picto(300x300).png') }}" alt="pgo-picto" style="position:absolute;width:36pt;opacity:0.15;margin:auto;left:0;right:0;">
+                            </td>
                             <td colspan=1></td>
+                        </tr>
+                        <tr>
+                            <td colspan=1 style="position:relative;"></td>
                             <td class="underline font-xs center bottom bold consolas" colspan=4 style="color:#000A;border-color:#000A!important;">
                                 {{ auth()?->user()?->name }}
                             </td>
                             <td colspan=1></td>
                         </tr>
                         <tr>
-                            <td colspan=1></td>
+                            <td colspan=1> </td>
                             <td class="font-xxs center arial top" colspan=4 style="color:#000A;">
                                 {{ auth()?->user()?->title }}
                             </td>

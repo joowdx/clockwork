@@ -27,8 +27,8 @@ class Dtr extends Component
                 return [$date->format('Y-m-d') => $service->logsForTheDay($this->employee, $date)];
             })->toArray(),
             'calculate' => @$request->calculate,
-            'dates' => $request->dates,
-            'week' => $request->weekdays['excluded'] xor $request->weekends['excluded'] ? ($request->weekdays['excluded'] ? 'weekends' : 'weekdays') : null,
+            'days' => $request->days,
+            'week' => ($request->weekdays['excluded'] xor $request->weekends['excluded']) ? ($request->weekdays['excluded'] ? 'weekends' : 'weekdays') : null,
         ]);
     }
 }
