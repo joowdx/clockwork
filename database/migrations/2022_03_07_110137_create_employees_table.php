@@ -20,6 +20,7 @@ return new class extends Migration
             $table->boolean('regular');
             $table->boolean('active')->default(true);
             $table->boolean('csc_format')->default(true);
+            $table->jsonb('groups')->nullable();
             $table->timestamps();
         });
     }

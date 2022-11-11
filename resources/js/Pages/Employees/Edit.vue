@@ -12,6 +12,10 @@
 
                 <JetSectionBorder />
 
+                <EmployeeGroupsFormVue />
+
+                <JetSectionBorder />
+
                 <ScannersInformationFormVue />
 
                 <JetSectionBorder />
@@ -29,6 +33,7 @@
     import JetSectionBorder from '@/Jetstream/SectionBorder.vue'
     import DeleteEmployeeFormVue from './Partials/DeleteEmployeeForm.vue'
     import EmployeeInformationFormVue from './Partials/EmployeeInformationForm.vue'
+    import EmployeeGroupsFormVue from './Partials/EmployeeGroupsForm.vue'
     import ScannersInformationFormVue from './Partials/ScannersInformationForm.vue'
 
     export default defineComponent({
@@ -38,6 +43,7 @@
             JetSectionBorder,
             DeleteEmployeeFormVue,
             EmployeeInformationFormVue,
+            EmployeeGroupsFormVue,
             ScannersInformationFormVue,
         },
 

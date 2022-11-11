@@ -22,10 +22,12 @@ class Employee extends Model
         'office',
         'active',
         'csc_format',
+        'groups',
     ];
 
     protected $casts = [
         'name' => 'object',
+        'groups' => 'array',
     ];
 
     protected $appends = [

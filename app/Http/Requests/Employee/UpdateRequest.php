@@ -20,6 +20,7 @@ class UpdateRequest extends FormRequest
             'name.last.required' => 'The last name field is required.',
             'regular.in' => 'Please select one.',
             'regular.required' => 'Please select one.',
+            'groups.*.distinct' => 'Please choose a unique group name.',
         ];
     }
 
@@ -30,7 +31,10 @@ class UpdateRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        return $this->has('groups') ? [
+            'groups' => 'array',
+            'groups.*' => 'string|distinct|nullable',
+        ] : [
             'name.last' => 'required|string',
             'name.first' => 'required|string',
             'name.middle' => 'nullable|string',

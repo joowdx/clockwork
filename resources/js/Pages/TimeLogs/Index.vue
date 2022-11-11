@@ -77,20 +77,24 @@
                 </div>
 
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
-                    <div class="col-span-12" :class="{'lg:col-span-6': by === 'employee'}">
+                    <div class="col-span-12" :class="{'lg:col-span-4': by === 'employee'}">
                         <JetLabel value="Name" />
                         <JetInput type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
                     </div>
                     <template v-if="by === 'employee'">
-                        <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                        <div class="col-span-12 sm:col-span-3 lg:col-span-2">
                             <JetLabel value="Office" />
                             <TailwindSelect class="w-full" :options="['ALL', ...offices]" v-model="office" />
                         </div>
-                        <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                        <div class="col-span-12 sm:col-span-3 lg:col-span-2">
                             <JetLabel value="Status" />
                             <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NON-REGULAR', value: 0}]" v-model="regular" />
                         </div>
-                        <div class="col-span-12 sm:col-span-4 lg:col-span-2">
+                        <div class="col-span-12 sm:col-span-3 lg:col-span-2">
+                            <JetLabel value="Groups" />
+                            <TailwindSelect class="w-full" :options="['ALL', ...groups]" v-model="group" />
+                        </div>
+                        <div class="col-span-12 sm:col-span-3 lg:col-span-2">
                             <JetLabel value="Active" />
                             <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
                         </div>
@@ -522,6 +526,8 @@
                 to: this.$page.props.to,
                 csc_format: 'null',
                 scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
+                groups: this.$page.props.employees.map(e => e.groups).flat().filter(e => e !== null).filter((v, i, s) => s.indexOf(v) === i).sort(),
+                group: 'ALL',
                 importDialog: false,
                 configTimeDialog: false,
                 loadingPreview: true,
@@ -727,6 +733,7 @@
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
                     .filter(e => this.regular != -1 ? e.regular == this.regular : true)
                     .filter(e => this.active != -1 ? e.active == this.active : true)
+                    .filter(e => this.group != 'ALL' ? e.groups.includes(this.group) : true)
             },
 
             offices() {

@@ -15,6 +15,7 @@ trait ParsesEmployeeImport
         'office',
         'regular',
         'active',
+        'groups',
     ];
 
     private function headers(array|string $first): array
