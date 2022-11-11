@@ -733,7 +733,7 @@
                     .filter(e => this.office != 'ALL' ? this.office == e.office : true)
                     .filter(e => this.regular != -1 ? e.regular == this.regular : true)
                     .filter(e => this.active != -1 ? e.active == this.active : true)
-                    .filter(e => this.group != 'ALL' ? e.groups.includes(this.group) : true)
+                    .filter(e => this.group != 'ALL' ? e.groups?.includes(this.group) : true)
             },
 
             offices() {
