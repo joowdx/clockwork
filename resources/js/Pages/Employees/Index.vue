@@ -189,6 +189,7 @@
 <script>
     import { defineComponent } from 'vue'
     import { Link } from '@inertiajs/inertia-vue3'
+    import { Inertia } from '@inertiajs/inertia'
     import AppLayout from '@/Layouts/AppLayout.vue'
     import JetButton from '@/Jetstream/Button.vue'
     import JetCheckbox from '@/Jetstream/Checkbox.vue'
@@ -248,6 +249,9 @@
                             'Employees updated.',
                             'success'
                         )
+
+                        Inertia.reload({ only: ['employees'] })
+
                         this.closeImportDialog()
 
                         this.resetForm()
