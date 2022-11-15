@@ -13,10 +13,12 @@ class PrintRequest extends FormRequest
         return match($this->route('by')) {
             'office' => [
                 'date' => 'required|date:Y-m-d',
-                'offices' => 'required|array',
-                'offices.*' => 'string|exists:employees,office',
+                'offices' => 'required_without:groups|array',
+                'offices.*' => 'string|distinct|exists:employees,office',
                 'scanners' => 'sometimes|required|array',
                 'scanners.*' => 'uuid|exists:scanners,id',
+                'groups' => 'required_without:offices|array',
+                'groups.*' => 'string|distinct|string',
             ],
             'employee' => [
                 'period' => 'required|in:custom,full,1st,2nd',

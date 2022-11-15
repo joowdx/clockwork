@@ -8,16 +8,16 @@
     <body>
         @foreach ($offices as $office => $employees)
             @php
-                $pages = ceil(max(count(@$employees['nonregular'] ?? []), count(@$employees['regular'] ?? [])) / 30);
+                $pages = ceil(max(count(@$employees['nonregular'] ?? []), count(@$employees['regular'] ?? [])) / 30)
             @endphp
             @for ($i = 0; $i < ($pages ?: 1); $i++)
-                <div class="pagebreak"></div>
-                <div align="center">
+                <div class="pagebreak" align="center" style="padding:25pt;">
                     <table border="0" cellpadding="0" cellspacing="0" width="640">
                         <tbody>
                             <tr height="20">
                                 <td colspan="10" rowspan="2" height="40" class="bold center bahnschrift font-xl" width="640" style="height:30.0pt;width:480pt">ATTENDANCE</td>
                             </tr>
+                            <tr height="20"></tr>
                             <tr height="20"></tr>
                             <tr height="20">
                                 <td height="20" class="font-md bold bottom bahnschrift">OFFICE</td>

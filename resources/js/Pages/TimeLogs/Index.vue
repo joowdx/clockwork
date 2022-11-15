@@ -9,7 +9,7 @@
         <div class="py-12">
             <div class="mx-auto space-y-3 max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="flex self-end justify-end col-span-4 mt-3 space-x-3 justify-self-end">
-                    <label class="flex items-center">
+                    <label v-if="by == 'employee'" class="flex items-center">
                         <JetCheckbox v-model:checked="transmittal" />
                         <span class="ml-2 text-sm text-gray-600">Generate transmittal</span>
                     </label>
@@ -19,7 +19,7 @@
                     <!-- <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showScannerDialog" style="width:90px" :disabled="importDialog">
                         Scanner
                     </JetSecondaryButton> -->
-                    <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
+                    <JetSecondaryButton v-if="by == 'employee'" class="px-3 whitespace-nowrap" @click="showConfigTimeDialog" style="width:90px" :disabled="importDialog">
                         Config
                     </JetSecondaryButton>
                     <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
@@ -33,7 +33,7 @@
                 <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
                     <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                         <JetLabel value="By" />
-                        <TailwindSelect class="w-full" :options="[{name: 'EMPLOYEE', value: 'employee'}, {name: 'OFFICE', value: 'office'}]" v-model="by" />
+                        <TailwindSelect class="w-full" :options="[{name: 'EMPLOYEE', value: 'employee'}, {name: 'OFFICE', value: 'office'}, {name: 'GROUP', value: 'group'}]" v-model="by" />
                     </div>
                     <template v-if="by === 'employee'">
                         <div class="col-span-6 sm:col-span-4 lg:col-span-2">
@@ -91,12 +91,12 @@
                             <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NON-REGULAR', value: 0}]" v-model="regular" />
                         </div>
                         <div class="col-span-12 sm:col-span-3 lg:col-span-2">
-                            <JetLabel value="Groups" />
-                            <TailwindSelect class="w-full" :options="['ALL', ...groups]" v-model="group" />
-                        </div>
-                        <div class="col-span-12 sm:col-span-3 lg:col-span-2">
                             <JetLabel value="Active" />
                             <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
+                        </div>
+                        <div class="col-span-12 sm:col-span-3 lg:col-span-2">
+                            <JetLabel value="Groups" />
+                            <TailwindSelect class="w-full" :options="['ALL', ...groups]" v-model="group" />
                         </div>
                     </template>
                 </div>
@@ -113,7 +113,7 @@
                                 </p>
                                 <table class="min-w-full">
                                     <thead>
-                                        <template v-if="by === 'office'">
+                                        <template v-if="by === 'office' || by == 'group'">
                                             <th scope="col" class="w-1 py-2 sm:pl-1.5 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                 <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" value="all" v-model="all" :disabled="office.length === 0">
                                             </th>
@@ -164,7 +164,26 @@
                                                 </td>
                                             </tr>
                                         </template>
-                                        <template v-else>
+                                        <template v-if="by === 'group'">
+                                            <tr v-if="groups.length === 0">
+                                                <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                    WE'VE COME UP EMPTY!
+                                                </td>
+                                            </tr>
+                                            <tr v-for="group in groups" :key="group">
+                                                <td class="sm:pl-1.5 pl-6 whitespace-nowrap">
+                                                    <input class="text-indigo-600 border-gray-300 rounded shadow-sm cursor-pointer dark:border-gray-600 dark:text-gray-500 focus:border-indigo-300 dark:focus:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-gray-700 focus:ring-opacity-50" type="checkbox" :value="group" v-model="selected">
+                                                </td>
+                                                <td class="px-6 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {{ group }}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template v-else-if="by == 'employee'">
                                             <tr v-if="employees.length === 0">
                                                 <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
                                                     WE'VE COME UP EMPTY!
@@ -526,7 +545,6 @@
                 to: this.$page.props.to,
                 csc_format: 'null',
                 scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
-                groups: this.$page.props.employees.map(e => e.groups).flat().filter(e => e !== null).filter((v, i, s) => s.indexOf(v) === i).sort(),
                 group: 'ALL',
                 importDialog: false,
                 configTimeDialog: false,
@@ -753,11 +771,32 @@
                 }
             },
 
+            groups() {
+                if (this.$page.props.employees === undefined) {
+                    return [];
+                }
+
+                return this.$page.props.employees
+                    .map(e => e.groups)
+                    .flat()
+                    .filter(e => e !== null)
+                    .filter((v, i, s) => s.indexOf(v) === i)
+                    .filter(e => this.name ? fuzzysort.single(this.name, e) : true)
+                    .sort()
+            },
+
             link() {
                 switch (this.by) {
+                    case 'group': {
+                        return route('print', {
+                            by: 'office',
+                            date: this.date,
+                            groups: this.selected,
+                        });
+                    }
                     case 'office': {
                         return route('print', {
-                            by: this.by,
+                            by: 'office',
                             date: this.date,
                             offices: this.selected,
                         });
