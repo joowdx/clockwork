@@ -475,6 +475,7 @@
 <script>
     import { defineComponent } from 'vue'
     import { Link } from '@inertiajs/inertia-vue3'
+    import { Inertia } from '@inertiajs/inertia'
     import AppLayout from '@/Layouts/AppLayout.vue'
     import JetButton from '@/Jetstream/Button.vue'
     import JetCheckbox from '@/Jetstream/Checkbox.vue'
@@ -502,13 +503,17 @@
             TailwindSelect,
         },
 
+        mounted() {
+            Inertia.reload({ only: ['employees', 'scanners'], onSuccess: () => this.by = 'employee'})
+        },
+
         data() {
             return {
                 src: '',
-                all: ! this.$page.props.employees.length,
+                all: ! this.$page.props.employees?.length,
                 daysSelection: false,
                 selected: [],
-                by: 'employee',
+                by: null,
                 name: '',
                 office: 'ALL',
                 regular: -1,
@@ -544,7 +549,7 @@
                 from: this.$page.props.from,
                 to: this.$page.props.to,
                 csc_format: 'null',
-                scanners: this.$page.props.scanners.map(e => ({name: e.name.toUpperCase(), value: e.id})),
+                scanners: this.$page.props.scanners?.map(e => ({name: e.name.toUpperCase(), value: e.id})),
                 group: 'ALL',
                 importDialog: false,
                 configTimeDialog: false,
@@ -730,10 +735,10 @@
                     return;
                 }
 
-                if(this.all && ! this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
+                if(this.all && ! this[`${this.by}s`]?.map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
                     this.toggleAllCheckbox = true
                     this.all = false
-                } else if (! this.all && this[`${this.by}s`].map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
+                } else if (! this.all && this[`${this.by}s`]?.map(e => this.by === 'employee' ? e.id : e).every(e => this.selected.includes(e))) {
                     this.toggleAllCheckbox = true
                     this.all = true
                 }
@@ -761,11 +766,15 @@
 
                 switch (this.by) {
                     case 'office': {
-                        return this.$page.props.offices
+                        return this.$page.props.employees
+                            .map(e => e.office)
+                            .filter((v, i, s) => s.indexOf(v) === i)
                             .filter(e => this.name ? fuzzysort.single(this.name, e) : true )
                     }
                     case 'employee': {
-                        return this.$page.props.offices
+                        return this.$page.props.employees
+                            .map(e => e.office)
+                            .filter((v, i, s) => s.indexOf(v) === i)
                             .filter(e => _.includes(_.uniq(this.$page.props.employees.map(e => e.office)), e))
                     }
                 }
