@@ -504,7 +504,10 @@
         },
 
         mounted() {
-            Inertia.reload({ only: ['employees', 'scanners'], onSuccess: () => this.by = 'employee'})
+            Inertia.reload({ only: ['employees', 'scanners'], onSuccess: () => {
+                this.by = 'employee'
+                this.scanners = this.$page.props.scanners?.map(e => ({name: e.name.toUpperCase(), value: e.id}))
+            }})
         },
 
         data() {
@@ -549,7 +552,7 @@
                 from: this.$page.props.from,
                 to: this.$page.props.to,
                 csc_format: 'null',
-                scanners: this.$page.props.scanners?.map(e => ({name: e.name.toUpperCase(), value: e.id})),
+                scanners: null,
                 group: 'ALL',
                 importDialog: false,
                 configTimeDialog: false,
