@@ -8,7 +8,7 @@
     </head>
     <body>
         <main align=center>
-            @if ($transmittal)
+            @if (@$transmittal)
                 <livewire:print.transmittal :employees="$employees" :from="$from" :to="$to" />
                 @foreach ($employees->groupBy('office') as $office => $employeeGroup)
                     @foreach ($employeeGroup as $employee)
