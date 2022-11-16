@@ -65,11 +65,41 @@ class PrintService
                 $employee->regular = $employee->regular ? 'regular' : 'nonregular';
                 return $employee;
             })
-            ->groupBy(['office', 'regular']);
+            ->when(
+                collect($this->request->offices)->isNotEmpty(),
+                function ($collection) {
+                    return $collection->groupBy(['office', 'regular']);
+                },
+                function ($collection) {
+                    return $collection->flatMap->groups->unique()->mapWithKeys(fn ($group) => [$group => $collection->filter(fn ($employee) => in_array($group, $employee->groups))->groupBy('regular')]);
+                }
+            );
 
         return collect(collect($this->request->offices)->isNotEmpty() ? $this->request->offices : $this->request->groups)
-            ->mapWithKeys(fn ($o) => [$o => ['scanners' => $this->scanner->query()->whereHas('employees', fn ($q) => $q->where('office', $o))->when($this->request->has('scanners'), fn ($q) => $q->whereIn('id', $this->request->scanners))->get()]])
-            ->map(function ($office, $key) use ($offices) {
+            ->when(
+                collect($this->request->offices)->isNotEmpty(),
+                function ($collection) {
+                    return $collection->mapWithKeys(fn ($o) => [$o => ['scanners' => $this->scanner->query()->whereHas('employees', fn ($q) => $q->where('office', $o))->when($this->request->has('scanners'), fn ($q) => $q->whereIn('id', $this->request->scanners))->get()]]);
+                },
+                function ($collection) {
+                    return $collection->mapWithKeys(
+                        fn ($o) => [
+                            $o => [
+                                'scanners' =>
+                                    $this->scanner->query()->whereHas(
+                                        'employees',
+                                        function ($query) {
+                                            $query->where(fn ($q) => collect($this->request->groups)->each(fn ($e) => $q->orWhereJsonContains('groups', $e)));
+                                        },
+                                    )->when(
+                                        $this->request->filled('scanners'),
+                                        fn ($q) => $q->whereIn('id', $this->request->scanners),
+                                    )->get()
+                            ]
+                        ]
+                    );
+                }
+            )->map(function ($office, $key) use ($offices) {
                 return collect($office)->mergeRecursive($offices->first(fn ($d, $o) => $o === $key));
             });
     }
