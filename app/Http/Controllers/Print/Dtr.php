@@ -28,7 +28,7 @@ class Dtr extends Component
             })->toArray(),
             'calculate' => @$request->calculate,
             'days' => $request->days,
-            'week' => ($request->weekdays['excluded'] xor $request->weekends['excluded']) ? ($request->weekdays['excluded'] ? 'weekends' : 'weekdays') : null,
+            'week' => (@$request->weekdays['excluded'] xor @$request->weekends['excluded']) ? (@$request->weekdays['excluded'] ? 'weekends' : 'weekdays') : null,
         ]);
     }
 }
