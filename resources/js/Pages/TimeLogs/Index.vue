@@ -609,10 +609,11 @@
             uploadFile() {
                 this.form.post(route('timelogs.store'), {
                     preserveScroll: true,
+                    only: ['scanners', 'employees'],
                     onSuccess: () => {
                         Swal.fire(
                             'Import successful',
-                            this.form.file.type == 'application/vnd.ms-excel' ? 'Employees updated. Please refresh to see changes.' : 'Time logs successfully imported!',
+                            'Time logs successfully imported!',
                             'success'
                         )
                         this.closeImportDialog()
