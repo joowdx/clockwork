@@ -61,13 +61,13 @@
                     active: route().current('timelogs.*'),
                     show: true,
                 },
-                {
-                    name: 'Attendance',
-                    href: route('attendance'),
-                    active: route().current('attendance'),
-                    show: true,
-                    refresh: true,
-                },
+                // {
+                //     name: 'Attendance',
+                //     href: route('attendance'),
+                //     active: route().current('attendance'),
+                //     show: true,
+                //     refresh: true,
+                // },
             ],
 
             dropdown: () => [
