@@ -2,7 +2,6 @@
 
 namespace App\Pipes;
 
-use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 

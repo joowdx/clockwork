@@ -11,6 +11,7 @@ use App\Models\TimeLog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
+use App\Pipes\RemoveDuplicateTimeLog;
 use App\Pipes\Sanitize;
 use App\Pipes\SplitAttlogString;
 use App\Pipes\TransformTimeLogData;
@@ -67,6 +68,7 @@ class TimeLogService implements Import
                 Sanitize::class,
                 SplitAttlogString::class,
                 TransformTimeLogData::class,
+                RemoveDuplicateTimeLog::class,
                 Chunk::class,
             ])->then(fn ($d) => $d->each(function ($chunked) {
 
