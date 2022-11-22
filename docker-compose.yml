@@ -2,6 +2,7 @@
 version: '3'
 services:
     dtr.app:
+        container_name: dtr.app
         build:
             context: ./docker
             dockerfile: Dockerfile
@@ -23,6 +24,7 @@ services:
         depends_on:
             - pgsql
     nginx:
+        container_name: dtr.webserver
         image: 'nginx:alpine'
         restart: unless-stopped
         ports:
@@ -40,6 +42,7 @@ services:
             test: ["CMD", "wget -O /dev/null http://localhost || exit 1"]
             timeout: 10s
     pgsql:
+        container_name: dtr.database
         image: 'postgres:14'
         restart: unless-stopped
         environment:
