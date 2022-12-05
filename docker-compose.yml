@@ -43,7 +43,7 @@ services:
             timeout: 10s
     pgsql:
         container_name: dtr.database
-        image: 'postgres:12'
+        image: 'postgres:alpine'
         restart: unless-stopped
         environment:
             PGPASSWORD: '${DB_PASSWORD:-secret}'
