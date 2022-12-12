@@ -31,10 +31,10 @@ class EmployeeFactory extends Factory
             'name' => [
                 'first' => 'Jude',
                 'middle' => 'Cabanilla',
-                'last' => 'Pineda'
+                'last' => 'Pineda',
             ],
             'regular' => false,
-            'office' => 'PGO-PICTO'
+            'office' => 'PGO-PICTO',
         ]);
     }
 
@@ -44,10 +44,10 @@ class EmployeeFactory extends Factory
             'name' => [
                 'first' => 'Gene Philip',
                 'middle' => 'Largo',
-                'last' => 'Rellanos'
+                'last' => 'Rellanos',
             ],
             'regular' => true,
-            'office' => 'PGO-PICTO'
+            'office' => 'PGO-PICTO',
         ]);
     }
 }

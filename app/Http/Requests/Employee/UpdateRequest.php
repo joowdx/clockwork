@@ -4,7 +4,6 @@ namespace App\Http\Requests\Employee;
 
 use App\Models\Employee;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateRequest extends FormRequest
 {
@@ -54,7 +53,7 @@ class UpdateRequest extends FormRequest
                 ) {
                     $fail('This employee already exists.');
                 }
-            }
+            },
         ];
     }
 }

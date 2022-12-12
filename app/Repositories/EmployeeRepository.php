@@ -16,7 +16,7 @@ class EmployeeRepository extends BaseRepository
 
     protected function transformData(array $payload): array
     {
-        return collect()->when(collect(@$payload['groups'])->isNotEmpty(), function($data) use ($payload) {
+        return collect()->when(collect(@$payload['groups'])->isNotEmpty(), function ($data) use ($payload) {
             $groups = collect($payload['groups'])->filter()->map(fn ($group) => strtoupper($group))->values()->toArray();
             $data->put('groups', @$payload['toJSON'] ? json_encode($groups) : $groups);
         })->when(@$payload['name'], function ($data) use ($payload) {
@@ -33,7 +33,7 @@ class EmployeeRepository extends BaseRepository
             $data->put('regular', (bool) $payload['regular']);
         })->when(@$payload['csc_format'] !== null, function ($data) use ($payload) {
             $data->put('csc_format', ((bool) @$payload['csc_format']) ?? true);
-        })->when(@$payload['active'] !== null, function($data) use ($payload) {
+        })->when(@$payload['active'] !== null, function ($data) use ($payload) {
             $data->put('active', @$payload['active']);
         })->toArray();
     }

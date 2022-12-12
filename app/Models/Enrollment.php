@@ -33,5 +33,4 @@ class Enrollment extends Pivot
     {
         return $this->hasMany(TimeLog::class);
     }
-
 }

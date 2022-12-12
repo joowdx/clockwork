@@ -29,7 +29,8 @@ class EmployeeService implements Import
 
     public function __construct(
         private Repository $repository,
-    ) { }
+    ) {
+    }
 
     public function validate(UploadedFile $file): bool
     {
@@ -46,9 +47,7 @@ class EmployeeService implements Import
                 CheckNumericUid::class,
                 CheckDuplicateUids::class,
             ])->then(function ($result) {
-
                 return $result->error ? ! ($this->error = $result->error) : true;
-
             });
     }
 
@@ -67,7 +66,6 @@ class EmployeeService implements Import
                 TransformEmployeeScannerData::class,
                 Chunk::class,
             ])->then(fn ($d) => $d->each(function ($chunked) {
-
                 app(InsertEmployees::class)($chunked->map->employee->toArray());
 
                 app(Pipeline::class)
@@ -77,19 +75,17 @@ class EmployeeService implements Import
                         GetScannerUids::class,
                         Chunk::class,
                     ])->then(fn ($d) => $d->each(function ($chunked) {
-
                         app(InsertEnrollments::class)($chunked->toArray());
 
                         app(DeleteDuplicateEmployeeEnrollment::class)();
 
                         $this->repository->all()->searchable();
-
                     })
-                );
+                    );
 
                 $this->repository->model()->unenrolled()->delete();
             })
-        );
+            );
     }
 
     public function get(?bool $unenrolled = false)

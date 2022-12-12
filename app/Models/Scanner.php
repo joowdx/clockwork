@@ -44,15 +44,15 @@ class Scanner extends Model
     public function printTextColour(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ?? "#000",
+            get: fn ($value) => $value ?? '#000',
         );
     }
 
     public function printBackgroundColour(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, $attributes) => in_array(strtolower(@$attributes['print_background_colour'] ?? ""), ['#ffffff', '#fff', null]) ? "transparent" : strtolower(@$attributes['print_background_colour']),
-            set: fn ($value) => in_array(strtolower($value ?? ""), ['#ffffff', '#fff', null]) ? null : strtolower($value),
+            get: fn ($value, $attributes) => in_array(strtolower(@$attributes['print_background_colour'] ?? ''), ['#ffffff', '#fff', null]) ? 'transparent' : strtolower(@$attributes['print_background_colour']),
+            set: fn ($value) => in_array(strtolower($value ?? ''), ['#ffffff', '#fff', null]) ? null : strtolower($value),
         );
     }
 

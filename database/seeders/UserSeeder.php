@@ -3,12 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
-
     const USERS = [
         'gene',
         'jude',
@@ -32,7 +30,7 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        foreach(self::USERS as $user) {
+        foreach (self::USERS as $user) {
             User::factory()->{$user}()->create();
         }
     }

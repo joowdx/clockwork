@@ -14,7 +14,8 @@ class MarkActiveAndInactiveEmployees
      */
     public function __construct(
         private EmployeeService $employee,
-    ) { }
+    ) {
+    }
 
     /**
      * Handle the event.

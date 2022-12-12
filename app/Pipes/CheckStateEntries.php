@@ -11,7 +11,7 @@ class CheckStateEntries
         if (! $request->error) {
             if (
                 ! $request->data->every(
-                    fn ($entry) => join('', collect(array_slice($entry, 2))->map(fn ($d) => preg_replace('/[0-9]+/', 0, $d))->toArray()) === '0000'
+                    fn ($entry) => implode('', collect(array_slice($entry, 2))->map(fn ($d) => preg_replace('/[0-9]+/', 0, $d))->toArray()) === '0000'
                 )
             ) {
                 $request->error = self::ERROR;

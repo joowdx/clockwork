@@ -15,7 +15,8 @@ class PrintService
         private PrintRequest $request,
         private EmployeeRepository $employee,
         private ScannerRepository $scanner,
-    ) { }
+    ) {
+    }
 
     public function data(string $by): array
     {
@@ -63,6 +64,7 @@ class PrintService
         $offices = $this->query()->get()
             ->map(function ($employee) {
                 $employee->regular = $employee->regular ? 'regular' : 'nonregular';
+
                 return $employee;
             })
             ->when(
@@ -85,8 +87,7 @@ class PrintService
                     return $collection->mapWithKeys(
                         fn ($o) => [
                             $o => [
-                                'scanners' =>
-                                    $this->scanner->query()->whereHas(
+                                'scanners' => $this->scanner->query()->whereHas(
                                         'employees',
                                         function ($query) {
                                             $query->where(fn ($q) => collect($this->request->groups)->each(fn ($e) => $q->orWhereJsonContains('groups', $e)));
@@ -94,8 +95,8 @@ class PrintService
                                     )->when(
                                         $this->request->filled('scanners'),
                                         fn ($q) => $q->whereIn('id', $this->request->scanners),
-                                    )->get()
-                            ]
+                                    )->get(),
+                            ],
                         ]
                     );
                 }
@@ -124,14 +125,14 @@ class PrintService
 
         switch ($this->request->by) {
             case 'group':
-            case 'office': {
+            case 'office':
                 $query->when($this->request->filled('groups'), function ($query) {
-                        $query->where(function ($query) {
-                            collect($this->request->groups)->each(fn ($group) => $query->orWhereJsonContains('groups', $group));
-                        });
-                    }, function ($query) {
-                        $query->whereIn('office', $this->request->offices);
+                    $query->where(function ($query) {
+                        collect($this->request->groups)->each(fn ($group) => $query->orWhereJsonContains('groups', $group));
                     });
+                }, function ($query) {
+                    $query->whereIn('office', $this->request->offices);
+                });
                 $query->whereHas('timelogs', function ($q) {
                     $q->whereDate('time', $this->request->date);
                     $q->whereHas('scanner', function ($q) {
@@ -153,12 +154,11 @@ class PrintService
                                 fn ($q) => $q->where('name', 'like', '%coliseum%'),
                             );
                         });
-                    }
+                    },
                 ]);
-                break;
-            };
+                break; ;
             case 'dtr':
-            case 'employee': {
+            case 'employee':
                 $query->with([
                     'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
                     'timelogs' => function ($query) {
@@ -198,8 +198,7 @@ class PrintService
                 ])
                 ->when($this->request->filled('offices'), fn ($q) => $q->whereIn('office', $this->request->offices), fn ($q) => $q->whereIn('id', $this->request->employees))
                 ->when($this->request->filled('regular'), fn ($q) => $q->whereRegular((bool) $this->request->regular));
-                break;
-            };
+                break; ;
         }
 
         return $query;
@@ -207,7 +206,7 @@ class PrintService
 
     private function range(): array
     {
-        return match($this->request->period) {
+        return match ($this->request->period) {
             'full', '1st', '2nd' => [
                 'from' => ($month = Carbon::parse($this->request->month))->setDay($this->request->period == '2nd' ? 16 : 1),
                 'to' => $this->request->period == '1st' ? $month->clone()->setDay(15)->endOfDay() : $month->clone()->endOfMonth(),

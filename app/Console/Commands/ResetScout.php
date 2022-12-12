@@ -39,13 +39,13 @@ class ResetScout extends Command
      */
     public function handle()
     {
-        collect(File::allFiles(app()->basePath() . '/app/Models'))
-            ->filter(fn($file) => substr($file, -4) === '.php')
-            ->map(fn($file) => substr($file->getRelativePathName(), 0, -4))
-            ->map(fn($file) => str_replace('/', '\\', $file))
-            ->map(fn($file) => app(app()->getNamespace() . 'Models\\' . $file))
-            ->filter(fn($model) => in_array(Searchable::class, class_uses($model)))
-            ->each(fn($model) => $this->call('scout:flush', ['model' => $model::class]))
-            ->each(fn($model) => $this->call('scout:import', ['model' => $model::class]));
+        collect(File::allFiles(app()->basePath().'/app/Models'))
+            ->filter(fn ($file) => substr($file, -4) === '.php')
+            ->map(fn ($file) => substr($file->getRelativePathName(), 0, -4))
+            ->map(fn ($file) => str_replace('/', '\\', $file))
+            ->map(fn ($file) => app(app()->getNamespace().'Models\\'.$file))
+            ->filter(fn ($model) => in_array(Searchable::class, class_uses($model)))
+            ->each(fn ($model) => $this->call('scout:flush', ['model' => $model::class]))
+            ->each(fn ($model) => $this->call('scout:import', ['model' => $model::class]));
     }
 }

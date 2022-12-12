@@ -44,7 +44,7 @@ class AttendanceController extends Component
     public function mount()
     {
         $this->selected['scanners'] = $this->selected['scanners'] = app(ScannerRepository::class)->all()
-            ->when($this->from === 'offices', fn($scanners) => $scanners->filter(fn ($scanner) => str_contains(strtolower($scanner->name), 'coliseum')))
+            ->when($this->from === 'offices', fn ($scanners) => $scanners->filter(fn ($scanner) => str_contains(strtolower($scanner->name), 'coliseum')))
             ->mapWithKeys(fn ($scanner) => [$scanner->id => true])
             ->toArray();
 
@@ -73,7 +73,7 @@ class AttendanceController extends Component
         $this->selected['offices'] = [];
 
         $this->selected['scanners'] = app(ScannerRepository::class)->all()
-            ->when($this->from === 'offices', fn($scanners) => $scanners->filter(fn ($scanner) => str_contains(strtolower($scanner->name), 'coliseum')))
+            ->when($this->from === 'offices', fn ($scanners) => $scanners->filter(fn ($scanner) => str_contains(strtolower($scanner->name), 'coliseum')))
             ->mapWithKeys(fn ($scanner) => [$scanner->id => true])
             ->toArray();
 
@@ -146,8 +146,8 @@ class AttendanceController extends Component
             'selected.offices.*' => 'string|exists:employees,office',
             'selected.scanners' => 'required|array',
             'selected.scanners.*' => 'uuid|exists:scanners,id',
-            'start' => 'required|date:Y-m-d|before_or_equal:' . ($this->from === 'offices' ? today()->endOfDay()->format('Y-m-d') :  'end'),
-            'end' => 'required_if:from,employees|date:Y-m-d|before_or_equal:' . today()->endOfMonth()->format('Y-m-d'),
+            'start' => 'required|date:Y-m-d|before_or_equal:'.($this->from === 'offices' ? today()->endOfDay()->format('Y-m-d') : 'end'),
+            'end' => 'required_if:from,employees|date:Y-m-d|before_or_equal:'.today()->endOfMonth()->format('Y-m-d'),
         ];
     }
 
@@ -205,6 +205,5 @@ class AttendanceController extends Component
                     ->toArray(),
             ]),
         };
-
     }
 }

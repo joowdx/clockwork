@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
-use App\Contracts\UserRepository as UserRepositoryContract;
 use App\Contracts\Repository;
+use App\Contracts\UserRepository as UserRepositoryContract;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
 use App\Models\Employee;
 use App\Models\Scanner;
 use App\Models\TimeLog;
-use App\Repositories\UserRepository;
 use App\Models\User;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use App\Repositories\TimeLogRepository;
+use App\Repositories\UserRepository;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;

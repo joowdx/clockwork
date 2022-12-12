@@ -32,9 +32,8 @@ class TimeLog extends Model
         'state',
     ];
 
-
     protected $casts = [
-        'time' => 'datetime'
+        'time' => 'datetime',
     ];
 
     public function employee(): HasOneThrough
@@ -133,7 +132,6 @@ class TimeLog extends Model
             && $this->user_id === $timeLog->user_id;
     }
 }
-
 
 enum TimeLogStates
 {

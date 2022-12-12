@@ -20,7 +20,7 @@ trait ParsesEmployeeImport
 
     private function headers(array|string $first): array
     {
-        return array_flip(explode(',', strtolower(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', is_array($first) ? implode(",", $first) : $first))));
+        return array_flip(explode(',', strtolower(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', is_array($first) ? implode(',', $first) : $first))));
     }
 
     private function scanners(array $headers): array

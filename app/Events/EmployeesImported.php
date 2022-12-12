@@ -20,5 +20,6 @@ class EmployeesImported
     public function __construct(
         public Authenticatable $user,
         public UploadedFile $file,
-    ) { }
+    ) {
+    }
 }

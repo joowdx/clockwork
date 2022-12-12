@@ -10,7 +10,8 @@ class StoreRequest extends FormRequest
 {
     public function __construct(
         private Import $import
-    ) { }
+    ) {
+    }
 
     /**
      * Get custom messages for validator errors.
@@ -41,10 +42,10 @@ class StoreRequest extends FormRequest
                     'file',
                     'mimes:csv,txt',
                     function ($attribute, $file, $fail) {
-                        if(!$this->import->validate($file)) {
+                        if (! $this->import->validate($file)) {
                             $fail($this->import->error());
                         }
-                    }
+                    },
                 ],
             ] : [
                 'name.last' => 'required|string',
@@ -65,7 +66,7 @@ class StoreRequest extends FormRequest
                     ) {
                         $fail('This employee already exists.');
                     }
-                }
+                },
             ];
     }
 }

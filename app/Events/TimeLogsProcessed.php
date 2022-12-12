@@ -20,5 +20,6 @@ class TimeLogsProcessed
     public function __construct(
         public Authenticatable $user,
         public UploadedFile $file,
-    ) { }
+    ) {
+    }
 }

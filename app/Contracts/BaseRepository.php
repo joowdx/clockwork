@@ -28,7 +28,9 @@ abstract class BaseRepository implements Repository
      * @param  Illuminate\Database\Eloquent\Builder  $builder
      * @return void
      */
-    protected function init(Builder &$builder): void { }
+    protected function init(Builder &$builder): void
+    {
+    }
 
     /**
      * Returns a new model instance.
@@ -64,7 +66,7 @@ abstract class BaseRepository implements Repository
      * Returns the builder if set to true and reinit.
      * Otherwise the result then reinit.
      *
-     * @param bool  $builder
+     * @param  bool  $builder
      * @return mixed
      */
     public function get(bool $builder = false): mixed
@@ -119,17 +121,17 @@ abstract class BaseRepository implements Repository
 
     public function create(array $payload, ?Closure $creator = null): Model
     {
-        if ($creator){
+        if ($creator) {
             return DB::transaction(fn () => $creator($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
-        return DB::transaction(fn() => $this->model()->create($this->transformData($payload)));
+        return DB::transaction(fn () => $this->model()->create($this->transformData($payload)));
     }
 
     public function insert(array $payload, ?Closure $inserter = null): void
     {
         if ($inserter) {
-            DB::transaction(fn() => $inserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
+            DB::transaction(fn () => $inserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
 
             return;
         }
@@ -150,15 +152,15 @@ abstract class BaseRepository implements Repository
             return DB::transaction(fn () => $updater($model, $payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
         }
 
-        DB::transaction(fn() =>  $model->update(collect($this->transformData($payload))->except($except)->toArray()));
+        DB::transaction(fn () => $model->update(collect($this->transformData($payload))->except($except)->toArray()));
 
         return $model;
     }
 
-    public function upsert(array $payload, array $unique = [], array $update = [], array $except = [],  ?Closure $upserter = null): void
+    public function upsert(array $payload, array $unique = [], array $update = [], array $except = [], ?Closure $upserter = null): void
     {
         if ($upserter) {
-            DB::transaction(fn() => $upserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
+            DB::transaction(fn () => $upserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
 
             return;
         }
@@ -181,7 +183,7 @@ abstract class BaseRepository implements Repository
 
         $this->deleting($model);
 
-        DB::transaction(fn() => $model->delete());
+        DB::transaction(fn () => $model->delete());
     }
 
     public function destroy(array $payload, ?Closure $destroyer = null): void
@@ -194,7 +196,7 @@ abstract class BaseRepository implements Repository
 
         $this->destroying($payload);
 
-        DB::transaction(fn () =>  $this->model()->destroy($payload));
+        DB::transaction(fn () => $this->model()->destroy($payload));
     }
 
     public function truncate(?Closure $truncator = null): void
@@ -219,11 +221,15 @@ abstract class BaseRepository implements Repository
         return $builder;
     }
 
-    protected function deleting(Model $model): void {}
+    protected function deleting(Model $model): void
+    {
+    }
 
-    protected function destroying(array $payload): void {}
+    protected function destroying(array $payload): void
+    {
+    }
 
-    protected abstract function transformData(array $payload): array;
+    abstract protected function transformData(array $payload): array;
 
     protected function generateUuid(string $column = 'id', bool $generate = true)
     {
@@ -235,5 +241,4 @@ abstract class BaseRepository implements Repository
         return trait_exists(\App\Traits\HasUniversallyUniqueIdentifier::class)
             && in_array(\App\Traits\HasUniversallyUniqueIdentifier::class, class_uses_recursive(get_class($this->model())));
     }
-
 }

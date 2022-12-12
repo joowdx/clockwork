@@ -9,7 +9,6 @@ class ScannerRequest extends FormRequest
 {
     use ConfirmsPassword;
 
-
     public function messages()
     {
         return [
@@ -34,19 +33,19 @@ class ScannerRequest extends FormRequest
                     'required',
                     'string',
                     'max:20',
-                    $this->isMethod('post') ? 'unique:scanners' : 'unique:scanners,name,' . $this->id
+                    $this->isMethod('post') ? 'unique:scanners' : 'unique:scanners,name,'.$this->id,
                 ],
                 'remarks' => 'nullable|string|max:120',
                 'attlog_file' => [
                     'nullable',
                     'string',
                     'max:120',
-                    $this->isMethod('post') ? 'unique:scanners' : 'unique:scanners,attlog_file,' . $this->id
+                    $this->isMethod('post') ? 'unique:scanners' : 'unique:scanners,attlog_file,'.$this->id,
                 ],
                 'shared' => 'nullable|boolean',
                 'print_text_colour' => 'nullable|color',
                 'print_background_colour' => 'nullable|color',
-                'ip_address' => 'nullable|ip'
+                'ip_address' => 'nullable|ip',
             ];
     }
 }

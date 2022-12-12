@@ -2,7 +2,6 @@
 
 namespace App\Traits;
 
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasNameAccessorAndFormatter
@@ -55,21 +54,21 @@ trait HasNameAccessorAndFormatter
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name?->first " . @$name->middle ."  $name?->last" . $this->prependString(@$name->extension, ', '));
+        return $this->removeExtraWhitespaces("$name?->first ".@$name->middle."  $name?->last".$this->prependString(@$name->extension, ', '));
     }
 
     public function nameFormatFullInitialMiddle(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name?->first {$this->initial(@$name->middle)} $name?->last" . $this->prependString(@$name->extension, ', '));
+        return $this->removeExtraWhitespaces("$name?->first {$this->initial(@$name->middle)} $name?->last".$this->prependString(@$name->extension, ', '));
     }
 
     public function nameFormatFullStartLast(): string
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name?->last, $name?->first " . @$name->middle . "{$this->prependString(@$name->extension, ', ')}");
+        return $this->removeExtraWhitespaces("$name?->last, $name?->first ".@$name->middle."{$this->prependString(@$name->extension, ', ')}");
     }
 
     public function nameFormatFullStartLastInitialMiddle(): string
@@ -104,7 +103,7 @@ trait HasNameAccessorAndFormatter
     {
         $name = $this->name;
 
-        return $this->removeExtraWhitespaces("$name?->last, " . $this->initialWords(@$name?->first) . '.');
+        return $this->removeExtraWhitespaces("$name?->last, ".$this->initialWords(@$name?->first).'.');
     }
 
     public function scopeSortByName(Builder $builder, string $direction = 'asc'): Builder
@@ -118,7 +117,7 @@ trait HasNameAccessorAndFormatter
 
     private function appendString(?string $string, string $append): string
     {
-        return $string ? "$string{$append}"  : '';
+        return $string ? "$string{$append}" : '';
     }
 
     private function initial(?string $string): string
@@ -128,14 +127,14 @@ trait HasNameAccessorAndFormatter
 
     private function initialWords(?string $string): string
     {
-        preg_match_all('/(?<=\b)[a-z]/i', str_replace('Ñ','N', $string ?? ''), $matches);
+        preg_match_all('/(?<=\b)[a-z]/i', str_replace('Ñ', 'N', $string ?? ''), $matches);
 
         return strtoupper(implode('', $matches[0]));
     }
 
     private function prependString(?string $string, string $prepend = ' '): string
     {
-        return $string ? "{$prepend}$string"  : '';
+        return $string ? "{$prepend}$string" : '';
     }
 
     private function removeExtraWhitespaces(?string $string): string

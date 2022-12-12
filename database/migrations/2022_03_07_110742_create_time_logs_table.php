@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Enrollment;
 use App\Models\Scanner;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

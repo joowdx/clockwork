@@ -9,7 +9,11 @@ use Livewire\Component;
 
 class Dtr extends Component
 {
-    public $employee, $from, $to;
+    public $employee;
+
+    public $from;
+
+    public $to;
 
     protected $timelogs;
 

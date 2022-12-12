@@ -11,14 +11,13 @@ class EnrollmentService
     public function sync(Employee|Scanner $model, array $payload): void
     {
         switch (get_class($model)) {
-            case Employee::class: {
+            case Employee::class:
                 $model->scanners()->sync($payload);
                 break;
-            }
-            case Scanner::class: {
+
+            case Scanner::class:
                 $model->employees()->sync($payload);
                 break;
-            }
         }
     }
 

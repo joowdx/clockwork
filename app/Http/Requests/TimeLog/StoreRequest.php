@@ -11,7 +11,8 @@ class StoreRequest extends FormRequest
 {
     public function __construct(
         private Import $import
-    ) { }
+    ) {
+    }
 
     /**
      * Get custom messages for validator errors.
@@ -66,7 +67,7 @@ class StoreRequest extends FormRequest
                     // if(! $this->import->validate($file)) {
                     //     $fail($this->import->error());
                     // }
-                }
+                },
             ],
         ];
     }

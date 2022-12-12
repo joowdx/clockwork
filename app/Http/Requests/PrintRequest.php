@@ -10,7 +10,7 @@ class PrintRequest extends FormRequest
 {
     public function rules(): array
     {
-        return match($this->route('by')) {
+        return match ($this->route('by')) {
             'office' => [
                 'date' => 'required|date:Y-m-d',
                 'offices' => 'required_without:groups|array',
@@ -72,27 +72,27 @@ class PrintRequest extends FormRequest
             ]);
         })->whenFilled('regular', function ($regular) {
             $this->merge([
-                'regular' => filter_var($regular, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'regular' => filter_var($regular, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         })->whenFilled('csc_format', function ($csc_format) {
             $this->merge([
-                'csc_format' => filter_var($csc_format, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'csc_format' => filter_var($csc_format, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         })->whenFilled('weekends.regular', function ($regular) {
             $this->merge([
-                'weekends.regular' => filter_var($regular, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'weekends.regular' => filter_var($regular, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         })->whenFilled('weekdays.excluded', function ($exclude) {
             $this->merge([
-                'weekdays.excluded' => filter_var($exclude, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'weekdays.excluded' => filter_var($exclude, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         })->whenFilled('weekends.excluded', function ($exclude) {
             $this->merge([
-                'weekends.excluded' => filter_var($exclude, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'weekends.excluded' => filter_var($exclude, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         })->whenFilled('calculate', function ($calculate) {
             $this->merge([
-                'calculate' => filter_var($calculate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
+                'calculate' => filter_var($calculate, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
             ]);
         });
     }

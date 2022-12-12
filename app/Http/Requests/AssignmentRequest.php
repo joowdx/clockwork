@@ -26,20 +26,22 @@ class AssignmentRequest extends FormRequest
                             $fail(__('The password is incorrect.'));
                         }
                     },
-                    ] : ($this->has('user')
-                ? [
-                    'user' => ['exists:users', 'required_without:scanner,id'],
-                    'scanners' => ['required'],
-                    'scanners.*' => ['uuid', 'exists:scanners'],
-                    'password' => function ($attribute, $password, $fail) {
-                        if (! $this->validatePassword($password)) {
-                            $fail(__('The password is incorrect.'));
-                        }
-                    },
-                ] : [
-                    'scanner' => ['required_without:user'],
-                    'user' => ['required_without:scanner'],
-                    'password' => ['required']
-                ]);
+                ] : (
+                    $this->has('user')
+                    ? [
+                        'user' => ['exists:users', 'required_without:scanner,id'],
+                        'scanners' => ['required'],
+                        'scanners.*' => ['uuid', 'exists:scanners'],
+                        'password' => function ($attribute, $password, $fail) {
+                            if (! $this->validatePassword($password)) {
+                                $fail(__('The password is incorrect.'));
+                            }
+                        },
+                    ] : [
+                        'scanner' => ['required_without:user'],
+                        'user' => ['required_without:scanner'],
+                        'password' => ['required'],
+                    ]
+                );
     }
 }

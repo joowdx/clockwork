@@ -3,8 +3,6 @@
 namespace App\Repositories;
 
 use App\Contracts\BaseRepository;
-use App\Models\Model;
-use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
 class ScannerRepository extends BaseRepository

@@ -15,7 +15,8 @@ class BackUpAndSync
      */
     public function __construct(
         private BackupRepository $repository,
-    ) { }
+    ) {
+    }
 
     /**
      * Handle the event.

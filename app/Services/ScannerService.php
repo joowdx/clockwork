@@ -11,7 +11,8 @@ class ScannerService
 {
     public function __construct(
         private Repository $repository
-    ) { }
+    ) {
+    }
 
     public function search(?string $query): Collection|LengthAwarePaginator
     {

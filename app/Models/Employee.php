@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Scout\Searchable;
 
 class Employee extends Model
@@ -31,7 +30,7 @@ class Employee extends Model
     ];
 
     protected $appends = [
-        'full_name'
+        'full_name',
     ];
 
     public function scanners(): BelongsToMany
@@ -90,6 +89,6 @@ class Employee extends Model
 
     public function ellipsize(int $length = 30, string $format = 'fullStartLastInitialMiddle', string $ellipsis = '…')
     {
-        return strlen($this->name_format->$format) > $length ? substr($this->name_format->$format, 0, $length) . $ellipsis : $this->name_format->$format;
+        return strlen($this->name_format->$format) > $length ? substr($this->name_format->$format, 0, $length).$ellipsis : $this->name_format->$format;
     }
 }

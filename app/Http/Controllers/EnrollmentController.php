@@ -15,20 +15,17 @@ class EnrollmentController extends Controller
         private EnrollmentService $enrollment,
         private EmployeeRepository $employee,
         private ScannerRepository $scanner,
-    ) { }
+    ) {
+    }
 
     public function store(EnrollmentRequest $request)
     {
         $this->confirmPassword($request->password);
 
         $request->whenHas('employee', function () use ($request) {
-
             $this->enrollment->sync($this->employee->find($request->employee), $request->scanners);
-
         })->whenHas('scanner', function () use ($request) {
-
             $this->enrollment->sync($this->scanner->find($request->scanner), $request->employees);
-
         });
 
         return redirect()->back();

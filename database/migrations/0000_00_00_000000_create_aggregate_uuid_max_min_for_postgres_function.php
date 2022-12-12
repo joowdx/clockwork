@@ -3,7 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new Class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -11,8 +12,8 @@ return new Class extends Migration {
      */
     public function up()
     {
-        if(env('DB_CONNECTION') == 'pgsql') {
-            DB::unprepared(<<<sql
+        if (env('DB_CONNECTION') == 'pgsql') {
+            DB::unprepared(<<<'sql'
 
             create or replace function min(uuid, uuid)
                 returns uuid
@@ -60,8 +61,8 @@ return new Class extends Migration {
      */
     public function down()
     {
-        if(env('DB_CONNECTION') == 'pgsql') {
-            DB::unprepared(<<<sql
+        if (env('DB_CONNECTION') == 'pgsql') {
+            DB::unprepared(<<<'sql'
 
             drop aggregate if exists max(uuid);
             drop aggregate if exists min(uuid);

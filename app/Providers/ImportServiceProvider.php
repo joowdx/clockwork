@@ -26,17 +26,16 @@ class ImportServiceProvider extends ServiceProvider
 
         $this->app->bind(Import::class, function () {
             switch(explode('.', Route::currentRouteName())[0]) {
-                case 'employees': {
+                case 'employees':
                     return new EmployeeService(new EmployeeRepository(app(Employee::class)));
                     break;
-                }
-                case 'timelogs': {
+
+                case 'timelogs':
                     return new TimeLogService(new TimeLogRepository(app(TimeLog::class)));
                     break;
-                }
-                default: {
+
+                default:
                     throw new BindingResolutionException('Provider not found!');
-                }
             }
         });
     }

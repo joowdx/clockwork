@@ -17,13 +17,14 @@ class EmployeeController extends Controller
         private Repository $repository,
         private EmployeeService $employee,
         private ScannerService $scanner,
-    ) { }
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
-    */
+     */
     public function index(Request $request)
     {
         return inertia('Employees/Index', [
@@ -50,22 +51,21 @@ class EmployeeController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\Employee\StoreRequest  $request
-     * @param  \App\Contracts\Import    $import;
+     * @param  \App\Contracts\Import  $import;
      * @return \Illuminate\Http\Response
      */
     public function store(StoreRequest $request, Import $import)
     {
         switch ($request->has('file')) {
-            case true: {
+            case true:
                 $import->parse($request->file);
 
                 return redirect()->back();
-            }
-            default: {
+
+            default:
                 $employee = $this->repository->create($request->all());
 
                 return redirect()->route('employees.edit', $employee->id);
-            }
         }
     }
 

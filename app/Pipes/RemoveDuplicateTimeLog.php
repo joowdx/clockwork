@@ -8,7 +8,8 @@ class RemoveDuplicateTimeLog
 {
     public function __construct(
         private Request $request,
-    ) { }
+    ) {
+    }
 
     public function handle(mixed $request, \Closure $next)
     {

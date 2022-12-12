@@ -25,12 +25,12 @@ class UserRepository extends BaseRepository implements RepositoryInterface
 
     public function create(array $payload, ?Closure $create = null): Model
     {
-        return parent::create($payload, fn($info) => (new CreateNewUser)->create($info));
+        return parent::create($payload, fn ($info) => (new CreateNewUser)->create($info));
     }
 
     public function updateProfile(Model $user, array $payload): void
     {
-        $this->update($user, $payload, updater: function($user, $payload) {
+        $this->update($user, $payload, updater: function ($user, $payload) {
             app(UpdateUserProfileInformation::class)->update($user, $payload);
         });
     }
@@ -47,7 +47,7 @@ class UserRepository extends BaseRepository implements RepositoryInterface
 
     public function delete(Model $model, ?Closure $deleter = null): void
     {
-        parent::delete($model, fn($user) => app(DeletesUsers::class)->delete($user));
+        parent::delete($model, fn ($user) => app(DeletesUsers::class)->delete($user));
     }
 
     public function sessions(Model $user): Collection
@@ -105,5 +105,4 @@ class UserRepository extends BaseRepository implements RepositoryInterface
     {
         return $payload;
     }
-
 }

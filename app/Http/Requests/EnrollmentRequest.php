@@ -25,7 +25,7 @@ class EnrollmentRequest extends FormRequest
             ],
             'employees' => [
                 'required_with:scanner',
-                'array'
+                'array',
             ],
             'employees.*.uid' => [
                 'bail',
@@ -69,7 +69,7 @@ class EnrollmentRequest extends FormRequest
         }
 
         if ($existing = Enrollment::whereScannerId($scanner)->whereUid($value)->first()) {
-            $fail('Selected UID is already taken by ' . $existing->employee->nameFormat->shortStartLastInitialFirst);
+            $fail('Selected UID is already taken by '.$existing->employee->nameFormat->shortStartLastInitialFirst);
         }
     }
 }

@@ -6,7 +6,11 @@ use Livewire\Component;
 
 class Attlogs extends Component
 {
-    public $employee, $from, $to;
+    public $employee;
+
+    public $from;
+
+    public $to;
 
     public function render()
     {

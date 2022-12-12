@@ -8,7 +8,8 @@ class InsertTimeLogs
 {
     public function __construct(
         private TimeLogRepository $timelog
-    ) { }
+    ) {
+    }
 
     public function __invoke(array $payload)
     {

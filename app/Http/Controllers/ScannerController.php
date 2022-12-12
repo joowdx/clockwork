@@ -104,7 +104,6 @@ class ScannerController extends Controller
     public function destroy(ScannerRequest $request, Scanner $scanner)
     {
         if ($request->timelogs) {
-
             $scanner->timelogs()->delete();
 
             return redirect()->back();

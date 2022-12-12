@@ -9,7 +9,8 @@ class TransformTimeLogData
 {
     public function __construct(
         private Request $request,
-    ) { }
+    ) {
+    }
 
     public function handle(mixed $request, \Closure $next)
     {
@@ -18,7 +19,7 @@ class TransformTimeLogData
                 'uid' => trim($entry[0]),
                 'scanner_id' => strtolower($this->request->scanner),
                 'time' => Carbon::createFromTimeString($entry[1]),
-                'state' => join('', collect(array_slice($entry, 2))->map(fn ($e) => $e > 1 ? 1 : $e)->toArray()),
+                'state' => implode('', collect(array_slice($entry, 2))->map(fn ($e) => $e > 1 ? 1 : $e)->toArray()),
             ];
         }));
     }

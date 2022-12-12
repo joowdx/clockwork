@@ -31,9 +31,7 @@ Route::get('/', function () {
     // ]);
 });
 
-
-Route::middleware(['auth', 'verified'])->group(function() {
-
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:non-readonly'])->group(function () {
         // Route::get('/dashboard', fn () => inertia('dashboard'))->name('dashboard');
         Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');

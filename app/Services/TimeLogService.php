@@ -25,7 +25,8 @@ class TimeLogService implements Import
 {
     public function __construct(
         private Repository $repository,
-    ) { }
+    ) {
+    }
 
     public function dates()
     {
@@ -49,9 +50,7 @@ class TimeLogService implements Import
                 CheckNumericUid::class,
                 CheckStateEntries::class,
             ])->then(function ($result) {
-
                 return $result->error ? ! ($this->error = $result->error) : true;
-
             });
     }
 
@@ -71,9 +70,7 @@ class TimeLogService implements Import
                 RemoveDuplicateTimeLog::class,
                 Chunk::class,
             ])->then(fn ($d) => $d->each(function ($chunked) {
-
                 app(InsertTimeLogs::class)($chunked->toArray());
-
             }));
     }
 
@@ -83,11 +80,11 @@ class TimeLogService implements Import
 
         $in = $logs->filter->in
             ->sortBy('time')
-            ->unique(fn ($log) => $log->time->format('Y-m-d H:00') . (in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00').(in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
 
         $out = $logs->filter->out
             ->sortByDesc('time')
-            ->unique(fn ($log) => $log->time->format('Y-m-d H:00') . (in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00').(in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
 
         return [
             'in1' => $in1 = $this->filterTime($in, 'in', 'am'),
@@ -105,9 +102,9 @@ class TimeLogService implements Import
         $parse = function (string $week) use ($request) {
             if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
                 return "{$request->$week['am']['in']}-{$request->$week['am']['out']} {$request->$week['pm']['in']}-{$request->$week['pm']['out']}";
-            } else if($request->filled(["$week.am.in", "$week.pm.out"])) {
+            } elseif ($request->filled(["$week.am.in", "$week.pm.out"])) {
                 return "{$request->$week['am']['in']}-{$request->$week['pm']['out']}";
-            };
+            }
 
             return 'as required';
         };
@@ -120,7 +117,6 @@ class TimeLogService implements Import
 
     protected function filterTime(Collection $logs, string $state = null, string $shift = null): mixed
     {
-
         return match ($state) {
             'in' => match ($shift) {
                 'am' => $logs
@@ -147,11 +143,10 @@ class TimeLogService implements Import
     protected function calculateUndertime(Carbon $date, ?TimeLog $in1, ?TimeLog $out1, ?TimeLog $in2, ?TimeLog $out2, bool $excludeWeekends = true): object|int|null
     {
         $calculate = function () use ($date, $in1, $out1, $in2, $out2) {
-
             $week = $date->isWeekday() ? 'weekdays' : 'weekends';
 
             if (request()->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
-                if (! $in1 || !$out1 || !$in2 || !$out2) {
+                if (! $in1 || ! $out1 || ! $in2 || ! $out2) {
                     return null;
                 }
 
@@ -162,14 +157,13 @@ class TimeLogService implements Import
                     'out2' => $out2 = max($out2->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
                     'total' => $in1 + $out1 + $in2 + $out2,
                 ];
-
-            } else if (request()->filled(["$week.am.in", "$week.pm.out"])) {
-                if (!$in1 || !$out2) {
+            } elseif (request()->filled(["$week.am.in", "$week.pm.out"])) {
+                if (! $in1 || ! $out2) {
                     return null;
                 }
 
                 return (object) [
-                    'in1' => $in1 =  max($in1->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'in1' => $in1 = max($in1->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
                     'out2' => $out2 = max($out2->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
                     'total' => $in1 + $out2,
                 ];
@@ -179,8 +173,8 @@ class TimeLogService implements Import
         };
 
         return match ($date->isWeekday()) {
-            true => $calculate (),
-            false => $excludeWeekends ? null : $calculate (),
+            true => $calculate(),
+            false => $excludeWeekends ? null : $calculate(),
             default => null,
         };
     }

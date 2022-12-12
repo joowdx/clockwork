@@ -6,7 +6,11 @@ use Livewire\Component;
 
 class Transmittal extends Component
 {
-    public $employees, $from, $to;
+    public $employees;
+
+    public $from;
+
+    public $to;
 
     public function render()
     {

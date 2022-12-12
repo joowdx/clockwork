@@ -23,5 +23,4 @@ trait ConfirmsPassword
             app(StatefulGuard::class), auth()->user(), $password
         );
     }
-
 }

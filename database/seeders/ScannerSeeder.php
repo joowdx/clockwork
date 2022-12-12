@@ -3,12 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Scanner;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ScannerSeeder extends Seeder
 {
-
     const SCANNERS = [
         'capitol_1',
         'capitol_2',
@@ -50,7 +48,7 @@ class ScannerSeeder extends Seeder
      */
     public function run()
     {
-        foreach(self::SCANNERS as $scanner) {
+        foreach (self::SCANNERS as $scanner) {
             Scanner::factory()->{$scanner}()->create();
         }
     }

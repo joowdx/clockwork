@@ -34,14 +34,13 @@ class AssignmentService
     protected function relationship(Model $model, array|string $payload, string $action)
     {
         switch (get_class($model)) {
-            case User::class: {
+            case User::class:
                 $model->scanners()->{$action}($payload);
                 break;
-            }
-            case Scanner::class: {
+
+            case Scanner::class:
                 $model->users()->{$action}($payload);
                 break;
-            }
         }
     }
 }
