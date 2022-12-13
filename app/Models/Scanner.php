@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\ScannerDriver;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,7 +32,7 @@ class Scanner extends Model
         'serial_number',
         'model',
         'version',
-        'library',
+        'driver',
     ];
 
     public function name(): Attribute
@@ -96,5 +97,16 @@ class Scanner extends Model
             $this->getKeyName() => $this->getKey(),
             'name' => $this->name,
         ];
+    }
+
+    public function getDriverInstance(): ?ScannerDriver
+    {
+
+        return null;
+    }
+
+    public function getAttlogs(): array
+    {
+        return $this->getDriverInstance()?->getAttlogs();
     }
 }

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('shared')->default(false);
             $table->string('ip_address')->nullable();
             $table->enum('protocol', ['tcp', 'udp'])->nullable();
-            $table->string('library')->nullable();
+            $table->string('driver')->nullable();
             $table->timestamps();
         });
     }
