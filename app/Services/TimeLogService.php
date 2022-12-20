@@ -20,6 +20,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\LazyCollection;
 
 class TimeLogService implements Import
 {
@@ -61,15 +62,25 @@ class TimeLogService implements Import
 
     public function parse(UploadedFile $file): void
     {
+        $this->insert(File::lines($file));
+    }
+
+    public function insert(Collection|LazyCollection|array $data, bool $fromFile = false)
+    {
         app(Pipeline::class)
-            ->send(File::lines($file))
-            ->through([
-                Sanitize::class,
-                SplitAttlogString::class,
-                TransformTimeLogData::class,
-                RemoveDuplicateTimeLog::class,
-                Chunk::class,
-            ])->then(fn ($d) => $d->each(function ($chunked) {
+            ->send(is_array($data) ? collect($data) : $data)
+            ->through(
+                $fromFile ? [
+                    Sanitize::class,
+                    SplitAttlogString::class,
+                    TransformTimeLogData::class,
+                    RemoveDuplicateTimeLog::class,
+                    Chunk::class,
+                ] : [
+                    RemoveDuplicateTimeLog::class,
+                    Chunk::class,
+                ]
+            )->then(fn ($d) => $d->each(function ($chunked) {
                 app(InsertTimeLogs::class)($chunked->toArray());
             }));
     }

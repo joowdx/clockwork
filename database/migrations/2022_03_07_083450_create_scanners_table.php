@@ -22,8 +22,9 @@ return new class extends Migration
             $table->string('remarks', 120)->nullable();
             $table->boolean('shared')->default(false);
             $table->string('ip_address')->nullable();
-            $table->enum('protocol', ['tcp', 'udp'])->nullable();
+            $table->integer('port')->nullable();
             $table->string('driver')->nullable();
+            $table->enum('protocol', ['tcp', 'udp'])->nullable();
             $table->timestamps();
         });
     }

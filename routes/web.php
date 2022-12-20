@@ -20,20 +20,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return redirect()->route('login');
-
-    // return Inertia::render('Welcome', [
-    //     'canLogin' => Route::has('login'),
-    //     'canRegister' => Route::has('register'),
-    //     'laravelVersion' => Application::VERSION,
-    //     'phpVersion' => PHP_VERSION,
-    // ]);
-});
+Route::get('/', fn () => redirect()->route('dashboard'));
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:non-readonly'])->group(function () {
-        // Route::get('/dashboard', fn () => inertia('dashboard'))->name('dashboard');
         Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
         Route::resource('users', ScannerController::class);
         Route::resource('scanners', ScannerController::class);
@@ -43,8 +33,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
     });
 
-    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee'])->name('print');
     // Route::get('/attendance', AttendanceController::class)->name('attendance');
-});
 
-Route::get('dtr', fn () => view('print.dtr'));
+    Route::controller(ScannerController::class)->group(function () {
+        Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');
+        // Route::get('scanners/{scanner}/sync-time', 'syncTime')->name('scanners.sync-time');
+    });
+
+    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee'])->name('print');
+});

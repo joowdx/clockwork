@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\ScannerDriver;
 use App\Contracts\UserRepository;
+use App\Drivers\TadPhp;
 use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
 use App\Services\ScannerService;
+use App\Services\TimeLogService;
+use Exception;
 use Illuminate\Http\Request;
 
 class ScannerController extends Controller
@@ -112,5 +116,51 @@ class ScannerController extends Controller
         $this->scanner->destroy($scanner);
 
         return redirect()->route('scanners.index');
+    }
+
+    /**
+     * Download attlogs.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Contrants\ScannerDriver  $scanner
+     * @param  \App\Actions\FileImport\InsertTimeLogs  $inserter
+     * @return \Illuminate\Http\Response
+     */
+    public function download(Scanner $scanner, TimeLogService $service, ?ScannerDriver $driver)
+    {
+        if ($driver === null) {
+            return redirect()->back()->withErrors([
+                'message' => 'Please configure this device\'s driver.',
+            ]);
+        }
+
+        try {
+            $service->insert($driver->getFormattedAttlogs($scanner->id));
+        } catch (Exception $exception) {
+            return redirect()->back()->withErrors([
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        return redirect()->back();
+    }
+
+    public function syncTime(Scanner $scanner, ?ScannerDriver $driver)
+    {
+        if ($driver === null) {
+            return redirect()->back()->withErrors([
+                'message' => 'Please configure this device\'s driver.',
+            ]);
+        }
+
+        if (! $driver instanceof TadPhp) {
+            return redirect()->back()->withErrors([
+                'message' => 'Driver '.$scanner->driver.' is not compatible.',
+            ]);
+        }
+
+        $driver->syncTime();
+
+        return redirect()->back();
     }
 }

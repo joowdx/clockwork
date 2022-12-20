@@ -29,6 +29,7 @@ class Scanner extends Model
         'remarks',
         'ip_address',
         'protocol',
+        'port',
         'serial_number',
         'model',
         'version',
@@ -52,8 +53,7 @@ class Scanner extends Model
     public function printBackgroundColour(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, $attributes) => in_array(strtolower(@$attributes['print_background_colour'] ?? ''), ['#ffffff', '#fff', null]) ? 'transparent' : strtolower(@$attributes['print_background_colour']),
-            set: fn ($value) => in_array(strtolower($value ?? ''), ['#ffffff', '#fff', null]) ? null : strtolower($value),
+            get: fn ($value) => $value ?? '#0000'
         );
     }
 
@@ -101,7 +101,6 @@ class Scanner extends Model
 
     public function getDriverInstance(): ?ScannerDriver
     {
-
         return null;
     }
 

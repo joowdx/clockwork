@@ -30,11 +30,25 @@
                 <JetInputError :message="form.errors.attlog_file" class="mt-2" />
             </div>
 
+            <!-- Driver -->
+            <div class="col-span-6 sm:col-span-4">
+                <JetLabel for="driver" value="Driver" />
+                <JetInput id="driver" type="text" class="block w-full mt-1" v-model="form.driver" autocomplete="driver" />
+                <JetInputError :message="form.errors.driver" class="mt-2" />
+            </div>
+
             <!-- IP Address -->
             <div class="col-span-6 sm:col-span-4">
                 <JetLabel for="ip_address" value="IP Address" />
                 <JetInput id="ip_address" type="text" class="block w-full mt-1" v-model="form.ip_address" autocomplete="ip_address" />
                 <JetInputError :message="form.errors.ip_address" class="mt-2" />
+            </div>
+
+            <!-- Port -->
+            <div class="col-span-6 sm:col-span-4">
+                <JetLabel for="port" value="Port" />
+                <JetInput id="port" type="text" class="block w-full mt-1" v-model="form.port" autocomplete="port" />
+                <JetInputError :message="form.errors.port" class="mt-2" />
             </div>
 
             <div class="col-span-6 sm:col-span-4">
@@ -112,6 +126,8 @@
                     remarks: this.$page.props.scanner?.remarks,
                     attlog_file: this.$page.props.scanner?.attlog_file,
                     ip_address: this.$page.props.scanner?.ip_address,
+                    port: this.$page.props.scanner?.port,
+                    driver: this.$page.props.scanner?.driver,
                     print_text_colour: this.$page.props.scanner?.print_text_colour ?? '#000000',
                     print_background_colour: this.$page.props.scanner?.print_background_colour ?? '#FFFFFF',
                     shared: this.$page.props.scanner?.shared,
