@@ -43,8 +43,8 @@ class ScannerRequest extends FormRequest
                     $this->isMethod('post') ? 'unique:scanners' : 'unique:scanners,attlog_file,'.$this->id,
                 ],
                 'shared' => 'nullable|boolean',
-                'print_text_colour' => 'nullable|color',
-                'print_background_colour' => 'nullable|color',
+                'print_text_colour' => 'required|color',
+                'print_background_colour' => 'required|color',
                 'ip_address' => 'nullable|ip',
             ];
     }
