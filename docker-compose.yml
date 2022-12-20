@@ -45,6 +45,8 @@ services:
         container_name: dtr.database
         image: 'postgres:alpine'
         restart: unless-stopped
+        ports:
+            - 5432:5432
         environment:
             PGPASSWORD: '${DB_PASSWORD:-secret}'
             POSTGRES_DB: '${DB_DATABASE}'
