@@ -62,7 +62,7 @@ class TimeLogService implements Import
 
     public function parse(UploadedFile $file): void
     {
-        $this->insert(File::lines($file));
+        $this->insert(File::lines($file), true);
     }
 
     public function insert(Collection|LazyCollection|array $data, bool $fromFile = false)
