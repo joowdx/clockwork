@@ -33,7 +33,11 @@
             <!-- Driver -->
             <div class="col-span-6 sm:col-span-4">
                 <JetLabel for="driver" value="Driver" />
-                <JetInput id="driver" type="text" class="block w-full mt-1" v-model="form.driver" autocomplete="driver" />
+                <select v-model="form.driver" class="block w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:focus:border-gray-800 dark:focus:ring-gray-700 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700 disabled:opacity-50">
+                    <option :value="null"></option>
+                    <option value="zakzk">ZAKZK</option>
+                    <option value="tadphp">TADPHP</option>
+                </select>
                 <JetInputError :message="form.errors.driver" class="mt-2" />
             </div>
 
