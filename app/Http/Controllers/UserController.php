@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\UpdateUserPassword;
+use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -12,9 +15,9 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        return User::search($request->q);
     }
 
     /**
@@ -33,9 +36,9 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, CreateNewUser $creator)
     {
-        //
+        $creator->create($request->all());
     }
 
     /**
@@ -67,9 +70,20 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
-    {
-        //
+    public function update(
+        Request $request,
+        User $user,
+        UpdateUserProfileInformation $profileUpdater,
+        UpdateUserPassword $passwordUpdater
+    ) {
+
+        if ($request->except(['password', 'current_password'])) {
+
+        }
+
+        if ($request->hasAny(['password', 'current_password'])) {
+            $passwordUpdater->update($user, $request->all());
+        }
     }
 
     /**
