@@ -5,7 +5,6 @@ if [ ! -d /.composer ]; then
 fi
 
 chmod -R ugo+rw /.composer
-chown sail:www-data -R /var/www/html/storage
 
 if [ $# -gt 0 ];then
     exec su-exec sail "$@"
