@@ -24,6 +24,7 @@
     import { defineComponent } from 'vue'
     import TailwindNavigation from '@/Tailwind/Navigation.vue'
     import { Head } from '@inertiajs/inertia-vue3'
+    import { usePage } from '@inertiajs/inertia-vue3'
 
     export default defineComponent({
         props: {
@@ -65,7 +66,7 @@
                     name: 'Users',
                     href: route('users.index'),
                     active: route().current('users.*'),
-                    show: true,
+                    show: usePage().props.value.user.administrator,
                 },
                 // {
                 //     name: 'Attendance',
