@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasUniversallyUniqueIdentifier;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -74,6 +75,11 @@ class User extends Authenticatable
     public function isAdministrator()
     {
         return $this->adminstrator;
+    }
+
+    public function scopeAdmin(Builder $query)
+    {
+        $query->whereAdministrator(true);
     }
 
     // public function employees(): HasManyThrough

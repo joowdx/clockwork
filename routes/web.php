@@ -7,6 +7,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
         Route::resource('users', ScannerController::class);
         Route::resource('scanners', ScannerController::class);
+        Route::resource('users', UserController::class);
         Route::resource('employees', EmployeeController::class)->except(['show']);
         Route::resource('timelogs', TimeLogController::class)->only(['index', 'store']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);

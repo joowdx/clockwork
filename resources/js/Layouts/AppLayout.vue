@@ -61,6 +61,12 @@
                     active: route().current('timelogs.*'),
                     show: true,
                 },
+                {
+                    name: 'Users',
+                    href: route('users.index'),
+                    active: route().current('users.*'),
+                    show: true,
+                },
                 // {
                 //     name: 'Attendance',
                 //     href: route('attendance'),

@@ -10,42 +10,11 @@
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="grid grid-cols-12 px-6 mb-6 justify-items-end gap-y-2 gap-x-3 sm:px-0">
                     <div class="flex self-end col-span-12 mt-3 space-x-3">
-                        <div class="block mt-3">
-                            <label class="flex items-center cursor-pointer">
-                                <jet-checkbox name="remember" v-model:checked="unenrolled" />
-                                <span class="ml-2 text-sm text-gray-600">Unenrolled</span>
-                            </label>
-                        </div>
-                        <Link :href="route('employees.create')">
+                        <Link :href="route('users.create')">
                             <JetSecondaryButton style="width:90px">
                                 Create
                             </JetSecondaryButton>
                         </Link>
-                        <JetSecondaryButton @click="showImportDialog" style="width:90px" :disabled="importDialog">
-                            Import
-                        </JetSecondaryButton>
-                        <JetSecondaryButton style="width:90px" :disabled="true">
-                            Export
-                        </JetSecondaryButton>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-12 px-6 mb-6 gap-y-2 gap-x-3 sm:px-0">
-                    <div class="col-span-12 lg:col-span-6">
-                        <JetLabel value="Name" />
-                        <JetInput type="text" class="block w-full uppercase disabled:opacity-60" autocomplete="name" placeholder="Search" v-model="name" />
-                    </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <JetLabel value="Office" />
-                        <TailwindSelect class="w-full" :options="['ALL', ...$page.props.employees.map(e => e.office).filter((e, f, g) => e && g.indexOf(e) === f).sort()]" v-model="office" />
-                    </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <JetLabel value="Regular" />
-                        <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'REGULAR', value: 1}, {name: 'NONREGULAR', value: 0}]" v-model="regular" />
-                    </div>
-                    <div class="col-span-12 sm:col-span-4 lg:col-span-2">
-                        <JetLabel value="Active" />
-                        <TailwindSelect class="w-full" :options="[{name: 'ALL', value: -1}, {name: 'ACTIVE', value: 1}, {name: 'INACTIVE', value: 0}]" v-model="active" />
                     </div>
                 </div>
 
@@ -60,72 +29,48 @@
                                                 Name
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Scanners
+                                                Username
                                             </th>
                                             <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Office
+                                                Title
                                             </th>
-                                            <th scope="col" class="py-2 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Regular
-                                            </th>
-                                            <th scope="col" class="py-2 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                Print Format
+                                            <th scope="col" class="px-6 py-2 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
+                                                Admin
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-if="employees.length === 0">
-                                            <td colspan="2" class="sm:pl-1.5 pl-6 py-3 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                                WE'VE COME UP EMPTY!
-                                        </td>
-                                        </tr>
-                                        <tr v-for="employee in employees" :key="employee.id" class="cursor-pointer dark:hover:bg-gray-700 hover:bg-gray-200">
+                                        <tr v-for="user in users.data" class="cursor-pointer dark:hover:bg-gray-700 hover:bg-gray-200">
                                             <td class="pr-6 whitespace-nowrap">
-                                                <Link :href="route('employees.edit', employee.id)">
+                                                <Link :href="route('users.edit', user.id)">
                                                     <div class="flex items-center text-base font-medium tracking-wide text-gray-900 dark:text-white">
-                                                        {{ employee.name_format.fullStartLastInitialMiddle }}
+                                                        {{ user.name }}
                                                     </div>
                                                 </Link>
                                             </td>
                                             <td class="px-6 whitespace-nowrap">
-                                                <Link :href="route('employees.edit', employee.id)">
+                                                <Link :href="route('users.edit', user.id)">
                                                     <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">
-                                                            {{
-                                                                (
-                                                                    scanners = employee.scanners
-                                                                        .map(e => e.name.toLowerCase().startsWith('coliseum-') ? 'coliseum-x' : e.name.toLowerCase())
-                                                                        .filter((e, f, g) => g.indexOf(e) === f)
-                                                                        .join(', ')
-                                                                ).length > 30 ? scanners.substring(0, 30).concat('...') : scanners
-                                                            }}
+                                                            {{ user.username }}
                                                         </p>
                                                     </div>
                                                 </Link>
                                             </td>
                                             <td class="px-6 whitespace-nowrap">
-                                                <Link :href="route('employees.edit', employee.id)">
+                                                <Link :href="route('users.edit', user.id)">
                                                     <div class="text-sm font-thin">
-                                                        <p v-if="employee.office" class="text-black dark:text-gray-100">
-                                                            {{ employee.office }}
+                                                        <p class="text-black dark:text-gray-100">
+                                                            {{ user.title }}
                                                         </p>
                                                     </div>
                                                 </Link>
                                             </td>
-                                            <td class="pl-6 whitespace-nowrap">
-                                                <Link :href="route('employees.edit', employee.id)">
+                                            <td class="px-6 whitespace-nowrap">
+                                                <Link :href="route('users.edit', user.id)">
                                                     <div class="text-sm font-thin">
                                                         <p class="text-black dark:text-gray-100">
-                                                            {{ employee.regular ? 'Yes' : 'No'}}
-                                                        </p>
-                                                    </div>
-                                                </Link>
-                                            </td>
-                                            <td class="pl-6 whitespace-nowrap">
-                                                <Link :href="route('employees.edit', employee.id)">
-                                                    <div class="text-sm font-thin">
-                                                        <p class="text-black dark:text-gray-100">
-                                                            {{ employee.csc_format ? 'CSC FORM' : 'OLD FORM'}}
+                                                            {{ user.administrator ? 'Yes' : 'No' }}
                                                         </p>
                                                     </div>
                                                 </Link>
@@ -134,55 +79,59 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="flex items-center justify-between px-4 py-3 bg-gray-100 border-t border-gray-200 dark:bg-gray-800 sm:px-6">
+                                <div class="flex justify-between flex-1 sm:hidden">
+                                    <Link :href="users.prev_page_url" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" preserve-scroll preserve-state>Previous</Link>
+                                    <Link :href="users.next_page_url" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" preserve-scroll preserve-state>Next</Link>
+                                </div>
+                                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-700 dark:text-gray-200">
+                                            Showing
+                                            <span class="font-medium">{{ users.from }}</span>
+                                            to
+                                            <span class="font-medium">{{ users.to }}</span>
+                                            of
+                                            <span class="font-medium">{{ users.total }}</span>
+                                            results
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+                                            <Link :href="users.prev_page_url" class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-20" preserve-scroll preserve-state>
+                                                <span class="sr-only">Previous</span>
+                                                <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                                                </svg>
+                                            </Link>
+                                            <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
+                                            <template v-for="link in users.links">
+                                                <Link v-if="filterLink(link.label)" :href="link.url" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-20" :class="{'z-10 bg-indigo-50 border-indigo-500 text-indigo-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100': link.active}">
+                                                    {{ link.label }}
+                                                </Link>
+                                            </template>
+                                            <!-- <a href="#" aria-current="page" class="relative z-10 inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-500 bg-indigo-50 focus:z-20">1</a>
+                                            <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-20">2</a>
+                                            <a href="#" class="relative items-center hidden px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-20 md:inline-flex">3</a>
+                                            <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300">...</span>
+                                            <a href="#" class="relative items-center hidden px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-20 md:inline-flex">8</a>
+                                            <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-20">9</a>
+                                            <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-20">10</a> -->
+                                            <Link :href="users.next_page_url" class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-20" preserve-scroll preserve-state>
+                                                <span class="sr-only">Next</span>
+                                                <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                                </svg>
+                                            </Link>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <JetDialogModal :show="importDialog" @close="closeImportDialog" :closeable="false">
-            <template #title>
-                Upload
-            </template>
-
-            <template #content>
-                <div :class="{'mb-3': !form.errors.file }">
-                    <div class="flex justify-center px-6 pt-5 pb-6 mt-1 border-2 border-gray-300 border-dashed rounded-md">
-                        <div class="space-y-1 text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path class="text-gray-400 stroke-current" stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <div class="flex text-sm text-gray-600">
-                                <label class="relative font-medium text-indigo-600 rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-gray-500 dark:text-white">
-                                    <span @click="importFile"> Upload a file </span>
-                                </label>
-                            </div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400">
-                                CSV file up to 10MB
-                            </p>
-                        </div>
-                    </div>
-                    <p v-if="form.file" class="mt-1 text-lg tracking-tighter text-indigo-600 dark:text-white">
-                        {{ form.file.name }}
-                        <span class="float-right p-0">
-                            <JetButton class="rounded-md" style="padding:0.25em!important" @click="resetForm"> &nbsp;&times;&nbsp; </JetButton>
-                        </span>
-                        <JetInputError :message="form.errors.file" />
-                    </p>
-                </div>
-
-            </template>
-
-            <template #footer>
-                <JetSecondaryButton @click="closeImportDialog" :disabled="form.processing">
-                    Cancel
-                </JetSecondaryButton>
-
-                <JetButton :class="{ 'opacity-25': form.processing }" class="ml-3" @click="uploadFile" :disabled="form.processing || waitForFile">
-                    Import
-                </JetButton>
-            </template>
-        </JetDialogModal>
     </AppLayout>
 </template>
 
@@ -201,9 +150,12 @@
     import TailwindSelect from '@/Tailwind/Select.vue'
 
     import Swal from 'sweetalert2'
-    import fuzzysort from 'fuzzysort'
 
     export default defineComponent({
+        props: [
+            'users'
+        ],
+
         components: {
             Link,
             AppLayout,
@@ -217,111 +169,10 @@
             TailwindSelect,
         },
 
-        data() {
-            return {
-                selected: [],
-                name: '',
-                office: 'ALL',
-                regular: -1,
-                active: 1,
-                month: this.$page.props.month,
-                period: 'full',
-                unenrolled: this.$page.props.unenrolled,
-                createDialog: false,
-                editDialog: false,
-                importDialog: false,
-                loadingPreview: true,
-                toggleAllCheckbox: false,
-                form: this.$inertia.form({
-                    file: null,
-                }),
-                waitForFile: true,
-            }
-        },
-
         methods: {
-            uploadFile() {
-                this.form.post(route('employees.store'), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        Swal.fire(
-                            'Import successful',
-                            'Employees updated.',
-                            'success'
-                        )
-
-                        Inertia.reload({ only: ['employees'] })
-
-                        this.closeImportDialog()
-
-                        this.resetForm()
-                    },
-                });
-            },
-
-            resetForm() {
-                this.form.reset()
-
-                this.form.clearErrors()
-            },
-
-            showCreateDialog() {
-                this.createDialog = true
-            },
-
-            closeCreateDialog() {
-                this.createDialog = false
-            },
-
-            async importFile() {
-                this.waitForFile = true
-
-                const file = await window.showOpenFilePicker({
-                    types: [
-                        {
-                            description: 'CSV File',
-                            accept: {
-                                'text/csv': '.csv'
-                            },
-                        },
-                    ],
-                    excludeAcceptAllOption: true,
-                    multiple: false,
-                })
-
-                this.form.file = await file[0].getFile()
-
-                this.waitForFile = false
-            },
-
-            showImportDialog() {
-                this.importDialog = true
-            },
-
-            closeImportDialog() {
-                this.importDialog = false
-
-                this.resetForm()
-            },
-        },
-
-        watch: {
-            unenrolled: _.debounce(function(unenrolled) {
-                this.$inertia.get(route('employees.index'), unenrolled ? { unenrolled } : {}, {
-                    preserveState: true,
-                    preserveScroll: true,
-                })
-            }, 100)
-        },
-
-        computed: {
-            employees() {
-                return this.$page.props.employees
-                    .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
-                    .filter(e => this.office != 'ALL' ? this.office == e.office : true)
-                    .filter(e => this.regular != -1 ? e.regular == this.regular : true)
-                    .filter(e => this.active != -1 ? e.active == this.active : true)
-            },
-        },
+            filterLink(number) {
+                return !isNaN(number) || number === '...'
+            }
+        }
     })
 </script>

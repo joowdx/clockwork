@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Actions\Jetstream\DeleteUser;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -17,7 +20,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        return User::search($request->q);
+        return inertia('Users/Index', [
+            'users' => User::where('id', '<>', $request->user()->id)->paginate()
+        ]);
     }
 
     /**
@@ -27,7 +32,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('Users/Create');
     }
 
     /**
@@ -55,34 +60,33 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
+     * @param  \App\Http\Requests\UpdateUserRequest  $request
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function edit(User $user)
+    public function edit(UpdateUserRequest $request, User $user)
     {
-        //
+        return inertia('Users/Edit', compact('user'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\UpdateUserRequest  $request
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
     public function update(
-        Request $request,
+        UpdateUserRequest $request,
         User $user,
         UpdateUserProfileInformation $profileUpdater,
-        UpdateUserPassword $passwordUpdater
     ) {
-
         if ($request->except(['password', 'current_password'])) {
-
+            $profileUpdater->update($user, $request->except(['password', 'current_password']));
         }
 
-        if ($request->hasAny(['password', 'current_password'])) {
-            $passwordUpdater->update($user, $request->all());
+        if ($request->filled('password')) {
+            $user->forceFill(['password' => Hash::make($request->password)]);
         }
     }
 
@@ -92,8 +96,10 @@ class UserController extends Controller
      * @param  \App\Models\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy(User $user, DeleteUser $deleter)
     {
-        //
+        $deleter->delete($user);
+
+        return redirect()->route('users.index');
     }
 }
