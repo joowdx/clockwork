@@ -66,7 +66,9 @@ class UserController extends Controller
      */
     public function edit(UpdateUserRequest $request, User $user)
     {
-        return inertia('Users/Edit', compact('user'));
+        return inertia('Users/Edit', [
+            'updateUser' => $user
+        ]);
     }
 
     /**

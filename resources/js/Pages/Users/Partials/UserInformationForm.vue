@@ -100,17 +100,17 @@
         },
 
         props: [
-            'user'
+            'updateUser'
         ],
 
         data() {
             return {
                 form: this.$inertia.form({
-                    id: this.user?.id,
-                    name: this.user?.name,
-                    username: this.user?.username,
-                    title: this.user?.title,
-                    administrator: this.user?.administrator,
+                    id: this.updateUser?.id,
+                    name: this.updateUser?.name,
+                    username: this.updateUser?.username,
+                    title: this.updateUser?.title,
+                    administrator: this.updateUser?.administrator,
                     password: null,
                 }),
             }
@@ -118,7 +118,7 @@
 
         methods: {
             save() {
-                this.form.transform(data => this.user ? { ...data, _method: 'PUT' } : data).post(this.link, {
+                this.form.transform(data => this.updateUser ? { ...data, _method: 'PUT' } : data).post(this.link, {
                     preserveScroll: true,
                     onSuccess: () => this.form.reset('password')
                 });
@@ -127,7 +127,7 @@
 
         computed: {
             link() {
-                return route(`users.${this.user?'update':'store'}`, this.user ? {user: this.form.id} :  {})
+                return route(`users.${this.updateUser?'update':'store'}`, this.updateUser ? {user: this.form.id} :  {})
             }
         }
     })

@@ -2,17 +2,17 @@
     <AppLayout title="Users">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
-                <Link class="underline" :href="route('users.index')">Users</Link> / {{ user.username }}
+                <Link class="underline" :href="route('users.index')">Users</Link> / {{ updateUser.username }}
             </h2>
         </template>
 
         <div>
             <div class="py-10 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <UserInformationForm :user="user" />
+                <UserInformationForm :updateUser="updateUser" />
 
                 <JetSectionBorder />
 
-                <DeleteUserForm :user="user" />
+                <DeleteUserForm :updateUser="updateUser" />
 
             </div>
         </div>
@@ -29,7 +29,7 @@
 
     export default defineComponent({
         props: [
-            'user'
+            'updateUser'
         ],
 
         components: {
