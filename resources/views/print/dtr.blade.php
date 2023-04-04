@@ -19,9 +19,6 @@
                             <td class="italic font-xs arial" colspan=6 >Civil Service Form No. 48</td>
                         </tr>
                         <tr>
-                            <td colspan=6></td>
-                        </tr>
-                        <tr>
                             <td class="center bahnschrift font-xl bold" colspan=6>DAILY TIME RECORD</td>
                         </tr>
                         <tr>
@@ -166,9 +163,7 @@
                                 </tr>
                             @endif
                         @endfor
-                        <tr>
-                            <td colspan=6></td>
-                        </tr>
+                        <tr style="height:10pt"> </tr>
                         <tr>
                             <td colspan=2 class="font-md cascadia right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
                             @if (@$calculate)
@@ -203,17 +198,22 @@
                             <td colspan=6></td>
                         </tr>
                         <tr>
+                            <td class="underline" colspan=6></td>
+                        </tr>
+                        <tr>
+                            <td class="bahnschrift-light top center font-sm" colspan=6>Supervisor</td>
+                        </tr>
+                        <tr>
                             <td colspan=6></td>
                         </tr>
                         <tr>
                             <td class="underline" colspan=6></td>
                         </tr>
                         <tr>
-                            <td class="bahnschrift-light top center font-sm" colspan=6>Office/Department Head</td>
+                            <td class="bahnschrift-light top center font-sm" colspan=6>Department Head</td>
                         </tr>
                         <tr>
-                            <td colspan=6>
-                            </td>
+                            <td colspan=6></td>
                         </tr>
                         <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
                             <td colspan=1 style="position:relative;">
