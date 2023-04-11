@@ -26,7 +26,6 @@ Route::get('/', fn () => redirect()->route('dashboard'));
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:non-readonly'])->group(function () {
         Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
-        Route::resource('users', ScannerController::class);
         Route::resource('scanners', ScannerController::class);
         Route::resource('users', UserController::class);
         Route::resource('employees', EmployeeController::class)->except(['show']);
