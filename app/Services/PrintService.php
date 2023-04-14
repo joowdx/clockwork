@@ -121,7 +121,8 @@ class PrintService
 
     private function query(): Builder
     {
-        $query = $this->employee->query();
+        $query = $this->employee->query()
+            ->whereActive(true);
 
         switch ($this->request->by) {
             case 'group':
