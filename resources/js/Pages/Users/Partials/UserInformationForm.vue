@@ -50,9 +50,9 @@
 
             <!-- Confirm Password -->
             <div v-if="! user" class="col-span-6 sm:col-span-4">
-                <JetLabel for="confirm_password" value="Confirm Password" />
-                <JetInput id="confirm_password" type="password" class="block w-full mt-1" v-model="form.confirm_password" autocomplete="confirm_password" />
-                <JetInputError :message="form.errors.password" class="mt-2" />
+                <JetLabel for="password_confirmation " value="Confirm Password" />
+                <JetInput id="password_confirmation " type="password" class="block w-full mt-1" v-model="form.password_confirmation " autocomplete="password_confirmation " />
+                <JetInputError :message="form.errors.password_confirmation" class="mt-2" />
             </div>
 
             <JetButton class="hidden" :disabled="form.processing">
@@ -112,13 +112,14 @@
                     title: this.updateUser?.title,
                     administrator: this.updateUser?.administrator,
                     password: null,
+                    password_confirmation : null,
                 }),
             }
         },
 
         methods: {
             save() {
-                this.form.transform(data => this.updateUser ? { ...data, _method: 'PUT' } : data).post(this.link, {
+                this.form[this.updateUser ? 'put' : 'post'](this.link, {
                     preserveScroll: true,
                     onSuccess: () => this.form.reset('password')
                 });

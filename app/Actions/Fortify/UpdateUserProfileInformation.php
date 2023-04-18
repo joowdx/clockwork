@@ -32,7 +32,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => $input['username'],
             'name' => $input['name'],
             'title' => $input['title'],
-            'administrator' => @$input['administrator'],
+            'administrator' => (bool) @$input['administrator'],
         ])->save();
     }
 

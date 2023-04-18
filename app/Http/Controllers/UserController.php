@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Jetstream\DeleteUser;
@@ -82,13 +83,14 @@ class UserController extends Controller
         UpdateUserRequest $request,
         User $user,
         UpdateUserProfileInformation $profileUpdater,
+        ResetUserPassword $passwordReseter,
     ) {
         if ($request->except(['password', 'current_password'])) {
             $profileUpdater->update($user, $request->except(['password', 'current_password']));
         }
 
-        if ($request->filled('password')) {
-            $user->forceFill(['password' => Hash::make($request->password)]);
+        if ($request->filled('password') || $request->filled('confirm_password')) {
+            $passwordReseter->reset($user, $request->only(['password', 'confirm_password']));
         }
     }
 
