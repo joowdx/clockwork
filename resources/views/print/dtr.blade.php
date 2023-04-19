@@ -81,13 +81,15 @@
 
                         @php($daysTotal = 0)
 
+                        @php($forChange = false)
+
                         @for ($day = 1; $day <= 31; $day++)
                             @php($date = $month->clone()->setDay($day))
 
                             @php(@[$in1, $out1, $in2, $out2, $ut] = array_values(@$attlogs[$date->format('Y-m-d')] ?? []))
 
                             @if ($date->between($start, $end))
-                                <tr @class(['weekend' => $weekend = $date->format('d') == $day && $date->isWeekend(), 'invalid' => $ut === null && (! $employee->regular || $date->isWeekday()) && $date->format('d') == $day && $employee->logsForTheDay($date)->isNotEmpty()])>
+                                <tr @class(['weekend' => $weekend = $date->format('d') == $day && $date->isWeekend(), 'invalid' => @$ut->invalid && (! $employee->regular || $date->isWeekday()) && $date->format('d') == $day && $employee->logsForTheDay($date)->isNotEmpty()])>
                                     <td class="border right courier bold" style="padding-right:14pt;">
                                         {{ $date->format('d') == $day ? $day : '' }}
                                     </td>
@@ -146,7 +148,9 @@
                                 @if (@$calculate)
                                     @php($utTotal += (@$ut?->total ?? 0))
 
-                                    @php($daysTotal += $ut ? 1 : 0)
+                                    @php($daysTotal += @$ut?->count ? 1 : 0)
+
+                                    @php($forChange = @$forChange || @$ut->invalid && (! $employee->regular || $date->isWeekday()) && $date->format('d') == $day && $employee->logsForTheDay($date)->isNotEmpty() )
                                 @endif
 
                             @elseif($date->format('d') == $day)
@@ -167,7 +171,7 @@
                         <tr>
                             <td colspan=2 class="font-md cascadia right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
                             @if (@$calculate)
-                                <td colspan=2 class="underline consolas font-md left bold"> {{ ($daysTotal ? "{$daysTotal} days " : '') }} </td>
+                                <td colspan=2 @class(['invalid' => @$forChange, 'underline consolas font-md left bold' => true])> {{ ($daysTotal ? "{$daysTotal} days " : '') }} </td>
                                 <td colspan=2 class="underline consolas font-sm right"> {{ ($utTotal ? "t\u = {$utTotal} mins" : '') }} </td>
                             @else
                                 <td colspan=4 class="underline consolas font-md left bold"> </td>
