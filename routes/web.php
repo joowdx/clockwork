@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::middleware(['can:non-readonly'])->group(function () {
         Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
         Route::resource('scanners', ScannerController::class);
