@@ -26,7 +26,6 @@ abstract class BaseRepository implements Repository
      * Initialize current builder.
      *
      * @param  Illuminate\Database\Eloquent\Builder  $builder
-     * @return void
      */
     protected function init(Builder &$builder): void
     {
@@ -44,8 +43,6 @@ abstract class BaseRepository implements Repository
 
     /**
      * Alias of "getBuilder" method.
-     *
-     * @return Builder
      */
     protected function builder(): Builder
     {
@@ -54,8 +51,6 @@ abstract class BaseRepository implements Repository
 
     /**
      * Returns the bulder.
-     *
-     * @return Builder
      */
     protected function getBuilder(): Builder
     {
@@ -65,9 +60,6 @@ abstract class BaseRepository implements Repository
     /**
      * Returns the builder if set to true and reinit.
      * Otherwise the result then reinit.
-     *
-     * @param  bool  $builder
-     * @return mixed
      */
     public function get(bool $builder = false): mixed
     {

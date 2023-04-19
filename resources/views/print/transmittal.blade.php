@@ -62,9 +62,24 @@
                         <td></td>
                         <td colspan=8 class="cascadia center">
                             Biometric Printouts for
-                            <span class="bold">
-                                {{ "{$from->format('d')}-{$to->format('d F Y')}" }}
-                            </span>
+                            @if(isset($from, $to))
+                                <span class="bold">
+                                    {{ "{$from->format('d')}-{$to->format('d F Y')}" }}
+                                </span>
+                            @else
+                                <span class="bold">
+                                    {{
+                                        $dates->sort()->map(fn ($date) => [
+                                            'year' => $date->format('Y'),
+                                            'month' => $date->format('M'),
+                                            'day' => $date->format('d'),
+                                        ])
+                                        ->groupBy(fn ($date) => $date['month'].$date['year'])
+                                        ->map(fn ($dates, $index) => collect($dates)->map(fn ($e) => $e['day'])->join(',').' '.$dates[0]['month'].' '.$dates[0]['year'])
+                                        ->join(', ')
+                                    }}
+                                </span>
+                            @endif
                         </td>
                         <td></td>
                     </tr>

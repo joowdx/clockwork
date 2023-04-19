@@ -13,7 +13,6 @@ class TimeLogsProcessed
     /**
      * Create a new event instance.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
      * @param  Illuminate\Http\UploadedFile  $file
      * @return void
      */

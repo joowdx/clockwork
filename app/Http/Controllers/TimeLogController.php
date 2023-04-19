@@ -32,7 +32,6 @@ class TimeLogController extends Controller
      *
      * @param  App\Http\Requests\TimeLog\StoreRequest  $request
      * @param  App\Contracts\Import  $import
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(StoreRequest $request, Import $import): RedirectResponse
     {

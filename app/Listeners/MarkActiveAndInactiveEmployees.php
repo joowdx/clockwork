@@ -20,7 +20,6 @@ class MarkActiveAndInactiveEmployees
     /**
      * Handle the event.
      *
-     * @param  \App\Events\TimeLogsProcessed  $event
      * @return void
      */
     public function handle(TimeLogsProcessed $event)

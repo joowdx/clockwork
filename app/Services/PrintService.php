@@ -8,6 +8,7 @@ use App\Repositories\ScannerRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PrintService
 {
@@ -37,6 +38,7 @@ class PrintService
         return [
             ...$this->range(),
             'employees' => $this->employees(),
+            'transmittal' => $this->request->transmittal,
         ];
     }
 
@@ -50,7 +52,8 @@ class PrintService
         return [
             'offices' => $this->offices(),
             'scanners' => $this->scanners(),
-            'date' => Carbon::create($this->request->date),
+            'dates' => collect($this->request->dates)->sort()->map(fn ($date) => Carbon::create($date)),
+            'transmittal' => $this->request->transmittal,
         ];
     }
 
@@ -88,14 +91,14 @@ class PrintService
                         fn ($o) => [
                             $o => [
                                 'scanners' => $this->scanner->query()->whereHas(
-                                        'employees',
-                                        function ($query) {
-                                            $query->where(fn ($q) => collect($this->request->groups)->each(fn ($e) => $q->orWhereJsonContains('groups', $e)));
-                                        },
-                                    )->when(
-                                        $this->request->filled('scanners'),
-                                        fn ($q) => $q->whereIn('id', $this->request->scanners),
-                                    )->get(),
+                                    'employees',
+                                    function ($query) {
+                                        $query->where(fn ($q) => collect($this->request->groups)->each(fn ($e) => $q->orWhereJsonContains('groups', $e)));
+                                    },
+                                )->when(
+                                    $this->request->filled('scanners'),
+                                    fn ($q) => $q->whereIn('id', $this->request->scanners),
+                                )->get(),
                             ],
                         ]
                     );
@@ -135,7 +138,7 @@ class PrintService
                     $query->whereIn('office', $this->request->offices);
                 });
                 $query->whereHas('timelogs', function ($q) {
-                    $q->whereDate('time', $this->request->date);
+                    $q->whereIn(DB::raw('DATE(time)'), $this->request->dates);
                     $q->whereHas('scanner', function ($q) {
                         $q->when(
                             $this->request->has('scanners'),
@@ -147,7 +150,7 @@ class PrintService
                 $query->with([
                     'timelogs.scanner',
                     'timelogs' => function ($q) {
-                        $q->whereDate('time', $this->request->date);
+                        $q->whereIn(DB::raw('DATE(time)'), $this->request->dates);
                         $q->whereHas('scanner', function ($q) {
                             $q->when(
                                 $this->request->has('scanners'),
@@ -157,7 +160,7 @@ class PrintService
                         });
                     },
                 ]);
-                break; ;
+                break;
             case 'dtr':
             case 'employee':
                 $query->with([
@@ -199,7 +202,7 @@ class PrintService
                 ])
                 ->when($this->request->filled('offices'), fn ($q) => $q->whereIn('office', $this->request->offices), fn ($q) => $q->whereIn('id', $this->request->employees))
                 ->when($this->request->filled('regular'), fn ($q) => $q->whereRegular((bool) $this->request->regular));
-                break; ;
+                break;
         }
 
         return $query;

@@ -21,7 +21,6 @@ class BackUpAndSync
     /**
      * Handle the event.
      *
-     * @param  \App\Events\EmployeesImported|TimeLogsProcessed  $event
      * @return void
      */
     public function handle(EmployeesImported|TimeLogsProcessed $event)

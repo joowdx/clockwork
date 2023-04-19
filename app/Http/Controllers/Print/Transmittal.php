@@ -12,6 +12,8 @@ class Transmittal extends Component
 
     public $to;
 
+    public $dates;
+
     public function render()
     {
         return view('print.transmittal');

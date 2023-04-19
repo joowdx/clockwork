@@ -12,13 +12,15 @@ class PrintRequest extends FormRequest
     {
         return match ($this->route('by')) {
             'office' => [
-                'date' => 'required|date:Y-m-d',
+                'dates' => 'required|array',
+                'dates.*' => 'required|date:Y-m-d',
                 'offices' => 'required_without:groups|array',
                 'offices.*' => 'string|distinct|exists:employees,office',
                 'scanners' => 'sometimes|required|array',
                 'scanners.*' => 'uuid|exists:scanners,id',
                 'groups' => 'required_without:offices|array',
                 'groups.*' => 'string|distinct|string',
+                'transmittal' => 'nullable|boolean',
             ],
             'employee' => [
                 'period' => 'required|in:custom,full,1st,2nd',
@@ -32,6 +34,7 @@ class PrintRequest extends FormRequest
                 'scanners' => 'sometimes|required|array',
                 'scanners.*' => 'uuid|exists:scanners,id',
                 'regular' => 'sometimes|boolean|exclude_with:employees',
+                'transmittal' => 'nullable|boolean',
             ],
             default => [
                 'period' => 'required|in:custom,full,1st,2nd',
@@ -60,6 +63,7 @@ class PrintRequest extends FormRequest
                 'weekends.regular' => 'sometimes|boolean',
                 'days' => 'array|nullable',
                 'days.*' => 'integer|min:1|max:31|distinct',
+                'transmittal' => 'nullable|boolean',
             ],
         };
     }

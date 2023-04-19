@@ -29,6 +29,7 @@
     "dependencies": {
         "@headlessui/vue": "^1.5.0",
         "@heroicons/vue": "^1.0.6",
+        "@vuepic/vue-datepicker": "^4.4.0",
         "autoprefixer": "^10.4.13",
         "daisyui": "^2.38.1",
         "fuzzysort": "^1.2.1",

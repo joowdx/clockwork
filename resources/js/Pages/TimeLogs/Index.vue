@@ -9,7 +9,7 @@
         <div class="py-12">
             <div class="mx-auto space-y-3 max-w-7xl sm:px-6 lg:px-8 bg-gray" style="margin-top:-20px!important">
                 <div class="flex self-end justify-end col-span-4 mt-3 space-x-3 justify-self-end">
-                    <label v-if="by == 'employee'" class="flex items-center">
+                    <label class="flex items-center">
                         <JetCheckbox v-model:checked="transmittal" />
                         <span class="ml-2 text-sm text-gray-600">Generate transmittal</span>
                     </label>
@@ -70,7 +70,8 @@
                     <template v-else >
                         <div class="col-span-6 sm:col-span-4 lg:col-span-2">
                             <JetLabel value="Date" />
-                            <JetInput class="w-full uppercase" type="date" v-model="date" required />
+                            <!-- <JetInput class="w-full uppercase" type="date" v-model="date" required /> -->
+                            <VueDatePicker v-model="dates" multi-dates :enable-time-picker="false" :dark="dark" />
                         </div>
                         <div class="col-span-8 sm:hidden lg:col-span-4 lg:inline-block"></div>
                     </template>
@@ -488,6 +489,9 @@
 
     import Swal from 'sweetalert2'
     import fuzzysort from 'fuzzysort'
+    import VueDatePicker from '@vuepic/vue-datepicker'
+
+    import '@vuepic/vue-datepicker/dist/main.css'
 
     export default defineComponent({
         components: {
@@ -501,6 +505,7 @@
             JetInputError,
             JetSecondaryButton,
             TailwindSelect,
+            VueDatePicker,
         },
 
         mounted() {
@@ -508,6 +513,25 @@
                 this.by = 'employee'
                 this.scanners = this.$page.props.scanners?.map(e => ({name: e.name.toUpperCase(), value: e.id}))
             }})
+
+            this.observer = new MutationObserver(mutations => {
+                for (const m of mutations) {
+                    const newValue = m.target.getAttribute(m.attributeName);
+                    this.$nextTick(() => {
+                        this.onClassChange(newValue, m.oldValue);
+                    });
+                }
+            });
+
+            this.observer.observe(document.documentElement, {
+                attributes: true,
+                attributeOldValue : true,
+                attributeFilter: ['class'],
+            });
+        },
+
+        beforeDestroy() {
+            this.observer.disconnect();
         },
 
         data() {
@@ -548,6 +572,7 @@
                 transmittal: false,
                 period: this.$page.props.period,
                 date: this.$page.props.date,
+                dates: [this.$page.props.date],
                 month: this.$page.props.month,
                 from: this.$page.props.from,
                 to: this.$page.props.to,
@@ -562,6 +587,7 @@
                     file: null,
                     scanner: null,
                 }),
+                dark: null,
             }
         },
 
@@ -620,6 +646,16 @@
                         this.resetForm()
                     },
                 });
+            },
+
+
+            onClassChange(classAttrValue) {
+                const classList = classAttrValue.split(' ');
+                if (classList.includes('dark')) {
+                    this.dark = true
+                } else {
+                    this.dark = false
+                }
             },
 
             clearFile() {
@@ -803,15 +839,17 @@
                     case 'group': {
                         return route('print', {
                             by: 'office',
-                            date: this.date,
+                            dates: this.dates,
                             groups: this.selected,
+                            transmittal: this.transmittal,
                         });
                     }
                     case 'office': {
                         return route('print', {
                             by: 'office',
-                            date: this.date,
+                            dates: this.dates,
                             offices: this.selected,
+                            transmittal: this.transmittal,
                         });
                     }
                     case 'employee': {

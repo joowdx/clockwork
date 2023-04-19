@@ -50,7 +50,6 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\Employee\StoreRequest  $request
      * @param  \App\Contracts\Import  $import;
      * @return \Illuminate\Http\Response
      */
@@ -72,7 +71,6 @@ class EmployeeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\Employee\UpdateRequest  $request
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
@@ -101,7 +99,6 @@ class EmployeeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
