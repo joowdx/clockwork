@@ -14,6 +14,10 @@ class Transmittal extends Component
 
     public $dates;
 
+    public $group;
+
+    public $copies = 2;
+
     public function render()
     {
         return view('print.transmittal');

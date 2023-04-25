@@ -7,9 +7,14 @@
     </head>
     <body>
         @if (@$transmittal)
-            @for ($i = 0; $i < 2; $i++)
-                <livewire:print.transmittal :employees="$offices->map(fn ($office) => [...(@$office['regular'] ?? []), ...(@$office['nonregular'] ?? [])])->flatten()->sortBy(fn ($employee) => $employee->name_format->fullStartLastInitialMiddle)->values()" :dates="$dates" />
-            @endfor
+            <livewire:print.transmittal
+                :employees="$offices->map(fn ($office) => [
+                    ...(@$office['regular'] ?? []), ...(@$office['nonregular'] ?? [])
+                    ])->flatten()->sortBy(fn ($employee) => $employee->name_format->fullStartLastInitialMiddle)->values()
+                "
+                :dates="$dates"
+                :group="true"
+            />
         @endif
         @foreach ($dates as $date)
             @foreach ($offices as $office => $employees)
