@@ -132,10 +132,11 @@ class TimeLogService implements Import
             'in' => match ($shift) {
                 'am' => $logs
                     ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? -1 : 1)
+                    ->reject(fn ($log) => $log->time->gte($log->time->clone()->setTime('11', '00')))
                     ->first(fn ($log) => $log->time->clone()->setTime('12', '00')->gt($log->time)),
                 'pm' => $logs
                     ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? -1 : 1)
-                    ->first(fn ($log) => $log->time->clone()->setTime('12', '00')->lt($log->time)),
+                    ->first(fn ($log) => $log->time->clone()->setTime('11', '00')->lt($log->time)),
                 default => null,
             },
             'out' => match ($shift) {
