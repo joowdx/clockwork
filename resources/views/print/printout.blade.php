@@ -23,7 +23,9 @@
                 @endforeach
             @else
                 @foreach ($employees as $employee)
-                    @if($csc_format ?? $employee->csc_format)
+                    @if(request()->by == 'search')
+                        <livewire:print.preview :employee="$employee" :from="$from" :to="$to" />
+                    @elseif($csc_format ?? @$employee->csc_format)
                         <livewire:print.dtr :employee="$employee" :from="$from" :to="$to" />
                     @else
                         <livewire:print.attlogs :employee="$employee" :from="$from" :to="$to" />
@@ -31,7 +33,7 @@
                 @endforeach
             @endif
         </main>
-        @livewireScripts()
+        {{-- @livewireScripts() --}}
         @stack('scripts')
     </body>
     <style>

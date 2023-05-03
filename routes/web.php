@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AssignmentController;
-use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\PrintController;
@@ -41,5 +40,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         // Route::get('scanners/{scanner}/sync-time', 'syncTime')->name('scanners.sync-time');
     });
 
-    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee'])->name('print');
+
+    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
 });

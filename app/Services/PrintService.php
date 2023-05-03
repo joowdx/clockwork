@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Requests\PrintRequest;
+use App\Models\Employee;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,7 @@ class PrintService
         private EmployeeRepository $employee,
         private ScannerRepository $scanner,
     ) {
+        $employee->query()->whereActive(true);
     }
 
     public function data(string $by): array
@@ -39,6 +41,14 @@ class PrintService
             ...$this->range(),
             'employees' => $this->employees(),
             'transmittal' => $this->request->transmittal,
+        ];
+    }
+
+    public function search(): array
+    {
+        return [
+            ...$this->range(),
+            'employees' => $this->query()->get(),
         ];
     }
 
@@ -122,10 +132,9 @@ class PrintService
             ->get();
     }
 
-    private function query(): Builder
+    private function query(?string $query = null): Builder
     {
-        $query = $this->employee->query()
-            ->whereActive(true);
+        $query = $this->employee->query();
 
         switch ($this->request->by) {
             case 'group':
@@ -163,49 +172,90 @@ class PrintService
                 break;
             case 'dtr':
             case 'employee':
-                $query->with([
-                    'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
-                    'timelogs' => function ($query) {
-                        ['from' => $from, 'to' => $to] = $this->range();
-                        $query->whereHas('scanner', fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)))
-                            ->when(
-                                $this->request->filled('days'),
-                                function ($query) {
-                                    $query->where(function ($query) {
-                                        collect($this->request->days)->each(fn ($day) => $query->orWhereDay('time', $day));
-                                    });
-                                }
-                            )->when(
-                                @$this->request->weekends['excluded'] xor @$this->request->weekdays['excluded'],
-                                function ($query) use ($from, $to) {
-                                    $filter = function ($week) use ($query, $from, $to) {
-                                        $query->where(function ($query) use ($from, $to, $week) {
-                                            collect($from->toPeriod($to)->toArray())->reject->$week()->each(function ($date) use ($query) {
-                                                $query->orWhereDate('time', $date);
-                                            });
-                                        });
-                                    };
-
-                                    if ($this->request->weekends['excluded']) {
-                                        $filter('isWeekend');
-                                    }
-                                    if ($this->request->weekdays['excluded']) {
-                                        $filter('isWeekday');
-                                    }
-                                },
-                                function ($query) use ($from, $to) {
-                                    $query->whereBetween('time', [$from->subDay(), $to->addDay()]);
-                                }
-                            );
-                    },
-                    'timelogs.scanner',
-                ])
-                ->when($this->request->filled('offices'), fn ($q) => $q->whereIn('office', $this->request->offices), fn ($q) => $q->whereIn('id', $this->request->employees))
+                $this->timelogs($query)->when($this->request->filled('offices'), fn ($q) => $q->whereIn('office', $this->request->offices), fn ($q) => $q->whereIn('id', $this->request->employees))
                 ->when($this->request->filled('regular'), fn ($q) => $q->whereRegular((bool) $this->request->regular));
+                break;
+            case 'search':
+                if (isset($this->request->name['middle']) && isset($this->request->name['extension'])) {
+                    if (($employee = $this->find($this->request->name))?->exists) {
+                        $this->timelogs($query)->whereId($employee->id);
+                    } else if (($employee = $this->find([...$this->request->name, 'extension' => null]))?->exists) {
+                        $this->timelogs($query)->whereId($employee->id);
+                    } else if (($employee = $this->find([...$this->request-> name, 'middle' => null]))?->exits) {
+                        $this->timelogs($query)->whereId($employee->id);
+                    } else {
+                        abort(404);
+                    }
+                }
+
+                $employee = $this->find($this->request->name);
+
+                if (isset($this->request->name['middle']) && ! $employee?->exists) {
+                    $employee = $this->find([...$this->request->name, 'middle' => null]);
+                }
+
+                if (isset($this->request->name['extension']) && ! $employee?->exists) {
+                    $employee = $this->find([...$this->request->name, 'extension' => null]);
+                }
+
+                abort_unless($employee?->exists, 404);
+
+                $this->timelogs($query)->whereId($employee->id);
+
                 break;
         }
 
         return $query;
+    }
+
+    private function find($name)
+    {
+        $query = Employee::query();
+
+        collect($name)->filter()->each(fn ($name, $field) => $query->where("name->$field", strtoupper($name)));
+
+        return $query->first(['id']);
+    }
+
+    private function timelogs(Builder &$query): Builder
+    {
+        return $query->with([
+            'scanners' => fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)),
+            'timelogs' => function ($query) {
+                ['from' => $from, 'to' => $to] = $this->range();
+                $query->whereHas('scanner', fn ($q) => $q->when($this->request->has('scanners'), fn ($q) => $q->whereIn('scanners.id', $this->request->scanners)))
+                    ->when(
+                        $this->request->filled('days'),
+                        function ($query) {
+                            $query->where(function ($query) {
+                                collect($this->request->days)->each(fn ($day) => $query->orWhereDay('time', $day));
+                            });
+                        }
+                    )->when(
+                        @$this->request->weekends['excluded'] xor @$this->request->weekdays['excluded'],
+                        function ($query) use ($from, $to) {
+                            $filter = function ($week) use ($query, $from, $to) {
+                                $query->where(function ($query) use ($from, $to, $week) {
+                                    collect($from->toPeriod($to)->toArray())->reject->$week()->each(function ($date) use ($query) {
+                                        $query->orWhereDate('time', $date);
+                                    });
+                                });
+                            };
+
+                            if ($this->request->weekends['excluded']) {
+                                $filter('isWeekend');
+                            }
+                            if ($this->request->weekdays['excluded']) {
+                                $filter('isWeekday');
+                            }
+                        },
+                        function ($query) use ($from, $to) {
+                            $query->whereBetween('time', [$from->subDay(), $to->addDay()]);
+                        }
+                    );
+            },
+            'timelogs.scanner',
+        ]);
     }
 
     private function range(): array
