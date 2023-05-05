@@ -9,9 +9,7 @@
     <body>
         <main align=center>
             @if (@$transmittal)
-                @for ($i = 0; $i < 2; $i++)
-                    <livewire:print.transmittal :employees="$employees" :from="$from" :to="$to" />
-                @endfor
+                <livewire:print.transmittal :employees="$employees" :from="$from" :to="$to" />
                 @foreach ($employees->groupBy('office') as $office => $employeeGroup)
                     @foreach ($employeeGroup as $employee)
                         @if($csc_format ?? $employee->csc_format)
