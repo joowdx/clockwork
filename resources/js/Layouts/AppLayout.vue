@@ -1,22 +1,20 @@
 <template>
-    <div>
-        <Head :title="title" />
+    <Head :title="title" />
 
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <section class="bg-white dark:bg-black">
-                <tailwind-navigation :navigation="navigation" :dropdown="dropdown" />
-            </section>
+    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <section class="bg-white dark:bg-black">
+            <tailwind-navigation :navigation="navigation" :dropdown="dropdown" />
+        </section>
 
-            <header class="shadow bg-gray-50 dark:bg-gray-800" v-if="$slots.header">
-                <div class="px-4 py-4 mx-auto text-gray-800 max-w-7xl sm:px-6 lg:px-8 dark:text-gray-200">
-                    <slot name="header"> </slot>
-                </div>
-            </header>
+        <header class="shadow bg-gray-50 dark:bg-gray-800" v-if="$slots.header">
+            <div class="px-4 py-4 mx-auto text-gray-800 max-w-7xl sm:px-6 lg:px-8 dark:text-gray-200">
+                <slot name="header"> </slot>
+            </div>
+        </header>
 
-            <main>
-                <slot></slot>
-            </main>
-        </div>
+        <main>
+            <slot></slot>
+        </main>
     </div>
 </template>
 
