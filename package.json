@@ -31,7 +31,7 @@
         "@heroicons/vue": "^1.0.6",
         "@vuepic/vue-datepicker": "^4.4.0",
         "autoprefixer": "^10.4.13",
-        "daisyui": "^2.38.1",
+        "daisyui": "^2.51.6",
         "fuzzysort": "^1.2.1",
         "moment": "^2.29.4",
         "sweetalert2": "^11.4.4"
