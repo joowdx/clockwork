@@ -18,6 +18,7 @@ use App\Repositories\UserRepository;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider

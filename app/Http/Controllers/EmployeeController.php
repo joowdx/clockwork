@@ -27,7 +27,7 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        return inertia('Employees/Index', [
+        return inertia('Employees/Index2', [
             'unenrolled' => (bool) $request->unenrolled,
             'employees' => $employees = $this->employee->get($request->unenrolled),
             'offices' => auth()->user()->administrator
