@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a9e569ec0c137fc7174659c584ae584",
+    "content-hash": "d75cc9aab1ae4f32ff2033858455bb06",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2397,16 +2397,16 @@
         },
         {
             "name": "laravel/telescope",
-            "version": "v4.13.1",
+            "version": "v4.14.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/telescope.git",
-                "reference": "f8afaccfb5b636aa20735e0a390ab312a6f57c65"
+                "reference": "d3de7650d846badfa067e2bc777392228a97df16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/telescope/zipball/f8afaccfb5b636aa20735e0a390ab312a6f57c65",
-                "reference": "f8afaccfb5b636aa20735e0a390ab312a6f57c65",
+                "url": "https://api.github.com/repos/laravel/telescope/zipball/d3de7650d846badfa067e2bc777392228a97df16",
+                "reference": "d3de7650d846badfa067e2bc777392228a97df16",
                 "shasum": ""
             },
             "require": {
@@ -2418,7 +2418,9 @@
             "require-dev": {
                 "ext-gd": "*",
                 "guzzlehttp/guzzle": "^6.0|^7.0",
+                "laravel/octane": "^1.4",
                 "orchestra/testbench": "^6.0|^7.0|^8.0",
+                "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.0"
             },
             "type": "library",
@@ -2460,9 +2462,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/telescope/issues",
-                "source": "https://github.com/laravel/telescope/tree/v4.13.1"
+                "source": "https://github.com/laravel/telescope/tree/v4.14.3"
             },
-            "time": "2023-02-06T14:37:41+00:00"
+            "time": "2023-05-19T18:34:30+00:00"
         },
         {
             "name": "laravel/tinker",
