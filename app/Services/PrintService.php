@@ -179,9 +179,9 @@ class PrintService
                 if (isset($this->request->name['middle']) && isset($this->request->name['extension'])) {
                     if (($employee = $this->find($this->request->name))?->exists) {
                         $this->timelogs($query)->whereId($employee->id);
-                    } else if (($employee = $this->find([...$this->request->name, 'extension' => null]))?->exists) {
+                    } elseif (($employee = $this->find([...$this->request->name, 'extension' => null]))?->exists) {
                         $this->timelogs($query)->whereId($employee->id);
-                    } else if (($employee = $this->find([...$this->request-> name, 'middle' => null]))?->exits) {
+                    } elseif (($employee = $this->find([...$this->request->name, 'middle' => null]))?->exits) {
                         $this->timelogs($query)->whereId($employee->id);
                     } else {
                         abort(404);

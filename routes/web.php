@@ -40,6 +40,5 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         // Route::get('scanners/{scanner}/sync-time', 'syncTime')->name('scanners.sync-time');
     });
 
-
     Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
 });

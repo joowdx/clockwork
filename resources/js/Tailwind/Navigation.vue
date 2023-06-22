@@ -83,7 +83,6 @@
 
     import { Link } from '@inertiajs/inertia-vue3';
 
-    import ColorSchemeToggle from '@/PICT/ColorSchemeToggle.vue'
 
     import JetApplicationMark from '@/Jetstream/ApplicationMark.vue'
     import JetApplicationLogo from '@/Jetstream/ApplicationLogo.vue'
@@ -101,7 +100,6 @@
             MenuIcon,
             XIcon,
             Link,
-            ColorSchemeToggle,
             JetApplicationMark,
             JetApplicationLogo,
         },
