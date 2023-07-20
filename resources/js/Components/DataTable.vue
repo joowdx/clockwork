@@ -20,10 +20,10 @@ const props = defineProps({
     },
 })
 
-const update = (page = 1) => {
+const update = (page) => {
     form.transform((data) => ({
         ...data,
-        page,
+        ...(page ? {page} : {}),
         ...(props.queryStrings ?? {})
     })).get(props.items.path, {
         preserveState: true,
@@ -198,7 +198,7 @@ defineExpose({processing: computed(() => form.processing)})
             <slot name="links">
                 <div class="justify-center w-full col-span-3 btn-group sm:col-span-1">
                     <button
-                        @click="update()" class="btn"
+                        @click="update(1)" class="btn"
                         :class="{'btn-sm': compact}"
                         :disabled="form.processing || items?.current_page <= 1"
                     >
