@@ -16,9 +16,9 @@ class CheckDuplicateUids
             if (
                 ! collect($this->scanners($request->headers))
                     ->every(fn ($h) => $request->data->map(fn ($e) => $e[$h])
-                            ->filter(fn ($e) => $e !== '')
-                            ->duplicates()
-                            ->isEmpty()
+                        ->filter(fn ($e) => $e !== '')
+                        ->duplicates()
+                        ->isEmpty()
                     )
             ) {
                 $request->error = self::ERROR;

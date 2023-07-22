@@ -22,7 +22,7 @@ class OfficeService
                 ->whereNotNull('name', 'or'),
             'office'
         )->distinct('name')
-        ->orderBy('name');
+            ->orderBy('name');
     }
 
     public function get(): Collection

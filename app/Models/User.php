@@ -69,8 +69,8 @@ class User extends Authenticatable
     public function scanners(): BelongsToMany
     {
         return $this->belongsToMany(Scanner::class, 'assignments')
-                ->using(Assignment::class)
-                ->withTimestamps();
+            ->using(Assignment::class)
+            ->withTimestamps();
     }
 
     public function isAdministrator()

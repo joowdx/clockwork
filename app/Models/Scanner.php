@@ -53,24 +53,24 @@ class Scanner extends Model
     public function employees(): BelongsToMany
     {
         return $this->belongsToMany(Employee::class, 'enrollments')
-                ->using(Enrollment::class)
-                ->withPivot(['id', 'uid'])
-                ->withTimestamps();
+            ->using(Enrollment::class)
+            ->withPivot(['id', 'uid'])
+            ->withTimestamps();
     }
 
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'assignments')
-                ->using(Assignment::class)
-                ->withPivot('id')
-                ->withTimestamps();
+            ->using(Assignment::class)
+            ->withPivot('id')
+            ->withTimestamps();
     }
 
     public function timelogs(): HasMany
     {
         return $this->hasMany(TimeLog::class)
-                ->latest('time')
-                ->latest('id');
+            ->latest('time')
+            ->latest('id');
     }
 
     public function unrecognized(): HasMany
