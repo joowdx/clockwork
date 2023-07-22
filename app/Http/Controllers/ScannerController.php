@@ -9,8 +9,9 @@ use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;
-use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ScannerController extends Controller
 {
@@ -125,17 +126,13 @@ class ScannerController extends Controller
     public function download(Scanner $scanner, TimeLogService $service, ?ScannerDriver $driver)
     {
         if ($driver === null) {
-            return redirect()->back()->withErrors([
-                'message' => 'Please configure this device\'s driver.',
-            ]);
+            throw ValidationException::withMessages(['message' => 'Scanner is not properly configured.']);
         }
 
         try {
             $service->insert($driver->getFormattedAttlogs($scanner->id));
-        } catch (Exception $exception) {
-            return redirect()->back()->withErrors([
-                'message' => $exception->getMessage(),
-            ]);
+        } catch (ConnectionException  $exception) {
+            throw ValidationException::withMessages(['message' => $exception->getMessage()]);
         }
 
         return redirect()->back();
