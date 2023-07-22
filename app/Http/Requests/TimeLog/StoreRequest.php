@@ -14,19 +14,14 @@ class StoreRequest extends FormRequest
         private Import $import
     ) {
     }
-
-    // /**
-    //  * Get custom messages for validator errors.
-    //  *
-    //  * @return array
-    //  */
-    // public function messages()
-    // {
-    //     return [
-    //         'scanner.required' => 'Please select what scanner to import device logs for.',
-    //         'file.required' => 'Please choose a file.',
-    //     ];
-    // }
+  
+    public function messages()
+    {
+        return [
+            'scanner.required' => 'Please select which scanner to import device logs.',
+            'file.required' => 'Please choose a file.',
+        ];
+    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -36,10 +31,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'scanner' => [
-                'required',
-                'exists:scanners,id',
-            ],
+            'scanner' => 'required|exists:scanners,id',
             'file' => [
                 'required',
                 'file',

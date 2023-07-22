@@ -19,6 +19,7 @@ use App\Pipes\SplitCsvString;
 use App\Pipes\TransformEmployeeScannerData;
 use App\Traits\ParsesEmployeeImport;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
@@ -27,9 +28,12 @@ class EmployeeService implements Import
 {
     use ParsesEmployeeImport;
 
+    private Request $request;
+
     public function __construct(
         private Repository $repository,
     ) {
+        $this->request = app(Request::class);
     }
 
     public function validate(UploadedFile $file): bool

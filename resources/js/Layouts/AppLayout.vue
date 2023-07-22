@@ -7,7 +7,7 @@
         </section>
 
         <header class="shadow bg-gray-50 dark:bg-gray-800" v-if="$slots.header">
-            <div class="px-4 py-4 mx-auto text-gray-800 max-w-7xl sm:px-6 lg:px-8 dark:text-gray-200">
+            <div class="px-4 py-2 mx-auto text-gray-800 max-w-7xl sm:px-6 lg:px-8 dark:text-gray-200">
                 <slot name="header"> </slot>
             </div>
         </header>
@@ -43,21 +43,15 @@
                     show: false,
                 },
                 {
-                    name: 'Employees',
-                    href: route('employees.index'),
-                    active: route().current('employees.*'),
+                    name: 'Home',
+                    href: route('home'),
+                    active: route().current('home'),
                     show: true,
                 },
                 {
                     name: 'Scanners',
                     href: route('scanners.index'),
                     active: route().current('scanners.*'),
-                    show: true,
-                },
-                {
-                    name: 'Time Logs',
-                    href: route('timelogs.index'),
-                    active: route().current('timelogs.*'),
                     show: true,
                 },
                 {

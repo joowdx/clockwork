@@ -3,6 +3,8 @@
 namespace App\Drivers;
 
 use App\Contracts\ScannerDriver;
+use Illuminate\Http\Client\ConnectionException;
+use TADPHP\Exceptions\ConnectionError;
 use TADPHP\TAD;
 use TADPHP\TADFactory;
 
@@ -17,13 +19,19 @@ class TadPhp implements ScannerDriver
         $this->tad = (new TADFactory([
             'ip' => $ip,
             'udp_port' => $port,
-            'connection_timeout' => 3,
+            'connection_timeout' => 1,
         ]))->get_instance();
     }
 
     public function getAttlogs(): array
     {
-        return $this->tad->get_att_log()->to_array()['Row'];
+        try {
+            $data = $this->tad->get_att_log()->to_array()['Row'];
+        } catch (ConnectionError) {
+            throw new ConnectionException('Device is unreachable.');
+        }
+
+        return $data;
     }
 
     public function getFormattedAttlogs(?string $withScannerId = null): array

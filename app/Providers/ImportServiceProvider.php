@@ -25,7 +25,7 @@ class ImportServiceProvider extends ServiceProvider
         $this->app->bind(EmployeeService::class, fn () => new EmployeeService(new EmployeeRepository(app(Employee::class))));
 
         $this->app->bind(Import::class, function () {
-            switch(explode('.', Route::currentRouteName())[0]) {
+            switch (explode('.', Route::currentRouteName())[0]) {
                 case 'employees':
                     return new EmployeeService(new EmployeeRepository(app(Employee::class)));
                     break;

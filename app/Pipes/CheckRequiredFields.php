@@ -17,8 +17,8 @@ class CheckRequiredFields
                 ! collect($request->headers)
                     ->filter(fn ($i, $h) => in_array(strtolower($h), self::$requiredHeaders))
                     ->every(fn ($h) => $request->data->map(fn ($e) => $e[$h])
-                            ->reject(fn ($e) => $e !== '')
-                            ->isEmpty()
+                        ->reject(fn ($e) => $e !== '')
+                        ->isEmpty()
                     )
             ) {
                 $request->error = self::ERROR;

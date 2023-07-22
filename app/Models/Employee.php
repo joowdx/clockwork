@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Laravel\Scout\Searchable;
 
@@ -36,10 +37,15 @@ class Employee extends Model
     public function scanners(): BelongsToMany
     {
         return $this->belongsToMany(Scanner::class, 'enrollments')
-                ->using(Enrollment::class)
-                ->withPivot(['id', 'uid'])
-                ->withTimestamps()
-                ->orderBy('name');
+            ->using(Enrollment::class)
+            ->withPivot(['id', 'uid'])
+            ->withTimestamps()
+            ->orderBy('name');
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
     }
 
     public function timelogs(): HasManyThrough
@@ -57,8 +63,9 @@ class Employee extends Model
     public function toSearchableArray(): array
     {
         return [
-            $this->getKeyName() => $this->getKey(),
-            'name' => $this->name_format->full,
+            'name->first' => $this->name?->first,
+            'name->middle' => $this->name?->middle,
+            'name->last' => $this->name?->last,
         ];
     }
 

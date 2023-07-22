@@ -20,10 +20,10 @@ const props = defineProps({
     },
 })
 
-const update = (page = 1) => {
+const update = (page) => {
     form.transform((data) => ({
         ...data,
-        page,
+        ...(page ? {page} : {}),
         ...(props.queryStrings ?? {})
     })).get(props.items.path, {
         preserveState: true,
@@ -49,32 +49,37 @@ defineExpose({processing: computed(() => form.processing)})
 <template>
     <div class="grid grid-cols-12 gap-3 mb-8">
         <div class="col-span-12 md:col-span-6 form-control">
-            <div class="w-full input-group" :class="{'input-group-sm' : compact}">
-                <input
-                    type="text"
-                    placeholder="Search…"
-                    class="w-full input input-bordered lg:w-[50%]"
-                    :class="{'input-sm' : compact}"
-                    v-model="form.search"
-                    @keypress.enter="update"
-                    :readonly="form.processing"
-                />
-                <button title="Search" class="btn btn-square" :class="{'btn-sm' : compact}" @click="update()" :disabled="form.processing">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="w-6 h-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                    </svg>
-                </button>
+            <div class="w-full form-control">
+                <label for="period" class="p-0 label">
+                    <span class="label-text">Search</span>
+                </label>
+                <div class="w-full input-group" :class="{'input-group-sm' : compact}">
+                    <input
+                        type="text"
+                        placeholder="Search…"
+                        class="w-full input input-bordered"
+                        :class="{'input-sm' : compact}"
+                        v-model="form.search"
+                        @keypress.enter="update"
+                        :readonly="form.processing"
+                    />
+                    <button title="Search" class="btn btn-square" :class="{'btn-sm' : compact}" @click="update()" :disabled="form.processing">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-6 h-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="order-first col-span-12 md:col-span-6 md:order-last">
@@ -83,9 +88,9 @@ defineExpose({processing: computed(() => form.processing)})
     </div>
 
     <div :class="wrapperClass">
-        <table :class="`${tableClass}${compact ? ' table-compact text-sm' : ''}`">
+        <table class="table-fixed table-pin-rows table-pin-cols" :class="`${tableClass}${compact ? ' table-compact text-sm' : ''}`">
             <thead>
-                <slot name="head">
+                <slot name="head" :data="Object.keys(items?.data[0] ?? {})">
                     <tr>
                         <th class="sticky top-0" :class="{'py-2 px-4': compact, 'mx-4' : ! compact}">
                             <slot name="preColHead">
@@ -103,34 +108,53 @@ defineExpose({processing: computed(() => form.processing)})
             </thead>
 
             <tbody>
-                <slot>
-                    <tr class="hover" v-for="(item, index) in items?.data">
-                        <th :class="{ 'p-0': links }" :key="item.key" style="z-index: 0 !important">
-                            <slot name="preColCell" :id="item.id" :index="(items.current_page - 1) * items.per_page + index + 1">
-                                <template v-if="links">
-                                    <Link :title="item.id" class="block w-full px-4 py-2" :href="links.replace('{id}', item.id)">
+                <template v-for="item in items.data">
+                    <slot :row="item">
+                        <tr class="hover" v-for="(item, index) in items?.data">
+                            <th :class="{ 'p-0': links }" :key="item.key" style="z-index: 0 !important">
+                                <slot name="preColCell" :id="item.id" :index="(items.current_page - 1) * items.per_page + index + 1">
+                                    <template v-if="links">
+                                        <Link :title="item.id" class="block w-full px-4 py-2" :href="links.replace('{id}', item.id)">
+                                            {{ (items.current_page - 1) * items.per_page + index + 1 }}
+                                        </Link>
+                                    </template>
+                                    <template v-else>
                                         {{ (items.current_page - 1) * items.per_page + index + 1 }}
-                                    </Link>
-                                </template>
-                                <template v-else>
-                                    {{ (items.current_page - 1) * items.per_page + index + 1 }}
-                                </template>
-                            </slot>
-                        </th>
+                                    </template>
+                                </slot>
+                            </th>
 
-                        <template v-for="(data, key) in item">
-                            <td v-if="key != 'id'" :key="`${item.key}-${key}`" :class="{ 'p-0': links}">
-                                <template v-if="links">
-                                    <Link :title="item.id" class="block w-full" :href="links.replace('{id}', item.id)" :class="{'px-4 py-2': ! compact, 'px-2': compact}">
+                            <template v-for="(data, key) in item">
+                                <td v-if="key != 'id'" :key="`${item.key}-${key}`" :class="{ 'p-0': links}">
+                                    <template v-if="links">
+                                        <Link :title="item.id" class="block w-full" :href="links.replace('{id}', item.id)" :class="{'px-4 py-2': ! compact, 'px-2': compact}">
+                                            {{
+                                                `${
+                                                    (
+                                                        string = (
+                                                            typeof data == 'string' || data instanceof String
+                                                                ? data
+                                                                : JSON.stringify(data)?.substring(0, 60)
+                                                        )
+                                                    ) ? string : '&nbsp;'
+                                                }${
+                                                    (typeof data == 'string' || data instanceof String
+                                                        ? data
+                                                        : JSON.stringify(data)
+                                                    )?.length > 60
+                                                        ? '...'
+                                                        : ''
+                                                }`
+                                            }}
+                                        </Link>
+                                    </template>
+
+                                    <template v-else>
                                         {{
                                             `${
-                                                (
-                                                    string = (
-                                                        typeof data == 'string' || data instanceof String
-                                                            ? data
-                                                            : JSON.stringify(data)?.substring(0, 60)
-                                                    )
-                                                ) ? string : '&nbsp;'
+                                                typeof data == 'string' || data instanceof String
+                                                    ? data
+                                                    : JSON.stringify(data)?.substring(0, 60)
                                             }${
                                                 (typeof data == 'string' || data instanceof String
                                                     ? data
@@ -140,33 +164,16 @@ defineExpose({processing: computed(() => form.processing)})
                                                     : ''
                                             }`
                                         }}
-                                    </Link>
-                                </template>
-
-                                <template v-else>
-                                    {{
-                                        `${
-                                            typeof data == 'string' || data instanceof String
-                                                ? data
-                                                : JSON.stringify(data)?.substring(0, 60)
-                                        }${
-                                            (typeof data == 'string' || data instanceof String
-                                                ? data
-                                                : JSON.stringify(data)
-                                            )?.length > 60
-                                                ? '...'
-                                                : ''
-                                        }`
-                                    }}
-                                </template>
-                            </td>
-                        </template>
-                        <slot name="postColumnCell" :id="item.id" :index="(items.current_page - 1) * items.per_page + index + 1" />
-                    </tr>
-                    <tr v-if="items?.data.length === 0">
-                        <td colspan="4">We've come up empty!</td>
-                    </tr>
-                </slot>
+                                    </template>
+                                </td>
+                            </template>
+                            <slot name="postColumnCell" :id="item.id" :index="(items.current_page - 1) * items.per_page + index + 1" />
+                        </tr>
+                        <tr v-if="items?.data.length === 0">
+                            <td colspan="1" class="px-6">We've come up empty!</td>
+                        </tr>
+                    </slot>
+                </template>
             </tbody>
         </table>
     </div>
@@ -180,6 +187,8 @@ defineExpose({processing: computed(() => form.processing)})
                         <option>50</option>
                         <option>100</option>
                         <option>200</option>
+                        <option>500</option>
+                        <option>1000</option>
                     </select>
                     <button class="w-24 btn" :class="{'btn-sm': compact}" @click="update()" :disabled="form.processing">Paginate</button>
                 </div>
@@ -191,6 +200,8 @@ defineExpose({processing: computed(() => form.processing)})
                         <option>50</option>
                         <option>100</option>
                         <option>200</option>
+                        <option>500</option>
+                        <option>1000</option>
                     </select>
                 </div>
             </div>
@@ -198,7 +209,7 @@ defineExpose({processing: computed(() => form.processing)})
             <slot name="links">
                 <div class="justify-center w-full col-span-3 btn-group sm:col-span-1">
                     <button
-                        @click="update()" class="btn"
+                        @click="update(1)" class="btn"
                         :class="{'btn-sm': compact}"
                         :disabled="form.processing || items?.current_page <= 1"
                     >
