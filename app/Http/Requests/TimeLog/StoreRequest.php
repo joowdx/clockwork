@@ -4,8 +4,9 @@ namespace App\Http\Requests\TimeLog;
 
 use App\Contracts\Import;
 use App\Models\Scanner;
-use App\Models\User;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreRequest extends FormRequest
 {
@@ -13,12 +14,7 @@ class StoreRequest extends FormRequest
         private Import $import
     ) {
     }
-
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array
-     */
+  
     public function messages()
     {
         return [
@@ -40,32 +36,16 @@ class StoreRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:csv,txt',
-                function ($attribute, $file, $fail) {
-                    $scanner = Scanner::find($this->scanner);
-
-                    $user = User::find(auth()->id());
-
-                    if (($attlog = $scanner?->attlog_file) && pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) !== $attlog) {
-                        $fail("Please choose the correct $attribute.");
-                    }
-
-                    if (
-                        auth()->user()?->administrator
-                            ? false
-                            : (
-                                $scanner?->shared
-                                    ? false
-                                    : $user->scanners()->doesntExist($scanner->id)
-                            )
-                    ) {
-                        $fail('Not enough privilege.');
-                    }
-
-                    // if(! $this->import->validate($file)) {
-                    //     $fail($this->import->error());
-                    // }
-                },
             ],
         ];
     }
+
+    // protected function failedValidation(Validator $validator): never
+    // {
+    //     throw new HttpResponseException(
+    //         response()->json([
+    //             'errors' => $validator->errors(),
+    //         ], 422)
+    //     );
+    // }
 }

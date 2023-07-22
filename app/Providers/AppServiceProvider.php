@@ -7,6 +7,7 @@ use App\Drivers\TadPhp;
 use App\Drivers\ZakZk;
 use App\Models\Scanner;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Telescope\Telescope;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Telescope::night();
+
         $this->app->bind(ScannerDriver::class, function ($app) {
             $scanner = $app->request->route('scanner') ?? $app->request->scanner ?? $app->request->scanner_id;
 

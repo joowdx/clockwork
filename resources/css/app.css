@@ -4,10 +4,6 @@
 
 @import 'fonts/nunito';
 
-html {
-    color-scheme: dark;
-}
-
 body {
     overflow-y: scroll !important;
 }
