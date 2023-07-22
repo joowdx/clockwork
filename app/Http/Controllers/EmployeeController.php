@@ -21,33 +21,6 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
-    {
-        return inertia('Employees/Index2', [
-            'unenrolled' => (bool) $request->unenrolled,
-            'employees' => $employees = $this->employee->get($request->unenrolled),
-            'offices' => auth()->user()->administrator
-                ? $this->employee->offices(true)
-                : $employees->map->office->unique()->filter()->sort()->values(),
-            'scanners' => $this->scanner->get(),
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return inertia('Employees/Create');
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Contracts\Import  $import;
@@ -79,21 +52,6 @@ class EmployeeController extends Controller
         $this->employee->update($employee, $request->all());
 
         return redirect()->back();
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\Employee\UpdateRequest  $request
-     * @param  string  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Employee $employee)
-    {
-        return inertia('Employees/Edit', [
-            'employee' => $employee->load(['scanners', 'scanners.users']),
-            'scanners' => $this->scanner->get(),
-        ]);
     }
 
     /**
