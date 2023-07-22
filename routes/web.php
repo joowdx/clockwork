@@ -3,6 +3,7 @@
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
@@ -24,11 +25,12 @@ Route::get('/', fn () => redirect()->route('dashboard'));
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::middleware(['can:non-readonly'])->group(function () {
-        Route::get('/dashboard', fn () => redirect()->route('timelogs.index'))->name('dashboard');
+        Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
+        Route::get('home', HomeController::class)->name('home');
         Route::resource('scanners', ScannerController::class);
         Route::resource('users', UserController::class);
-        Route::resource('employees', EmployeeController::class)->except(['show']);
-        Route::resource('timelogs', TimeLogController::class)->only(['index', 'store']);
+        Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
+        Route::resource('timelogs', TimeLogController::class)->only(['store']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
     });
@@ -40,6 +42,5 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         // Route::get('scanners/{scanner}/sync-time', 'syncTime')->name('scanners.sync-time');
     });
 
-
-    Route::get('/print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
+    Route::match(['get', 'post'], 'print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
 });
