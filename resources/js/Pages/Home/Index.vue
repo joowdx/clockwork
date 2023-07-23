@@ -49,6 +49,8 @@ const settings = ref({
     unenrolled: queryStrings.value.unenrolled,
 })
 
+const employee = ref(null)
+
 const dtrPreview = ref(null)
 const transmittalPreview = ref(null)
 const dataTable = ref(null)
@@ -162,6 +164,12 @@ const print = async (transmittal = false) => {
 
     setTimeout(() => print(transmittal), 250)
 }
+
+const showEmployeeModal = (e) => {
+    employee.value = e
+    modal.value.employee = true
+}
+
 </script>
 
 <template>
@@ -235,13 +243,13 @@ const print = async (transmittal = false) => {
                                 </svg>
                             </div>
 
-                            <!-- <div class="tooltip" data-tip="Register">
-                                <button @click="modal.employee = true" class="tracking-tighter btn btn-sm btn-square btn-primary">
+                            <div class="tooltip" data-tip="Register">
+                                <button @click.exact="showEmployeeModal(null)" class="tracking-tighter btn btn-sm btn-square btn-primary">
                                     <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
                                         <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM232 344V280H168c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H280v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"/>
                                     </svg>
                                 </button>
-                            </div> -->
+                            </div>
 
                             <div class="tooltip" data-tip="Search">
                                 <button @click.exact="modal.search = true" class="tracking-tighter btn btn-sm btn-square btn-primary">
@@ -367,41 +375,38 @@ const print = async (transmittal = false) => {
                             </th>
                             <td class="p-0">
                                 <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
-                                    {{ row.name }}
+                                    {{ row.name_format.fullStartLastInitialMiddle }}
                                 </label>
                             </td>
                             <td class="p-0">
                                 <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
-                                    {{ row.status }}
+                                    {{ row.regular ? 'regular' : 'non-regular' }}
                                 </label>
                             </td>
                             <td class="p-0">
                                 <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
-                                    {{ row.office }}
+                                    {{ row.office?.toLowerCase() }}
                                 </label>
                             </td>
                             <td class="overflow-visible text-ellipsis whitespace-nowrap min-w-[fit-content] p-0">
                                 <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
-                                    {{ row.groups }}
+                                    {{ row.groups?.map(e => e.toLowerCase()).join(', ') }}
                                 </label>
                             </td>
-                            <td>
-
-                            </td>
-                            <!-- <th class="p-0 px-2 text-right bg-[transparent!important;]">
-                                <button class="px-1 btn btn-xs btn-primary">
+                            <th class="p-0 px-2 text-right bg-[transparent!important;]">
+                                <button @click="showEmployeeModal(row)" class="px-1 btn btn-xs btn-primary">
                                     <svg class="h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 128 512">
                                         <path d="M64 360a56 56 0 1 0 0 112 56 56 0 1 0 0-112zm0-160a56 56 0 1 0 0 112 56 56 0 1 0 0-112zM120 96A56 56 0 1 0 8 96a56 56 0 1 0 112 0z"/>
                                     </svg>
                                 </button>
-                            </th> -->
+                            </th>
                         </tr>
                     </template>
                 </DataTable>
             </div>
         </div>
 
-        <EmployeeModal v-model="modal.employee" />
+        <EmployeeModal v-model="modal.employee" v-model:employee="employee" />
 
         <ImportModal v-model="modal.import" :scanners="scanners" />
 

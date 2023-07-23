@@ -16,8 +16,8 @@ class EmployeeRepository extends BaseRepository
 
     protected function transformData(array $payload): array
     {
-        return collect()->when(collect(@$payload['groups'])->isNotEmpty(), function ($data) use ($payload) {
-            $groups = collect($payload['groups'])->filter()->map(fn ($group) => strtoupper($group))->values()->toArray();
+        return collect()->when(true, function ($data) use ($payload) {
+            $groups = collect(@$payload['groups'])->filter()->map(fn ($group) => strtoupper($group))->values()->toArray();
             $data->put('groups', @$payload['toJSON'] ? json_encode($groups) : $groups);
         })->when(@$payload['name'], function ($data) use ($payload) {
             $name = [

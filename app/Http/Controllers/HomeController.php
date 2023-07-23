@@ -35,7 +35,6 @@ class HomeController extends Controller
             ->orderBy('name->last')
             ->orderBy('name->first')
             ->orderBy('name->middle')
-            ->select(['id', 'name', 'office', 'regular', 'groups'])
             ->where($filter)
             ->whereActive($request->active ?? true)
             ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtoupper($request->office)))
@@ -51,14 +50,7 @@ class HomeController extends Controller
                 ->query($employee)
                 ->paginate($request->paginate ?? 50)
                 ->withQueryString()
-                ->appends('query', null)
-                ->through(fn ($employee) => [
-                    'id' => $employee->id,
-                    'name' => ucwords(mb_strtolower($employee->name_format->fullStartLastInitialMiddle)),
-                    'status' => $employee->regular ? 'regular' : 'non-regular',
-                    'office' => mb_strtolower($employee->office),
-                    'groups' => collect($employee->groups)->map(fn ($g) => mb_strtolower($g))->join(', '),
-                ]),
+                ->appends('query', null),
             'offices' => Employee::where($filter)
                 ->orderBy('office')
                 ->pluck('office')

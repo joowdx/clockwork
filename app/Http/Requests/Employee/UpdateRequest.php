@@ -30,10 +30,7 @@ class UpdateRequest extends FormRequest
      */
     public function rules()
     {
-        return $this->has('groups') ? [
-            'groups' => 'array',
-            'groups.*' => 'string|distinct|nullable',
-        ] : [
+        return [
             'name.last' => 'required|string',
             'name.first' => 'required|string',
             'name.middle' => 'nullable|string',
@@ -41,6 +38,8 @@ class UpdateRequest extends FormRequest
             'office' => 'nullable|string',
             'regular' => 'required|boolean',
             'active' => 'nullable|boolean',
+            'groups' => 'nullable|array',
+            'groups.*' => 'string|distinct',
             'name' => function ($att, $name, $fail) {
                 if (
                     Employee::query()
@@ -55,5 +54,12 @@ class UpdateRequest extends FormRequest
                 }
             },
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->whenFilled('groups', function ($groups) {
+            $this->merge(['groups' => collect(explode(',', $groups))->filter()->unique()->map(fn ($group) => trim($group))->toArray()]);
+        });
     }
 }
