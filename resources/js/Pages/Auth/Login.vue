@@ -1,98 +1,107 @@
-<template>
-    <Head title="Log in" />
+<script setup>
+import GuestLayout from '@/Layouts/GuestLayout.vue'
+import InputError from '@/Components/InputError.vue'
+import { Head, useForm } from '@inertiajs/vue3'
+import { onMounted, ref } from 'vue'
 
-    <JetAuthenticationCard>
-        <template #logo>
-            <JetAuthenticationCardLogo />
-        </template>
+defineProps({
+    canResetPassword: {
+        type: Boolean
+    },
+    status: {
+        type: String
+    }
+})
 
-        <JetValidationErrors class="mb-4" />
+const username = ref(null)
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+const form = useForm({
+    username: '',
+    password: '',
+    remember: false
+})
 
-        <form @submit.prevent="submit">
-            <div>
-                <JetLabel for="username" value="Username" />
-                <JetInput id="username" type="text" class="block w-full mt-1" v-model="form.username" required autofocus />
-            </div>
-
-            <div class="mt-4">
-                <JetLabel for="password" value="Password" />
-                <JetInput id="password" type="password" class="block w-full mt-1" v-model="form.password" required autocomplete="current-password" />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <JetCheckbox name="remember" v-model:checked="form.remember" />
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link v-if="canResetPassword" :href="route('password.request')" class="text-sm text-gray-600 underline hover:text-gray-900">
-                    Forgot your password?
-                </Link>
-
-                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </JetButton>
-            </div>
-        </form>
-    </JetAuthenticationCard>
-</template>
-
-<script>
-    import { defineComponent } from 'vue'
-    import JetAuthenticationCard from '@/Jetstream/AuthenticationCard.vue'
-    import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetCheckbox from '@/Jetstream/Checkbox.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
-    import JetValidationErrors from '@/Jetstream/ValidationErrors.vue'
-    import { Head, Link } from '@inertiajs/inertia-vue3';
-
-    export default defineComponent({
-        components: {
-            Head,
-            JetAuthenticationCard,
-            JetAuthenticationCardLogo,
-            JetButton,
-            JetInput,
-            JetCheckbox,
-            JetLabel,
-            JetValidationErrors,
-            Link,
-        },
-
-        props: {
-            canResetPassword: Boolean,
-            status: String
-        },
-
-        data() {
-            return {
-                form: this.$inertia.form({
-                    username: '',
-                    password: '',
-                    remember: false
-                })
-            }
-        },
-
-        methods: {
-            submit() {
-                this.form
-                    .transform(data => ({
-                        ... data,
-                        remember: this.form.remember ? 'on' : ''
-                    }))
-                    .post(this.route('login'), {
-                        onFinish: () => this.form.reset('password'),
-                    })
-            }
-        }
+const submit = () => {
+    form.post(route('login'), {
+        onFinish: () => form.reset('password')
     })
+}
+
+onMounted(() => {
+    setTimeout(() => username.value.focus(), 100)
+})
 </script>
+
+<template>
+    <GuestLayout class="flex">
+        <Head title="Log in" />
+
+        <div class="flex content-center flex-1">
+            <div class="hero">
+                <div
+                    class="p-12 bg-gradient-to-bl via-50% via-base-100 to-100% to-base-200 from-base-300 rounded-none sm:rounded-sm"
+                >
+                    <div class="flex-col hero-content lg:flex-row-reverse lg:gap-20">
+                        <div class="text-center lg:text-left">
+                            <h1 class="text-5xl font-bold">Login now!</h1>
+                            <span class="py-6 font-mono text-sm text-primary-focus">(Administrators only)</span>
+                            <p class="py-6" style="text-wrap: balance;">
+                                Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi
+                                exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.
+                            </p>
+                        </div>
+
+                        <div class="flex-shrink-0 w-full max-w-sm rounded-sm card bg-gradient-to-br from-base-300">
+                            <div class="card-body">
+                                <form class="space-y-3" @submit.prevent="submit">
+                                    <div class="form-control">
+                                        <label for="username" class="block text-sm font-medium text-base-content">
+                                            Username
+                                        </label>
+                                        <input
+                                            v-model="form.username"
+                                            ref="username"
+                                            id="username"
+                                            type="text"
+                                            class="mt-1 input input-bordered"
+                                        />
+                                        <InputError class="mt-0.5" :message="form.errors.username" />
+                                    </div>
+                                    <div class="form-control">
+                                        <label for="password" class="block text-sm font-medium text-base-content">
+                                            Password
+                                        </label>
+                                        <input
+                                            v-model="form.password"
+                                            id="password"
+                                            type="password"
+                                            class="input input-bordered"
+                                        />
+                                        <InputError class="mt-0.5" :message="form.errors.password" />
+                                    </div>
+                                    <div class="form-control">
+                                        <label
+                                            class="px-0 space-x-3 cursor-pointer label justify-normal"
+                                            for="remember"
+                                        >
+                                            <input
+                                                v-model="form.remember"
+                                                class="checkbox checkbox-sm"
+                                                type="checkbox"
+                                                id="remember"
+                                            />
+                                            <span class="label-text">Remember me</span>
+                                        </label>
+                                    </div>
+                                    <div class="mt-6 form-control">
+                                        <button type="submit" class="btn btn-primary">Login</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </GuestLayout>
+</template>
