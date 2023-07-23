@@ -1,7 +1,7 @@
 <html lang="en">
     <head>
         <title>PRINTOUT</title>
-        <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         @vite(['resources/css/print.css'])
         @livewireStyles()
         @stack('styles')

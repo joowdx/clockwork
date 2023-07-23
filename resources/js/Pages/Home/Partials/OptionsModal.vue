@@ -2,9 +2,9 @@
 import Modal from '@/Components/Modal.vue'
 import { ref, watch } from 'vue'
 
-const data = defineModel('data')
-
 const modelValue = defineModel()
+
+const data = defineModel('data')
 
 const tab = ref('schedule')
 

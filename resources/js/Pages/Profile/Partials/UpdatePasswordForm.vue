@@ -1,5 +1,5 @@
 <template>
-    <jet-form-section @submitted="updatePassword">
+    <FormSection @submitted="updatePassword">
         <template #title>
             Update Password
         </template>
@@ -9,85 +9,80 @@
         </template>
 
         <template #form>
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="current_password" value="Current Password" />
-                <jet-input id="current_password" type="password" class="mt-1 block w-full" v-model="form.current_password" ref="current_password" autocomplete="current-password" />
-                <jet-input-error :message="form.errors.current_password" class="mt-2" />
+            <!-- Current Password -->
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label ref="current_password" for="current_password" class="block text-sm font-medium text-base-content"> Current Password </label>
+                <input v-model="form.current_password" id="current_password" type="password" class="mt-1 input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.current_password" />
             </div>
 
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="password" value="New Password" />
-                <jet-input id="password" type="password" class="mt-1 block w-full" v-model="form.password" ref="password" autocomplete="new-password" />
-                <jet-input-error :message="form.errors.password" class="mt-2" />
+            <!-- New Password -->
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label ref="password" for="password" class="block text-sm font-medium text-base-content"> New Password </label>
+                <input v-model="form.password" id="password" type="password" class="mt-1 input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.password" />
             </div>
 
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="password_confirmation" value="Confirm Password" />
-                <jet-input id="password_confirmation" type="password" class="mt-1 block w-full" v-model="form.password_confirmation" autocomplete="new-password" />
-                <jet-input-error :message="form.errors.password_confirmation" class="mt-2" />
+            <!-- Confirm Password -->
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="password_confirmation" class="block text-sm font-medium text-base-content"> Confirm Password </label>
+                <input v-model="form.password_confirmation" id="password_confirmation" type="password" class="mt-1 input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.password_confirmation" />
             </div>
         </template>
 
         <template #actions>
-            <jet-action-message :on="form.recentlySuccessful" class="mr-3">
-                Saved.
-            </jet-action-message>
+            <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                <p v-if="form.recentlySuccessful" class="mr-3 text-sm opacity-50 text-base-content">Saved.</p>
+            </Transition>
 
-            <jet-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <button class="btn btn-primary" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
-            </jet-button>
+            </button>
         </template>
-    </jet-form-section>
+    </FormSection>
 </template>
 
 <script>
-    import { defineComponent } from 'vue'
-    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetFormSection from '@/Jetstream/FormSection.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetInputError from '@/Jetstream/InputError.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
+import { defineComponent } from 'vue'
+import FormSection from '@/Components/FormSection.vue'
+import InputError from '@/Components/InputError.vue'
 
-    export default defineComponent({
-        components: {
-            JetActionMessage,
-            JetButton,
-            JetFormSection,
-            JetInput,
-            JetInputError,
-            JetLabel,
-        },
+export default defineComponent({
+    components: {
+        InputError,
+        FormSection,
+    },
 
-        data() {
-            return {
-                form: this.$inertia.form({
-                    current_password: '',
-                    password: '',
-                    password_confirmation: '',
-                }),
-            }
-        },
+    data() {
+        return {
+            form: this.$inertia.form({
+                current_password: '',
+                password: '',
+                password_confirmation: '',
+            }),
+        }
+    },
 
-        methods: {
-            updatePassword() {
-                this.form.put(route('user-password.update'), {
-                    errorBag: 'updatePassword',
-                    preserveScroll: true,
-                    onSuccess: () => this.form.reset(),
-                    onError: () => {
-                        if (this.form.errors.password) {
-                            this.form.reset('password', 'password_confirmation')
-                            this.$refs.password.focus()
-                        }
-
-                        if (this.form.errors.current_password) {
-                            this.form.reset('current_password')
-                            this.$refs.current_password.focus()
-                        }
+    methods: {
+        updatePassword() {
+            this.form.put(route('user-password.update'), {
+                errorBag: 'updatePassword',
+                preserveScroll: true,
+                onSuccess: () => this.form.reset(),
+                onError: () => {
+                    if (this.form.errors.password) {
+                        this.form.reset('password', 'password_confirmation')
+                        this.$refs.password.focus()
                     }
-                })
-            },
+
+                    if (this.form.errors.current_password) {
+                        this.form.reset('current_password')
+                        this.$refs.current_password.focus()
+                    }
+                }
+            })
         },
-    })
+    },
+})
 </script>

@@ -1,95 +1,64 @@
+<script setup>
+import AppLayout from '@/Layouts/AppLayout.vue'
+import DataTable from '@/Components/DataTable.vue'
+import { ref } from 'vue'
+
+const props = defineProps({
+    scanners: Object,
+    search: String,
+})
+
+const dataTable = ref(null)
+</script>
+
 <template>
-    <app-layout title="Biometrics">
+    <AppLayout title="Biometrics">
         <template #header>
             <h2 class="text-xl font-semibold leading-tight">
                 Scanners
             </h2>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-gray">
-                <div class="flex flex-col">
-                    <div class="flex items-center justify-end px-6 mb-5 space-x-3 sm:px-0">
-                        <jet-input type="text" class="block w-full disabled:opacity-60" v-model="search" style="padding: .25rem .5em!important" autocomplete="name" placeholder="Search" />
-                        <Link class="flex-none" :href="route('scanners.create')">
-                            <jet-secondary-button>
-                                Add New Scanner
-                            </jet-secondary-button>
-                        </Link>
+        <div class="px-4 py-5 mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <DataTable :items="scanners" ref="dataTable" :compact="true" class="table-sm">
+                <template #actions>
+                    <div class="flex items-end content-end justify-end w-full h-full">
+                        <div class="tooltip" data-tip="Create">
+                            <button class="tracking-tighter btn btn-sm btn-square btn-primary">
+                                <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                                    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM232 344V280H168c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V168c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H280v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="overflow-hidden sm:rounded-lg">
-                    <table class="min-w-full table-fixed">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="overflow-hidden w-[20%] py-3 pr-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Scanner
-                                </th>
-                                <th scope="col" class="overflow-hidden w-[30%] px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Assignee
-                                </th>
-                                <th scope="col" class="overflow-hidden w-[50%] px-3 pl-6 text-xs font-bold tracking-wider text-left text-gray-500 uppercase">
-                                    Remarks
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="scanner in scanners" :key="scanner.id" :class="[! scanner.users.map(e => e.id).includes($page.props.user.id) ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-200']" >
-                                <td class="pr-6 overflow-hidden truncate">
-                                    <Link v-if="$page.props.user.administrator || scanner.shared || ! scanner.users.length || scanner.users.map(e => e.id).includes($page.props.user.id)" :href="route('scanners.edit', scanner.id)"> {{ scanner.name }} </Link>
-                                    <template v-else> {{ scanner.name }} </template>
-                                </td>
-                                <td class="pl-6 overflow-hidden tracking-tighter">
-                                    {{ scanner.users.map(e => e.username).join(', ') }}
-                                </td>
-                                <td class="pl-6 overflow-hidden tracking-tighter truncate">
-                                    {{ scanner.remarks }}
-                                    <!-- <p v-if="user.verified_by" class="lowercase">
-                                        by <Link class="text-indigo-600 hover:text-indigo-900 dark:text-gray-400 dark:hover:text-gray-600" :href="route('users.show', user.verified_by.id)" v-html="'@' + user.verified_by.username" />
-                                    </p> -->
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                </template>
+
+                <template #head>
+                    <tr>
+                        <th class="px-4 py-3 w-[48px]"> # </th>
+                        <th class="px-2 py-3"> Name </th>
+                        <th class="px-2 py-3"> Assignees </th>
+                        <th class="px-2 py-3"> Created </th>
+                    </tr>
+                </template>
+
+                <template #default="{row, index}">
+                    <tr>
+                        <td class="px-4 py-2">
+                            {{ index }}
+                        </td>
+                        <td class="p-2 font-mono">
+                            {{ row.name }}
+                        </td>
+                        <td class="p-2 font-mono">
+                            {{ row.assignees?.join(', ') }}
+                        </td>
+                        <td class="p-2 font-mono whitespace-nowrap overflow-clip">
+                            {{ row.created_at }}
+                        </td>
+                    </tr>
+                </template>
+            </DataTable>
         </div>
-    </app-layout>
+    </AppLayout>
 </template>
-
-<script>
-    import { defineComponent } from 'vue'
-    import { Link } from '@inertiajs/inertia-vue3';
-    import AppLayout from '@/Layouts/AppLayout.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-
-    export default defineComponent({
-        components: {
-            Link,
-            AppLayout,
-            JetInput,
-            JetSecondaryButton,
-        },
-
-        props: {
-            'scanners': Array,
-        },
-
-        data: function() {
-            return {
-                search: this.$page.props.search,
-                active: [],
-            };
-        },
-
-        watch: {
-            search: _.debounce(function(search) {
-                this.$inertia.get(route('scanners.index'), search ? { search: search } : {}, {
-                    preserveState: true,
-                    preserveScroll: true,
-                })
-            }, 500)
-        },
-    })
-</script>

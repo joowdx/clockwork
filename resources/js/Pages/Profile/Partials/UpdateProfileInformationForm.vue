@@ -1,5 +1,5 @@
 <template>
-    <jet-form-section @submitted="updateProfileInformation">
+    <FormSection @submitted="updateProfileInformation">
         <template #title>
             Profile Information
         </template>
@@ -16,7 +16,7 @@
                             ref="photo"
                             @change="updatePhotoPreview">
 
-                <jet-label for="photo" value="Photo" />
+                <label for="photo" class="block text-sm font-medium text-base-content"> Photo </label>
 
                 <!-- Current Profile Photo -->
                 <div class="mt-2" v-show="! photoPreview">
@@ -30,133 +30,124 @@
                     </span>
                 </div>
 
-                <jet-secondary-button class="mt-2 mr-2" type="button" @click.prevent="selectNewPhoto">
+                <button class="mt-2 mr-2 btn btn-secondary btn-sm" type="button" @click.prevent="selectNewPhoto">
                     Select A New Photo
-                </jet-secondary-button>
+                </button>
 
-                <jet-secondary-button type="button" class="mt-2" @click.prevent="deletePhoto" v-if="user.profile_photo_path">
+                <button type="button btn btn-secondary btn-sm" class="mt-2" @click.prevent="deletePhoto" v-if="user.profile_photo_path">
                     Remove Photo
-                </jet-secondary-button>
+                </button>
 
-                <jet-input-error :message="form.errors.photo" class="mt-2" />
+                <InputError class="mt-0.5" :message="form.errors.photo" />
             </div>
 
             <!-- Username -->
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="username" value="Username" />
-                <jet-input id="username" type="text" class="block w-full mt-1 bg-gray-100 disabled:opacity-50" v-model="user.username" autocomplete="biometrics" disabled />
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="username" class="block text-sm font-medium text-base-content"> Username </label>
+                <input v-model="form.username" id="username" type="text" class="mt-1 input input-bordered" readonly />
+                <InputError class="mt-0.5" :message="form.errors.username" />
             </div>
 
             <!-- Name -->
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="name" value="Name" />
-                <jet-input id="name" type="text" class="block w-full mt-1" v-model="form.name" autocomplete="name" />
-                <jet-input-error :message="form.errors.name" class="mt-2" />
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="name" class="block text-sm font-medium text-base-content"> Name </label>
+                <input v-model="form.name" id="name" type="text" class="mt-1 input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.name" />
             </div>
 
-            <!-- title -->
-            <div class="col-span-6 sm:col-span-4">
-                <jet-label for="title" value="Title" />
-                <jet-input id="title" type="text" class="block w-full mt-1" v-model="form.title" />
-                <jet-input-error :message="form.errors.title" class="mt-2" />
+            <!-- Title -->
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="title" class="block text-sm font-medium text-base-content"> Title </label>
+                <input v-model="form.title" id="title" type="text" class="mt-1 uppercase input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.title" />
             </div>
         </template>
 
         <template #actions>
-            <jet-action-message :on="form.recentlySuccessful" class="mr-3">
-                Saved.
-            </jet-action-message>
+            <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                <p v-if="form.recentlySuccessful" class="mr-3 text-sm opacity-50 text-base-content">Saved.</p>
+            </Transition>
 
-            <jet-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <button class="btn btn-primary" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
-            </jet-button>
+            </button>
         </template>
-    </jet-form-section>
+    </FormSection>
 </template>
 
 <script>
-    import { defineComponent } from 'vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetFormSection from '@/Jetstream/FormSection.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetInputError from '@/Jetstream/InputError.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
-    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
+import { defineComponent } from 'vue'
+import FormSection from '@/Components/FormSection.vue'
+import InputError from '@/Components/InputError.vue'
 
-    export default defineComponent({
-        components: {
-            JetActionMessage,
-            JetButton,
-            JetFormSection,
-            JetInput,
-            JetInputError,
-            JetLabel,
-            JetSecondaryButton,
+export default defineComponent({
+    components: {
+        FormSection,
+        InputError,
+    },
+
+    props: ['user'],
+
+    data() {
+        return {
+            form: this.$inertia.form({
+                _method: 'PUT',
+                username: this.user.username,
+                name: this.user.name,
+                title: this.user.title,
+                photo: null,
+            }),
+
+            photoPreview: null,
+        }
+    },
+
+    methods: {
+        updateProfileInformation() {
+            if (this.$refs.photo) {
+                this.form.photo = this.$refs.photo.files[0]
+            }
+
+            this.form.post(route('user-profile-information.update'), {
+                errorBag: 'updateProfileInformation',
+                preserveScroll: true,
+                onSuccess: () => (this.clearPhotoFileInput()),
+            });
         },
 
-        props: ['user'],
+        selectNewPhoto() {
+            this.$refs.photo.click();
+        },
 
-        data() {
-            return {
-                form: this.$inertia.form({
-                    _method: 'PUT',
-                    username: this.user.username,
-                    name: this.user.name,
-                    title: this.user.title,
-                    photo: null,
-                }),
+        updatePhotoPreview() {
+            const photo = this.$refs.photo.files[0];
 
-                photoPreview: null,
+            if (! photo) return;
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                this.photoPreview = e.target.result;
+            };
+
+            reader.readAsDataURL(photo);
+        },
+
+        deletePhoto() {
+            this.$inertia.delete(route('current-user-photo.destroy'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    this.photoPreview = null;
+                    this.clearPhotoFileInput();
+                },
+            });
+        },
+
+        clearPhotoFileInput() {
+            if (this.$refs.photo?.value) {
+                this.$refs.photo.value = null;
             }
         },
-
-        methods: {
-            updateProfileInformation() {
-                if (this.$refs.photo) {
-                    this.form.photo = this.$refs.photo.files[0]
-                }
-
-                this.form.post(route('user-profile-information.update'), {
-                    errorBag: 'updateProfileInformation',
-                    preserveScroll: true,
-                    onSuccess: () => (this.clearPhotoFileInput()),
-                });
-            },
-
-            selectNewPhoto() {
-                this.$refs.photo.click();
-            },
-
-            updatePhotoPreview() {
-                const photo = this.$refs.photo.files[0];
-
-                if (! photo) return;
-
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    this.photoPreview = e.target.result;
-                };
-
-                reader.readAsDataURL(photo);
-            },
-
-            deletePhoto() {
-                this.$inertia.delete(route('current-user-photo.destroy'), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        this.photoPreview = null;
-                        this.clearPhotoFileInput();
-                    },
-                });
-            },
-
-            clearPhotoFileInput() {
-                if (this.$refs.photo?.value) {
-                    this.$refs.photo.value = null;
-                }
-            },
-        },
-    })
+    },
+})
 </script>

@@ -13,7 +13,7 @@
                         <JetCheckbox v-model:checked="transmittal" />
                         <span class="ml-2 text-sm text-gray-600">Generate transmittal</span>
                     </label>
-                    <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" :href="route('timelogs.index')" preserve-scroll>
+                    <Link class="inline-flex items-center px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition bg-gray-900 border border-transparent rounded-md hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 dark:border-gray-800" as="button" preserve-scroll>
                         Reset
                     </Link>
                     <!-- <JetSecondaryButton class="px-3 whitespace-nowrap" @click="showScannerDialog" style="width:90px" :disabled="importDialog">
@@ -197,9 +197,7 @@
                                                 <td class="px-6 whitespace-nowrap">
                                                     <div class="flex items-center">
                                                         <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                            <Link :href="route('employees.edit', employee.id)">
-                                                                {{ employee.name_format.fullStartLastInitialMiddle }}
-                                                            </Link>
+                                                            {{ employee.name_format.fullStartLastInitialMiddle }}
                                                         </div>
                                                     </div>
                                                 </td>
@@ -214,30 +212,7 @@
                                                 </td>
                                                 <td class="px-6 whitespace-nowrap">
                                                     <div class="text-sm font-thin">
-                                                        <p class="text-black dark:text-gray-100">
-                                                            {{
-                                                                employee.scanners
-                                                                    .map(e => e.name.toLowerCase().startsWith('coliseum-') ? 'coliseum-x' : e.name.toLowerCase())
-                                                                    .filter((e, f, g) => g.indexOf(e) === f)
-                                                                    .join(', ')
-                                                            }}
-                                                        </p>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 whitespace-nowrap">
-                                                    <div class="text-sm">
-                                                        <div class="font-thin">
-                                                            <p class="text-black dark:text-gray-100">
-                                                                {{ employee.regular ? 'Regular' : 'Non-regular' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="pl-6 whitespace-nowrap">
-                                                    <div class="text-sm font-thin">
-                                                        <p class="text-black dark:text-gray-100">
-                                                            {{ employee.csc_format ? 'CSC Form No. 48' : 'Old format'}}
-                                                        </p>
+
                                                     </div>
                                                 </td>
                                             </tr>
@@ -475,8 +450,7 @@
 
 <script>
     import { defineComponent } from 'vue'
-    import { Link } from '@inertiajs/inertia-vue3'
-    import { Inertia } from '@inertiajs/inertia'
+    import { Link, router } from '@inertiajs/vue3'
     import AppLayout from '@/Layouts/AppLayout.vue'
     import JetButton from '@/Jetstream/Button.vue'
     import JetCheckbox from '@/Jetstream/Checkbox.vue'
@@ -509,7 +483,7 @@
         },
 
         mounted() {
-            Inertia.reload({ only: ['employees', 'scanners'], onSuccess: () => {
+            router.reload({ only: ['employees', 'scanners'], onSuccess: () => {
                 this.by = 'employee'
                 this.scanners = this.$page.props.scanners?.map(e => ({name: e.name.toUpperCase(), value: e.id}))
             }})
@@ -787,16 +761,12 @@
 
         computed: {
             employees() {
+
                 if (this.$page.props.employees === undefined) {
                     return [];
                 }
 
                 return this.$page.props.employees
-                    .filter(e => this.name ? fuzzysort.single(this.name, `${e.name_format.full} ${e.name_format.fullStartLast}`) : true )
-                    .filter(e => this.office != 'ALL' ? this.office == e.office : true)
-                    .filter(e => this.regular != -1 ? e.regular == this.regular : true)
-                    .filter(e => this.active != -1 ? e.active == this.active : true)
-                    .filter(e => this.group != 'ALL' ? e.groups?.includes(this.group) : true)
             },
 
             offices() {

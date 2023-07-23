@@ -1,7 +1,7 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
 import { computed, ref, watch } from 'vue'
-import { useForm } from '@inertiajs/inertia-vue3'
+import { useForm } from '@inertiajs/vue3'
 
 const modelValue = defineModel()
 

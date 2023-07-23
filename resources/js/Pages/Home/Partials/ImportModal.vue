@@ -1,7 +1,7 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
 import { ref, watch } from 'vue'
-import { useForm } from '@inertiajs/inertia-vue3'
+import { useForm } from '@inertiajs/vue3'
 
 const props = defineProps({
     scanners: Object,

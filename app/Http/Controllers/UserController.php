@@ -19,8 +19,24 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $query = function ($query) use ($request) {
+            $query->with(['scanners' => fn ($q) => $q->select(['name'])])
+                ->whereNot('id', $request->user()->id);
+        };
+
+
         return inertia('Users/Index', [
-            'users' => User::where('id', '<>', $request->user()->id)->paginate(),
+            'users' => User::search($request->search)
+                ->query($query)
+                ->paginate($request->paginate ?? 50)
+                ->withQueryString()
+                ->appends('query', null)
+                ->through(fn ($user) => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'assigned' => $user->scanners->map->name,
+                ])
         ]);
     }
 

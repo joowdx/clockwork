@@ -1,5 +1,67 @@
+<script>
+import { defineComponent } from 'vue'
+import ActionSection from '@/Components/ActionSection.vue'
+import InputError from '@/Components/InputError.vue'
+import Modal from '@/Components/Modal.vue'
+
+export default defineComponent({
+    props: ['sessions'],
+
+    components: {
+        ActionSection,
+        InputError,
+        Modal,
+    },
+
+    data() {
+        return {
+            confirmingLogout: false,
+
+            form: this.$inertia.form({
+                password: '',
+            })
+        }
+    },
+
+    methods: {
+        confirmLogout() {
+            this.confirmingLogout = true
+
+            setTimeout(() => this.$refs.password.focus(), 250)
+        },
+
+        logoutOtherBrowserSessions() {
+            this.form.delete(route('other-browser-sessions.destroy'), {
+                preserveScroll: true,
+                onSuccess: () => this.closeModal(),
+                onError: () => this.$refs.password.focus(),
+                onFinish: () => this.form.reset(),
+            })
+        },
+
+        closeModal() {
+            this.confirmingLogout = false
+
+            this.form.reset()
+
+            this.form.clearErrors()
+        },
+    },
+
+    watch: {
+        confirmingLogout(show) {
+            if (show) {
+                this.form.reset()
+
+                this.form.clearErrors()
+            }
+        }
+    }
+})
+</script>
+
 <template>
-    <jet-action-section>
+    <ActionSection>
         <template #title>
             Browser Sessions
         </template>
@@ -9,7 +71,7 @@
         </template>
 
         <template #content>
-            <div class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
+            <div class="max-w-xl text-sm">
                 If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.
             </div>
 
@@ -27,15 +89,15 @@
                     </div>
 
                     <div class="ml-3">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <div class="text-sm">
                             {{ session.agent.platform ? session.agent.platform : 'Unknown' }} - {{ session.agent.browser ? session.agent.browser : 'Unknown' }}
                         </div>
 
                         <div>
-                            <div class="text-xs text-gray-500">
-                                {{ session.ip_address }},
+                            <div class="text-xs">
+                                {{ session.ip_address }}
 
-                                <span class="font-semibold text-green-500" v-if="session.is_current_device">This device</span>
+                                <span class="font-semibold text-success" v-if="session.is_current_device">This device</span>
                                 <span v-else>Last active {{ session.last_active }}</span>
                             </div>
                         </div>
@@ -44,102 +106,38 @@
             </div>
 
             <div class="flex items-center mt-5">
-                <jet-button @click="confirmLogout">
+                <button class="mr-3 btn btn-secondary btn-sm" @click="confirmLogout">
                     Log Out Other Browser Sessions
-                </jet-button>
+                </button>
 
-                <jet-action-message :on="form.recentlySuccessful" class="ml-3">
-                    Done.
-                </jet-action-message>
+                <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                    <p v-if="form.recentlySuccessful" class="mr-3 text-sm opacity-50 text-base-content">Done.</p>
+                </Transition>
             </div>
 
             <!-- Log Out Other Devices Confirmation Modal -->
-            <jet-dialog-modal :show="confirmingLogout" @close="closeModal">
-                <template #title>
+            <Modal v-model="confirmingLogout">
+                <template #header>
                     Log Out Other Browser Sessions
                 </template>
 
-                <template #content>
-                    Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.
+                Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.
 
-                    <div class="mt-4">
-                        <jet-input type="password" class="block w-3/4 mt-1" placeholder="Password"
-                                    ref="password"
-                                    v-model="form.password"
-                                    @keyup.enter="logoutOtherBrowserSessions" />
+                <div class="mt-4">
+                    <input type="password" class="block w-3/4 mt-1 input input-bordered" placeholder="Password"
+                                ref="password"
+                                v-model="form.password"
+                                @keyup.enter="logoutOtherBrowserSessions" />
 
-                        <jet-input-error :message="form.errors.password" class="mt-2" />
-                    </div>
-                </template>
+                    <InputError :message="form.errors.password" class="mt-2" />
+                </div>
 
-                <template #footer>
-                    <jet-secondary-button @click="closeModal">
-                        Cancel
-                    </jet-secondary-button>
-
-                    <jet-button class="ml-3" @click="logoutOtherBrowserSessions" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <template #action>
+                    <button class="ml-3 btn btn-secondary" @click="logoutOtherBrowserSessions">
                         Log Out Other Browser Sessions
-                    </jet-button>
+                    </button>
                 </template>
-            </jet-dialog-modal>
+            </Modal>
         </template>
-    </jet-action-section>
+    </ActionSection>
 </template>
-
-<script>
-    import { defineComponent } from 'vue'
-    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
-    import JetActionSection from '@/Jetstream/ActionSection.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetDialogModal from '@/Jetstream/DialogModal.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetInputError from '@/Jetstream/InputError.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
-
-    export default defineComponent({
-        props: ['sessions'],
-
-        components: {
-            JetActionMessage,
-            JetActionSection,
-            JetButton,
-            JetDialogModal,
-            JetInput,
-            JetInputError,
-            JetSecondaryButton,
-        },
-
-        data() {
-            return {
-                confirmingLogout: false,
-
-                form: this.$inertia.form({
-                    password: '',
-                })
-            }
-        },
-
-        methods: {
-            confirmLogout() {
-                this.confirmingLogout = true
-
-                setTimeout(() => this.$refs.password.focus(), 250)
-            },
-
-            logoutOtherBrowserSessions() {
-                this.form.delete(route('other-browser-sessions.destroy'), {
-                    preserveScroll: true,
-                    onSuccess: () => this.closeModal(),
-                    onError: () => this.$refs.password.focus(),
-                    onFinish: () => this.form.reset(),
-                })
-            },
-
-            closeModal() {
-                this.confirmingLogout = false
-
-                this.form.reset()
-            },
-        },
-    })
-</script>

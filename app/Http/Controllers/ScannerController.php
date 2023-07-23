@@ -30,8 +30,20 @@ class ScannerController extends Controller
     public function index(Request $request)
     {
         return inertia('Scanners/Index', [
+            ...$request->except(['page', 'paginate', 'search']),
             'search' => $request->search,
-            'scanners' => $this->scanner->search($request->search),
+            'paginate' => $request->paginate ?? 50,
+            'scanners' => Scanner::search($request->search)
+                ->query(fn ($q) => $q->select(['id', 'name', 'created_at'])->orderBy('name')->with(['users' => fn ($q) => $q->select('username')]))
+                ->paginate($request->paginate ?? 50)
+                ->withQueryString()
+                ->appends('query', null)
+                ->through(fn ($scanner) => [
+                    'id' => $scanner->id,
+                    'name' => $scanner->name,
+                    'assignees' => $scanner->users->map->username,
+                    'created_at' => $scanner->created_at->format('Y M d - H:i')
+                ])
         ]);
     }
 
@@ -126,7 +138,7 @@ class ScannerController extends Controller
     public function download(Scanner $scanner, TimeLogService $service, ?ScannerDriver $driver)
     {
         if ($driver === null) {
-            throw ValidationException::withMessages(['message' => 'Scanner is not properly configured.']);
+            throw ValidationException::withMessages(['message' => 'Scanner is not configured.']);
         }
 
         try {

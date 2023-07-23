@@ -1,135 +1,153 @@
 <template>
-    <JetFormSection @submitted="save">
+    <FormSection @submitted="updateProfileInformation">
         <template #title>
-            User Information
+            Profile Information
         </template>
 
         <template #description>
-            Update user's basic information.
+            Update your account's signatory information.
         </template>
 
         <template #form>
-            <!-- Name -->
-            <div class="col-span-6 sm:col-span-4">
-                <JetLabel for="name" value="Name" />
-                <JetInput id="name" type="text" class="block w-full mt-1 uppercase" v-model="form.name" autocomplete="name" />
-                <JetInputError :message="form.errors.name" class="mt-2" />
-            </div>
+            <!-- Profile Photo -->
+            <div class="col-span-6 sm:col-span-4" v-if="$page.props.jetstream.managesProfilePhotos">
+                <!-- Profile Photo File Input -->
+                <input type="file" class="hidden"
+                            ref="photo"
+                            @change="updatePhotoPreview">
 
-            <!-- Title -->
-            <div class="col-span-6 sm:col-span-4">
-                <JetLabel for="title" value="Title" />
-                <JetInput id="title" type="text" class="block w-full mt-1 uppercase" v-model="form.title" autocomplete="title" />
-                <JetInputError :message="form.errors.title" class="mt-2" />
-            </div>
+                <label for="photo" class="block text-sm font-medium text-base-content"> Photo </label>
 
-            <div class="col-span-6 sm:col-span-4">
-                <!-- Administrator -->
-                <div class="col-span-6">
-                    <JetLabel class="mb-0" for="biometrics_id" value="Administrator" />
-                    <JetLabel class="mb-1 text-xs text-yellow-400 dark:text-yellow-400" for="biometrics_id" value="Administrators can manage users and scanners." />
-                    <TailwindSelect class="w-full" :options="[{name: 'YES', value: true}, {name: 'NO', value: false}]" v-model="form.administrator" />
-                    <JetInputError :message="form.errors.administrator" class="mt-2" />
+                <!-- Current Profile Photo -->
+                <div class="mt-2" v-show="! photoPreview">
+                    <img :src="user.profile_photo_url" :alt="user.name" class="object-cover w-20 h-20 rounded-full">
                 </div>
+
+                <!-- New Profile Photo Preview -->
+                <div class="mt-2" v-show="photoPreview">
+                    <span class="block w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full"
+                          :style="'background-image: url(\'' + photoPreview + '\');'">
+                    </span>
+                </div>
+
+                <button class="mt-2 mr-2 btn btn-secondary btn-sm" type="button" @click.prevent="selectNewPhoto">
+                    Select A New Photo
+                </button>
+
+                <button type="button btn btn-secondary btn-sm" class="mt-2" @click.prevent="deletePhoto" v-if="user.profile_photo_path">
+                    Remove Photo
+                </button>
+
+                <InputError class="mt-0.5" :message="form.errors.photo" />
             </div>
 
             <!-- Username -->
-            <div class="col-span-6 sm:col-span-4">
-                <JetLabel for="username" value="Username" />
-                <JetLabel class="mb-1 text-xs text-yellow-400 dark:text-yellow-400" for="biometrics_id" value="Users can't edit their own username." />
-                <JetInput id="username" type="text" class="block w-full mt-1 lowercase" v-model="form.username" autocomplete="username" />
-                <JetInputError :message="form.errors.username" class="mt-2" />
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="username" class="block text-sm font-medium text-base-content"> Username </label>
+                <input v-model="form.username" id="username" type="text" class="mt-1 input input-bordered" readonly />
+                <InputError class="mt-0.5" :message="form.errors.username" />
             </div>
 
-            <!-- Password -->
-            <div class="col-span-6 sm:col-span-4">
-                <JetLabel for="password" value="Password" />
-                <JetInput id="password" type="password" class="block w-full mt-1" v-model="form.password" autocomplete="password" />
-                <JetInputError :message="form.errors.password" class="mt-2" />
+            <!-- Name -->
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="name" class="block text-sm font-medium text-base-content"> Name </label>
+                <input v-model="form.name" id="name" type="text" class="mt-1 input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.name" />
             </div>
 
-            <!-- Confirm Password -->
-            <div v-if="! user" class="col-span-6 sm:col-span-4">
-                <JetLabel for="password_confirmation " value="Confirm Password" />
-                <JetInput id="password_confirmation " type="password" class="block w-full mt-1" v-model="form.password_confirmation " autocomplete="password_confirmation " />
-                <JetInputError :message="form.errors.password_confirmation" class="mt-2" />
+            <!-- Title -->
+            <div class="col-span-6 form-control sm:col-span-4">
+                <label for="title" class="block text-sm font-medium text-base-content"> Title </label>
+                <input v-model="form.title" id="title" type="text" class="mt-1 uppercase input input-bordered" />
+                <InputError class="mt-0.5" :message="form.errors.title" />
             </div>
-
-            <JetButton class="hidden" :disabled="form.processing">
-                Save
-            </JetButton>
         </template>
 
         <template #actions>
-            <JetActionMessage :on="form.recentlySuccessful" class="mr-3">
-                Saved.
-            </JetActionMessage>
+            <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                <p v-if="form.recentlySuccessful" class="mr-3 text-sm opacity-50 text-base-content">Saved.</p>
+            </Transition>
 
-            <JetButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <button class="btn btn-primary" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 Save
-            </JetButton>
+            </button>
         </template>
-    </JetFormSection>
+    </FormSection>
 </template>
 
 <script>
-    import { defineComponent } from 'vue'
-    import JetActionMessage from '@/Jetstream/ActionMessage.vue'
-    import JetButton from '@/Jetstream/Button.vue'
-    import JetFormSection from '@/Jetstream/FormSection.vue'
-    import JetDialogModal from '@/Jetstream/DialogModal.vue'
-    import JetDangerButton from '@/Jetstream/DangerButton.vue'
-    import JetInput from '@/Jetstream/Input.vue'
-    import JetInputError from '@/Jetstream/InputError.vue'
-    import JetLabel from '@/Jetstream/Label.vue'
-    import JetSecondaryButton from '@/Jetstream/SecondaryButton.vue'
-    import TailwindSelect from '@/Tailwind/Select.vue'
+import { defineComponent } from 'vue'
+import FormSection from '@/Components/FormSection.vue'
+import InputError from '@/Components/InputError.vue'
 
-    export default defineComponent({
-        components: {
-            JetActionMessage,
-            JetButton,
-            JetDialogModal,
-            JetDangerButton,
-            JetFormSection,
-            JetInput,
-            JetInputError,
-            JetLabel,
-            JetSecondaryButton,
-            TailwindSelect,
-        },
+export default defineComponent({
+    components: {
+        FormSection,
+        InputError,
+    },
 
-        props: [
-            'updateUser'
-        ],
+    props: ['user'],
 
-        data() {
-            return {
-                form: this.$inertia.form({
-                    id: this.updateUser?.id,
-                    name: this.updateUser?.name,
-                    username: this.updateUser?.username,
-                    title: this.updateUser?.title,
-                    administrator: this.updateUser?.administrator,
-                    password: null,
-                    password_confirmation : null,
-                }),
-            }
-        },
+    data() {
+        return {
+            form: this.$inertia.form({
+                _method: 'PUT',
+                username: this.user.username,
+                name: this.user.name,
+                title: this.user.title,
+                photo: null,
+            }),
 
-        methods: {
-            save() {
-                this.form[this.updateUser ? 'put' : 'post'](this.link, {
-                    preserveScroll: true,
-                    onSuccess: () => this.form.reset('password')
-                });
-            },
-        },
-
-        computed: {
-            link() {
-                return route(`users.${this.updateUser?'update':'store'}`, this.updateUser ? {user: this.form.id} :  {})
-            }
+            photoPreview: null,
         }
-    })
+    },
+
+    methods: {
+        updateProfileInformation() {
+            if (this.$refs.photo) {
+                this.form.photo = this.$refs.photo.files[0]
+            }
+
+            this.form.post(route('user-profile-information.update'), {
+                errorBag: 'updateProfileInformation',
+                preserveScroll: true,
+                onSuccess: () => (this.clearPhotoFileInput()),
+            });
+        },
+
+        selectNewPhoto() {
+            this.$refs.photo.click();
+        },
+
+        updatePhotoPreview() {
+            const photo = this.$refs.photo.files[0];
+
+            if (! photo) return;
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                this.photoPreview = e.target.result;
+            };
+
+            reader.readAsDataURL(photo);
+        },
+
+        deletePhoto() {
+            this.$inertia.delete(route('current-user-photo.destroy'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    this.photoPreview = null;
+                    this.clearPhotoFileInput();
+                },
+            });
+        },
+
+        clearPhotoFileInput() {
+            if (this.$refs.photo?.value) {
+                this.$refs.photo.value = null;
+            }
+        },
+    },
+})
 </script>
