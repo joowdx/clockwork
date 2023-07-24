@@ -160,9 +160,9 @@ const print = async (transmittal = false) => {
 
     await loadPreview(true)
 
-    loading.value = false
+    setTimeout(() => print(transmittal), 750)
 
-    setTimeout(() => print(transmittal), 250)
+    loading.value = false
 }
 
 const showEmployeeModal = (e) => {
