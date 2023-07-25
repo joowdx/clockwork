@@ -1,5 +1,6 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
+import preventTabClose from '@/Composables/preventTabClose'
 import { ref, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 
@@ -65,6 +66,8 @@ watch(modelValue, (show) => {
         tab.value = 'attlogs'
     }, 250)
 })
+
+preventTabClose(() => form.processing)
 </script>
 
 <template>

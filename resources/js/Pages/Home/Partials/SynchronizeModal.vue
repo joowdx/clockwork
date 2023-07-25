@@ -1,5 +1,6 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
+import preventTabClose from '@/Composables/preventTabClose'
 import { computed, ref, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 
@@ -11,17 +12,17 @@ const props = defineProps({
 
 const form = ref({})
 
+props.scanners.forEach(e => form.value[e.id] = useForm({}))
+
 const download = (scanner) => {
-    form.value[scanner].post(route('scanners.download', scanner), {
+    const scannerForm = form.value[scanner]
+
+    scannerForm.post(route('scanners.download', scanner), {
         preserveScroll: true,
         preserveState: true,
-        onStart: () => form.value[scanner].clearErrors()
+        onBefore: () => scannerForm.clearErrors(),
     })
 }
-
-const synchronizing = computed(() => Object.entries(form.value)?.some(([scanner, form]) => form.processing))
-
-props.scanners.forEach(e => form.value[e.id] = useForm({}))
 
 watch(modelValue, (show) => {
     if (show) return
@@ -31,6 +32,10 @@ watch(modelValue, (show) => {
         form.reset()
     }), 100)
 })
+
+const synchronizing = computed(() => Object.entries(form.value)?.some(([scanner, form]) => form.processing))
+
+preventTabClose(() => synchronizing.value)
 </script>
 
 <template>
@@ -51,7 +56,7 @@ watch(modelValue, (show) => {
                     <span v-if="form[scanner.id].processing" class="text-sm opacity-50">Fetching...</span>
 
                     <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
-                        <span v-if="form[scanner.id].wasSuccessful" class="text-sm opacity-50">Success</span>
+                        <span v-if="form[scanner.id].wasSuccessful && ! form[scanner.id].processing" class="text-sm opacity-50">Success</span>
                     </Transition>
 
                     <button @click="download(scanner.id)" class="btn btn-xs btn-square" :disabled="synchronizing">
