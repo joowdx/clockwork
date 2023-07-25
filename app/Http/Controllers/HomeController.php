@@ -32,6 +32,7 @@ class HomeController extends Controller
         };
 
         $employee = fn ($query) =>  $query
+            ->with('scanners')
             ->orderBy('name->last')
             ->orderBy('name->first')
             ->orderBy('name->middle')

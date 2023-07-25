@@ -18,6 +18,7 @@ return new class extends Migration
         Schema::create('enrollments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->unsignedInteger('uid');
+            $table->boolean('enabled');
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignIdFor(Employee::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();

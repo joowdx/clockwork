@@ -17,7 +17,7 @@ class Enrollment extends Pivot
 
     protected $touches = ['employee'];
 
-    protected $fillable = ['uid'];
+    protected $fillable = ['uid', 'enabled'];
 
     public function employee(): BelongsTo
     {

@@ -11,8 +11,8 @@ class EnrollmentRequest extends FormRequest
     public function attributes()
     {
         return [
-            'employees.*.uid' => 'UID',
-            'scanners.*.uid' => 'UID',
+            'employees.*.uid' => 'Uid',
+            'scanners.*.uid' => 'Uid',
         ];
     }
 
@@ -54,10 +54,6 @@ class EnrollmentRequest extends FormRequest
 
     private function uid(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($this->scanner === null) {
-            return;
-        }
-
         $scanner = $this->scanner ?? explode('.', $attribute)[1];
 
         $employee = $this->employee ?? explode('.', $attribute)[1];
@@ -69,7 +65,7 @@ class EnrollmentRequest extends FormRequest
         }
 
         if ($existing = Enrollment::whereScannerId($scanner)->whereUid($value)->first()) {
-            $fail('Selected UID is already taken by '.$existing->employee->nameFormat->shortStartLastInitialFirst);
+            $fail('Taken: '.$existing->employee->nameFormat->shortStartLastInitialFirst);
         }
     }
 }

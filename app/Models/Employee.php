@@ -38,7 +38,7 @@ class Employee extends Model
     {
         return $this->belongsToMany(Scanner::class, 'enrollments')
             ->using(Enrollment::class)
-            ->withPivot(['id', 'uid'])
+            ->withPivot(['id', 'uid', 'enabled'])
             ->withTimestamps()
             ->orderBy('name');
     }

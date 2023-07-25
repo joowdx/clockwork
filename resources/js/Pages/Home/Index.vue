@@ -406,7 +406,7 @@ const showEmployeeModal = (e) => {
             </div>
         </div>
 
-        <EmployeeModal v-model="modal.employee" v-model:employee="employee" />
+        <EmployeeModal v-model="modal.employee" v-model:employee="employee" :scanners="scanners" />
 
         <ImportModal v-model="modal.import" :scanners="scanners" />
 
