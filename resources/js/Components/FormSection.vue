@@ -32,7 +32,7 @@ export default defineComponent({
         <div class="mt-5 md:mt-0 md:col-span-3">
             <form @submit.prevent="$emit('submitted')">
                 <div
-                    class="px-4 py-5 bg-base-200 sm:p-6"
+                    class="px-4 py-5 bg-base-200/70 sm:p-6"
                     :class="
                         hasActions
                             ? 'sm:rounded-tl-[--rounded-box] sm:rounded-tr-[--rounded-box]'
@@ -45,7 +45,7 @@ export default defineComponent({
                 </div>
 
                 <div
-                    class="flex items-center justify-end px-4 py-3 text-right shadow bg-base-300 sm:px-6 sm:rounded-bl-[--rounded-box] sm:rounded-br-[--rounded-box]"
+                    class="flex items-center justify-end px-4 py-3 text-right shadow bg-base-300/70 sm:px-6 sm:rounded-bl-[--rounded-box] sm:rounded-br-[--rounded-box]"
                     v-if="hasActions"
                 >
                     <slot name="actions"></slot>

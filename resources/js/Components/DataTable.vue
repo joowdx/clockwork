@@ -109,9 +109,9 @@ onMounted(() => {
         <slot name="actions"></slot>
     </div>
 
-    <div class="p-4 bg-primary-content rounded-[--rounded-box]">
+    <div class="p-4 bg-base-200/40 rounded-[--rounded-box]">
         <div class="overflow-y-scroll" :class="[wrapperClass, isCompact() ? 'h-[34.5em]' : 'h-[28.75em]']">
-            <table ref="table" class="table w-full table-pin-rows table-zebra" v-bind="$attrs">
+            <table ref="table" class="table w-full table-pin-rows" v-bind="$attrs">
                 <thead>
                     <slot name="head">
                         <tr>

@@ -1,18 +1,18 @@
 <template>
     <Head :title="title" />
 
-    <div class="min-h-screen bg-base-100">
-        <section class="">
+    <div class="flex flex-col min-h-screen">
+        <section class="bg-base-100/40">
             <TailwindNavigation :navigation="navigation" :dropdown="dropdown" />
         </section>
 
-        <header class="shadow bg-base-300" v-if="$slots.header">
+        <header class="shadow bg-base-300/40" v-if="$slots.header">
             <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
                 <slot name="header"> </slot>
             </div>
         </header>
 
-        <main>
+        <main class="flex-1">
             <slot></slot>
         </main>
     </div>
