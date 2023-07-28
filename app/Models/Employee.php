@@ -55,6 +55,7 @@ class Employee extends Model
                 $join->on('employees.id', 'enrollments.employee_id');
                 $join->on('enrollments.scanner_id', 'time_logs.scanner_id');
             })
+            ->where('enrollments.enabled', true)
             ->select('time_logs.*')
             ->latest('time')
             ->latest('time_logs.id');
