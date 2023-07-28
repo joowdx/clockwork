@@ -149,23 +149,4 @@ class ScannerController extends Controller
 
         return redirect()->back();
     }
-
-    public function syncTime(Scanner $scanner, ?ScannerDriver $driver)
-    {
-        if ($driver === null) {
-            return redirect()->back()->withErrors([
-                'message' => 'Please configure this device\'s driver.',
-            ]);
-        }
-
-        if (! $driver instanceof TadPhp) {
-            return redirect()->back()->withErrors([
-                'message' => 'Driver '.$scanner->driver.' is not compatible.',
-            ]);
-        }
-
-        $driver->syncTime();
-
-        return redirect()->back();
-    }
 }
