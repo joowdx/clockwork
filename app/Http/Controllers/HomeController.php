@@ -24,6 +24,8 @@ class HomeController extends Controller
                 }
             } else {
                 $query->whereHas('scanners', function ($query) {
+                    $query->where('enrollments.enabled', true);
+
                     $query->whereHas('users', function ($query) {
                         $query->where('user_id', auth()->id());
                     });
