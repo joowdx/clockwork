@@ -3,6 +3,7 @@
 namespace App\Drivers;
 
 use App\Contracts\ScannerDriver;
+use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
@@ -14,18 +15,20 @@ class ZakZk implements ScannerDriver
 
     public function __construct(
         protected string $clientHost,
-        protected int|string|null $clientPort = 4370,
+        protected int|string|null $clientPort,
     ) {
         $this->host = config('zakzk.host');
 
         $this->port = (int) config('zakzk.port');
+
+        $this->setClient($clientHost, $clientPort);
     }
 
-    public function setClient(string $clientHost, int|string $clientPort = 4370): void
+    public function setClient(string $clientHost, int|string|null $clientPort): void
     {
-        $this->clientHost = $clientHost;
+        $this->setClientHost($clientHost);
 
-        $this->clientPort = $clientPort;
+        $this->setClientPort($clientPort);
     }
 
     public function setClientHost(string $clientHost): void
@@ -33,52 +36,65 @@ class ZakZk implements ScannerDriver
         $this->clientHost = $clientHost;
     }
 
-    public function setClientPort(string $clientPort): void
+    public function setClientPort(?int $clientPort): void
     {
-        $this->clientPort = $clientPort;
-    }
-
-    protected function checkConnection(?string $host): mixed
-    {
-        $ch = curl_init($host);
-
-        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        curl_exec($ch);
-
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        curl_close($ch);
-
-        return $httpcode !== 0;
+        $this->clientPort = $clientPort ?? 4370;
     }
 
     protected function checkClient(): void
     {
-        $connected = $this->checkConnection("http://$this->clientHost:$this->clientPort");
+        #check for tcp connection
+        $tcp = @fsockopen($this->clientHost, $this->clientPort, timeout: 1);
 
-        if (! $connected) {
-            throw new ConnectionException('Device is unreachable.');
+        if ($tcp) {
+            fclose($tcp);
+
+            return;
         }
+
+        #check for udp connection
+        $udp = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+
+        if ($udp === false) {
+            throw new Exception("Failed to create UDP socket.");
+        }
+
+        socket_set_nonblock($udp);
+
+        $connection = @socket_connect($udp, $this->clientHost, $this->clientPort);
+
+        if ($connection === false) {
+            socket_close($udp);
+
+            throw new ConnectionException("Device is unreachable");
+        }
+
+        socket_close($udp);
+
+        return;
     }
 
     public function getAttlogs(): array
     {
-        $this->checkClient();
+        // $this->checkClient();
 
         try {
-            $data = Http::get(
+            $response = Http::get(
                 url: 'http://'.$this->host.':'.$this->port,
                 query: [
                     'format' => 'json',
                     'ip' => $this->clientHost,
                     'port' => $this->clientPort,
                 ]
-            )->json();
-        } catch (ConnectionException) {
-            throw new ConnectionException('ZakZk server is unreachable.');
+            );
+
+           if ($response->serverError()) {
+                throw new ConnectionException(code: 21);
+           }
+
+            $data = $response->json();
+        } catch (ConnectionException $ex) {
+            throw new ConnectionException($ex->getCode() === 21 ? 'ZakZk server and device connection error.' : 'ZakZk server is unreachable.');
         }
 
         return $data;
