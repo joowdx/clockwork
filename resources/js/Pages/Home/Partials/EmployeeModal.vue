@@ -298,7 +298,7 @@ watch(modelValue, (show) => {
             <div class="space-y-2">
                 <div class="form-control">
                     <label for="scanner_form_password" class="block text-sm font-medium text-base-content"> Password </label>
-                    <input @keyup.enter="submit" v-model="scannerForm.password" id="scanner_form_password" type="text" class="mt-1 input-sm input input-bordered" />
+                    <input @keyup.enter="submit" v-model="scannerForm.password" id="scanner_form_password" type="password" class="mt-1 input-sm input input-bordered" />
                     <InputError class="mt-0.5" :message="scannerForm.errors.password" />
                 </div>
 
