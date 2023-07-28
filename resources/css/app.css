@@ -4,19 +4,6 @@
 
 @import 'fonts/nunito';
 
-body {
+:root {
     overflow-y: scroll !important;
-}
-
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(90, 90, 90);
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
 }
