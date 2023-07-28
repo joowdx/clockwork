@@ -39,7 +39,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::controller(ScannerController::class)->group(function () {
         Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');
-        // Route::get('scanners/{scanner}/sync-time', 'syncTime')->name('scanners.sync-time');
     });
 
     Route::match(['get', 'post'], 'print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
