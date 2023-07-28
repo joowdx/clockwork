@@ -160,16 +160,17 @@ const print = async (transmittal = false) => {
 
     await loadPreview(true)
 
-    setTimeout(() => print(transmittal), 750)
+    setTimeout(() => {
+        print(transmittal)
 
-    loading.value = false
+        loading.value = false
+    }, 750)
 }
 
 const showEmployeeModal = (e) => {
     employee.value = e
     modal.value.employee = true
 }
-
 </script>
 
 <template>
@@ -300,7 +301,7 @@ const showEmployeeModal = (e) => {
                     :query-strings="queryStrings"
                     @updated="clearSelection"
                     class="table-sm"
-                    wrapper-class="h-[34em]"
+                    :wrapper-class="`h-[calc(100vh-385px)]`"
                 >
                     <template #actions>
                         <div>
