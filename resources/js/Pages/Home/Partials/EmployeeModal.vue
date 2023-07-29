@@ -2,7 +2,7 @@
 import Modal from '@/Components/Modal.vue'
 import InputError from '@/Components/InputError.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { differenceBy, mapKeys, mapValues, values } from 'lodash'
 
 const modelValue = defineModel()
@@ -40,6 +40,10 @@ const scannerForm = useForm({
     scanners: null,
 })
 
+const deleteForm = useForm({
+    password: null,
+})
+
 const registerScanner = ref({
     scanner: null,
     uid: null,
@@ -68,7 +72,13 @@ const notAssigned = (scanner) => {
     return ! props.scanners?.some(e => e.id === scanner.id) || scanner.shared
 }
 
-const switchTab = (to) => tab.value = to
+const switchTab = (to) => {
+    tab.value = to
+
+    if (tab.value == 'delete') {
+        nextTick(() => document.getElementById('delete_form_password').focus())
+    }
+}
 
 const forUpdate = computed(() => employee.value !== null )
 
@@ -83,12 +93,12 @@ const submit = () => {
                 preserveState: true,
                 onSuccess: () => emits('saved')
             })
-    }
-
-    if (tab.value === 'scanners') {
+    } else if (tab.value === 'scanners') {
         scannerForm
             .transform((d) => ({...d, scanners: mapValues(d.scanners, e => ({ uid: e.uid, enabled: e.enabled }))}))
             .post(route('enrollment.store'), {
+                preserveScroll: true,
+                preserveState: true,
                 onError: () => {
                     if (scannerForm.errors.password) {
                         scannerForm.reset('password')
@@ -100,6 +110,22 @@ const submit = () => {
                     emits('saved')
                 }
             })
+    } else if (tab.value === 'delete') {
+        deleteForm.delete(route('employees.destroy', employee.value.id), {
+            preserveScroll: true,
+            preserveState: true,
+            onError: () => {
+                if (deleteForm.errors.password) {
+                    deleteForm.reset('password')
+                    document.getElementById('delete_form_password').focus()
+                }
+            },
+            onSuccess: () => {
+                deleteForm.reset('password')
+                emits('saved')
+                modelValue.value = false
+            }
+        })
     }
 
 }
@@ -111,6 +137,8 @@ watch(modelValue, (show) => {
             profileForm.clearErrors()
             scannerForm.reset()
             scannerForm.clearErrors()
+            deleteForm.reset()
+            deleteForm.clearErrors()
 
             tab.value = 'profile'
         }, 250)
@@ -141,13 +169,13 @@ watch(modelValue, (show) => {
 <template>
     <Modal v-model="modelValue">
         <template #header>
-            {{ employee ? `Update Employee` : 'Register Employee' }}
+            {{ employee ? `Update ${employee.name_format.shortStartLastInitialFirst}` : 'Register Employee' }}
         </template>
 
         <div class="w-full mb-5 tabs">
             <button @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': profileForm.hasErrors}">Profile</button>
             <button v-if="forUpdate" @click="switchTab('scanners')" class="tab tab-bordered" :class="{'tab-active': tab === 'scanners', 'text-error': scannerForm.hasErrors}">Scanners</button>
-            <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete'}">Delete</button>
+            <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete', 'text-error': deleteForm.hasErrors}">Delete</button>
         </div>
 
         <div v-if="tab == 'profile'" class="space-y-5">
@@ -243,19 +271,17 @@ watch(modelValue, (show) => {
             <div class="space-y-2">
                 <div class="grid items-end grid-cols-12 gap-3">
                     <div class="col-span-5 form-control">
-                        <label for="employee_print" class="block text-sm font-medium text-base-content"> Register Scanner </label>
-                        <select v-model="registerScanner.scanner" id="employee_print" class="mt-1 uppercase select select-sm select-bordered">
+                        <label for="register_scanners" class="block text-sm font-medium text-base-content"> Register Scanner </label>
+                        <select v-model="registerScanner.scanner" id="register_scanners" class="mt-1 uppercase select select-sm select-bordered">
                             <option :value="null" hidden selected>Select</option>
                             <option v-if="unregisteredScanners.length === 0" :value="undefined" disabled>empty</option>
                             <option v-for="scanner in unregisteredScanners" :value="scanner.id">{{ scanner.name }}</option>
                         </select>
-                        <InputError class="mt-0.5" :message="profileForm.errors.csc_format" />
                     </div>
 
                     <div class="col-span-5 form-control">
-                        <label for="employee_groups" class="block text-sm font-medium text-base-content"> Uid </label>
-                        <input v-model="registerScanner.uid" @keyup.enter="addScanner" id="employee_groups" type="text" class="mt-1 uppercase input-sm input input-bordered" placeholder="####" />
-                        <InputError class="mt-0.5" :message="profileForm.errors.groups" />
+                        <label for="register_scanner_uid" class="block text-sm font-medium text-base-content"> Uid </label>
+                        <input v-model="registerScanner.uid" @keyup.enter="addScanner" id="register_scanner_uid" type="text" class="mt-1 uppercase input-sm input input-bordered" placeholder="####" />
                     </div>
 
                     <div class="col-span-2 form-control">
@@ -268,6 +294,8 @@ watch(modelValue, (show) => {
                 <span class="block text-xs tracking-tight text-base-content/70">
                     Newly added entries marked with asterisks are not yet saved.
                 </span>
+
+                <InputError v-if="scannerForm.errors.scanners" message="Please add some scanners first." />
             </div>
 
             <hr class="border-base-content/40">
@@ -319,6 +347,18 @@ watch(modelValue, (show) => {
             </div>
         </div>
 
+        <div v-if="tab == 'delete' && forUpdate" class="space-y-2">
+            <div class="form-control">
+                <label for="delete_form_password" class="block text-sm font-medium text-base-content"> Password </label>
+                <input @keyup.enter="submit" v-model="deleteForm.password" id="delete_form_password" type="password" class="mt-1 input-sm input input-bordered" />
+                <InputError class="mt-0.5" :message="deleteForm.errors.password" />
+            </div>
+
+            <span class="block text-xs tracking-tight text-base-content/70">
+                To prevent any unauthorized modifications, please enter your password to proceed.
+            </span>
+        </div>
+
         <template #action>
             <template v-if="tab !== 'delete'">
                 <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
@@ -329,6 +369,11 @@ watch(modelValue, (show) => {
 
                 <button type="button" class="btn btn-sm btn-primary" @click="submit">Save</button>
             </template>
+
+
+            <button v-else type="button" class="btn btn-sm btn-error" @click="submit">
+                Delete
+            </button>
         </template>
     </Modal>
 </template>

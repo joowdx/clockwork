@@ -1,6 +1,6 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import EmployeeModal from './Partials/EmployeeModal.vue'
 import EmployeesTable from './Partials/EmployeesTable.vue'
@@ -61,6 +61,14 @@ watch(settings, (settings) => {
     queryStrings.value.all = settings.all ? true : null
     queryStrings.value.unenrolled = settings.unenrolled ? settings.unenrolled : null
 }, { deep: true })
+
+watch(() => usePage().props.flash?.employee, (employee) => {
+    if (employee === undefined) {
+        return
+    }
+
+    nextTick(() => showEmployeeModal(employee))
+})
 
 const loadPreview = async (transmittal = false) => {
     return await fetch(route('print', { by: 'dtr' }), {

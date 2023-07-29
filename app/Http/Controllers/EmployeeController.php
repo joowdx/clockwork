@@ -33,11 +33,12 @@ class EmployeeController extends Controller
                 $import->parse($request->file);
 
                 return redirect()->back();
-
             default:
                 $employee = $this->repository->create($request->all());
 
-                return redirect()->route('employees.edit', $employee->id);
+                return redirect()->back()->with('flash', [
+                    'employee' => $employee->load('scanners'),
+                ]);
         }
     }
 
@@ -51,7 +52,9 @@ class EmployeeController extends Controller
     {
         $this->employee->update($employee, $request->all());
 
-        return redirect()->back();
+        return redirect()->back()->with('flash', [
+            'employee' => $employee->fresh(['scanners'])
+        ]);
     }
 
     /**
@@ -66,6 +69,6 @@ class EmployeeController extends Controller
 
         $this->repository->delete($employee);
 
-        return redirect()->route('employees.index');
+        return redirect()->back();
     }
 }
