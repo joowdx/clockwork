@@ -26,6 +26,10 @@ const form = useForm({
 })
 
 const update = () => {
+    if (props.items == undefined) {
+        return
+    }
+
     form.transform((data) => ({
         ...data,
         ...(props.queryStrings ?? {})
@@ -37,6 +41,11 @@ const update = () => {
             emits('updated')
         }
     })
+}
+
+const jump = (page = 1) => {
+    form.page = page
+    update()
 }
 
 const formatData = (data) => {
@@ -109,9 +118,11 @@ onMounted(() => {
         <slot name="actions"></slot>
     </div>
 
-    <div class="p-4 bg-base-200/40 rounded-[--rounded-box]">
+    <div class="p-4 bg-base-300/50 rounded-[--rounded-box]">
+        <slot name="pre"></slot>
+
         <div class="overflow-y-scroll" :class="[wrapperClass, isCompact() ? 'h-[34.5em]' : 'h-[28.75em]']">
-            <table ref="table" class="table w-full table-pin-rows" v-bind="$attrs">
+            <table ref="table" class="table w-full table-zebra table-pin-rows" v-bind="$attrs">
                 <thead>
                     <slot name="head">
                         <tr>
@@ -189,33 +200,33 @@ onMounted(() => {
                         <option>25</option>
                         <option>50</option>
                         <option>100</option>
-                        <option>500</option>
+                        <option>200</option>
                     </select>
                 </div>
             </div>
 
             <slot name="links">
                 <div class="justify-center w-full join md:w-fit">
-                    <Link
+                    <button
                         class="btn join-item"
                         :class="{ 'btn-sm': isCompact() }"
-                        :href="items?.first_page_url ?? ''"
+                        @click="jump()"
                         :disabled="form.processing || (items?.current_page == 1 ? true : null)"
                         preserve-scroll
                         preserve-state
                     >
                         ⇚
-                    </Link>
-                    <Link
+                    </button>
+                    <button
                         class="btn join-item"
                         :class="{ 'btn-sm': isCompact() }"
-                        :href="items?.prev_page_url ?? ''"
+                        @click="jump(items?.current_page - 1)"
                         :disabled="form.processing || (items?.current_page == 1 ? true : null)"
                         preserve-scroll
                         preserve-state
                     >
                         ⇐
-                    </Link>
+                    </button>
                     <button
                         class="btn btn-square disabled:text-base-content join-item"
                         disabled
@@ -223,26 +234,26 @@ onMounted(() => {
                     >
                         {{ items?.current_page }}
                     </button>
-                    <Link
+                    <button
                         class="btn join-item"
                         :class="{ 'btn-sm': isCompact() }"
-                        :href="items?.next_page_url ?? ''"
+                        @click="jump(items?.current_page + 1)"
                         :disabled="form.processing || (items?.current_page == items?.last_page ? true : null)"
                         preserve-scroll
                         preserve-state
                     >
                         ⇒
-                    </Link>
-                    <Link
+                    </button>
+                    <button
                         class="btn join-item"
                         :class="{ 'btn-sm': isCompact() }"
-                        :href="items?.last_page_url ?? ''"
+                        @click="jump(items?.last_page)"
                         :disabled="form.processing || (items?.current_page == items?.last_page ? true : null)"
                         preserve-scroll
                         preserve-state
                     >
                         ⇛
-                    </Link>
+                    </button>
                 </div>
             </slot>
 
@@ -274,3 +285,16 @@ onMounted(() => {
         {{ items?.current_page }} of {{ items?.last_page }}
     </div>
 </template>
+
+<style scoped>
+.table :where(thead, tbody) :where(tr:not(:last-child)), .table :where(thead, tbody) :where(tr:first-child:last-child) {
+    border-bottom: none;
+}
+</style>
+
+<style>
+.table tr.active, .table tr.active:nth-child(even), .table-zebra tbody tr:nth-child(even) {
+    --tw-bg-opacity: 0.5 !important;
+    background-color: hsl(var(--b2) / var(--tw-bg-opacity)) !important;
+}
+</style>
