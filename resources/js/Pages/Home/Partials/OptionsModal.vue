@@ -184,7 +184,7 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                             </select>
                         </div>
                         <div class="grid grid-cols-12 col-span-12 mt-2 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
-                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-300 sm:col-span-6 gap-y-2 gap-x-3">
+                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">AM</legend>
                                 <div class="col-span-6">
                                     <label>In</label>
@@ -196,7 +196,7 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                                 </div>
                             </fieldset>
 
-                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-300 sm:col-span-6 gap-y-2 gap-x-3">
+                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">PM</legend>
                                 <div class="col-span-6">
                                     <label>In</label>
@@ -224,7 +224,7 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                             </select>
                         </div>
                         <div class="grid grid-cols-12 col-span-12 mt-2 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
-                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-300 sm:col-span-6 gap-y-2 gap-x-3">
+                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">AM</legend>
                                 <div class="col-span-6">
                                     <label>In</label>
@@ -236,7 +236,7 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                                 </div>
                             </fieldset>
 
-                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-300 sm:col-span-6 gap-y-2 gap-x-3">
+                            <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">PM</legend>
                                 <div class="col-span-6">
                                     <label>In</label>
@@ -261,9 +261,9 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                             <input :checked="value.days.length" onclick="return false;" type="checkbox" class="checkbox checkbox-xs" />
                             <span class="ml-2">Days</span>
                         </label>
-                        <fieldset class="grid grid-cols-7 gap-1 p-3 mt-2 border rounded-md border-base-300">
+                        <fieldset class="grid grid-cols-7 gap-1 p-3 mt-2 border rounded-md border-base-content/40">
                             <legend class="mb-0 ml-3 text-xs">Days of the month</legend>
-                            <div v-for="day in 31" class="col-span-2 rounded-md sm:col-span-1 border-base-300">
+                            <div v-for="day in 31" class="col-span-2 rounded-md sm:col-span-1 border-base-content/40">
                                 <label class="flex items-center justify-center py-1 font-mono cursor-pointer">
                                     <input v-model="value.days" :value="day" class="checkbox checkbox-xs" type="checkbox" >
                                     <span class="ml-2 text-sm">{{ String(day).padStart(2, '0') }}</span>
