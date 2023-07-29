@@ -301,7 +301,7 @@ watch(modelValue, (show) => {
             <hr class="border-base-content/40">
 
             <div class="space-y-2">
-                <div v-if="employee.scanners.length > 1" class="grid grid-cols-2 px-2 pl-1 overflow-x-auto overflow-y-scroll gap-x-3 gap-y-2 max-h-40">
+                <div v-if="employee.scanners.length > 1" class="grid grid-cols-2 px-2 pb-2 pl-1 overflow-x-auto overflow-y-scroll gap-x-3 gap-y-2 max-h-40">
                     <div v-for="scanner in scannerForm.scanners" class="form-control">
                         <label :for="`scanner_form-${scanner.id}`" class="flex items-center justify-between text-sm font-medium text-base-content">
                             <span class="tracking-tighter lowercase">
