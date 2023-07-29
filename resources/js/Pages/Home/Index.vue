@@ -2,26 +2,17 @@
 import { usePage } from '@inertiajs/vue3'
 import { computed, ref, watch } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import DataTable from '@/Components/DataTable.vue'
 import EmployeeModal from './Partials/EmployeeModal.vue'
+import EmployeesTable from './Partials/EmployeesTable.vue'
 import ImportModal from './Partials/ImportModal.vue'
 import OptionsModal from './Partials/OptionsModal.vue'
 import SearchModal from './Partials/SearchModal.vue'
 import SettingsModal from './Partials/SettingsModal.vue'
 import SynchronizeModal from './Partials/SynchronizeModal.vue'
 
-const props = defineProps([
-    'employees',
-    'offices',
-    'groups',
-    'scanners',
-    'office',
-    'group',
-    'active',
-    'regular',
-    'all',
-    'unenrolled',
-])
+const props = defineProps(['employees', 'offices', 'groups', 'scanners', 'office', 'group', 'active', 'regular', 'all', 'unenrolled'])
+
+const config = ref({})
 
 const args = ref({
     by: 'employee',
@@ -42,65 +33,10 @@ const queryStrings = ref({
     unenrolled: props.unenrolled,
 })
 
-const config = ref({})
-
 const settings = ref({
     all: queryStrings.value.all,
     unenrolled: queryStrings.value.unenrolled,
 })
-
-const employee = ref(null)
-
-const dtrPreview = ref(null)
-const transmittalPreview = ref(null)
-const dataTable = ref(null)
-const all = ref(null)
-const loading = ref(false)
-
-let skipCheck = false
-
-const results = computed(() => props.employees.data.map(e => e.id))
-const selected = computed(() => Object.keys(args.value.employees).filter(e => args.value.employees[e]))
-
-const toggleSelection = () => {
-    skipCheck = true
-
-    if (results.value.every(e => args.value.employees[e])) {
-        selected.value.forEach(e => {
-            if (results.value.includes(e)) {
-                delete args.value.employees[e]
-            }
-        })
-    } else {
-        results.value.forEach(e => args.value.employees[e] = true)
-    }
-
-    skipCheck = false
-
-    closePreview()
-}
-
-const checkSelection = () => {
-    if (results.value.every(e => selected[e])) {
-        all.value.indeterminate = false
-        all.value.checked = true
-    } else if (selected.value.some(e => results.value.includes(e))) {
-        all.value.indeterminate = true
-        all.value.checked = false
-    } else {
-        all.value.checked = false
-        all.value.indeterminate = false
-    }
-}
-
-watch(args, function () {
-    if (skipCheck) {
-        return
-    }
-
-    closePreview()
-    checkSelection()
-}, { deep: true, flush: 'sync' })
 
 const modal = ref({
     employee: false,
@@ -110,6 +46,16 @@ const modal = ref({
     sync: false,
     options: false,
 })
+
+const employee = ref(null)
+
+const loading = ref(false)
+
+const selected = computed(() => Object.keys(args.value.employees).filter(e => args.value.employees[e]))
+
+const hasPreview = computed(() => dtrPreview.value.hasAttribute('src') || transmittalPreview.value.hasAttribute('src'))
+
+watch(args, () => closePreview(), { deep: true, flush: 'sync' })
 
 watch(settings, (settings) => {
     queryStrings.value.all = settings.all ? true : null
@@ -145,6 +91,10 @@ const loadPreview = async (transmittal = false) => {
 }
 
 const closePreview = () => {
+    if (! hasPreview.value) {
+        return
+    }
+
     dtrPreview.value.removeAttribute('src')
 
     transmittalPreview.value.removeAttribute('src')
@@ -174,6 +124,9 @@ const showEmployeeModal = (e) => {
     employee.value = e
     modal.value.employee = true
 }
+
+const dtrPreview = ref(null)
+const transmittalPreview = ref(null)
 </script>
 
 <template>
@@ -298,154 +251,47 @@ const showEmployeeModal = (e) => {
                     </template>
                 </div>
 
-                <DataTable
-                    ref="dataTable"
-                    :items="employees"
-                    :query-strings="queryStrings"
-                    @updated="checkSelection"
-                    class="table-sm"
-                    :wrapper-class="`h-[calc(100vh-425px)]`"
-                    :class="{'opacity-50 pointer-events-none': dataTable?.processing}"
-                >
-                    <template #pre>
-                        <div class="flex pb-1 mb-2 group">
-                            {{ selected.length }} {{ selected.length === 1 ? 'employee' : 'employees' }} selected
-
-                            <button @click="args.employees = []" class="top-0 right-0 items-center hidden ml-5 place-content-center btn btn-primary btn-xs group-hover:flex">
-                                Clear
-                            </button>
-                        </div>
-                    </template>
-
-                    <template #actions>
-                        <div>
-                            <div class="grid grid-cols-12 col-span-12 gap-3">
-                                <div class="col-span-6 form-control sm:col-span-3">
-                                    <label for="period" class="p-0 label">
-                                        <span class="label-text">Status</span>
-                                    </label>
-                                    <select aria-label="Status" class="select select-bordered select-sm" v-model="queryStrings.regular" :disabled="dataTable?.processing">
-                                        <option :value="undefined">status</option>
-                                        <option :value="true">regular</option>
-                                        <option :value="false">jo, cos, etc.</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-span-6 form-control sm:col-span-3">
-                                    <label for="period" class="p-0 label">
-                                        <span class="label-text">Office</span>
-                                    </label>
-                                    <select aria-label="Office" class="select-sm select select-bordered" v-model="queryStrings.office" :disabled="dataTable?.processing">
-                                        <option :value="undefined">office</option>
-                                        <option v-for="office in offices"> {{ office }} </option>
-                                    </select>
-                                </div>
-
-                                <div class="col-span-6 form-control sm:col-span-3">
-                                    <label for="period" class="p-0 label">
-                                        <span class="label-text">Group</span>
-                                    </label>
-                                    <select aria-label="Group" v-if="groups" v-model="queryStrings.group" class="select-sm select select-bordered" :disabled="dataTable?.processing">
-                                        <option :value="undefined">group</option>
-                                        <option v-for="group in groups"> {{ group }} </option>
-                                    </select>
-                                </div>
-
-
-                                <div class="col-span-6 form-control sm:col-span-3">
-                                    <label for="period" class="p-0 label">
-                                        <span class="label-text">Active</span>
-                                    </label>
-
-                                    <select aria-label="Active" class="select-sm select select-bordered" v-model="queryStrings.active" :disabled="dataTable?.processing">
-                                        <option :value="true">active</option>
-                                        <option :value="false">inactive</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template #head>
-                        <tr>
-                            <th class="p-0 w-[40px] max-w-[40px] z-10">
-                                <label class="flex justify-center">
-                                    <input @change="toggleSelection" id="all" ref="all" class="mx-2 checkbox checkbox-xs" type="checkbox">
-                                </label>
-                            </th>
-                            <th @click="toggleSelection" class="px-2 py-3 w-96 min-w-96">Name</th>
-                            <th @click="toggleSelection" class="px-2 py-3 w-36">Status</th>
-                            <th @click="toggleSelection" class="w-48 px-2 py-3">Office</th>
-                            <th @click="toggleSelection" class="px-2 py-3 w-36">Groups</th>
-                            <th @click="toggleSelection" class="w-16 px-2">
-                                <button type="button" class="py-0 opacity-0 cursor-default btn btn-xs btn-primary">
-                                    Edit
-                                </button>
-                            </th>
-                        </tr>
-                    </template>
-
-                    <template #default="{row}">
-                        <tr class="group bg-opacity-40">
-                            <th class="p-0 bg-[transparent!important;]">
-                                <label class="flex justify-center px-2 py-1.5 cursor-pointer">
-                                    <input :id="`employee-selection-${row.id}`" v-model="args.employees[row.id]" :value="row.id" class="checkbox checkbox-xs" type="checkbox">
-                                </label>
-                            </th>
-                            <td class="p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
-                                    {{ row.name_format.fullStartLastInitialMiddle }}
-                                </label>
-                            </td>
-                            <td class="p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
-                                    {{ row.regular ? 'regular' : 'non-regular' }}
-                                </label>
-                            </td>
-                            <td class="p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
-                                    <template v-if="row.office">
-                                        {{ row.office?.toLowerCase() }}
-                                    </template>
-
-                                    <template v-else>
-                                        &nbsp;
-                                    </template>
-                                </label>
-                            </td>
-                            <td class="overflow-visible text-ellipsis whitespace-nowrap min-w-[fit-content] p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
-                                    <template v-if="row.groups?.length">
-                                        {{ row.groups?.map(e => e.toLowerCase()).join(', ') }}
-                                    </template>
-
-                                    <template v-else>
-                                        &nbsp;
-                                    </template>
-                                </label>
-                            </td>
-                            <th class="p-0 px-2 text-right bg-[transparent!important;]">
-                                <button @click="showEmployeeModal(row)" class="justify-center hidden group-hover:flex btn btn-xs btn-primary">
-                                    Edit
-                                </button>
-                            </th>
-                        </tr>
-                    </template>
-                </DataTable>
+                <EmployeesTable
+                    v-model="args.employees"
+                    v-model:queryStrings="queryStrings"
+                    :employees="employees"
+                    :offices="offices"
+                    :groups="groups"
+                    @edit="showEmployeeModal"
+                />
             </div>
         </div>
 
-        <EmployeeModal v-model="modal.employee" v-model:employee="employee" :scanners="scanners" @saved="closePreview" />
+        <EmployeeModal
+            v-model="modal.employee"
+            v-model:employee="employee"
+            :scanners="scanners"
+            @saved="closePreview"
+        />
 
-        <ImportModal v-model="modal.import" :scanners="scanners" />
+        <ImportModal
+            v-model="modal.import"
+            :scanners="scanners"
+        />
 
-        <OptionsModal v-model="modal.options" v-model:data="config" />
+        <OptionsModal
+            v-model="modal.options"
+            v-model:data="config"
+        />
 
-        <SearchModal v-model="modal.search" />
+        <SearchModal
+            v-model="modal.search"
+        />
 
-        <SettingsModal v-model="modal.settings" v-model:data="settings" />
+        <SettingsModal
+            v-model="modal.settings"
+            v-model:data="settings"
+        />
 
-        <SynchronizeModal v-model="modal.sync" :scanners="scanners" />
+        <SynchronizeModal
+            v-model="modal.sync"
+            :scanners="scanners"
+        />
 
         <Teleport to="body">
             <iframe title="DTR" ref="dtrPreview" hidden frameborder="0"></iframe>
