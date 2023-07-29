@@ -3,7 +3,3 @@
 @import 'tailwindcss/utilities';
 
 @import 'fonts/nunito';
-
-:root {
-    overflow-y: scroll !important;
-}

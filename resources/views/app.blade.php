@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" data-theme="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" data-theme="dark" style="overflow-y: scroll; color-scheme: dark;">
     <head>
         <meta charset="utf-8">
 
