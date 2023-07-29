@@ -39,7 +39,7 @@ onMounted(() => {
         <div class="flex content-center flex-1">
             <div class="hero">
                 <div
-                    class="px-0 rounded-none sm:p-12 bg-base-300/30 sm:rounded-sm"
+                    class="p-12 bg-gradient-to-bl via-50% via-base-100/80 to-100% to-base-200/80 from-base-300/80 rounded-none sm:rounded-sm"
                 >
                     <div class="flex-col hero-content lg:flex-row-reverse lg:gap-20">
                         <div class="text-center lg:text-left">
@@ -51,7 +51,7 @@ onMounted(() => {
                             </p>
                         </div>
 
-                        <div class="flex-shrink-0 w-full max-w-xs rounded-sm card bg-gradient-to-br from-base-300">
+                        <div class="flex-shrink-0 w-full max-w-sm rounded-sm card bg-gradient-to-br from-base-300/80">
                             <div class="card-body">
                                 <form class="space-y-3" @submit.prevent="submit">
                                     <div class="form-control">
