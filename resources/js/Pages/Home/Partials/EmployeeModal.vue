@@ -16,6 +16,8 @@ const props = defineProps({
     scanners: Object,
 })
 
+const emits = defineEmits(['saved'])
+
 const tab = ref('profile')
 
 const profileForm = useForm({
@@ -79,6 +81,7 @@ const submit = () => {
             .post(profileFormLink.value, {
                 preserveScroll: true,
                 preserveState: true,
+                onSuccess: () => emits('saved')
             })
     }
 
@@ -86,8 +89,16 @@ const submit = () => {
         scannerForm
             .transform((d) => ({...d, scanners: mapValues(d.scanners, e => ({ uid: e.uid, enabled: e.enabled }))}))
             .post(route('enrollment.store'), {
-                onError: () => scannerForm.reset('password'),
-                onSuccess: () => scannerForm.reset('password')
+                onError: () => {
+                    if (scannerForm.errors.password) {
+                        scannerForm.reset('password')
+                        document.getElementById('scanner_form_password').focus()
+                    }
+                },
+                onSuccess: () => {
+                    scannerForm.reset('password')
+                    emits('saved')
+                }
             })
     }
 
@@ -135,7 +146,7 @@ watch(modelValue, (show) => {
 
         <div class="w-full mb-5 tabs">
             <button @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': profileForm.hasErrors}">Profile</button>
-            <button @click="switchTab('scanners')" class="tab tab-bordered" :class="{'tab-active': tab === 'scanners', 'text-error': scannerForm.hasErrors}">Scanners</button>
+            <button v-if="forUpdate" @click="switchTab('scanners')" class="tab tab-bordered" :class="{'tab-active': tab === 'scanners', 'text-error': scannerForm.hasErrors}">Scanners</button>
             <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete'}">Delete</button>
         </div>
 
@@ -228,7 +239,7 @@ watch(modelValue, (show) => {
             </div>
         </div>
 
-        <div v-if="tab == 'scanners'" class="space-y-5">
+        <div v-if="tab == 'scanners' && forUpdate" class="space-y-5">
             <div class="space-y-2">
                 <div class="grid items-end grid-cols-12 gap-3">
                     <div class="col-span-5 form-control">
