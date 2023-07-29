@@ -53,9 +53,7 @@ const loading = ref(false)
 
 const selected = computed(() => Object.keys(args.value.employees).filter(e => args.value.employees[e]))
 
-const hasPreview = computed(() => dtrPreview.value.hasAttribute('src') || transmittalPreview.value.hasAttribute('src'))
-
-watch(args, () => closePreview(), { deep: true, flush: 'sync' })
+watch([args, config], () => closePreview(), { deep: true, flush: 'sync' })
 
 watch(settings, (settings) => {
     queryStrings.value.all = settings.all ? true : null
@@ -99,13 +97,9 @@ const loadPreview = async (transmittal = false) => {
 }
 
 const closePreview = () => {
-    if (! hasPreview.value) {
-        return
-    }
+    dtrPreview.value?.removeAttribute('src')
 
-    dtrPreview.value.removeAttribute('src')
-
-    transmittalPreview.value.removeAttribute('src')
+    transmittalPreview.value?.removeAttribute('src')
 }
 
 const print = async (transmittal = false) => {

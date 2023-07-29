@@ -76,39 +76,6 @@ const selectAllDays = () => value.value.days = Array.from({length: 31}, (_, i) =
 
 const switchTab = (to) => tab.value = to
 
-const getPresetTime = (week) => {
-    function getHour(time) {
-        if (time == null) return ''
-
-        return time.split(':')[0]
-    }
-
-    const in1 = getHour(value.value[week].am.in)
-    const in2 = getHour(value.value[week].pm.in)
-    const out1 = getHour(value.value[week].am.out)
-    const out2 = getHour(value.value[week].pm.out)
-
-    let time = ''
-
-    if (in1) {
-        time += in1
-    }
-
-    if (out1) {
-        time += out1
-    }
-
-    if (in2) {
-        time += in2
-    }
-
-    if (out2) {
-        time += out2
-    }
-
-    return time === '' ? null : time
-}
-
 watch(presetTime, (time) => {
     if (time.weekdays === null && time.weekends === null) return
 
@@ -186,24 +153,52 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                         <div class="grid grid-cols-12 col-span-12 mt-2 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
                             <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">AM</legend>
-                                <div class="col-span-6">
-                                    <label>In</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            In
+                                        </sub>
+                                        <button @click="value.weekdays.am.in = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekdays.am.in" type="time" class="input input-sm input-bordered" />
                                 </div>
-                                <div class="col-span-6">
-                                    <label>Out</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            Out
+                                        </sub>
+                                        <button @click="value.weekdays.am.out = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekdays.am.out" type="time" class="input input-sm input-bordered" />
                                 </div>
                             </fieldset>
 
                             <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">PM</legend>
-                                <div class="col-span-6">
-                                    <label>In</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            In
+                                        </sub>
+                                        <button @click="value.weekdays.pm.in = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekdays.pm.in" type="time" class="input input-sm input-bordered" />
                                 </div>
-                                <div class="col-span-6">
-                                    <label>Out</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            Out
+                                        </sub>
+                                        <button @click="value.weekdays.pm.out = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekdays.pm.out" type="time" class="input input-sm input-bordered" />
                                 </div>
                             </fieldset>
@@ -226,24 +221,52 @@ data.value = JSON.parse(JSON.stringify(defaultValue))
                         <div class="grid grid-cols-12 col-span-12 mt-2 rounded-md sm:col-span-6 gap-y-2 gap-x-3">
                             <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">AM</legend>
-                                <div class="col-span-6">
-                                    <label>In</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            In
+                                        </sub>
+                                        <button @click="value.weekends.am.in = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekends.am.in" type="time" class="input input-sm input-bordered" />
                                 </div>
-                                <div class="col-span-6">
-                                    <label>Out</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            Out
+                                        </sub>
+                                        <button @click="value.weekends.am.out = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekends.am.out" type="time" class="input input-sm input-bordered" />
                                 </div>
                             </fieldset>
 
                             <fieldset class="grid grid-cols-12 col-span-12 px-3 pb-3 text-sm border rounded-md border-base-content/40 sm:col-span-6 gap-y-2 gap-x-3">
                                 <legend class="ml-3 text-xs">PM</legend>
-                                <div class="col-span-6">
-                                    <label>In</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            In
+                                        </sub>
+                                        <button @click="value.weekends.pm.in = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekends.pm.in" type="time" class="input input-sm input-bordered" />
                                 </div>
-                                <div class="col-span-6">
-                                    <label>Out</label>
+                                <div class="col-span-6 space-y-2">
+                                    <div class="flex justify-between place-items-end">
+                                        <sub class="text-base">
+                                            Out
+                                        </sub>
+                                        <button @click="value.weekends.pm.out = null" class="p-0 border-none btn-xs btn btn-square btn-primary">
+                                            ×
+                                        </button>
+                                    </div>
                                     <input v-model="value.weekends.pm.out" type="time" class="input input-sm input-bordered" />
                                 </div>
                             </fieldset>
