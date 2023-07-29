@@ -1,6 +1,6 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
 import EmployeeModal from './Partials/EmployeeModal.vue'
@@ -28,13 +28,13 @@ const args = ref({
     csc_format: true,
     period: usePage().props.period,
     month: usePage().props.month,
-    employees: [],
+    employees: {},
     from: usePage().props.from,
     to: usePage().props.to,
 })
 
 const queryStrings = ref({
-    active: props.active,
+    active: props.active ?? true,
     regular: props.regular,
     office: props.office,
     group: props.group,
@@ -57,47 +57,49 @@ const dataTable = ref(null)
 const all = ref(null)
 const loading = ref(false)
 
-let flag = false
+let skipCheck = false
 
-const clearSelection = () => {
-    args.value.employees = []
-    all.value.checked = false
-    all.value.indeterminate = false
-}
+const results = computed(() => props.employees.data.map(e => e.id))
+const selected = computed(() => Object.keys(args.value.employees).filter(e => args.value.employees[e]))
 
 const toggleSelection = () => {
-    flag = true
+    skipCheck = true
 
-    if (all.value.indeterminate || !all.value.checked) {
-        args.value.employees = []
-
-        flag = false
-        return
+    if (results.value.every(e => args.value.employees[e])) {
+        selected.value.forEach(e => {
+            if (results.value.includes(e)) {
+                delete args.value.employees[e]
+            }
+        })
     } else {
-        args.value.employees = props.employees.data.map(e => e.id)
+        results.value.forEach(e => args.value.employees[e] = true)
+    }
 
-        flag = false
-        return
+    skipCheck = false
+
+    closePreview()
+}
+
+const checkSelection = () => {
+    if (results.value.every(e => selected[e])) {
+        all.value.indeterminate = false
+        all.value.checked = true
+    } else if (selected.value.some(e => results.value.includes(e))) {
+        all.value.indeterminate = true
+        all.value.checked = false
+    } else {
+        all.value.checked = false
+        all.value.indeterminate = false
     }
 }
 
-watch(args, function (args) {
+watch(args, function () {
+    if (skipCheck) {
+        return
+    }
+
     closePreview()
-
-    if (flag) {
-        return
-    }
-
-    if (props.employees.data.every(e => args.employees.includes(e.id))) {
-        all.value.indeterminate = false
-        all.value.checked = true
-        return
-    } else if (args.employees.length == 0) {
-        all.value.indeterminate = false
-        all.value.checked = false
-        return
-    }
-    all.value.indeterminate = true
+    checkSelection()
 }, { deep: true, flush: 'sync' })
 
 const modal = ref({
@@ -120,7 +122,8 @@ const loadPreview = async (transmittal = false) => {
         body: JSON.stringify({
             ...args.value,
             ...config.value,
-            ...(transmittal ? { transmittal : true } : {}),
+            ...(transmittal ? { transmittal: true } : {}),
+            employees: selected.value
         }),
         headers: {
             'Content-Type': 'application/json',
@@ -285,7 +288,7 @@ const showEmployeeModal = (e) => {
                             </div>
 
                             <div class="tooltip" data-tip="Print">
-                                <button @click.exact="print(false)" @click.alt.exact="print(true)" :disabled="!args.employees.length || !args.month || loading" class="tracking-tighter btn btn-sm btn-square btn-primary">
+                                <button @click.exact="print(false)" @click.alt.exact="print(true)" :disabled="!selected.length || !args.month || loading" class="tracking-tighter btn btn-sm btn-square btn-primary">
                                     <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
                                         <path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zM432 248a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/>
                                     </svg>
@@ -299,10 +302,21 @@ const showEmployeeModal = (e) => {
                     ref="dataTable"
                     :items="employees"
                     :query-strings="queryStrings"
-                    @updated="clearSelection"
+                    @updated="checkSelection"
                     class="table-sm"
-                    :wrapper-class="`h-[calc(100vh-385px)]`"
+                    :wrapper-class="`h-[calc(100vh-425px)]`"
+                    :class="{'opacity-50 pointer-events-none': dataTable?.processing}"
                 >
+                    <template #pre>
+                        <div class="flex pb-1 mb-2 group">
+                            {{ selected.length }} {{ selected.length === 1 ? 'employee' : 'employees' }} selected
+
+                            <button @click="args.employees = []" class="top-0 right-0 items-center hidden ml-5 place-content-center btn btn-primary btn-xs group-hover:flex">
+                                Clear
+                            </button>
+                        </div>
+                    </template>
+
                     <template #actions>
                         <div>
                             <div class="grid grid-cols-12 col-span-12 gap-3">
@@ -359,46 +373,60 @@ const showEmployeeModal = (e) => {
                                     <input @change="toggleSelection" id="all" ref="all" class="mx-2 checkbox checkbox-xs" type="checkbox">
                                 </label>
                             </th>
-                            <th class="px-2 py-3 w-96 min-w-96">Name</th>
-                            <th class="px-2 py-3 w-36">Status</th>
-                            <th class="w-48 px-2 py-3">Office</th>
-                            <th class="px-2 py-3 w-36">Groups</th>
-                            <th class="w-12 px-2 py-3"></th>
+                            <th @click="toggleSelection" class="px-2 py-3 w-96 min-w-96">Name</th>
+                            <th @click="toggleSelection" class="px-2 py-3 w-36">Status</th>
+                            <th @click="toggleSelection" class="w-48 px-2 py-3">Office</th>
+                            <th @click="toggleSelection" class="px-2 py-3 w-36">Groups</th>
+                            <th @click="toggleSelection" class="w-16 px-2">
+                                <button type="button" class="py-0 opacity-0 cursor-default btn btn-xs btn-primary">
+                                    Edit
+                                </button>
+                            </th>
                         </tr>
                     </template>
 
                     <template #default="{row}">
-                        <tr>
+                        <tr class="group bg-opacity-40">
                             <th class="p-0 bg-[transparent!important;]">
-                                <label class="flex justify-center p-2 cursor-pointer">
-                                    <input :id="`employee-selection-${row.id}`" v-model="args.employees" :value="row.id" class="checkbox checkbox-xs" type="checkbox">
+                                <label class="flex justify-center px-2 py-1.5 cursor-pointer">
+                                    <input :id="`employee-selection-${row.id}`" v-model="args.employees[row.id]" :value="row.id" class="checkbox checkbox-xs" type="checkbox">
                                 </label>
                             </th>
                             <td class="p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
+                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
                                     {{ row.name_format.fullStartLastInitialMiddle }}
                                 </label>
                             </td>
                             <td class="p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
+                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
                                     {{ row.regular ? 'regular' : 'non-regular' }}
                                 </label>
                             </td>
                             <td class="p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
-                                    {{ row.office?.toLowerCase() }}
+                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
+                                    <template v-if="row.office">
+                                        {{ row.office?.toLowerCase() }}
+                                    </template>
+
+                                    <template v-else>
+                                        &nbsp;
+                                    </template>
                                 </label>
                             </td>
                             <td class="overflow-visible text-ellipsis whitespace-nowrap min-w-[fit-content] p-0">
-                                <label :for="`employee-selection-${row.id}`" class="block w-full p-2 cursor-pointer select-none">
-                                    {{ row.groups?.map(e => e.toLowerCase()).join(', ') }}
+                                <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
+                                    <template v-if="row.groups?.length">
+                                        {{ row.groups?.map(e => e.toLowerCase()).join(', ') }}
+                                    </template>
+
+                                    <template v-else>
+                                        &nbsp;
+                                    </template>
                                 </label>
                             </td>
                             <th class="p-0 px-2 text-right bg-[transparent!important;]">
-                                <button @click="showEmployeeModal(row)" class="px-1 btn btn-xs btn-primary">
-                                    <svg class="h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 128 512">
-                                        <path d="M64 360a56 56 0 1 0 0 112 56 56 0 1 0 0-112zm0-160a56 56 0 1 0 0 112 56 56 0 1 0 0-112zM120 96A56 56 0 1 0 8 96a56 56 0 1 0 112 0z"/>
-                                    </svg>
+                                <button @click="showEmployeeModal(row)" class="justify-center hidden group-hover:flex btn btn-xs btn-primary">
+                                    Edit
                                 </button>
                             </th>
                         </tr>
@@ -407,7 +435,7 @@ const showEmployeeModal = (e) => {
             </div>
         </div>
 
-        <EmployeeModal v-model="modal.employee" v-model:employee="employee" :scanners="scanners" />
+        <EmployeeModal v-model="modal.employee" v-model:employee="employee" :scanners="scanners" @saved="closePreview" />
 
         <ImportModal v-model="modal.import" :scanners="scanners" />
 
