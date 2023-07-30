@@ -43,13 +43,13 @@ const navigation = [
         name: 'Scanners',
         href: route('scanners.index'),
         active: route().current('scanners.*'),
-        show: false,
+        show: true,
     },
     {
         name: 'Users',
         href: route('users.index'),
         active: route().current('users.*'),
-        show: false || usePage().props.user.administrator,
+        show: usePage().props.user.administrator,
     },
 ]
 
