@@ -45,8 +45,8 @@ class ScannerRequest extends FormRequest
                 'shared' => 'nullable|boolean',
                 'print_text_colour' => 'required|color',
                 'print_background_colour' => 'required|color',
-                'driver' => 'nullable|string|in:zakzk,tadphp',
-                'ip_address' => 'required_with:driver|nullable|ip',
+                'driver' => 'required_with:ip_address|nullable|string|in:zakzk,tadphp',
+                'ip_address' => 'required_with:driver,port|nullable|ip',
                 'port' => 'nullable|integer|min:0',
             ];
     }
