@@ -119,7 +119,7 @@ onMounted(() => {
             <slot name="actions"></slot>
         </div>
 
-        <div class="p-4 mt-4 bg-base-300/50 rounded-[--rounded-box]">
+        <div class="py-4 bg-base-300/40 rounded-[--rounded-box]">
             <slot name="pre"></slot>
 
             <div class="overflow-y-scroll" :class="[wrapperClass, isCompact() ? 'h-[34.5em]' : 'h-[28.75em]']">

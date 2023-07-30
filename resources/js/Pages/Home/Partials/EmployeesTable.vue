@@ -61,7 +61,7 @@ const checkSelection = () => {
         @updated="checkSelection"
     >
         <template #pre>
-            <div class="flex gap-3 pb-1 mb-2 select-none group">
+            <div class="flex gap-3 px-4 mb-2 select-none group">
                 {{ selected.length }} {{ selected.length === 1 ? 'employee' : 'employees' }} selected
 
                 <button @click="clearSelection" class="items-center hidden place-content-center btn btn-primary btn-xs group-hover:flex">
@@ -146,17 +146,17 @@ const checkSelection = () => {
                     </label>
                 </th>
                 <td class="p-0">
-                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
+                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none font-mono">
                         {{ row.name_format.fullStartLastInitialMiddle }}
                     </label>
                 </td>
                 <td class="p-0">
-                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
+                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none font-mono">
                         {{ row.regular ? 'regular' : 'non-regular' }}
                     </label>
                 </td>
                 <td class="p-0">
-                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
+                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none font-mono">
                         <template v-if="row.office">
                             {{ row.office?.toLowerCase() }}
                         </template>
@@ -167,7 +167,7 @@ const checkSelection = () => {
                     </label>
                 </td>
                 <td class="overflow-visible text-ellipsis whitespace-nowrap min-w-[fit-content] p-0">
-                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none">
+                    <label :for="`employee-selection-${row.id}`" class="block w-full px-2 py-1.5 cursor-pointer select-none font-mono">
                         <template v-if="row.groups?.length">
                             {{ row.groups?.map(e => e.toLowerCase()).join(', ') }}
                         </template>
