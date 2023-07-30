@@ -11,13 +11,6 @@ use Laravel\Scout\Searchable;
 
 class Scanner extends Model
 {
-    const PRIORITIES = [
-        'COLISEUM-1',
-        'COLISEUM-2',
-        'COLISEUM-3',
-        'COLISEUM-4',
-    ];
-
     use HasFactory;
     use Searchable;
 
@@ -28,11 +21,7 @@ class Scanner extends Model
         'print_background_colour',
         'remarks',
         'ip_address',
-        'protocol',
         'port',
-        'serial_number',
-        'model',
-        'version',
         'driver',
     ];
 
@@ -46,7 +35,7 @@ class Scanner extends Model
     public function printBackgroundColour(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => strtolower($value) === '#ffffff' || empty($value) ? 'transparent' : $value
+            get: fn ($value) => strtolower($value) === '#ffffff' || empty($value) ? '#ffffff' : $value
         );
     }
 
@@ -89,6 +78,7 @@ class Scanner extends Model
         return [
             $this->getKeyName() => $this->getKey(),
             'name' => $this->name,
+            'ip_address' => $this->ip_address,
         ];
     }
 

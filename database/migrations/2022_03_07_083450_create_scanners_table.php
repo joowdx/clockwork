@@ -17,14 +17,14 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name', 20)->unique();
             $table->string('attlog_file', 120)->unique()->nullable();
-            $table->string('print_text_colour', 20);
-            $table->string('print_background_colour', 20);
+            $table->string('print_text_colour', 20)->default('#000000');
+            $table->string('print_background_colour', 20)->default('#ffffff');
             $table->string('remarks', 120)->nullable();
             $table->boolean('shared')->default(false);
+            $table->boolean('priority')->default(false);
             $table->string('ip_address')->nullable();
             $table->integer('port')->nullable();
             $table->string('driver')->nullable();
-            $table->enum('protocol', ['tcp', 'udp'])->nullable();
             $table->timestamps();
         });
     }

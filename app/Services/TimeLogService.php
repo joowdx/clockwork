@@ -87,15 +87,15 @@ class TimeLogService implements Import
 
     public function logsForTheDay(Employee $employee, Carbon $date): array
     {
-        $logs = $employee->logsForTheDay($date)->sort(fn ($log) => (int) in_array($log->scanner->name, Scanner::PRIORITIES));
+        $logs = $employee->logsForTheDay($date)->sort(fn ($log) => (int) $log->scanner->priority);
 
         $in = $logs->filter->in
             ->sortBy('time')
-            ->unique(fn ($log) => $log->time->format('Y-m-d H:00').(in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00').($log->scanner->priority ? 'priority!!!' : $log->scanner->name));
 
         $out = $logs->filter->out
             ->sortByDesc('time')
-            ->unique(fn ($log) => $log->time->format('Y-m-d H:00').(in_array($log->scanner->name, Scanner::PRIORITIES) ? 'coliseum-x' : $log->scanner->name));
+            ->unique(fn ($log) => $log->time->format('Y-m-d H:00').($log->scanner->priority ? 'priority!!!' : $log->scanner->name));
 
         return [
             'in1' => $in1 = $this->filterTime($in, 'in', 'am'),
@@ -131,20 +131,20 @@ class TimeLogService implements Import
         return match ($state) {
             'in' => match ($shift) {
                 'am' => $logs
-                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? -1 : 1)
+                    ->sort(fn ($log) => $log->scanner->priority ? -1 : 1)
                     ->reject(fn ($log) => $log->time->gte($log->time->clone()->setTime('11', '00')))
                     ->first(fn ($log) => $log->time->clone()->setTime('12', '00')->gt($log->time)),
                 'pm' => $logs
-                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? -1 : 1)
+                    ->sort(fn ($log) => $log->scanner->priority ? -1 : 1)
                     ->first(fn ($log) => $log->time->clone()->setTime('11', '00')->lt($log->time)),
                 default => null,
             },
             'out' => match ($shift) {
                 'am' => $logs
-                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? 1 : -1)
+                    ->sort(fn ($log) => $log->scanner->priority ? 1 : -1)
                     ->first(fn ($log) => $log->time->clone()->setTime('13', '00')->gte($log->time)),
                 'pm' => $logs
-                    ->sort(fn ($log) => in_array($log->scanner->name, Scanner::PRIORITIES) ? 1 : -1)
+                    ->sort(fn ($log) => $log->scanner->priority ? 1 : -1)
                     ->first(fn ($log) => $log->time->clone()->setTime('13', '00')->lte($log->time)),
                 default => null,
             },

@@ -27,7 +27,7 @@
     <style>
         @foreach ($employees->flatMap->scanners->unique('name') as $scanner)
             .{{$scanner->name}} {
-                background-color: {{$scanner->print_background_colour}};
+                background-color: {{strtolower($scanner->print_background_colour) === '#ffffff' ? 'transparent' : $scanner->print_background_colour}};
                 color: {{$scanner->print_text_colour}};
                 width: fit-content;
             }
