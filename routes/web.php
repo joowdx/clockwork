@@ -26,7 +26,7 @@ Route::get('/', fn () => redirect()->route('dashboard'));
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
     Route::get('home', HomeController::class)->name('home');
-    Route::resource('scanners', ScannerController::class);
+    Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('users', UserController::class);
     Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
     Route::resource('timelogs', TimeLogController::class)->only(['store']);

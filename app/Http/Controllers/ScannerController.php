@@ -7,6 +7,7 @@ use App\Contracts\UserRepository;
 use App\Drivers\TadPhp;
 use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
+use App\Models\User;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;
 use Illuminate\Http\Client\ConnectionException;
@@ -34,28 +35,17 @@ class ScannerController extends Controller
             'search' => $request->search,
             'paginate' => $request->paginate ?? 50,
             'scanners' => Scanner::search($request->search)
-                ->query(fn ($q) => $q->select(['id', 'name', 'created_at'])->orderBy('name')->with(['users' => fn ($q) => $q->select('username')]))
+                ->query(fn ($q) => $q->orderBy('name')->with(['users' => fn ($q) => $q->select('users.id', 'name', 'username')]))
                 ->paginate($request->paginate ?? 50)
                 ->withQueryString()
                 ->appends('query', null)
                 ->through(fn ($scanner) => [
-                    'id' => $scanner->id,
+                    ...$scanner->toArray(),
                     'name' => $scanner->name,
                     'assignees' => $scanner->users->map->username,
-                    'created_at' => $scanner->created_at->format('Y M d - H:i')
-                ])
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return inertia('Scanners/Create', [
-            'scanners' => $this->scanner->get(),
+                    'created_at' => $scanner->created_at->format('Y M d - H:i'),
+                ]),
+            'users' => User::select(['id', 'name', 'username'])->get(),
         ]);
     }
 
@@ -69,29 +59,8 @@ class ScannerController extends Controller
     {
         $scanner = $this->scanner->create($request->all());
 
-        return redirect()->route('scanners.edit', $scanner->id);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Scanner $scanner)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Scanner $scanner)
-    {
-        return inertia('Scanners/Edit', [
+        return redirect()->back()->with('flash', [
             'scanner' => $scanner->load('users'),
-            'users' => $this->user->get(),
         ]);
     }
 
@@ -105,7 +74,9 @@ class ScannerController extends Controller
     {
         $this->scanner->update($scanner, $request->all());
 
-        return redirect()->back();
+        return redirect()->back()->with('flash', [
+            'scanner' => $scanner->fresh(['users']),
+        ]);
     }
 
     /**

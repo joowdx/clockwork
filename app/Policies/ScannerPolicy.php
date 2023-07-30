@@ -31,23 +31,13 @@ class ScannerPolicy
     }
 
     /**
-     * Determine whether the user can create models.
-     *
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function create(User $user)
-    {
-        return true;
-    }
-
-    /**
      * Determine whether the user can update the model.
      *
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, Scanner $scanner)
     {
-        return true; //$scanner->createdBy?->is($user) ?: $scanner->shared ?: $scanner->users->contains($user) ?: $scanner->users->isEmpty();
+        return $scanner->shared ?: $scanner->users->contains($user) ?: $scanner->users->isEmpty();
     }
 
     /**
@@ -57,6 +47,6 @@ class ScannerPolicy
      */
     public function delete(User $user, Scanner $scanner)
     {
-        return true; //$scanner->createdBy?->is($user);
+
     }
 }
