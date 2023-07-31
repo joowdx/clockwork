@@ -1,6 +1,6 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import EmployeeInformationModal from './Partials/EmployeeInformationModal.vue'
 import EmployeesTable from './Partials/EmployeesTable.vue'
@@ -51,7 +51,27 @@ const employee = ref(null)
 
 const loading = ref(false)
 
+const printPreview = ref('dtr')
+
 const selected = computed(() => Object.keys(args.value.employees).filter(e => args.value.employees[e]))
+
+onBeforeUnmount(() => {
+    dtrPreview.value.onload = null
+    transmittalPreview.value.onload = null
+})
+
+onMounted(() => {
+    dtrPreview.value.onload = () => {
+        if (dtrPreview.value.hasAttribute('src') && printPreview.value === 'dtr') {
+            dtrPreview.value.contentWindow.print()
+        }
+    }
+    transmittalPreview.value.onload = () => {
+        if (transmittalPreview.value.hasAttribute('src') && printPreview.value === 'transmittal') {
+            transmittalPreview.value.contentWindow.print()
+        }
+    }
+})
 
 watch([args, config], () => closePreview(), { deep: true, flush: 'sync' })
 
@@ -103,7 +123,9 @@ const closePreview = () => {
 }
 
 const print = async (transmittal = false) => {
-    if (dtrPreview.value.hasAttribute('src')) {
+    printPreview.value = transmittal ? 'transmittal' : 'dtr'
+
+    if (transmittalPreview.value.hasAttribute('src') || dtrPreview.value.hasAttribute('src')) {
         (transmittal ? transmittalPreview : dtrPreview).value.contentWindow.print()
 
         return
@@ -115,11 +137,7 @@ const print = async (transmittal = false) => {
 
     await loadPreview(true)
 
-    setTimeout(() => {
-        print(transmittal)
-
-        loading.value = false
-    }, 750)
+    loading.value = false
 }
 
 const showEmployeeModal = (e) => {
