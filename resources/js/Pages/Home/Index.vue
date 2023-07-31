@@ -2,7 +2,7 @@
 import { usePage } from '@inertiajs/vue3'
 import { computed, nextTick, ref, watch } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import EmployeeModal from './Partials/EmployeeModal.vue'
+import EmployeeInformationModal from './Partials/EmployeeInformationModal.vue'
 import EmployeesTable from './Partials/EmployeesTable.vue'
 import ImportModal from './Partials/ImportModal.vue'
 import OptionsModal from './Partials/OptionsModal.vue'
@@ -264,7 +264,7 @@ const transmittalPreview = ref(null)
             </div>
         </div>
 
-        <EmployeeModal
+        <EmployeeInformationModal
             v-model="modal.employee"
             v-model:employee="employee"
             :scanners="scanners"
