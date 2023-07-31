@@ -63,12 +63,16 @@ onBeforeUnmount(() => {
 onMounted(() => {
     dtrPreview.value.onload = () => {
         if (dtrPreview.value.hasAttribute('src') && printPreview.value === 'dtr') {
-            dtrPreview.value.contentWindow.print()
+            loading.value = false
+
+            nextTick(() => setTimeout(() => dtrPreview.value.contentWindow.print(), 250))
         }
     }
     transmittalPreview.value.onload = () => {
         if (transmittalPreview.value.hasAttribute('src') && printPreview.value === 'transmittal') {
-            transmittalPreview.value.contentWindow.print()
+            loading.value = false
+
+            nextTick(() => setTimeout(() => transmittalPreview.value.contentWindow.print(), 250))
         }
     }
 })
@@ -136,8 +140,6 @@ const print = async (transmittal = false) => {
     await loadPreview()
 
     await loadPreview(true)
-
-    loading.value = false
 }
 
 const showEmployeeModal = (e) => {
@@ -215,8 +217,10 @@ const transmittalPreview = ref(null)
                     <template v-if="true">
                         <div class="flex flex-wrap self-end justify-end col-span-4 gap-2 mt-3 justify-self-end">
                             <div v-if="loading" class="flex items-center">
-                                <svg class="w-4 h-4 fill-current stroke-current animate-spin" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
-                                    <path d="M222.7 32.1c5 16.9-4.6 34.8-21.5 39.8C121.8 95.6 64 169.1 64 256c0 106 86 192 192 192s192-86 192-192c0-86.9-57.8-160.4-137.1-184.1c-16.9-5-26.6-22.9-21.5-39.8s22.9-26.6 39.8-21.5C434.9 42.1 512 140 512 256c0 141.4-114.6 256-256 256S0 397.4 0 256C0 140 77.1 42.1 182.9 10.6c16.9-5 34.8 4.6 39.8 21.5z"/>
+                                <svg class="w-4 h-4 fill-current" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <rect class="spinner_9y7u" x="1" y="1" rx="1" width="10" height="10"/>
+                                    <rect class="spinner_9y7u spinner_DF2s" x="1" y="1" rx="1" width="10" height="10"/>
+                                    <rect class="spinner_9y7u spinner_q27e" x="1" y="1" rx="1" width="10" height="10"/>
                                 </svg>
                             </div>
 
@@ -319,3 +323,47 @@ const transmittalPreview = ref(null)
         </Teleport>
     </AppLayout>
 </template>
+
+
+<style scoped>
+.spinner_9y7u{
+    animation: spinner_fUkk 2.4s linear infinite;
+    animation-delay:-2.4s
+}
+ .spinner_DF2s{
+    animation-delay:-1.6s
+}
+ .spinner_q27e{
+    animation-delay:-.8s
+}
+ @keyframes spinner_fUkk{
+    8.33%{
+        x:13px;
+        y:1px
+    }
+    25%{
+        x:13px;
+        y:1px
+    }
+    33.3%{
+        x:13px;
+        y:13px
+    }
+    50%{
+        x:13px;
+        y:13px
+    }
+    58.33%{
+        x:1px;
+        y:13px
+    }
+    75%{
+        x:1px;
+        y:13px
+    }
+    83.33%{
+        x:1px;
+        y:1px
+    }
+}
+</style>
