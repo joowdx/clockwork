@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import DataTable from '@/Components/DataTable.vue'
 
 const emits = defineEmits(['edit'])
@@ -18,6 +18,8 @@ const results = computed(() => props.employees.data.map(e => e.id))
 
 const selected = computed(() => Object.keys(data.value).filter(e => data.value[e]))
 
+let skipCheck = false
+
 const clearSelection = () => {
     data.value = {}
     checkbox.value.checked = false
@@ -25,6 +27,8 @@ const clearSelection = () => {
 }
 
 const toggleSelection = () => {
+    skipCheck = true
+
     if (results.value.every(e => data.value[e])) {
         selected.value.forEach(e => {
             if (results.value.includes(e)) {
@@ -34,13 +38,19 @@ const toggleSelection = () => {
     } else {
         results.value.forEach(e => data.value[e] = true)
     }
+
+    skipCheck = false
 }
 
 const checkSelection = () => {
-    if (results.value.every(e => selected[e]) && selected.length) {
+    if (skipCheck) {
+        return
+    }
+
+    if (results.value.every(e => selected.value.includes(e)) && selected.value.length) {
         checkbox.value.indeterminate = false
         checkbox.value.checked = true
-    } else if (selected.value.some(e => results.value.includes(e))) {
+    } else if (results.value.some(e => selected.value.includes(e)) && selected.value.length) {
         checkbox.value.indeterminate = true
         checkbox.value.checked = false
     } else {
@@ -48,6 +58,8 @@ const checkSelection = () => {
         checkbox.value.indeterminate = false
     }
 }
+
+watch(data, checkSelection, { deep: true })
 </script>
 
 <template>
