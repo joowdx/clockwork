@@ -63,8 +63,8 @@ const clear = () => {
     value.value.weekends.am.out = null
     value.value.weekends.pm.in = null
     value.value.weekends.pm.out = null
-    value.value.weekends.regular = null
-    value.value.calculate = null
+    value.value.weekends.regular = false
+    value.value.calculate = false
     value.value.days = []
 }
 
