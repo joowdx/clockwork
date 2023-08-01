@@ -69,7 +69,7 @@ watch(data, checkSelection, { deep: true })
         :class="{'opacity-50 pointer-events-none': datatable?.processing}"
         :items="employees"
         :queryStrings="queryStrings"
-        :wrapperClass="`h-[calc(100vh-425px)]`"
+        :wrapperClass="`h-[calc(100vh-425px)] min-h-[29em]`"
         @updated="checkSelection"
     >
         <template #pre>
