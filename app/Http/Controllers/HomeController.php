@@ -64,6 +64,7 @@ class HomeController extends Controller
                 ->map(fn ($g) => strtolower($g))
                 ->toArray(),
             'groups' => Employee::where($filter)
+                ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtoupper($request->office)))
                 ->pluck('groups')
                 ->flatten()
                 ->filter()
