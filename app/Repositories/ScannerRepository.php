@@ -20,13 +20,12 @@ class ScannerRepository extends BaseRepository
             'name' => strtolower($payload['name'] ?? ''),
             'attlog_file' => @$payload['attlog_file'] ?: null,
             'remarks' => @$payload['remarks'],
-            'shared' => (bool) @$payload['remarks'],
-            'print_text_colour' => strtolower(@$payload['print_text_colour'] ?? ''),
-            'print_background_colour' => strtolower(@$payload['print_background_colour'] ?? ''),
+            'shared' => (bool) @$payload['shared'],
+            'priority' => (bool) @$payload['priority'],
+            'print_text_colour' => strtolower(@$payload['print_text_colour'] ?? '#000000'),
+            'print_background_colour' => strtolower(@$payload['print_background_colour'] ?? '#ffffff'),
             'ip_address' => @$payload['ip_address'],
             'port' => @$payload['port'],
-            'protocol' => @$payload['protocol'],
-            'driver' => @$payload['driver'],
         ];
     }
 }
