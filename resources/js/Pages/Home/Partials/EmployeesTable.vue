@@ -26,6 +26,14 @@ const clearSelection = () => {
     checkbox.value.indeterminate = false
 }
 
+const resetFilter = () => {
+    clearSelection()
+    queryStrings.value.active = true
+    queryStrings.value.regular = undefined
+    queryStrings.value.office = undefined
+    queryStrings.value.group = undefined
+}
+
 const toggleSelection = () => {
     skipCheck = true
 
@@ -74,10 +82,14 @@ watch(data, checkSelection, { deep: true })
     >
         <template #pre>
             <div class="flex gap-3 px-4 mb-2 select-none group">
-                {{ selected.length }} {{ selected.length === 1 ? 'employee' : 'employees' }} selected
+                {{ selected.length === 0 ? 'No' : selected.length }} {{ selected.length === 1 ? 'employee' : 'employees' }} selected
 
                 <button @click="clearSelection" class="items-center hidden place-content-center btn btn-primary btn-xs group-hover:flex">
                     Clear
+                </button>
+
+                <button @click="resetFilter" class="items-center hidden place-content-center btn btn-primary btn-xs group-hover:flex">
+                    Reset
                 </button>
             </div>
         </template>
