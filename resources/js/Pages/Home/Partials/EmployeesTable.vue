@@ -32,6 +32,7 @@ const resetFilter = () => {
     queryStrings.value.regular = undefined
     queryStrings.value.office = undefined
     queryStrings.value.group = undefined
+    queryStrings.value.search = ''
 }
 
 const toggleSelection = () => {
