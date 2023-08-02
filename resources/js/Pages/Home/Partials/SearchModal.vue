@@ -109,7 +109,12 @@ watch(modelValue, (show) => {
                     </a>
 
                     <div class="flex gap-2">
-                        <a v-for="scanner in employee.scanners" target="blank" class="p-1 font-mono tracking-tighter no-underline lowercase link badge badge-sm badge-primary" :href="route('scanners.edit', scanner.id)">
+                        <a
+                            v-for="scanner in employee.scanners"
+                            :href="route('scanners.index', { search: scanner.name, show: scanner.id })"
+                            target="blank"
+                            class="p-1 font-mono tracking-tighter no-underline lowercase link badge badge-sm badge-primary"
+                        >
                             {{ scanner.name }}
                         </a>
                     </div>

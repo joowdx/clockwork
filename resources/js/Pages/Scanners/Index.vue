@@ -2,13 +2,14 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DataTable from '@/Components/DataTable.vue'
 import ScannerInformationModal from './Partials/ScannerInformationModal.vue'
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 
 const props = defineProps({
     scanners: Object,
     users: Object,
     search: String,
+    show: String,
 })
 
 const hasPrivilege = usePage().props.auth.user.administrator
@@ -31,6 +32,16 @@ const showScannerModal = (e) => {
     scanner.value = e
     modal.value = true
 }
+
+onMounted(() => {
+    if (props.show) {
+        const scanner = props.scanners.data.find(e => e.id === props.show)
+
+        if (scanner) {
+            nextTick(() => showScannerModal(scanner))
+        }
+    }
+})
 </script>
 
 <template>
