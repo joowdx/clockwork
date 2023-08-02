@@ -17,6 +17,8 @@ class Scanner extends Model
     protected $fillable = [
         'name',
         'attlog_file',
+        'shared',
+        'priority',
         'print_text_colour',
         'print_background_colour',
         'remarks',
