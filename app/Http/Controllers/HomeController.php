@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class HomeController extends Controller
@@ -49,31 +50,37 @@ class HomeController extends Controller
             'scanners' => $scanner->get(),
             'search' => $request->search,
             'paginate' => $request->paginate ?? 50,
-            'employees' => Employee::search($request->search)
-                ->query($employee)
-                ->paginate($request->paginate ?? 50)
-                ->withQueryString()
-                ->appends('query', null),
-            'offices' => Employee::where($filter)
-                ->orderBy('office')
-                ->pluck('office')
-                ->filter()
-                ->unique()
-                ->sort()
-                ->values()
-                ->map(fn ($g) => strtolower($g))
-                ->toArray(),
-            'groups' => Employee::where($filter)
-                ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtoupper($request->office)))
-                ->pluck('groups')
-                ->flatten()
-                ->filter()
-                ->unique()
-                ->values()
-                ->map(fn ($g) => strtolower($g))
-                ->sort()
-                ->values()
-                ->toArray(),
+            'employees' => Inertia::lazy(
+                fn () => Employee::search($request->search)
+                    ->query($employee)
+                    ->paginate($request->paginate ?? 50)
+                    ->withQueryString()
+                    ->appends('query', null)
+            ),
+            'offices' => Inertia::lazy(
+                fn () => Employee::where($filter)
+                    ->orderBy('office')
+                    ->pluck('office')
+                    ->filter()
+                    ->unique()
+                    ->sort()
+                    ->values()
+                    ->map(fn ($g) => strtolower($g))
+                    ->toArray()
+            ),
+            'groups' => Inertia::lazy(
+                fn () => Employee::where($filter)
+                    ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtoupper($request->office)))
+                    ->pluck('groups')
+                    ->flatten()
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->map(fn ($g) => strtolower($g))
+                    ->sort()
+                    ->values()
+                    ->toArray()
+            ),
             ...$timelog->dates(),
         ]);
     }

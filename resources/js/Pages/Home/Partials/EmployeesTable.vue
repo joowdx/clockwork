@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { router } from '@inertiajs/vue3'
 import DataTable from '@/Components/DataTable.vue'
 
 const emits = defineEmits(['edit'])
@@ -69,6 +70,8 @@ const checkSelection = () => {
 }
 
 watch(data, checkSelection, { deep: true })
+
+onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
 </script>
 
 <template>
@@ -79,6 +82,7 @@ watch(data, checkSelection, { deep: true })
         :items="employees"
         :queryStrings="queryStrings"
         :wrapperClass="`h-[calc(100vh-425px)] min-h-[29em]`"
+        :options="{ only: ['employees', 'groups', 'offices'] }"
         @updated="checkSelection"
     >
         <template #pre>
