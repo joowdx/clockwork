@@ -53,7 +53,7 @@ onMounted(() => {
         </template>
 
         <div class="px-4 py-5 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <DataTable :items="scanners" ref="dataTable" :compact="true" class="table-sm" wrapperClass="h-[calc(100vh-329px)]">
+            <DataTable :items="scanners" ref="dataTable" :compact="true" class="table-sm" wrapperClass="h-[calc(100vh-329px)] min-h-[29em]">
                 <template #actions>
                     <div class="flex items-end content-end justify-end flex-1 w-full">
                         <div class="tooltip" data-tip="Create">
