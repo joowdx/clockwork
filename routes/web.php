@@ -7,7 +7,9 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
+use App\Http\Controllers\TwoFactorAuthenticationController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,17 +25,21 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::get('account-disabled', fn () => inertia('Auth/AccountDisabled', ['user' => auth()->user()]))
+    ->middleware(['auth'])
+    ->name('account.disabled');
+
+Route::middleware(['auth:sanctum', 'account.disabled', 'verified'])->group(function () {
     Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
     Route::get('home', HomeController::class)->name('home');
+    Route::delete('users/{user}/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->scopeBindings();
+    Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('users', UserController::class);
     Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
     Route::resource('timelogs', TimeLogController::class)->only(['store']);
     Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
     Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
 
-    // Route::get('/attendance', AttendanceController::class)->name('attendance');
 
     Route::controller(ScannerController::class)->group(function () {
         Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');

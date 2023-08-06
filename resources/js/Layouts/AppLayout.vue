@@ -1,23 +1,3 @@
-<template>
-    <Head :title="title" />
-
-    <div class="flex flex-col min-h-screen">
-        <section class="bg-base-100/40">
-            <TailwindNavigation :navigation="navigation" :dropdown="dropdown" />
-        </section>
-
-        <header class="shadow bg-base-300/40" v-if="$slots.header">
-            <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
-                <slot name="header"> </slot>
-            </div>
-        </header>
-
-        <main class="flex-1">
-            <slot></slot>
-        </main>
-    </div>
-</template>
-
 <script setup>
 import TailwindNavigation from '@/Tailwind/Navigation.vue'
 import { Head, usePage } from '@inertiajs/vue3'
@@ -25,6 +5,10 @@ import { Head, usePage } from '@inertiajs/vue3'
 defineProps({
     title: String,
 })
+
+const user = usePage().props.user
+
+const disabled = user.disabled || user.type === 2
 
 const navigation = [
     {
@@ -49,17 +33,11 @@ const navigation = [
         name: 'Users',
         href: route('users.index'),
         active: route().current('users.*'),
-        show: usePage().props.user.administrator,
+        show: user.administrator,
     },
 ]
 
 const dropdown = [
-    {
-        name: 'Users',
-        href: route('users.index'),
-        active: route().current('users.*'),
-        show: false,
-    },
     {
         name: 'Account Settings',
         href: route('profile.show'),
@@ -68,3 +46,23 @@ const dropdown = [
     },
 ]
 </script>
+
+<template>
+    <Head :title="title" />
+
+    <div class="flex flex-col min-h-screen">
+        <section class="bg-base-100/90">
+            <TailwindNavigation :navigation="disabled ? [] : navigation" :dropdown="disabled ? [] : dropdown" />
+        </section>
+
+        <header class="shadow bg-base-300/40" v-if="$slots.header">
+            <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
+                <slot name="header"> </slot>
+            </div>
+        </header>
+
+        <main class="flex-1" v-bind="$attrs">
+            <slot></slot>
+        </main>
+    </div>
+</template>
