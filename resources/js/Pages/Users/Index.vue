@@ -77,7 +77,7 @@ const showUserModal = (e) => {
                         <td>
                             {{ index }}
                         </td>
-                        <td>
+                        <td class="lowercase">
                             {{ row.username }}
                         </td>
                         <td>
