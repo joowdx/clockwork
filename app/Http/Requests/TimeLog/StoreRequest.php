@@ -4,9 +4,11 @@ namespace App\Http\Requests\TimeLog;
 
 use App\Contracts\Import;
 use App\Models\Scanner;
+use App\Models\TimeLog;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
@@ -14,7 +16,7 @@ class StoreRequest extends FormRequest
         private Import $import
     ) {
     }
-  
+
     public function messages()
     {
         return [
@@ -30,13 +32,22 @@ class StoreRequest extends FormRequest
      */
     public function rules()
     {
+        if ($this->has('file')) {
+            return [
+                'scanner' => 'required|exists:scanners,id',
+                'file' => [
+                    'required',
+                    'file',
+                    'mimes:csv,txt',
+                ],
+            ];
+        }
+
         return [
-            'scanner' => 'required|exists:scanners,id',
-            'file' => [
-                'required',
-                'file',
-                'mimes:csv,txt',
-            ],
+            'scanner_id' => 'required|exists:scanners,id',
+            'uid' => 'required|alpha_num',
+            'time' => 'required|date',
+            'state' => ['required', Rule::in(array_merge(TimeLog::IN, TimeLog::OUT))]
         ];
     }
 

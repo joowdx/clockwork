@@ -3,9 +3,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import DataTable from '@/Components/DataTable.vue'
 
-const emits = defineEmits(['edit'])
+const emits = defineEmits(['edit', 'timelogs'])
 
-const props = defineProps(['employees', 'groups', 'offices'])
+const props = defineProps(['employees', 'groups', 'offices', 'options'])
 
 const data = defineModel()
 
@@ -82,7 +82,7 @@ onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
         :items="employees"
         :queryStrings="queryStrings"
         :wrapperClass="`h-[calc(100vh-425px)] min-h-[29em]`"
-        :options="{ only: ['employees', 'groups', 'offices'] }"
+        :options="options"
         @updated="checkSelection"
     >
         <template #pre>
@@ -127,7 +127,7 @@ onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
                         <label for="period" class="p-0 label">
                             <span class="label-text">Group</span>
                         </label>
-                        <select aria-label="Group" v-if="groups" v-model="queryStrings.group" class="select-sm select select-bordered" :disabled="datatable?.processing">
+                        <select aria-label="Group" v-model="queryStrings.group" class="select-sm select select-bordered" :disabled="datatable?.processing">
                             <option :value="undefined">group</option>
                             <option v-for="group in groups"> {{ group }} </option>
                         </select>
@@ -207,7 +207,7 @@ onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
                     </label>
                 </td>
                 <th class="p-0 px-2 text-right bg-[transparent!important;]">
-                    <button @click="emits('edit', row)" class="justify-center hidden group-hover:flex btn btn-xs btn-primary">
+                    <button @click.exact="emits('edit', row)" @click.alt.ctrl.shift.exact="emits('timelogs', row)" class="justify-center hidden group-hover:flex btn btn-xs btn-primary">
                         Edit
                     </button>
                 </th>

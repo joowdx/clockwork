@@ -9,7 +9,6 @@ use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\TwoFactorAuthenticationController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,8 +35,9 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
         Route::delete('users/{user}/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->scopeBindings();
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('employees.timelogs', TimeLogController::class)->only(['index']);
         Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
-        Route::resource('timelogs', TimeLogController::class)->only(['store']);
+        Route::resource('timelogs', TimeLogController::class)->only(['store', 'update', 'destroy']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
     });

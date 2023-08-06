@@ -253,6 +253,7 @@ class PrintService
                             $query->whereBetween('time', [$from->subDay(), $to->addDay()]);
                         }
                     );
+                $query->whereNot('hidden', true);
             },
             'timelogs.scanner',
         ]);

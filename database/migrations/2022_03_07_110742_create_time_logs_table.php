@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
             $table->string('state', 20);
+            $table->boolean('hidden')->default(false);
             $table->timestamps();
             $table->unique(['scanner_id', 'time', 'state']);
         });

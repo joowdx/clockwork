@@ -9,6 +9,7 @@ import OptionsModal from './Partials/OptionsModal.vue'
 import SearchModal from './Partials/SearchModal.vue'
 import SettingsModal from './Partials/SettingsModal.vue'
 import SynchronizeModal from './Partials/SynchronizeModal.vue'
+import TimelogsModal from './Partials/TimelogsModal.vue'
 
 const props = defineProps(['employees', 'offices', 'groups', 'scanners', 'office', 'group', 'active', 'regular', 'all', 'unenrolled'])
 
@@ -41,10 +42,11 @@ const settings = ref({
 const modal = ref({
     employee: false,
     import: false,
+    options: false,
     search: false,
     settings: false,
     sync: false,
-    options: false,
+    timelogs: false,
 })
 
 const employee = ref(null)
@@ -147,8 +149,17 @@ const showEmployeeModal = (e) => {
     modal.value.employee = true
 }
 
+const showTimelogsModal = (e) => {
+    employee.value = e
+    modal.value.timelogs = true
+}
+
 const dtrPreview = ref(null)
 const transmittalPreview = ref(null)
+
+const formOptions = {
+    only: ['employees', 'groups', 'offices']
+}
 </script>
 
 <template>
@@ -281,7 +292,9 @@ const transmittalPreview = ref(null)
                     :employees="employees"
                     :offices="offices"
                     :groups="groups"
+                    :options="formOptions"
                     @edit="showEmployeeModal"
+                    @timelogs="showTimelogsModal"
                 />
             </div>
         </div>
@@ -315,6 +328,12 @@ const transmittalPreview = ref(null)
         <SynchronizeModal
             v-model="modal.sync"
             :scanners="scanners"
+        />
+
+        <TimelogsModal
+            v-model="modal.timelogs"
+            v-model:employee="employee"
+            :options="formOptions"
         />
 
         <Teleport to="body">

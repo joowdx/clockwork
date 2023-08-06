@@ -30,10 +30,15 @@ class TimeLog extends Model
         'user_id',
         'time',
         'state',
+        'hidden',
     ];
 
     protected $casts = [
         'time' => 'datetime',
+    ];
+
+    protected $appends = [
+        'type'
     ];
 
     public function employee(): HasOneThrough
@@ -62,6 +67,11 @@ class TimeLog extends Model
         return $this->getArrayableItems(
             array_combine($appends, $appends)
         );
+    }
+
+    public function getTypeAttribute(): string
+    {
+        return $this->in ? 'In' : ($this->out ? 'Out' : '**');
     }
 
     public function getInAttribute(): bool
