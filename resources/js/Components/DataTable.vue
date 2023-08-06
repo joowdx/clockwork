@@ -13,6 +13,9 @@ const props = defineProps({
     queryStrings: Object,
     links: String,
     wrapperClass: String,
+    options: Object,
+    rowAction: Function,
+    actionLabel: String,
     autofocus: {
         type: Boolean,
         default: false
@@ -39,7 +42,8 @@ const update = () => {
         onFinish: () => {
             form.page = ''
             emits('updated')
-        }
+        },
+        ...(props.options ?? {})
     })
 }
 
@@ -133,13 +137,18 @@ onMounted(() => {
                                         {{ k }}
                                     </th>
                                 </template>
+                                <th class="w-16 px-2" v-if="rowAction">
+                                    <button type="button" class="py-0 opacity-0 cursor-default btn btn-xs btn-primary">
+                                        {{ actionLabel ?? 'Edit' }}
+                                    </button>
+                                </th>
                             </tr>
                         </slot>
                     </thead>
 
                     <tbody>
                         <slot :row="item" :index="index + items?.from" v-for="(item, index) in items?.data">
-                            <tr class="hover" >
+                            <tr class="hover group">
                                 <th :class="{ 'p-0': links }">
                                     <template v-if="links">
                                         <Link
@@ -170,6 +179,11 @@ onMounted(() => {
                                         </template>
                                     </td>
                                 </template>
+                                <th v-if="rowAction" class="p-0 px-2 text-right bg-[transparent!important;]">
+                                    <button @click="rowAction(item)" class="justify-center hidden group-hover:flex btn btn-xs btn-primary">
+                                        {{ actionLabel ?? 'Edit' }}
+                                    </button>
+                                </th>
                             </tr>
                             <tr v-if="items?.data.length === 0">
                                 <td colspan="4">We've come up empty!</td>
@@ -296,7 +310,11 @@ onMounted(() => {
 
 <style>
 .table tr.active, .table tr.active:nth-child(even), .table-zebra tbody tr:nth-child(even) {
+    --tw-bg-opacity: 0.5;
+    background-color: hsl(var(--b2) / var(--tw-bg-opacity));
+}
+
+.table tr.hover {
     --tw-bg-opacity: 0.5 !important;
-    background-color: hsl(var(--b2) / var(--tw-bg-opacity)) !important;
 }
 </style>
