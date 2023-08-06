@@ -2,7 +2,9 @@
 
 namespace App\Actions\Fortify;
 
+use App\Enums\UserType;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
@@ -19,7 +21,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => ['required', 'string', 'unique:users,username,'.$user->id, 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
-            'administrator' => ['nullable', 'boolean'],
+            'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
+            'disabled' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
@@ -31,7 +34,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => $input['username'],
             'name' => $input['name'],
             'title' => $input['title'],
-            'administrator' => (bool) @$input['administrator'],
+            'type' => $input['type'],
+            'disabled' => (bool) @$input['disabled'],
         ])->save();
     }
 

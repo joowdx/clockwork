@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\UserType;
 use App\Traits\HasUniversallyUniqueIdentifier;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -24,23 +26,15 @@ class User extends Authenticatable
     use TwoFactorAuthenticatable;
     use Searchable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var string[]
-     */
     protected $fillable = [
         'name',
         'title',
         'username',
         'password',
+        'type',
+        'disabled',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -48,13 +42,14 @@ class User extends Authenticatable
         'two_factor_secret',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array
-     */
+    protected $casts = [
+        'type' => UserType::class,
+    ];
+
     protected $appends = [
+        'administrator',
         'profile_photo_url',
+        'has_two_factor_authentication',
     ];
 
     public function toSearchableArray(): array
@@ -73,14 +68,24 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function isAdministrator()
+    public function hasTwoFactorAuthentication(): Attribute
     {
-        return $this->adminstrator;
+        return new Attribute(
+            fn () => $this->hasEnabledTwoFactorAuthentication()
+        );
     }
 
-    public function scopeAdmin(Builder $query)
+    public function administrator(): Attribute
     {
-        $query->whereAdministrator(true);
+        return new Attribute(
+            fn () => $this->type === UserType::DEVELOPER || $this->type === UserType::ADMINISTRATOR
+        );
+    }
+
+    public function scopeAdmin(Builder $query): void
+    {
+        $query->whereType(UserType::ADMINISTRATOR)
+            ->orWhereType(UserType::DEVELOPER);
     }
 
     public function getProfilePhotoUrlAttribute()
@@ -89,16 +94,4 @@ class User extends Authenticatable
                     ? str_replace('.app:8000', '', Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path))
                     : $this->defaultProfilePhotoUrl();
     }
-
-    // public function employees(): HasManyThrough
-    // {
-    //     return $this->hasManyThrough(Employee::class, EmployeeScanner::class)->setQuery(
-    //         self::select('employees.*')
-    //             ->join('scanner_user', 'users.id', '=' , 'scanner_user.user_id')
-    //             ->join('employee_scanner', 'employee_scanner.scanner_id', '=', 'scanner_user.scanner_id')
-    //             ->join('employees', 'employee_scanner.employee_id', '=', 'employees.id')
-    //             ->distinct('employees.id')
-    //             ->getQuery()
-    //     );
-    // }
 }

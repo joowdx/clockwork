@@ -2,9 +2,11 @@
 
 namespace App\Actions\Fortify;
 
+use App\Enums\UserType;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -23,15 +25,17 @@ class CreateNewUser implements CreatesNewUsers
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
             'title' => ['nullable', 'string', 'max:255'],
-            'administrator' => ['nullable', 'boolean'],
+            'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
+            'disabled' => ['nullable', 'boolean']
         ])->validate();
 
         return User::create([
             'name' => $input['name'],
-            'username' => $input['username'],
+            'username' => mb_strtolower($input['username']),
             'password' => Hash::make($input['password']),
             'title' => @$input['title'],
-            'administrator' => @$input['administrator'],
+            'type' => $input['type'],
+            'disabled' => (bool) @$input['disabled'],
         ]);
     }
 }

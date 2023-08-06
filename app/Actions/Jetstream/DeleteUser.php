@@ -15,7 +15,7 @@ class DeleteUser implements DeletesUsers
      */
     public function delete($user)
     {
-        abort_if($user->isAdministrator() && User::admin()->count() <= 1, 403, 'Must have at least one administrator account left.');
+        abort_if($user->administrator && User::admin()->count() <= 1, 403, 'Must have at least one administrator account left.');
 
         $user->deleteProfilePhoto();
 
