@@ -20,7 +20,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         Validator::make($input, [
             'username' => ['required', 'string', 'unique:users,username,'.$user->id, 'max:255'],
             'name' => ['required', 'string', 'max:255'],
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
             'disabled' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
