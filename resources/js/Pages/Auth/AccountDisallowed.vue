@@ -11,10 +11,7 @@ const disallowed = computed(() => props.user.disabled || props.user.type === 2)
 
 onMounted(() => {
     if (! disallowed.value) {
-
-        router.visit(route('home'), {
-            method: 'get'
-        })
+        router.get('home')
     }
 })
 </script>
@@ -34,7 +31,7 @@ onMounted(() => {
                         SYSTEM ACCOUNT DETECTED
                     </template>
                 </p>
-                <p v-if="user.type === 2" class="text-sm">
+                <p v-if="! user.disabled && user.type === 2" class="text-sm">
                     System account logins are disabled
                 </p>
             </div>

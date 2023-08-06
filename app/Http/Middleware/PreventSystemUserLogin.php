@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckAccountStatus
+class PreventSystemUserLogin
 {
     /**
      * Handle an incoming request.
@@ -16,8 +16,8 @@ class CheckAccountStatus
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && (auth()->user()->disabled || auth()->user()->type === UserType::SYSTEM)) {
-            return redirect()->route('account.disabled');
+        if (auth()->check() && auth()->user()->type === UserType::SYSTEM) {
+            return redirect()->route('account.disallowed');
         }
 
         return $next($request);
