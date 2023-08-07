@@ -303,12 +303,14 @@ const formOptions = {
             v-model="modal.employee"
             v-model:employee="employee"
             :scanners="scanners"
+            :options="formOptions"
             @saved="closePreview"
         />
 
         <ImportModal
             v-model="modal.import"
             :scanners="scanners"
+            :options="formOptions"
         />
 
         <OptionsModal
@@ -328,6 +330,7 @@ const formOptions = {
         <SynchronizeModal
             v-model="modal.sync"
             :scanners="scanners"
+            :options="formOptions"
         />
 
         <TimelogsModal

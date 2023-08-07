@@ -6,6 +6,7 @@ import { useForm } from '@inertiajs/vue3'
 
 const props = defineProps({
     scanners: Object,
+    options: Object,
 })
 
 const modelValue = defineModel()
@@ -32,6 +33,7 @@ const upload = () => {
         preserveState: true,
         onStart: () => form.clearErrors(),
         onSuccess: () => clear(),
+        ...(props.options ?? {})
     })
 }
 

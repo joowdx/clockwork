@@ -14,6 +14,7 @@ const employee = defineModel('employee', {
 
 const props = defineProps({
     scanners: Object,
+    options: Object,
 })
 
 const emits = defineEmits(['saved'])
@@ -91,7 +92,8 @@ const submit = () => {
             .post(profileFormLink.value, {
                 preserveScroll: true,
                 preserveState: true,
-                onSuccess: () => emits('saved')
+                onSuccess: () => emits('saved'),
+                ...(props.options ?? {})
             })
     } else if (tab.value === 'scanners') {
         scannerForm
@@ -108,7 +110,8 @@ const submit = () => {
                 onSuccess: () => {
                     scannerForm.reset('password')
                     emits('saved')
-                }
+                },
+                ...(props.options ?? {})
             })
     } else if (tab.value === 'delete') {
         deleteForm.delete(route('employees.destroy', employee.value.id), {
@@ -124,7 +127,8 @@ const submit = () => {
                 deleteForm.reset('password')
                 emits('saved')
                 modelValue.value = false
-            }
+            },
+            ...(props.options ?? {})
         })
     }
 

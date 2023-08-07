@@ -8,6 +8,7 @@ const modelValue = defineModel()
 
 const props = defineProps({
     scanners: Object,
+    options: Object,
 })
 
 const form = ref({})
@@ -21,6 +22,7 @@ const download = (scanner) => {
         preserveScroll: true,
         preserveState: true,
         onBefore: () => scannerForm.clearErrors(),
+        ...(props.options ?? {})
     })
 }
 
