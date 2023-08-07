@@ -158,7 +158,7 @@ const dtrPreview = ref(null)
 const transmittalPreview = ref(null)
 
 const formOptions = {
-    only: ['employees', 'groups', 'offices']
+    only: ['errors', 'employees', 'groups', 'offices']
 }
 </script>
 
