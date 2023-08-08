@@ -82,7 +82,7 @@ onMounted(() => {
                 </template>
 
                 <template #default="{row, index}">
-                    <tr class="group">
+                    <tr class="group hover">
                         <td class="px-4 py-2">
                             {{ index }}
                         </td>

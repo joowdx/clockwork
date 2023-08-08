@@ -168,7 +168,7 @@ onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
         </template>
 
         <template #default="{row}">
-            <tr class="group bg-opacity-40">
+            <tr class="group bg-opacity-40 hover">
                 <th class="p-0 bg-[transparent!important;]">
                     <label class="flex justify-center px-2 py-1.5 cursor-pointer">
                         <input :id="`employee-selection-${row.id}`" v-model="data[row.id]" :value="row.id" class="checkbox checkbox-xs" type="checkbox">
