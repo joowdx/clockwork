@@ -21,10 +21,10 @@ class EmployeeRepository extends BaseRepository
             $data->put('groups', @$payload['toJSON'] ? json_encode($groups) : $groups);
         })->when(@$payload['name'], function ($data) use ($payload) {
             $name = [
-                'last' => trim(mb_strtolower($payload['name']['last'] ?? '')),
-                'first' => trim(mb_strtolower($payload['name']['first'] ?? '')),
-                'middle' => trim(mb_strtolower(@$payload['name']['middle'] ?? '')),
-                'extension' => trim(mb_strtolower(@$payload['name']['extension'] ?? '')),
+                'last' => trim(mb_strtoupper($payload['name']['last'] ?? '')),
+                'first' => trim(mb_strtoupper($payload['name']['first'] ?? '')),
+                'middle' => trim(mb_strtoupper(@$payload['name']['middle'] ?? '')),
+                'extension' => trim(mb_strtoupper(@$payload['name']['extension'] ?? '')),
             ];
             $data->put('name', @$payload['toJSON'] ? json_encode($name) : $name);
         })->when(@$payload['office'], function ($data) use ($payload) {

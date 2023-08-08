@@ -39,11 +39,12 @@ class HomeController extends Controller
             ->orderBy('name->last')
             ->orderBy('name->first')
             ->orderBy('name->middle')
+            ->orderBy('name->extension')
             ->where($filter)
             ->whereActive($request->active ?? true)
-            ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtoupper($request->office)))
+            ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtolower($request->office)))
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
-            ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtoupper($request->group)));
+            ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));
 
         return inertia('Home/Index', [
             ...$request->except(['page', 'paginate', 'search']),
@@ -70,7 +71,7 @@ class HomeController extends Controller
             ),
             'groups' => Inertia::lazy(
                 fn () => Employee::where($filter)
-                    ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtoupper($request->office)))
+                    ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtolower($request->office)))
                     ->pluck('groups')
                     ->flatten()
                     ->filter()
