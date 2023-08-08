@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Traits\HasUniversallyUniqueIdentifier;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Shift extends Model
 {
-    use HasUniversallyUniqueIdentifier;
+    use HasUuids;
 
     const DEFAULT_IN1 = '08:00';
 

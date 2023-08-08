@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use App\Traits\HasUniversallyUniqueIdentifier;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Assignment extends Pivot
 {
-    use HasUniversallyUniqueIdentifier;
+    use HasUuids;
 
     public $timestamps = true;
 

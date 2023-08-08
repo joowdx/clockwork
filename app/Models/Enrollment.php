@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Traits\HasUniversallyUniqueIdentifier;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Enrollment extends Pivot
 {
-    use HasUniversallyUniqueIdentifier;
+    use HasUuids;
 
     public $timestamps = true;
 
