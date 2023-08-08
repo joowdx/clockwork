@@ -26,7 +26,7 @@ class TransformEmployeeScannerData
                     'regular' => (bool) @$entry[$headers['regular']],
                     'csc_format' => @$entry[$headers['csc format']] === null ? true : filter_var(@$entry[$headers['csc format']], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
                     'toJSON' => true,
-                    'groups' => explode(',', @$entry[$headers['groups']]),
+                    'groups' => explode(',', @$entry[$headers['groups']] ?? ''),
                 ],
                 'scanners' => $this->uids($entry, $this->scanners($headers)),
             ];
