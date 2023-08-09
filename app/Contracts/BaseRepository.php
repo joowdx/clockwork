@@ -230,7 +230,7 @@ abstract class BaseRepository implements Repository
 
     protected function hasUuidPrimaryKey(): bool
     {
-        return trait_exists(\App\Traits\HasUniversallyUniqueIdentifier::class)
-            && in_array(\App\Traits\HasUniversallyUniqueIdentifier::class, class_uses_recursive(get_class($this->model())));
+        return trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class)
+            && in_array(\Illuminate\Database\Eloquent\Concerns\HasUuids::class, class_uses_recursive(get_class($this->model())));
     }
 }
