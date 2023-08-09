@@ -33,7 +33,9 @@ const resetFilter = () => {
     queryStrings.value.regular = undefined
     queryStrings.value.office = undefined
     queryStrings.value.group = undefined
-    queryStrings.value.search = ''
+    queryStrings.value.search = undefined
+
+    datatable.value.clearSearch()
 }
 
 const toggleSelection = () => {

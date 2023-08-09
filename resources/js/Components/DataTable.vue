@@ -4,8 +4,6 @@ import { computed, onMounted, ref, watch } from 'vue'
 
 const table = ref(null)
 
-defineExpose({ processing: computed(() => form.processing) })
-
 const emits = defineEmits(['updated'])
 
 const props = defineProps({
@@ -77,12 +75,18 @@ onMounted(() => {
         setTimeout(() => input.value.focus(), 200)
     }
 })
+
+defineExpose({
+    processing: computed(() => form.processing),
+    clearSearch: () => form.search = '',
+    update: () => update()
+})
 </script>
 
 <template>
     <div class="space-y-3">
-        <div class="flex flex-col-reverse justify-between gap-3 sm:flex-row" :class="[isCompact() ? 'mb-4' : 'mb-8']">
-            <div class="w-full max-w-md form-control">
+        <div class="grid justify-between grid-cols-1 gap-3 md:grid-cols-2" :class="[isCompact() ? 'mb-4' : 'mb-8']">
+            <div class="w-full md:max-w-md form-control">
                 <label for="period" class="p-0 label">
                     <span class="label-text">Search</span>
                 </label>
