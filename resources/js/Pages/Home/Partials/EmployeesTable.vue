@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
 import DataTable from '@/Components/DataTable.vue'
 
@@ -73,7 +73,14 @@ const checkSelection = () => {
 
 watch(data, checkSelection, { deep: true })
 
-onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
+onMounted(() => {
+    nextTick(() => {
+        router.reload({
+            data: props.queryStrings,
+            only: ['employees', 'groups', 'offices']
+        })
+    })
+})
 </script>
 
 <template>
