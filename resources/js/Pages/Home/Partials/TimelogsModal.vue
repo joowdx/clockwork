@@ -12,7 +12,7 @@ const modelValue = defineModel()
 
 const employee = defineModel('employee')
 
-const props = defineProps(['options'])
+const props = defineProps(['options', 'developer'])
 
 const tab = ref('query')
 
@@ -83,13 +83,17 @@ const loadTimelogs = async (date) => {
     })
         .then(data => data.json())
         .finally(() => loading.value = false)
+
+    if (! props.developer) {
+        timelogs.value = timelogs.value.filter(e => !e.hidden)
+    }
 }
 
 watch(date, loadTimelogs)
 
 watch(modelValue, (show) => {
     if (show) {
-        if (!allowed.value) {
+        if (props.developer && !allowed.value) {
             modelValue.value = false
         }
 
@@ -117,11 +121,11 @@ onMounted(() => {
 <template>
     <Modal v-model="modelValue">
         <template #header>
-            Timelogs <sup>({{ employee?.name_format.shortStartLastInitialFirst }})</sup>
+            Timelogs ({{ employee?.name_format.shortStartLastInitialFirst }})
         </template>
 
         <div class="grid gap-3">
-            <div class="grid grid-cols-3 gap-3.5">
+            <div :class="{'grid grid-cols-3 gap-3.5': developer}">
                 <div class="form-control">
                     <label for="timelogs_date_query" class="px-0 pt-0 pb-0.5 label">
                         <span class="label-text">Date</span>
@@ -136,35 +140,37 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <div class="form-control">
-                    <label for="timelogs_scanner_insert" class="px-0 pt-0 pb-0.5 label">
-                        <span class="label-text">Time</span>
-                    </label>
-                    <div class="w-full">
-                        <input
-                            v-model="insert.time"
-                            id="timelogs_date_insert"
-                            type="time"
-                            class="w-full input input-bordered input-sm"
-                        />
+                <template v-if="developer">
+                    <div class="form-control">
+                        <label for="timelogs_scanner_insert" class="px-0 pt-0 pb-0.5 label">
+                            <span class="label-text">Time</span>
+                        </label>
+                        <div class="w-full">
+                            <input
+                                v-model="insert.time"
+                                id="timelogs_date_insert"
+                                type="time"
+                                class="w-full input input-bordered input-sm"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-control">
-                    <label for="timelogs_state_query" class="px-0 pt-0 pb-0.5 label">
-                        <span class="label-text">State</span>
-                    </label>
-                    <div class="w-full">
-                        <select id="timelogs_state_query" v-model="insert.state" class="w-full select select-sm select-bordered">
-                            <option :value="null"></option>
-                            <option :value="0">In</option>
-                            <option :value="1">Out</option>
-                        </select>
+                    <div class="form-control">
+                        <label for="timelogs_state_query" class="px-0 pt-0 pb-0.5 label">
+                            <span class="label-text">State</span>
+                        </label>
+                        <div class="w-full">
+                            <select id="timelogs_state_query" v-model="insert.state" class="w-full select select-sm select-bordered">
+                                <option :value="null"></option>
+                                <option :value="0">In</option>
+                                <option :value="1">Out</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+                </template>
             </div>
 
-            <div class="grid grid-cols-12 gap-3.5 items-end">
+            <div v-if="developer" class="grid grid-cols-12 gap-3.5 items-end">
                 <div class="col-span-10 form-control">
                     <label for="timelogs_scanner_insert" class="px-0 pt-0 pb-0.5 label">
                         <span class="label-text">Scanner</span>
@@ -212,7 +218,7 @@ onMounted(() => {
                                     <th> Time </th>
                                     <th> Uid </th>
                                     <th> State </th>
-                                    <th></th>
+                                    <th v-if="developer"></th>
                                 </tr>
 
                                 <tr v-else>
@@ -238,7 +244,7 @@ onMounted(() => {
                                         <td :class="{'opacity-40': timelog.hidden}">
                                             {{ timelog.type }}
                                         </td>
-                                        <td class="text-right">
+                                        <td v-if="developer" class="text-right">
                                             <button
                                                 @click.exact="toggleHidden(timelog)"
                                                 @click.alt.ctrl.exact="deleteTimelog(timelog)"

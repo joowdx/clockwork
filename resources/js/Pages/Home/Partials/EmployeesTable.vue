@@ -209,7 +209,12 @@ onMounted(() => router.reload({ only: ['employees', 'groups', 'offices'] }))
                     </label>
                 </td>
                 <th class="p-0 px-2 text-right bg-[transparent!important;]">
-                    <button @click.exact="emits('edit', row)" @click.alt.ctrl.shift.exact="emits('timelogs', row)" class="justify-center hidden group-hover:flex btn btn-xs btn-primary">
+                    <button
+                        @click.exact="emits('edit', row)"
+                        @click.alt.exact="emits('timelogs', row)"
+                        @click.alt.ctrl.shift.exact="emits('timelogs', row, true)"
+                        class="hidden group-hover:block btn btn-xs btn-primary"
+                    >
                         Edit
                     </button>
                 </th>

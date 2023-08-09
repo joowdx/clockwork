@@ -51,6 +51,8 @@ const modal = ref({
 
 const employee = ref(null)
 
+const developer = ref(false)
+
 const loading = ref(false)
 
 const printPreview = ref('dtr')
@@ -149,8 +151,9 @@ const showEmployeeModal = (e) => {
     modal.value.employee = true
 }
 
-const showTimelogsModal = (e) => {
+const showTimelogsModal = (e, dev) => {
     employee.value = e
+    developer.value = dev
     modal.value.timelogs = true
 }
 
@@ -337,6 +340,7 @@ const formOptions = {
             v-model="modal.timelogs"
             v-model:employee="employee"
             :options="formOptions"
+            :developer="developer"
         />
 
         <Teleport to="body">
