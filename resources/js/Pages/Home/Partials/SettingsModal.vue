@@ -1,10 +1,13 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
+import { usePage } from '@inertiajs/vue3'
 import { onMounted, ref, watch } from 'vue'
 
 const modelValue = defineModel()
 
 const data = defineModel('data')
+
+const user = usePage().props.auth.user
 
 const value = ref({
     all: Boolean(data.value.all),
@@ -15,9 +18,9 @@ const value = ref({
 const apply = () => {
     data.value.all = value.value.all
 
-    localStorage.setItem('employee-filter-all', value.value.all)
+    localStorage.setItem(`employee-filter-all-${user.id}`, value.value.all)
 
-    localStorage.setItem('employee-filter-unenrolled', value.value.unenrolled)
+    localStorage.setItem(`employee-filter-unenrolled-${user.id}`, value.value.unenrolled)
 
     if (value.value.unenrolled_only) {
         data.value.unenrolled = 'only'
@@ -29,8 +32,8 @@ const apply = () => {
 }
 
 onMounted(() => {
-    let all = localStorage.getItem('employee-filter-all') === "true"
-    let unenrolled = localStorage.getItem('employee-filter-unenrolled')
+    let all = localStorage.getItem(`employee-filter-all-${user.id}`) === "true"
+    let unenrolled = localStorage.getItem(`employee-filter-unenrolled-${user.id}`)
 
     unenrolled = unenrolled === "true" || unenrolled === "only"
 
