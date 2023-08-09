@@ -46,7 +46,7 @@ const showUserModal = (e) => {
                 wrapperClass="h-[calc(100vh-329px)] min-h-[29em]"
             >
                 <template #actions>
-                    <div class="flex items-end content-end justify-end flex-1 w-full">
+                    <div class="flex items-end content-end justify-end flex-1 order-first w-full md:order-none">
                         <div class="tooltip" data-tip="Create">
                             <button @click="showUserModal(null)" class="tracking-tighter btn btn-sm btn-square btn-primary">
                                 <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
