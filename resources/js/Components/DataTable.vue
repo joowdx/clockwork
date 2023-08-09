@@ -33,7 +33,8 @@ const update = () => {
 
     form.transform((data) => ({
         ...data,
-        ...(props.queryStrings ?? {})
+        ...(props.queryStrings ?? {}),
+        page: data.page <= 0 ? 1 : data.page > props.items.last_page ? props.items.last_page : data.page
     })).get(props.items.path, {
         preserveState: true,
         preserveScroll: true,
