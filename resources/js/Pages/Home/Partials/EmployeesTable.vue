@@ -73,6 +73,12 @@ const checkSelection = () => {
 
 watch(data, checkSelection, { deep: true })
 
+watch(() => props.groups, g => {
+    if (! g.includes(queryStrings.value.group)) {
+        queryStrings.value.group = undefined
+    }
+})
+
 onMounted(() => {
     nextTick(() => {
         router.reload({
