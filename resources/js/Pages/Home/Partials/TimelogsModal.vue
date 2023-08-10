@@ -121,7 +121,7 @@ onMounted(() => {
 <template>
     <Modal v-model="modelValue">
         <template #header>
-            Timelogs ({{ employee?.name_format.shortStartLastInitialFirst }})
+            Timelogs
         </template>
 
         <div class="grid gap-3">
