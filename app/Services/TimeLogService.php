@@ -126,7 +126,7 @@ class TimeLogService implements Import
         ];
     }
 
-    protected function filterTime(Collection $logs, string $state = null, string $shift = null): mixed
+    public function filterTime(Collection $logs, string $state = null, string $shift = null): mixed
     {
         return match ($state) {
             'in' => match ($shift) {
@@ -152,7 +152,7 @@ class TimeLogService implements Import
         };
     }
 
-    protected function calculateUndertime(Carbon $date, ?TimeLog $in1, ?TimeLog $out1, ?TimeLog $in2, ?TimeLog $out2, ?bool $excludeWeekends = true): object|int|null
+    public function calculateUndertime(Carbon $date, ?TimeLog $in1, ?TimeLog $out1, ?TimeLog $in2, ?TimeLog $out2, ?bool $excludeWeekends = true): object|int|null
     {
         $calculate = function () use ($date, $in1, $out1, $in2, $out2) {
             $week = $date->isWeekday() ? 'weekdays' : 'weekends';

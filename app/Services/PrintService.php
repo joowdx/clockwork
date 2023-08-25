@@ -31,7 +31,6 @@ class PrintService
         return [
             ...$this->employee(),
             'csc_format' => $this->request->csc_format,
-            'transmittal' => $this->request->transmittal,
         ];
     }
 

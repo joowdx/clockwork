@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
@@ -31,6 +32,10 @@ class TimeLog extends Model
         'time',
         'state',
         'hidden',
+    ];
+
+    protected $hidden = [
+        'hidden'
     ];
 
     protected $casts = [
