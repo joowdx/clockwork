@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserType;
 use App\Models\Employee;
 use App\Services\ScannerService;
 use App\Services\TimeLogService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class HomeController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request, ScannerService $scanner, TimeLogService $timelog): Response
+    public function __invoke(Request $request, ScannerService $scanner, TimeLogService $timelog): mixed
     {
         $filter = function ($query) use ($request) {
-            if ($request->all) {
+            if ($request->user()->type === UserType::DEPARTMENT_HEAD) {
+                $query->whereIn('office', $request->user()->offices);
+            } else if ($request->all) {
                 if ($request->unenrolled === 'only') {
                     $query->whereDoesntHave('scanners');
                 } elseif (! $request->unenrolled) {
@@ -42,9 +44,18 @@ class HomeController extends Controller
             ->orderBy('name->extension')
             ->where($filter)
             ->whereActive($request->active ?? true)
+            ->when($request->user()->type === UserType::DEPARTMENT_HEAD, fn ($q) => $q->setEagerLoads([]))
             ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtolower($request->office)))
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
             ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));
+
+        if ( true || $request->expectsJson()) {
+            return Employee::search($request->search)
+                ->query($employee)
+                ->paginate($request->paginate ?? 25)
+                ->withQueryString()
+                ->appends('query', null);
+        }
 
         return inertia('Home/Index', [
             ...$request->except(['page', 'paginate', 'search']),

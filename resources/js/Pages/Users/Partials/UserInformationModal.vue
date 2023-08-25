@@ -24,6 +24,7 @@ const profileForm = useForm({
     password: null,
     password_confirmation: null,
     disabled: null,
+    offices: [],
 })
 
 const passwordForm = useForm({
@@ -120,6 +121,7 @@ watch(modelValue, (show) => {
     profileForm.title = user.value?.title
     profileForm.type = user.value?.type ?? 0
     profileForm.disabled = user.value?.disabled ?? false
+    profileForm.offices = user.value?.offices ?? []
 
     nextTick(() => document.getElementById('user_name').focus())
 })
@@ -159,16 +161,18 @@ watch(modelValue, (show) => {
                         <InputError class="mt-0.5" :message="profileForm.errors.username" />
                     </div>
 
-                    <div class="form-control">
-                        <label for="user_password" class="block text-sm font-medium text-base-content"> Password </label>
-                        <input @keyup.enter="submit" v-model="profileForm.password" id="user_password" type="password" class="mt-1 input-sm input input-bordered" />
-                        <InputError class="mt-0.5" :message="profileForm.errors.password" />
-                    </div>
+                    <div class="grid grid-cols-2 gap-3.5">
+                        <div class="form-control">
+                            <label for="user_password" class="block text-sm font-medium text-base-content"> Password </label>
+                            <input @keyup.enter="submit" v-model="profileForm.password" id="user_password" type="password" class="mt-1 input-sm input input-bordered" />
+                            <InputError class="mt-0.5" :message="profileForm.errors.password" />
+                        </div>
 
-                    <div class="form-control">
-                        <label for="user_password_confirmation " class="block text-sm font-medium text-base-content"> Confirm Password </label>
-                        <input @keyup.enter="submit" v-model="profileForm.password_confirmation " id="user_password_confirmation " type="password" class="mt-1 capitalize input-sm input input-bordered" />
-                        <InputError class="mt-0.5" :message="profileForm.errors.password_confirmation " />
+                        <div class="form-control">
+                            <label for="user_password_confirmation " class="block text-sm font-medium text-base-content"> Confirm Password </label>
+                            <input @keyup.enter="submit" v-model="profileForm.password_confirmation " id="user_password_confirmation " type="password" class="mt-1 capitalize input-sm input input-bordered" />
+                            <InputError class="mt-0.5" :message="profileForm.errors.password_confirmation " />
+                        </div>
                     </div>
                 </template>
 
@@ -191,6 +195,11 @@ watch(modelValue, (show) => {
                     </div>
                 </div>
 
+                <div v-if="profileForm.type === 3" class="form-control">
+                    <label for="user_offices" class="block text-sm font-medium text-base-content"> Offices </label>
+                    <input @keyup.enter="submit" v-model="profileForm.offices" id="user_offices" type="text" class="mt-1 uppercase input-sm input input-bordered" />
+                    <InputError class="mt-0.5" :message="profileForm.errors.offices" />
+                </div>
             </div>
         </template>
 

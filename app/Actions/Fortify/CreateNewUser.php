@@ -20,13 +20,15 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input)
     {
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
             'title' => ['nullable', 'string', 'max:255'],
             'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
-            'disabled' => ['nullable', 'boolean']
+            'disabled' => ['nullable', 'boolean'],
+            'offices' => ['nullable', 'string'],
         ])->validate();
 
         return User::create([
@@ -36,6 +38,7 @@ class CreateNewUser implements CreatesNewUsers
             'title' => @$input['title'],
             'type' => $input['type'],
             'disabled' => (bool) @$input['disabled'],
+            'offices' => str_getcsv(@$input['offices'] ?? ""),
         ]);
     }
 }

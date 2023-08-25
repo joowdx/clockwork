@@ -24,6 +24,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
             'disabled' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'offices' => ['nullable', 'string'],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
@@ -36,6 +37,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'title' => $input['title'],
             'type' => $input['type'],
             'disabled' => (bool) @$input['disabled'],
+            'offices' => str_getcsv(@$input['offices'] ?? ""),
         ])->save();
     }
 

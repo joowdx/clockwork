@@ -8,6 +8,7 @@ enum UserType: int
     case USER = 0;
     case ADMINISTRATOR = 1;
     case SYSTEM = 2;
+    case DEPARTMENT_HEAD = 3;
 
     public function label (): string
     {
@@ -15,6 +16,7 @@ enum UserType: int
             static::USER => 'User',
             static::SYSTEM => 'System',
             static::DEVELOPER, static::ADMINISTRATOR => 'Administrator',
+            static::DEPARTMENT_HEAD => 'Department Head',
         };
     }
 }

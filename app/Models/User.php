@@ -33,6 +33,7 @@ class User extends Authenticatable
         'password',
         'type',
         'disabled',
+        'offices',
     ];
 
     protected $hidden = [
@@ -44,6 +45,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'type' => UserType::class,
+        'offices' => 'array'
     ];
 
     protected $appends = [

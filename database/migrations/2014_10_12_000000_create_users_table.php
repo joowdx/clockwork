@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->tinyInteger('type')->default(0);
+            $table->jsonb('offices')->default([]);
             $table->boolean('disabled')->default(false);
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();

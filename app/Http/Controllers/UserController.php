@@ -29,7 +29,7 @@ class UserController extends Controller
                 ->appends('query', null),
             'types' => collect(UserType::cases())
                 ->reject(fn ($e) => $e->value === -1)
-                ->mapWithKeys(fn ($e) => [UserType::from($e->value)->name => $e->value]),
+                ->mapWithKeys(fn ($e) => [UserType::from($e->value)->label() => $e->value]),
         ]);
     }
 
