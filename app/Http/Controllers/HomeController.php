@@ -49,12 +49,15 @@ class HomeController extends Controller
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
             ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));
 
-        if ( true || $request->expectsJson()) {
-            return Employee::search($request->search)
-                ->query($employee)
-                ->paginate($request->paginate ?? 25)
-                ->withQueryString()
-                ->appends('query', null);
+        if ($request->user()->type === UserType::DEPARTMENT_HEAD || $request->expectsJson()) {
+            return [
+                'user' => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray(),
+                'employees' => Employee::search($request->search)
+                    ->query($employee)
+                    ->paginate($request->paginate ?? 25)
+                    ->withQueryString()
+                    ->appends('query', null),
+            ];
         }
 
         return inertia('Home/Index', [
