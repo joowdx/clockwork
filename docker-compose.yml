@@ -61,6 +61,20 @@ services:
             test: ["CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}"]
             retries: 3
             timeout: 5s
+    redis:
+        container_name: dtr-cache
+        image: 'redis:alpine'
+        restart: unless-stopped
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        volumes:
+            - 'redis:/data'
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            retries: 3
+            timeout: 5s
 networks:
     sail:
         name: dtr
@@ -68,4 +82,7 @@ networks:
 volumes:
     pgsql:
         name: dtr-pgsql
+        driver: local
+    redis:
+        name: dtr-redis
         driver: local
