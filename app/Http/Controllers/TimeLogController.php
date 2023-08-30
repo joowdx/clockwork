@@ -52,7 +52,12 @@ class TimeLogController extends Controller
             ->reorder()
             ->oldest('time')
             ->oldest('id')
-            ->get();
+            ->get()
+            ->get()
+            ->when(
+                $request->user()->type === UserType::DEVELOPER,
+                fn ($e) => $e->makeVisible('hidden')
+            );
     }
 
     public function store(StoreRequest $request, Import $import)
