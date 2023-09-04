@@ -53,7 +53,6 @@ class TimeLogController extends Controller
             ->oldest('time')
             ->oldest('id')
             ->get()
-            ->get()
             ->when(
                 $request->user()->type === UserType::DEVELOPER,
                 fn ($e) => $e->makeVisible('hidden')
