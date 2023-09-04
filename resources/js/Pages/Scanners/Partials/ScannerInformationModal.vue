@@ -31,6 +31,8 @@ const switchTab = (to) => {
 
     if (tab.value == 'delete') {
         nextTick(() => document.getElementById('delete_form_password').focus())
+    } else if (tab.value == 'clear') {
+        nextTick(() => document.getElementById('clear_form_password').focus())
     }
 }
 
@@ -45,6 +47,11 @@ const informationForm = useForm({
     priority: false,
     print_text_colour: '#000000',
     print_background_colour: '#ffffff',
+})
+
+const clearForm = useForm({
+    timelogs: true,
+    password: '',
 })
 
 const deleteForm = useForm({
@@ -102,7 +109,7 @@ const submit = () => {
             })
     } else if (tab.value === 'assignees') {
         assigneeForm
-            .transform((d) => ({...d, users: values(d.users).map(e => e.id)}))
+            .transform((d) => ({ ...d, users: values(d.users).map(e => e.id) }))
             .post(route('assignment.store'), {
                 preserveScroll: true,
                 preserveState: true,
@@ -118,6 +125,21 @@ const submit = () => {
                     emits('saved')
                 }
             })
+    } else if (tab.value === 'clear') {
+        clearForm.delete(route('scanners.destroy', scanner.value.id), {
+            preserveScroll: true,
+            preserveState: true,
+            onError: () => {
+                if (clearForm.errors.password) {
+                    clearForm.reset('password')
+                    document.getElementById('clear_form_password').focus()
+                }
+            },
+            onSuccess: () => {
+                clearForm.reset('password')
+                document.getElementById('clear_form_password').focus()
+            }
+        })
     } else if (tab.value === 'delete') {
         deleteForm.delete(route('scanners.destroy', scanner.value.id), {
             preserveScroll: true,
@@ -142,6 +164,10 @@ watch(modelValue, (show) => {
         setTimeout(() => {
             informationForm.reset()
             informationForm.clearErrors()
+            clearForm.reset()
+            clearForm.clearErrors()
+            deleteForm.reset()
+            deleteForm.clearErrors()
             assigneeForm.reset()
             assigneeForm.clearErrors()
 
@@ -179,10 +205,11 @@ watch(modelValue, (show) => {
         </template>
 
         <div class="w-full mb-5 tabs">
-            <button @click="switchTab('information')" class="tab tab-bordered" :class="{'tab-active': tab === 'information', 'text-error': hasErrorsOnInformation}">Information</button>
-            <button @click="switchTab('connection')" class="tab tab-bordered" :class="{'tab-active': tab === 'connection', 'text-error': hasErrorsOnConnection}">Connection</button>
-            <button v-if="forUpdate" @click="switchTab('assignees')" class="tab tab-bordered" :class="{'tab-active': tab === 'assignees'}">Assignees</button>
-            <button v-if="forUpdate && isAdmin" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete'}">Delete</button>
+            <button @click="switchTab('information')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'information', 'text-error': hasErrorsOnInformation}">Information</button>
+            <button @click="switchTab('connection')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'connection', 'text-error': hasErrorsOnConnection}">Connection</button>
+            <button v-if="forUpdate" @click="switchTab('assignees')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'assignees'}">Assignees</button>
+            <button v-if="forUpdate && isAdmin" @click="switchTab('clear')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'clear'}">Timelogs</button>
+            <button v-if="forUpdate && isAdmin" @click="switchTab('delete')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'delete'}">Delete</button>
         </div>
 
         <div v-if="tab === 'information'" class="space-y-5">
@@ -365,6 +392,18 @@ watch(modelValue, (show) => {
             </template>
         </div>
 
+        <div v-if="tab == 'clear' && forUpdate" class="space-y-2">
+            <div class="form-control">
+                <label for="clear_form_password" class="block text-sm font-medium text-base-content"> Password </label>
+                <input @keyup.enter="submit" v-model="clearForm.password" id="clear_form_password" type="password" class="mt-1 input-sm input input-bordered" />
+                <InputError class="mt-0.5" :message="clearForm.errors.password" />
+            </div>
+
+            <span class="block text-xs tracking-tight text-base-content/70">
+                To prevent any unauthorized modifications, please enter your password to proceed.
+            </span>
+        </div>
+
         <div v-if="tab == 'delete' && forUpdate" class="space-y-2">
             <div class="form-control">
                 <label for="delete_form_password" class="block text-sm font-medium text-base-content"> Password </label>
@@ -378,7 +417,18 @@ watch(modelValue, (show) => {
         </div>
 
         <template #action>
-            <template v-if="tab !== 'delete'">
+            <template v-if="tab == 'delete' || tab == 'clear'">
+                <p v-if="clearForm.recentlySuccessful" class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content">
+                    Success.
+                </p>
+
+                <button type="button" class="btn btn-sm btn-error" @click="submit">
+                    Delete
+                </button>
+            </template>
+
+
+            <template v-else>
                 <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
                     <p v-if="informationForm.recentlySuccessful || assigneeForm.recentlySuccessful" class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content">
                         Success.
@@ -389,10 +439,6 @@ watch(modelValue, (show) => {
 
                 <button v-else type="button" class="btn btn-sm btn-primary" @click="submit" :disabled="! isAdmin">Save</button>
             </template>
-
-            <button v-else type="button" class="btn btn-sm btn-error" @click="submit">
-                Delete
-            </button>
         </template>
     </Modal>
 </template>
