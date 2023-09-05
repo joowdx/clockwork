@@ -94,7 +94,9 @@ class ZakZk implements ScannerDriver
 
             $data = $response->json();
         } catch (ConnectionException $ex) {
-            throw new ConnectionException($ex->getCode() === 21 ? 'ZakZk server and device connection error.' : 'ZakZk server is unreachable.');
+            throw new ConnectionException(
+                $ex->getCode() === 21 ? 'ZakZk server and device connection error.' : 'Connection/timeout error.'
+            );
         }
 
         return $data;
