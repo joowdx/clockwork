@@ -49,7 +49,7 @@ class HomeController extends Controller
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
             ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));
 
-        if ($request->user()->type === UserType::DEPARTMENT_HEAD || $request->expectsJson()) {
+        if ($request->user()->type === UserType::DEPARTMENT_HEAD && $request->expectsJson()) {
             return [
                 'user' => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray(),
                 'employees' => Employee::search($request->search)
