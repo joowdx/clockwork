@@ -121,7 +121,7 @@ watch(modelValue, (show) => {
     profileForm.title = user.value?.title
     profileForm.type = user.value?.type ?? 0
     profileForm.disabled = user.value?.disabled ?? false
-    profileForm.offices = user.value?.offices ?? []
+    profileForm.offices = user.value?.offices?.join(", ")
 
     nextTick(() => document.getElementById('user_name').focus())
 })

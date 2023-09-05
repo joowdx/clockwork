@@ -38,7 +38,7 @@ class CreateNewUser implements CreatesNewUsers
             'title' => @$input['title'],
             'type' => $input['type'],
             'disabled' => (bool) @$input['disabled'],
-            'offices' => str_getcsv(@$input['offices'] ?? ""),
+            'offices' => collect(str_getcsv(@$input['offices'] ?? ""))->map(fn ($o) => trim($o))->toArray(),
         ]);
     }
 }
