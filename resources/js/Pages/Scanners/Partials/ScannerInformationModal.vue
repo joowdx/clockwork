@@ -31,8 +31,6 @@ const switchTab = (to) => {
 
     if (tab.value == 'delete') {
         nextTick(() => document.getElementById('delete_form_password').focus())
-    } else if (tab.value == 'clear') {
-        nextTick(() => document.getElementById('clear_form_password').focus())
     }
 }
 
@@ -48,6 +46,8 @@ const informationForm = useForm({
     print_text_colour: '#000000',
     print_background_colour: '#ffffff',
 })
+
+const downloadForm = useForm({})
 
 const clearForm = useForm({
     timelogs: true,
@@ -97,6 +97,14 @@ const informationFormLink = computed(() => forUpdate.value ? route('scanners.upd
 const hasErrorsOnConnection = computed(() => informationForm.errors.ip_address || informationForm.errors.port || informationForm.errors.driver)
 
 const hasErrorsOnInformation = computed(() => informationForm.errors.name || informationForm.errors.attlog_file || informationForm.errors.remarks || informationForm.errors.shared || informationForm.errors.priority || informationForm.errors.print_text_colour || informationForm.errors.print_background_colour)
+
+const download = () => {
+    downloadForm.post(route('scanners.download', scanner.value.id), {
+        preserveScroll: true,
+        preserveState: true,
+        onBefore: () => downloadForm.clearErrors(),
+    })
+}
 
 const submit = () => {
     if (tab.value === 'information' || tab.value === 'connection') {
@@ -166,6 +174,8 @@ watch(modelValue, (show) => {
             informationForm.clearErrors()
             clearForm.reset()
             clearForm.clearErrors()
+            downloadForm.reset()
+            downloadForm.clearErrors()
             deleteForm.reset()
             deleteForm.clearErrors()
             assigneeForm.reset()
@@ -205,11 +215,44 @@ watch(modelValue, (show) => {
         </template>
 
         <div class="w-full mb-5 tabs">
-            <button @click="switchTab('information')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'information', 'text-error': hasErrorsOnInformation}">Information</button>
-            <button @click="switchTab('connection')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'connection', 'text-error': hasErrorsOnConnection}">Connection</button>
-            <button v-if="forUpdate" @click="switchTab('assignees')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'assignees'}">Assignees</button>
-            <button v-if="forUpdate && isAdmin" @click="switchTab('clear')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'clear'}">Timelogs</button>
-            <button v-if="forUpdate && isAdmin" @click="switchTab('delete')" class="px-2 tab tab-bordered" :class="{'tab-active': tab === 'delete'}">Delete</button>
+            <button
+                @click="switchTab('information')"
+                class="px-2 tab tab-bordered"
+                :class="{'tab-active': tab === 'information', 'text-error': hasErrorsOnInformation}"
+            >
+                Information
+            </button>
+            <button
+                @click="switchTab('connection')"
+                class="px-2 tab tab-bordered"
+                :class="{'tab-active': tab === 'connection', 'text-error': hasErrorsOnConnection}"
+            >
+                Connection
+            </button>
+            <button
+                v-if="forUpdate"
+                @click="switchTab('assignees')"
+                class="px-2 tab tab-bordered"
+                :class="{'tab-active': tab === 'assignees'}"
+            >
+                Assignees
+            </button>
+            <button
+                v-if="forUpdate && hasPrivilege"
+                @click="switchTab('clear')"
+                class="px-2 tab tab-bordered"
+                :class="{'tab-active': tab === 'clear'}"
+            >
+                Timelogs
+            </button>
+            <button
+                v-if="forUpdate && isAdmin"
+                @click="switchTab('delete')"
+                class="px-2 tab tab-bordered"
+                :class="{'tab-active': tab === 'delete'}"
+            >
+                Delete
+            </button>
         </div>
 
         <div v-if="tab === 'information'" class="space-y-5">
@@ -392,17 +435,55 @@ watch(modelValue, (show) => {
             </template>
         </div>
 
-        <div v-if="tab == 'clear' && forUpdate" class="space-y-2">
-            <div class="form-control">
-                <label for="clear_form_password" class="block text-sm font-medium text-base-content"> Password </label>
-                <input @keyup.enter="submit" v-model="clearForm.password" id="clear_form_password" type="password" class="mt-1 input-sm input input-bordered" />
-                <InputError class="mt-0.5" :message="clearForm.errors.password" />
+        <template v-if="tab == 'clear' && forUpdate">
+            <div class="space-y-2">
+                    <div class="space-y-2 form-control">
+                        <label for="clear_form_password" class="flex gap-3 text-sm font-medium text-base-content">
+                            Synchronize Timelogs
+                            <svg :class="{'hidden': ! downloadForm.processing}" class="w-4 h-4 fill-current animate-spin" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                                <path d="M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z"/>
+                            </svg>
+                        </label>
+                        <div class="flex">
+                            <button @click="download" class="btn btn-primary btn-sm w-fit" :disabled="downloadForm.processing">
+                                Sync Now
+                            </button>
+
+                            <p v-if="downloadForm.recentlySuccessful" class="flex items-center ml-3 text-sm opacity-50 text-base-content">
+                                Success.
+                            </p>
+                        </div>
+                        <InputError class="mt-0.5" :message="downloadForm.errors.message" />
+                        <span class="block text-xs text-base-content/70">
+                            Download all timelogs from the device.
+                        </span>
+                    </div>
+
+                    <hr class="pt-3 border-base-content/40">
+
+                    <div class="form-control">
+                        <label for="clear_form_password" class="block text-sm font-medium text-base-content"> Clear Timelogs </label>
+                        <div class="flex gap-3">
+                            <input
+                                @keyup.enter="submit"
+                                v-model="clearForm.password"
+                                id="clear_form_password"
+                                type="password"
+                                class="flex-1 mt-1 input-sm input input-bordered"
+                                placeholder="Password"
+                            />
+                            <button @click="submit" class="mt-1 btn btn-sm btn-error">
+                                Clear
+                            </button>
+                        </div>
+                        <InputError class="mt-0.5" :message="clearForm.errors.password" />
+                        <span class="block mt-1 text-xs tracking-tight text-base-content/70">
+                            To prevent any unauthorized modifications, please enter your password to proceed deleting all timelogs of the device.
+                        </span>
+                    </div>
             </div>
 
-            <span class="block text-xs tracking-tight text-base-content/70">
-                To prevent any unauthorized modifications, please enter your password to proceed.
-            </span>
-        </div>
+        </template>
 
         <div v-if="tab == 'delete' && forUpdate" class="space-y-2">
             <div class="form-control">
@@ -417,18 +498,14 @@ watch(modelValue, (show) => {
         </div>
 
         <template #action>
-            <template v-if="tab == 'delete' || tab == 'clear'">
-                <p v-if="clearForm.recentlySuccessful" class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content">
-                    Success.
-                </p>
-
+            <template v-if="tab == 'delete'">
                 <button type="button" class="btn btn-sm btn-error" @click="submit">
                     Delete
                 </button>
             </template>
 
 
-            <template v-else>
+            <template v-else-if="tab !== 'clear'">
                 <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
                     <p v-if="informationForm.recentlySuccessful || assigneeForm.recentlySuccessful" class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content">
                         Success.
