@@ -4,14 +4,12 @@ namespace App\Models;
 
 use App\Contracts\ScannerDriver;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Scout\Searchable;
 
 class Scanner extends Model
 {
-    use HasFactory;
     use Searchable;
 
     protected $fillable = [

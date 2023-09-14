@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('trips', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignIdFor(Employee::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignIdFor(Travel::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignIdFor(Travel::class)->constrained('travels')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['employee_id', 'travel_id']);
         });

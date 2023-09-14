@@ -2,13 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 class Travel extends Model
 {
-    use HasFactory, HasUuids;
-
     protected $casts = [
         'type' => TravelType::class,
         'dates' => 'array',

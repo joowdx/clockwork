@@ -2,14 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Shift extends Model
 {
-    use HasUuids;
-
     const DEFAULT_IN1 = '08:00';
 
     const DEFAULT_OUT1 = '12:00';
