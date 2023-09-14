@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -61,6 +62,12 @@ class User extends Authenticatable
             'name' => $this->name,
             'username' => $this->username,
         ];
+    }
+
+    public function employeeProfile(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class)
+            ->withDefault();
     }
 
     public function scanners(): BelongsToMany

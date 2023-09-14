@@ -33,6 +33,10 @@ trait HasNameAccessorAndFormatter
 
     public function getNameFormatAttribute(): object
     {
+        if (! $this->exists) {
+            return null;
+        }
+
         return (object) [
             'full' => $this->nameFormatFull(),
             'fullInitialMiddle' => $this->nameFormatFullInitialMiddle(),
@@ -45,8 +49,12 @@ trait HasNameAccessorAndFormatter
         ];
     }
 
-    public function getFullNameAttribute(): string
+    public function getFullNameAttribute(): ?string
     {
+        if (! $this->exists) {
+            return null;
+        }
+
         return $this->nameFormatFull();
     }
 
