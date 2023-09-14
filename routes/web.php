@@ -32,7 +32,6 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
     Route::middleware(['account.disallowed.system'])->group(function () {
         Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
         Route::get('home', HomeController::class)->name('home');
-        Route::delete('users/{user}/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy'])->scopeBindings();
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('employees.timelogs', TimeLogController::class)->only(['index']);

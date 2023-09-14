@@ -77,11 +77,6 @@ const submit = () => {
             preserveState: true,
             onSuccess: () => passwordForm.reset()
         })
-    } else if (tab.value === '2Fa') {
-        twoFaForm.delete(`/users/${user.value.id}/two-factor-authentication`, {
-            preserveScroll: true,
-            preserveState: true,
-        })
     } else if (tab.value === 'delete') {
         deleteForm.delete(route('users.destroy', user.value.id), {
             preserveScroll: true,
@@ -136,7 +131,6 @@ watch(modelValue, (show) => {
         <div class="w-full mb-5 tabs">
             <button @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': profileForm.hasErrors}">Profile</button>
             <button v-if="forUpdate" @click="switchTab('password')" class="tab tab-bordered" :class="{'tab-active': tab === 'password', 'text-error': passwordForm.hasErrors}">Password</button>
-            <button v-if="forUpdate" @click="switchTab('2Fa')" class="tab tab-bordered" :class="{'tab-active': tab === '2Fa', 'text-error': twoFaForm.hasErrors}">2FA</button>
             <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete', 'text-error': deleteForm.hasErrors}">Delete</button>
         </div>
 
@@ -219,12 +213,6 @@ watch(modelValue, (show) => {
             </div>
         </template>
 
-        <template v-if="tab === '2Fa'">
-            <span class="block text-sm tracking-tight text-base-content/70">
-                You may disable the user's two-factor-authentication when they're locked out.
-            </span>
-        </template>
-
         <div v-if="tab === 'delete'" class="space-y-2">
             <div class="form-control">
                 <label for="delete_form_password" class="block text-sm font-medium text-base-content"> Password </label>
@@ -237,10 +225,6 @@ watch(modelValue, (show) => {
             </span>
         </div>
 
-        <template v-if="tab === '2fa'">
-
-        </template>
-
         <template #action>
             <template v-if="tab === 'profile' || tab === 'password'">
                 <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
@@ -250,18 +234,6 @@ watch(modelValue, (show) => {
                 </Transition>
 
                 <button type="button" class="btn btn-sm btn-primary" @click="submit">Save</button>
-            </template>
-
-            <template v-else-if="tab === '2Fa'">
-                <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
-                    <p v-if="twoFaForm.recentlySuccessful" class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content">
-                        Disabled.
-                    </p>
-                </Transition>
-
-                <button :disabled="! user.has_two_factor_authentication || twoFaForm.wasSuccessful" type="button" class="btn btn-sm btn-warning" @click="submit">
-                    Disable
-                </button>
             </template>
 
             <button v-else-if="tab === 'delete'" type="button" class="btn btn-sm btn-error" @click="submit">
