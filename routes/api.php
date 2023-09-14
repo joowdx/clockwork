@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\DeviceAuthenticationController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\UidSearchController;
 use Illuminate\Http\Request;
@@ -16,8 +17,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware(['auth.basic:,username', 'account.disallowed'])->group(function () {
+    Route::post('device/authenticate', [DeviceAuthenticationController::class, 'authenticate']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
+    Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
 });
 
 Route::get('uid', [UidSearchController::class, '__invoke']);
