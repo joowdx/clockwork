@@ -22,6 +22,7 @@ Route::middleware(['auth.basic:,username', 'account.disallowed'])->group(functio
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', fn (Request $request) => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray());
     Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
     Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
 });
