@@ -20,7 +20,6 @@ class UserController extends Controller
                 ->orderBy('username');
         };
 
-
         return inertia('Users/Index', [
             'users' => User::search($request->search)
                 ->query($query)

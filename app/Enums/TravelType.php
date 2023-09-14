@@ -10,14 +10,14 @@ enum TravelType: int
     case TRAVEL_ORDER = 3;
     case TRIP_TICKET = 4;
 
-    public function label (): string
+    public function label(): string
     {
-        return match($this) {
-            static::LEAVE => 'Leave',
-            static::MEMORANDUM_ORDER => 'Memorandum Order',
-            static::PASS_SLIP => 'Pass Slip',
-            static::TRAVEL_ORDER => 'Travel Order',
-            static::TRIP_TICKET => 'Trip Ticket',
+        return match ($this) {
+            self::LEAVE => 'Leave',
+            self::MEMORANDUM_ORDER => 'Memorandum Order',
+            self::PASS_SLIP => 'Pass Slip',
+            self::TRAVEL_ORDER => 'Travel Order',
+            self::TRIP_TICKET => 'Trip Ticket',
         };
     }
 }

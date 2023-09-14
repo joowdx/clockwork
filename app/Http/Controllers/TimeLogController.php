@@ -33,7 +33,7 @@ class TimeLogController extends Controller
             };
 
             $employee = Employee::whereId($employee->id)->with([
-                'timelogs' => fn ($q) => $q->whereBetween('time', [$from->subDay(), $to->addDay()])
+                'timelogs' => fn ($q) => $q->whereBetween('time', [$from->subDay(), $to->addDay()]),
             ])->first();
 
             $service = app(TimeLogService::class);

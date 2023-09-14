@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ScannerDriver;
 use App\Contracts\UserRepository;
-use App\Drivers\TadPhp;
 use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
 use App\Models\User;

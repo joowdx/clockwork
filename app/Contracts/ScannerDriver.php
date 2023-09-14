@@ -8,7 +8,7 @@ interface ScannerDriver
 
     public function getUsers(): array;
 
-    public function getFormattedAttlogs(?string $withScannerId = null): array;
+    public function getFormattedAttlogs(string $withScannerId = null): array;
 
     public function syncTime(): void;
 }

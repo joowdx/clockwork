@@ -45,7 +45,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'type' => UserType::class,
-        'offices' => 'array'
+        'offices' => 'array',
     ];
 
     protected $appends = [

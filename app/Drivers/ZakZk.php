@@ -43,7 +43,7 @@ class ZakZk implements ScannerDriver
 
     protected function checkClient(): void
     {
-        #check for tcp connection
+        //check for tcp connection
         $tcp = @fsockopen($this->clientHost, $this->clientPort, timeout: 1);
 
         if ($tcp) {
@@ -52,11 +52,11 @@ class ZakZk implements ScannerDriver
             return;
         }
 
-        #check for udp connection
+        //check for udp connection
         $udp = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 
         if ($udp === false) {
-            throw new Exception("Failed to create UDP socket.");
+            throw new Exception('Failed to create UDP socket.');
         }
 
         socket_set_nonblock($udp);
@@ -66,12 +66,11 @@ class ZakZk implements ScannerDriver
         if ($connection === false) {
             socket_close($udp);
 
-            throw new ConnectionException("Device is unreachable");
+            throw new ConnectionException('Device is unreachable');
         }
 
         socket_close($udp);
 
-        return;
     }
 
     public function getAttlogs(): array
@@ -88,9 +87,9 @@ class ZakZk implements ScannerDriver
                 ]
             );
 
-           if ($response->serverError()) {
+            if ($response->serverError()) {
                 throw new ConnectionException(code: 21);
-           }
+            }
 
             $data = $response->json();
         } catch (ConnectionException $ex) {
@@ -102,7 +101,7 @@ class ZakZk implements ScannerDriver
         return $data;
     }
 
-    public function getFormattedAttlogs(?string $withScannerId = null): array
+    public function getFormattedAttlogs(string $withScannerId = null): array
     {
         return collect($this->getAttlogs())
             ->map(function ($attlog) use ($withScannerId) {

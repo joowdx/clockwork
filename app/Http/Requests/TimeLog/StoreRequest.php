@@ -3,7 +3,6 @@
 namespace App\Http\Requests\TimeLog;
 
 use App\Contracts\Import;
-use App\Models\Scanner;
 use App\Models\TimeLog;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -47,7 +46,7 @@ class StoreRequest extends FormRequest
             'scanner_id' => 'required|exists:scanners,id',
             'uid' => 'required|alpha_num',
             'time' => 'required|date',
-            'state' => ['required', Rule::in(array_merge(TimeLog::IN, TimeLog::OUT))]
+            'state' => ['required', Rule::in(array_merge(TimeLog::IN, TimeLog::OUT))],
         ];
     }
 

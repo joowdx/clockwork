@@ -53,7 +53,7 @@ class EmployeeController extends Controller
         $this->employee->update($employee, $request->all());
 
         return redirect()->back()->with('flash', [
-            'employee' => $employee->fresh(['scanners'])
+            'employee' => $employee->fresh(['scanners']),
         ]);
     }
 

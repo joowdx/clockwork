@@ -34,7 +34,7 @@ class TadPhp implements ScannerDriver
         return $data;
     }
 
-    public function getFormattedAttlogs(?string $withScannerId = null): array
+    public function getFormattedAttlogs(string $withScannerId = null): array
     {
         return collect($this->getAttlogs())
             ->map(function ($attlog) use ($withScannerId) {

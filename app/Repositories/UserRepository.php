@@ -23,7 +23,7 @@ class UserRepository extends BaseRepository implements RepositoryInterface
         $builder->orderBy('username');
     }
 
-    public function create(array $payload, ?Closure $create = null): Model
+    public function create(array $payload, Closure $create = null): Model
     {
         return parent::create($payload, fn ($info) => (new CreateNewUser)->create($info));
     }
@@ -45,7 +45,7 @@ class UserRepository extends BaseRepository implements RepositoryInterface
         $user->deleteProfilePhoto();
     }
 
-    public function delete(Model $model, ?Closure $deleter = null): void
+    public function delete(Model $model, Closure $deleter = null): void
     {
         parent::delete($model, fn ($user) => app(DeletesUsers::class)->delete($user));
     }

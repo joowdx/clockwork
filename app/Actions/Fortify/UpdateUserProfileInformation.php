@@ -37,7 +37,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'title' => $input['title'],
             'type' => $input['type'],
             'disabled' => (bool) @$input['disabled'],
-            'offices' => collect(str_getcsv(@$input['offices'] ?? ""))->map(fn ($o) => trim($o))->toArray(),
+            'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
         ])->save();
     }
 

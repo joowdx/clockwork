@@ -10,13 +10,13 @@ enum UserType: int
     case SYSTEM = 2;
     case DEPARTMENT_HEAD = 3;
 
-    public function label (): string
+    public function label(): string
     {
-        return match($this) {
-            static::USER => 'User',
-            static::SYSTEM => 'System',
-            static::DEVELOPER, static::ADMINISTRATOR => 'Administrator',
-            static::DEPARTMENT_HEAD => 'Department Head',
+        return match ($this) {
+            self::USER => 'User',
+            self::SYSTEM => 'System',
+            self::DEVELOPER, self::ADMINISTRATOR => 'Administrator',
+            self::DEPARTMENT_HEAD => 'Department Head',
         };
     }
 }

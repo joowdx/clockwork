@@ -19,7 +19,7 @@ class HomeController extends Controller
         $filter = function ($query) use ($request) {
             if ($request->user()->type === UserType::DEPARTMENT_HEAD) {
                 $query->whereIn('office', $request->user()->offices);
-            } else if ($request->all) {
+            } elseif ($request->all) {
                 if ($request->unenrolled === 'only') {
                     $query->whereDoesntHave('scanners');
                 } elseif (! $request->unenrolled) {
@@ -36,7 +36,7 @@ class HomeController extends Controller
             }
         };
 
-        $employee = fn ($query) =>  $query
+        $employee = fn ($query) => $query
             ->with('scanners')
             ->orderBy('name->last')
             ->orderBy('name->first')

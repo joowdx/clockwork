@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\UserType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
@@ -35,7 +34,7 @@ class TimeLog extends Model
     ];
 
     protected $hidden = [
-        'hidden'
+        'hidden',
     ];
 
     protected $casts = [
@@ -43,7 +42,7 @@ class TimeLog extends Model
     ];
 
     protected $appends = [
-        'type'
+        'type',
     ];
 
     public function employee(): HasOneThrough

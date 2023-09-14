@@ -6,7 +6,6 @@ use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
-use App\Models\Scanner;
 use App\Models\TimeLog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;

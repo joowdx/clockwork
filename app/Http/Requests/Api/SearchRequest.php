@@ -70,7 +70,7 @@ class SearchRequest extends FormRequest
     public function passedValidation(): void
     {
         $this->replace([
-            'date' =>  [
+            'date' => [
                 'from' => $this->from->format('Y-m-d'),
                 'to' => $this->to->format('Y-m-d'),
             ],
@@ -93,7 +93,7 @@ class SearchRequest extends FormRequest
 
                 $model?->load([
                     'timelogs' => fn ($q) => $q->whereBetween('time', [$this->from, $this->to]),
-                    'timelogs.scanner'
+                    'timelogs.scanner',
                 ]);
 
                 $days = collect(CarbonPeriod::create($this->from, $this->to))->mapWithKeys(function ($date) use ($model) {
@@ -109,7 +109,7 @@ class SearchRequest extends FormRequest
                         'days' => @$days->map->ut->map->count->filter()->count(),
                         'tardy' => @$days->map->ut->map->total->sum(),
                         'invalid' => $days->contains(fn ($day, $date) => @$day['ut']->invalid && ! $model->absentForTheDay(Carbon::parse($date))),
-                    ]
+                    ],
                 ];
             }),
         ]);

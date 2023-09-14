@@ -131,7 +131,7 @@ class PrintService
             ->get();
     }
 
-    private function query(?string $query = null): Builder
+    private function query(string $query = null): Builder
     {
         $query = $this->employee->query();
 

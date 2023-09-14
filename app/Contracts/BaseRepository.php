@@ -88,7 +88,7 @@ abstract class BaseRepository implements Repository
         return $this->model()->with($this->with ?? [])->get();
     }
 
-    public function find(array|string $id, ?Closure $finder = null): Model|Collection
+    public function find(array|string $id, Closure $finder = null): Model|Collection
     {
         if ($finder) {
             return $finder($this->model(), $id);
@@ -97,7 +97,7 @@ abstract class BaseRepository implements Repository
         return $this->model()->find($id);
     }
 
-    public function search(string $query, bool $paginate = false, ?int $perPage = null): Collection|LengthAwarePaginator
+    public function search(string $query, bool $paginate = false, int $perPage = null): Collection|LengthAwarePaginator
     {
         $result = $this->model()->search($query);
 
@@ -106,12 +106,12 @@ abstract class BaseRepository implements Repository
         return $result->load($this->with);
     }
 
-    public function paginate(?int $perPage = null): LengthAwarePaginator
+    public function paginate(int $perPage = null): LengthAwarePaginator
     {
         return $this->get(true)->paginate($perPage);
     }
 
-    public function create(array $payload, ?Closure $creator = null): Model
+    public function create(array $payload, Closure $creator = null): Model
     {
         if ($creator) {
             return DB::transaction(fn () => $creator($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
@@ -120,7 +120,7 @@ abstract class BaseRepository implements Repository
         return DB::transaction(fn () => $this->model()->create($this->transformData($payload)));
     }
 
-    public function insert(array $payload, ?Closure $inserter = null): void
+    public function insert(array $payload, Closure $inserter = null): void
     {
         if ($inserter) {
             DB::transaction(fn () => $inserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
@@ -138,7 +138,7 @@ abstract class BaseRepository implements Repository
         });
     }
 
-    public function update(Model $model, array $payload, array $except = [], ?Closure $updater = null): Model
+    public function update(Model $model, array $payload, array $except = [], Closure $updater = null): Model
     {
         if ($updater) {
             return DB::transaction(fn () => $updater($model, $payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
@@ -149,7 +149,7 @@ abstract class BaseRepository implements Repository
         return $model;
     }
 
-    public function upsert(array $payload, array $unique = [], array $update = [], array $except = [], ?Closure $upserter = null): void
+    public function upsert(array $payload, array $unique = [], array $update = [], array $except = [], Closure $upserter = null): void
     {
         if ($upserter) {
             DB::transaction(fn () => $upserter($payload, collect($payload)->map(fn ($payload) => $this->transformData($payload))->toArray()));
@@ -165,7 +165,7 @@ abstract class BaseRepository implements Repository
         });
     }
 
-    public function delete(Model $model, ?Closure $deleter = null): void
+    public function delete(Model $model, Closure $deleter = null): void
     {
         if ($deleter) {
             $deleter($model);
@@ -178,7 +178,7 @@ abstract class BaseRepository implements Repository
         DB::transaction(fn () => $model->delete());
     }
 
-    public function destroy(array $payload, ?Closure $destroyer = null): void
+    public function destroy(array $payload, Closure $destroyer = null): void
     {
         if ($destroyer) {
             DB::transaction(fn () => $destroyer($payload));
@@ -191,7 +191,7 @@ abstract class BaseRepository implements Repository
         DB::transaction(fn () => $this->model()->destroy($payload));
     }
 
-    public function truncate(?Closure $truncator = null): void
+    public function truncate(Closure $truncator = null): void
     {
         if ($truncator) {
             $truncator($this->model());
