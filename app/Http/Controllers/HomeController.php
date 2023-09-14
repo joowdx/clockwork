@@ -51,7 +51,6 @@ class HomeController extends Controller
 
         if ($request->user()->type === UserType::DEPARTMENT_HEAD && $request->expectsJson()) {
             return [
-                'user' => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray(),
                 'employees' => Employee::search($request->search)
                     ->query($employee)
                     ->paginate($request->paginate ?? 25)
