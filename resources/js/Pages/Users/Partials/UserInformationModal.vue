@@ -131,6 +131,7 @@ watch(modelValue, (show) => {
         <div class="w-full mb-5 tabs">
             <button @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': profileForm.hasErrors}">Profile</button>
             <button v-if="forUpdate" @click="switchTab('password')" class="tab tab-bordered" :class="{'tab-active': tab === 'password', 'text-error': passwordForm.hasErrors}">Password</button>
+            <button v-if="forUpdate" @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': passwordForm.hasErrors}">Employee</button>
             <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete', 'text-error': deleteForm.hasErrors}">Delete</button>
         </div>
 
