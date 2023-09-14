@@ -21,14 +21,12 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->tinyInteger('type')->default(0);
-            $table->jsonb('offices')->default([]);
+            $table->jsonb('offices')->default("[]");
             $table->boolean('disabled')->default(false);
-            $table->text('two_factor_secret')->nullable();
-            $table->text('two_factor_recovery_codes')->nullable();
-            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
+            $table->uuid('employee_id')->unique()->nullable();
             $table->timestamps();
         });
     }
