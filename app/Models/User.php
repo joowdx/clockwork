@@ -7,12 +7,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
@@ -24,7 +22,6 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use HasUuids;
     use Notifiable;
-    use TwoFactorAuthenticatable;
     use Searchable;
 
     protected $fillable = [
@@ -40,8 +37,6 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
     protected $casts = [
@@ -52,7 +47,6 @@ class User extends Authenticatable
     protected $appends = [
         'administrator',
         'profile_photo_url',
-        'has_two_factor_authentication',
     ];
 
     public function toSearchableArray(): array
@@ -64,7 +58,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function employeeProfile(): BelongsTo
+    public function employee()
     {
         return $this->belongsTo(Employee::class)
             ->withDefault();
