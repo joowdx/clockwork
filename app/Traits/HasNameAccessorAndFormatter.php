@@ -31,7 +31,7 @@ trait HasNameAccessorAndFormatter
         );
     }
 
-    public function getNameFormatAttribute(): object
+    public function getNameFormatAttribute(): ?object
     {
         if (! $this->exists) {
             return null;
