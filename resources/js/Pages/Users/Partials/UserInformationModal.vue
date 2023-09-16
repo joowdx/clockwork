@@ -32,7 +32,15 @@ const passwordForm = useForm({
     password_confirmation : null,
 })
 
-const twoFaForm = useForm({})
+const employeeForm = useForm({
+    employee_id: null,
+})
+
+const q = ref('')
+
+const r = ref({})
+
+const s = ref({})
 
 const deleteForm = useForm({
     password: null,
@@ -57,9 +65,36 @@ const switchTab = (to) => {
         nextTick(() => document.getElementById('user_name').focus())
     } else if (tab.value === 'password') {
         nextTick(() => document.getElementById('user_password').focus())
+    } else if (tab.value === 'employee') {
+        if (user.value.employee_id) {
+            return
+        }
+
+        nextTick(() => document.getElementById('employee_search').focus())
     } else if (tab.value === 'delete') {
         nextTick(() => document.getElementById('delete_form_password').focus())
     }
+}
+
+const search = async (p = 1) => {
+    nextTick(() => document.getElementById('employee_search').focus())
+
+    if (q.value == "") {
+        r.value = {}
+
+        return
+    }
+
+    const headers = new Headers({"Accept": "application/json"});
+
+    const requestOptions = {
+        method: 'GET',
+        headers: headers,
+        redirect: 'follow'
+    };
+
+    r.value = await fetch(route('home', { search: q.value, page: p, all: true, paginate: 10 }), requestOptions)
+        .then(response => response.json())
 }
 
 const submit = () => {
@@ -95,6 +130,37 @@ const submit = () => {
     }
 }
 
+const link = () => {
+    employeeForm.post(route('user.employee.link', { user: user.value.id }), {
+        preserveScroll: true,
+        preserveState: true,
+        only: ['errors', 'users'],
+        onSuccess: () => {
+            user.value.employee_id = employeeForm.employee_id
+            Object.assign(user.value.employee, s.value)
+
+            employeeForm.reset()
+            employeeForm.clearErrors()
+        }
+    })
+}
+
+const unlink = () => {
+    employeeForm.delete(route('user.employee.unlink', { user: user.value.id }), {
+        preserveScroll: true,
+        preserveState: true,
+        only: ['errors', 'users'],
+        onSuccess: () => {
+            user.value.employee_id = null
+            user.employee = undefined
+
+            nextTick(() => document.getElementById('employee_search').focus())
+        }
+    })
+}
+
+watch(() => employeeForm.employee_id, (id) => s.value = r.value.employees.data.find(e => e.id === id))
+
 watch(modelValue, (show) => {
     if (!show) {
         setTimeout(() => {
@@ -106,6 +172,10 @@ watch(modelValue, (show) => {
             deleteForm.clearErrors()
 
             tab.value = 'profile'
+
+            q.value = ''
+            r.value = {}
+            s.value = {}
         }, 250)
 
         return
@@ -131,7 +201,7 @@ watch(modelValue, (show) => {
         <div class="w-full mb-5 tabs">
             <button @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': profileForm.hasErrors}">Profile</button>
             <button v-if="forUpdate" @click="switchTab('password')" class="tab tab-bordered" :class="{'tab-active': tab === 'password', 'text-error': passwordForm.hasErrors}">Password</button>
-            <button v-if="forUpdate" @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': passwordForm.hasErrors}">Employee</button>
+            <button v-if="forUpdate && user.type !== 2" @click="switchTab('employee')" class="tab tab-bordered" :class="{'tab-active': tab === 'employee', 'text-error': passwordForm.hasErrors}">Employee</button>
             <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete', 'text-error': deleteForm.hasErrors}">Delete</button>
         </div>
 
@@ -214,6 +284,88 @@ watch(modelValue, (show) => {
             </div>
         </template>
 
+        <div v-if="tab === 'employee' && user.type !== 2" class="space-y-2">
+            <div v-if="! user.employee_id" class="form-control">
+                <label for="employee_search" class="px-0 pt-0 label">
+                    <span class="label-text">Search</span>
+
+                    <div v-if="false" class="flex items-center mr-3 align-middle">
+                        <svg class="w-4 h-4 fill-current stroke-current animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                            <path d="M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z"/>
+                        </svg>
+                    </div>
+                </label>
+
+                <div class="w-full mb-3 input-group input-group-sm">
+                    <input
+                        v-model="q"
+                        id="employee_search"
+                        type="search"
+                        class="w-full input input-bordered input-sm"
+                        @keyup.enter.exact="search"
+                    />
+                    <button @click="search" title="Search" class="btn btn-square btn-sm" :disabled="false">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-6 h-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-2 pr-3 overflow-y-scroll max-h-96" v-if="r.employees?.data?.length">
+                    <label
+                        v-for="employee in r.employees?.data" :key="employee.id"
+                        class="flex flex-col w-full cursor-pointer label-text-alt rounded-[--rounded-box]"
+                        :class="{'opacity-50': ! employee.active}"
+                    >
+                        <div class="flex">
+                            <div class="pr-3 form-control">
+                                <input
+                                    v-model="employeeForm.employee_id"
+                                    :id="`employee_profile-${employee.id}`"
+                                    :value="employee.id"
+                                    type="radio"
+                                    class="radio radio-primary radio-sm"
+                                    name="employee_profile"
+                                >
+                            </div>
+
+                            <div>
+                                {{ employee.name_format.full }}
+                                <span class="font-mono text-sm lowercase opacity-70" :class="{'italic': ! employee.office}"> ({{ employee.office ? employee.office : 'no office set' }}) </span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div v-else>
+                <div class="font-mono tracking-tighter text-base-/50">
+                    Currently linked to:
+                </div>
+                <label
+                    class="flex flex-col w-full label-text-alt rounded-[--rounded-box]"
+                >
+                    <div class="flex">
+                        <div>
+                            {{ user.employee.name_format.full }}
+                            <span class="font-mono text-sm lowercase opacity-70" :class="{'italic': ! user.employee.office}"> ({{ user.employee.office ? user.employee.office : 'no office set' }}) </span>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
         <div v-if="tab === 'delete'" class="space-y-2">
             <div class="form-control">
                 <label for="delete_form_password" class="block text-sm font-medium text-base-content"> Password </label>
@@ -227,9 +379,48 @@ watch(modelValue, (show) => {
         </div>
 
         <template #action>
+            <template v-if="tab === 'employee'">
+                <div>
+                    <InputError class="mt-0.5" :message="employeeForm.errors.employee_id" />
+                </div>
+
+                <button
+                    v-if="! user.employee_id"
+                    type="button"
+                    class="btn btn-sm"
+                    @click="search(r.employees?.current_page - 1)"
+                    :disabled="r.employees?.current_page <= 1"
+                    :class="{hidden: r.employees?.data == null}"
+                >
+                    Prev
+                </button>
+
+                <button
+                    v-if="! user.employee_id"
+                    type="button"
+                    class="btn btn-sm"
+                    @click="search(r.employees?.current_page + 1)"
+                    :disabled="r.employees?.current_page >= r.employees?.last_page"
+                    :class="{hidden: r.employees?.data == null}"
+                >
+                    Next
+                </button>
+
+                <button v-if="user.employee_id" type="button" class="btn btn-sm btn-primary" @click="unlink">
+                    Unlink
+                </button>
+
+                <button v-else type="button" class="btn btn-sm btn-primary" @click="link" :disabled="! employeeForm.employee_id">
+                    Link
+                </button>
+            </template>
+
             <template v-if="tab === 'profile' || tab === 'password'">
                 <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
-                    <p v-if="profileForm.recentlySuccessful || passwordForm.recentlySuccessful" class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content">
+                    <p
+                        v-if="profileForm.recentlySuccessful || passwordForm.recentlySuccessful"
+                        class="flex items-center justify-end flex-1 mr-3 text-sm opacity-50 text-base-content"
+                    >
                         Success.
                     </p>
                 </Transition>

@@ -39,6 +39,10 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'disabled' => (bool) @$input['disabled'],
             'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
         ])->save();
+
+        if ($input['type'] == UserType::SYSTEM->value) {
+            $user->employee()->dissociate()->save();
+        }
     }
 
     /**

@@ -16,7 +16,8 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = function ($query) use ($request) {
-            $query->whereNot('id', $request->user()->id)
+            $query->with('employee')
+                ->whereNot('id', $request->user()->id)
                 ->orderBy('username');
         };
 

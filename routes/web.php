@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\AssociateUserEmployeeProfileController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
@@ -39,6 +40,10 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
         Route::resource('timelogs', TimeLogController::class)->only(['store', 'update', 'destroy']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
+        Route::controller(AssociateUserEmployeeProfileController::class)->group(function () {
+            Route::post('users/{user}/employee', [AssociateUserEmployeeProfileController::class, 'link'])->name('user.employee.link');
+            Route::delete('users/{user}/employee', [AssociateUserEmployeeProfileController::class, 'unlink'])->name('user.employee.unlink');
+        });
     });
 
     Route::controller(ScannerController::class)->group(function () {
