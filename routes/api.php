@@ -17,15 +17,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth.basic:,username', 'account.disallowed'])->group(function () {
-    Route::post('device/authenticate', [DeviceAuthenticationController::class, 'authenticate']);
+Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(function () {
+    Route::middleware(['auth.basic:,username', 'account.disallowed'])->group(function () {
+        Route::post('device/authenticate', [DeviceAuthenticationController::class, 'authenticate']);
+    });
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/user', fn (Request $request) => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray());
+        Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
+        Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
+    });
+
+    Route::get('uid', [UidSearchController::class, '__invoke']);
+    Route::match(['get', 'post'], 'search', SearchController::class);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', fn (Request $request) => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray());
-    Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
-    Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
-});
-
-Route::get('uid', [UidSearchController::class, '__invoke']);
-Route::match(['get', 'post'], 'search', SearchController::class);

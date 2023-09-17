@@ -11,8 +11,13 @@ class DeviceAuthenticationController extends Controller
     public function authenticate(Request $request)
     {
         return response([
-            'user' => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray(),
-            'token' => $request->user()->createToken($request->device_name ?? $request->ip() ?? '')->plainTextToken,
+            'user' => $request->user()
+                ->load('employee')
+                ->makeHidden(['type', 'title', 'disabled'])
+                ->toArray(),
+            'token' => $request->user()
+                ->createToken($request->device_name ?? $request->ip() ?? '')
+                ->plainTextToken,
         ], 200);
     }
 
