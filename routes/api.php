@@ -23,7 +23,7 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
     });
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/user', fn (Request $request) => $request->user()->makeHidden(['type', 'title', 'disabled'])->toArray());
+        Route::get('/user', fn (Request $request) => ['user' => $request->user()->load(['employee'])->makeHidden(['type', 'title', 'disabled'])->toArray()]);
         Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
         Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
     });
