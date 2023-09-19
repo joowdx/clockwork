@@ -35,7 +35,7 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
                 'user' => $request->user()->load(['employee'])->makeHidden(['type', 'disabled'])->toArray(),
                 'guard' => collect(array_keys(config('auth.guards')))->first(fn ($g) => auth()->guard($g)->check()),
             ],
-            'uptime' => now()->diff(config('app.start_time')),
+            'uptime' => now()->diffForHumans(config('app.start_time')),
         ]);
     });
 
