@@ -12,12 +12,6 @@ const disabled = user.disabled || user.type === 2
 
 const navigation = [
     {
-        name: 'Dashboard',
-        href: route('dashboard'),
-        active: route().current('dashboard'),
-        show: false,
-    },
-    {
         name: 'Home',
         href: route('home'),
         active: route().current('home'),

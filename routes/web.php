@@ -23,16 +23,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', fn () => redirect()->route('dashboard'));
-
 Route::get('account-disallowed', fn () => inertia('Auth/AccountDisallowed', ['user' => auth()->user()]))
     ->middleware(['auth'])
     ->name('account.disallowed');
 
 Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(function () {
     Route::middleware(['account.disallowed.system'])->group(function () {
-        Route::get('dashboard', fn () => redirect()->route('home'))->name('dashboard');
-        Route::get('home', HomeController::class)->name('home');
+        Route::get('/', HomeController::class)->name('home');
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('employees.timelogs', TimeLogController::class)->only(['index']);
