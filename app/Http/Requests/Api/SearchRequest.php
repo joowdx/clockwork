@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Models\Employee;
-use App\Services\TimeLogService;
+use App\Services\TimelogService;
 use Carbon\CarbonPeriod;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 class SearchRequest extends FormRequest
 {
     public function __construct(
-        private TimeLogService $timelog,
+        private TimelogService $timelog,
     ) {
     }
 

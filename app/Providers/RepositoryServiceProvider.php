@@ -9,15 +9,15 @@ use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
 use App\Models\Employee;
 use App\Models\Scanner;
-use App\Models\TimeLog;
+use App\Models\Timelog;
 use App\Models\User;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
-use App\Repositories\TimeLogRepository;
+use App\Repositories\TimelogRepository;
 use App\Repositories\UserRepository;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
-use App\Services\TimeLogService;
+use App\Services\TimelogService;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -49,9 +49,9 @@ class RepositoryServiceProvider extends ServiceProvider
             ->needs(Repository::class)
             ->give(fn () => app(ScannerRepository::class));
 
-        $this->app->when([TimeLogService::class, TimeLogController::class])
+        $this->app->when([TimelogService::class, TimeLogController::class])
             ->needs(Repository::class)
-            ->give(fn () => app(TimeLogRepository::class));
+            ->give(fn () => app(TimelogRepository::class));
 
         $this->app->bind(UserRepository::class, fn () => new UserRepository(new User));
 
@@ -59,6 +59,6 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->bind(ScannerRepository::class, fn () => new ScannerRepository(new Scanner));
 
-        $this->app->bind(TimeLogRepository::class, fn () => new TimeLogRepository(new TimeLog));
+        $this->app->bind(TimelogRepository::class, fn () => new TimelogRepository(new Timelog));
     }
 }

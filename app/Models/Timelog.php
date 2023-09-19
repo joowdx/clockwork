@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
-class TimeLog extends Model
+class Timelog extends Model
 {
     use HasUuids;
 
@@ -51,10 +51,10 @@ class TimeLog extends Model
 
     public function employee(): HasOneThrough
     {
-        return $this->hasOneThrough(Employee::class, Enrollment::class, 'time_logs.id', 'id', secondLocalKey: 'employee_id')
+        return $this->hasOneThrough(Employee::class, Enrollment::class, 'timelogs.id', 'id', secondLocalKey: 'employee_id')
             ->join($this->getTable(), function ($join) {
-                $join->on('enrollments.uid', 'time_logs.uid');
-                $join->on('enrollments.scanner_id', 'time_logs.scanner_id');
+                $join->on('enrollments.uid', 'timelogs.uid');
+                $join->on('enrollments.scanner_id', 'timelogs.scanner_id');
             });
     }
 

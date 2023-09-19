@@ -60,7 +60,7 @@ class Scanner extends Model
 
     public function timelogs(): HasMany
     {
-        return $this->hasMany(TimeLog::class)
+        return $this->hasMany(Timelog::class)
             ->latest('time')
             ->latest('id');
     }
@@ -71,8 +71,8 @@ class Scanner extends Model
             ->whereNotExists(function ($query) {
                 $query->select('uid')
                     ->from('enrollments')
-                    ->whereColumn('time_logs.scanner_id', 'enrollments.scanner_id')
-                    ->whereColumn('time_logs.uid', 'enrollments.uid');
+                    ->whereColumn('timelogs.scanner_id', 'enrollments.scanner_id')
+                    ->whereColumn('timelogs.uid', 'enrollments.uid');
             });
     }
 

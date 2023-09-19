@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Print;
 
-use App\Services\TimeLogService;
+use App\Services\TimelogService;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Livewire\Component;
@@ -19,10 +19,10 @@ class Dtr extends Component
 
     public function mount()
     {
-        $this->timelogs = app(TimeLogService::class);
+        $this->timelogs = app(TimelogService::class);
     }
 
-    public function render(Request $request, TimeLogService $service)
+    public function render(Request $request, TimelogService $service)
     {
         return view('print.dtr', [
             'time' => $service->time(),

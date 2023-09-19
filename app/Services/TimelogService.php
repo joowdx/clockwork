@@ -5,8 +5,11 @@ namespace App\Services;
 use App\Actions\FileImport\InsertTimeLogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
+use App\Events\TimelogsProcessed;
 use App\Models\Employee;
-use App\Models\TimeLog;
+use App\Models\Scanner;
+use App\Models\Timelog;
+use App\Models\Upload;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
@@ -21,8 +24,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\LazyCollection;
 
-class TimeLogService implements Import
+class TimelogService implements Import
 {
+    private string $error;
+
     public function __construct(
         private Repository $repository,
     ) {
@@ -151,7 +156,7 @@ class TimeLogService implements Import
         };
     }
 
-    public function calculateUndertime(Carbon $date, ?TimeLog $in1, ?TimeLog $out1, ?TimeLog $in2, ?TimeLog $out2, ?bool $excludeWeekends = true): object|int|null
+    public function calculateUndertime(Carbon $date, ?Timelog $in1, ?Timelog $out1, ?Timelog $in2, ?Timelog $out2, ?bool $excludeWeekends = true): object|int|null
     {
         $calculate = function () use ($date, $in1, $out1, $in2, $out2) {
             $week = $date->isWeekday() ? 'weekdays' : 'weekends';

@@ -55,14 +55,14 @@ class Employee extends Model
 
     public function timelogs(): HasManyThrough
     {
-        return $this->hasManyThrough(TimeLog::class, Enrollment::class, 'employees.id', 'uid', secondLocalKey: 'uid')
+        return $this->hasManyThrough(Timelog::class, Enrollment::class, 'employees.id', 'uid', secondLocalKey: 'uid')
             ->join($this->getTable(), function ($join) {
                 $join->on('employees.id', 'enrollments.employee_id');
-                $join->on('enrollments.scanner_id', 'time_logs.scanner_id');
+                $join->on('enrollments.scanner_id', 'timelogs.scanner_id');
             })
             ->where('enrollments.enabled', true)
             ->latest('time')
-            ->latest('time_logs.id');
+            ->latest('timelogs.id');
     }
 
     public function toSearchableArray(): array

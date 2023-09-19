@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('time_logs', function (Blueprint $table) {
+        Schema::create('timelogs', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->unsignedInteger('uid');
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('time_logs');
+        Schema::dropIfExists('timelogs');
     }
 };

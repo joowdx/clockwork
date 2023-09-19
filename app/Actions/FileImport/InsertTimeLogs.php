@@ -2,12 +2,12 @@
 
 namespace App\Actions\FileImport;
 
-use App\Repositories\TimeLogRepository;
+use App\Repositories\TimelogRepository;
 
 class InsertTimeLogs
 {
     public function __construct(
-        private TimeLogRepository $timelog
+        private TimelogRepository $timelog
     ) {
     }
 

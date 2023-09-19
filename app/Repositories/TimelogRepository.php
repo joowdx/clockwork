@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Contracts\BaseRepository;
 
-class TimeLogRepository extends BaseRepository
+class TimelogRepository extends BaseRepository
 {
     protected function transformData(array $payload): array
     {

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ScannerDriver;
 use App\Models\Scanner;
-use App\Services\TimeLogService;
+use App\Services\TimelogService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Validation\ValidationException;
 
@@ -18,7 +18,7 @@ class TimelogsDownloaderController extends Controller
      * @param  \App\Actions\FileImport\InsertTimeLogs  $inserter
      * @return \Illuminate\Http\Response
      */
-    public function download(Scanner $scanner, TimeLogService $service, ?ScannerDriver $driver)
+    public function download(Scanner $scanner, TimelogService $service, ?ScannerDriver $driver)
     {
         if ($driver === null) {
             throw ValidationException::withMessages(['message' => 'Scanner is not configured.']);

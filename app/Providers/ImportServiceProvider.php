@@ -4,11 +4,11 @@ namespace App\Providers;
 
 use App\Contracts\Import;
 use App\Models\Employee;
-use App\Models\TimeLog;
+use App\Models\Timelog;
 use App\Repositories\EmployeeRepository;
-use App\Repositories\TimeLogRepository;
+use App\Repositories\TimelogRepository;
 use App\Services\EmployeeService;
-use App\Services\TimeLogService;
+use App\Services\TimelogService;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -31,7 +31,7 @@ class ImportServiceProvider extends ServiceProvider
                     break;
 
                 case 'timelogs':
-                    return new TimeLogService(new TimeLogRepository(app(TimeLog::class)));
+                    return new TimelogService(new TimelogRepository(app(Timelog::class)));
                     break;
 
                 default:

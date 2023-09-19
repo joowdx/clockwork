@@ -6,8 +6,8 @@ use App\Contracts\Import;
 use App\Enums\UserType;
 use App\Http\Requests\TimeLog\StoreRequest;
 use App\Models\Employee;
-use App\Models\TimeLog;
-use App\Services\TimeLogService;
+use App\Models\Timelog;
+use App\Services\TimelogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -36,7 +36,7 @@ class TimelogController extends Controller
                 'timelogs' => fn ($q) => $q->whereBetween('time', [$from->subDay(), $to->addDay()]),
             ])->first();
 
-            $service = app(TimeLogService::class);
+            $service = app(TimelogService::class);
 
             $employee->timelog = $employee->timelogs
                 ->groupBy(fn ($timelog) => $timelog->time->format('Y-m-d'))
@@ -67,17 +67,17 @@ class TimelogController extends Controller
             return redirect()->back();
         }
 
-        TimeLog::make()->forceFill($request->validated())->save();
+        Timelog::make()->forceFill($request->validated())->save();
     }
 
-    public function update(Request $request, TimeLog $timelog)
+    public function update(Request $request, Timelog $timelog)
     {
         $validated = $request->validate(['hidden' => 'required|boolean']);
 
         $timelog->update($validated);
     }
 
-    public function destroy(TimeLog $timelog)
+    public function destroy(Timelog $timelog)
     {
         $timelog->delete();
     }

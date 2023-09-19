@@ -31,6 +31,6 @@ class Enrollment extends Pivot
 
     public function timelogs(): HasMany
     {
-        return $this->hasMany(TimeLog::class);
+        return $this->hasMany(Timelog::class);
     }
 }

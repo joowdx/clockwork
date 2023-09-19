@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserType;
 use App\Models\Employee;
 use App\Services\ScannerService;
-use App\Services\TimeLogService;
+use App\Services\TimelogService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,7 +14,7 @@ class HomeController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request, ScannerService $scanner, TimeLogService $timelog): mixed
+    public function __invoke(Request $request, ScannerService $scanner, TimelogService $timelog): mixed
     {
         $filter = function ($query) use ($request) {
             if ($request->user()->type === UserType::DEPARTMENT_HEAD) {
