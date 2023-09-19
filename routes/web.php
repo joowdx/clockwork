@@ -8,7 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimeLogController;
-use App\Http\Controllers\TwoFactorAuthenticationController;
+use App\Http\Controllers\TimelogsDownloaderController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +30,7 @@ Route::get('account-disallowed', fn () => inertia('Auth/AccountDisallowed', ['us
 Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(function () {
     Route::middleware(['account.disallowed.system'])->group(function () {
         Route::get('/', HomeController::class)->name('home');
+
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('employees.timelogs', TimeLogController::class)->only(['index']);
@@ -37,13 +38,14 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
         Route::resource('timelogs', TimeLogController::class)->only(['store', 'update', 'destroy']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
+
         Route::controller(AssociateUserEmployeeProfileController::class)->group(function () {
-            Route::post('users/{user}/employee', [AssociateUserEmployeeProfileController::class, 'link'])->name('user.employee.link');
-            Route::delete('users/{user}/employee', [AssociateUserEmployeeProfileController::class, 'unlink'])->name('user.employee.unlink');
+            Route::post('users/{user}/employee', 'link')->name('user.employee.link');
+            Route::delete('users/{user}/employee', 'unlink')->name('user.employee.unlink');
         });
     });
 
-    Route::controller(ScannerController::class)->group(function () {
+    Route::controller(TimelogsDownloaderController::class)->group(function () {
         Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');
     });
 

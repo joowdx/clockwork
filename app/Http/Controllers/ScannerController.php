@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\ScannerDriver;
 use App\Contracts\UserRepository;
 use App\Http\Requests\ScannerRequest;
 use App\Models\Scanner;
 use App\Models\User;
 use App\Services\ScannerService;
-use App\Services\TimeLogService;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class ScannerController extends Controller
 {
@@ -95,28 +91,5 @@ class ScannerController extends Controller
         $this->scanner->destroy($scanner);
 
         return redirect()->route('scanners.index');
-    }
-
-    /**
-     * Download attlogs.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Contrants\ScannerDriver  $scanner
-     * @param  \App\Actions\FileImport\InsertTimeLogs  $inserter
-     * @return \Illuminate\Http\Response
-     */
-    public function download(Scanner $scanner, TimeLogService $service, ?ScannerDriver $driver)
-    {
-        if ($driver === null) {
-            throw ValidationException::withMessages(['message' => 'Scanner is not configured.']);
-        }
-
-        try {
-            $service->insert($driver->getFormattedAttlogs($scanner->id));
-        } catch (ConnectionException  $exception) {
-            throw ValidationException::withMessages(['message' => $exception->getMessage()]);
-        }
-
-        return redirect()->back();
     }
 }
