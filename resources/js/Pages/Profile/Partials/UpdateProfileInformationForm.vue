@@ -95,6 +95,7 @@ export default defineComponent({
                 username: this.user.username,
                 name: this.user.name,
                 title: this.user.title,
+                type: this.user.type,
                 photo: null,
             }),
 
