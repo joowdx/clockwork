@@ -2,7 +2,7 @@
 
 namespace App\Actions\Fortify;
 
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -21,7 +21,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => ['required', 'string', 'unique:users,username,'.$user->id, 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
+            'type' => ['required', Rule::in(collect(UserRole::cases())->map->value)],
             'disabled' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
             'offices' => ['nullable', 'string'],
@@ -40,7 +40,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
         ])->save();
 
-        if ($input['type'] == UserType::SYSTEM->value) {
+        if ($input['type'] == UserRole::SYSTEM->value) {
             $user->employee()->dissociate()->save();
         }
     }

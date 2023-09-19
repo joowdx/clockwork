@@ -6,7 +6,7 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Jetstream\DeleteUser;
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -27,9 +27,9 @@ class UserController extends Controller
                 ->paginate($request->paginate ?? 50)
                 ->withQueryString()
                 ->appends('query', null),
-            'types' => collect(UserType::cases())
+            'types' => collect(UserRole::cases())
                 ->reject(fn ($e) => $e->value === -1)
-                ->mapWithKeys(fn ($e) => [UserType::from($e->value)->label() => $e->value]),
+                ->mapWithKeys(fn ($e) => [UserRole::from($e->value)->label() => $e->value]),
         ]);
     }
 

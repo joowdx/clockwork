@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use App\Models\Employee;
 use App\Services\ScannerService;
 use App\Services\TimelogService;
@@ -17,7 +17,7 @@ class HomeController extends Controller
     public function __invoke(Request $request, ScannerService $scanner, TimelogService $timelog): mixed
     {
         $filter = function ($query) use ($request) {
-            if ($request->user()->type === UserType::DEPARTMENT_HEAD) {
+            if ($request->user()->type === UserRole::DEPARTMENT_HEAD) {
                 $query->whereIn('office', $request->user()->offices);
             } elseif ($request->all) {
                 if ($request->unenrolled === 'only') {
@@ -44,7 +44,7 @@ class HomeController extends Controller
             ->orderBy('name->extension')
             ->where($filter)
             ->whereActive($request->active ?? true)
-            ->when($request->user()->type === UserType::DEPARTMENT_HEAD, fn ($q) => $q->setEagerLoads([]))
+            ->when($request->user()->type === UserRole::DEPARTMENT_HEAD, fn ($q) => $q->setEagerLoads([]))
             ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtolower($request->office)))
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
             ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));

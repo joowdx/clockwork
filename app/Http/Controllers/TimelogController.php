@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Import;
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use App\Http\Requests\TimeLog\StoreRequest;
 use App\Models\Employee;
 use App\Models\Timelog;
@@ -15,7 +15,7 @@ class TimelogController extends Controller
 {
     public function index(Request $request, Employee $employee)
     {
-        if ($request->expectsJson() && $request->user()?->type === UserType::DEPARTMENT_HEAD) {
+        if ($request->expectsJson() && $request->user()?->type === UserRole::DEPARTMENT_HEAD) {
             @['from' => $from, 'to' => $to] = match ($request->period) {
                 'full', '1st', '2nd' => [
                     'from' => ($month = Carbon::parse($request->month))->setDay($request->period == '2nd' ? 16 : 1),
@@ -54,7 +54,7 @@ class TimelogController extends Controller
             ->oldest('id')
             ->get()
             ->when(
-                $request->user()->type === UserType::DEVELOPER,
+                $request->user()->type === UserRole::DEVELOPER,
                 fn ($e) => $e->makeVisible('hidden')
             );
     }

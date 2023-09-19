@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -40,7 +40,7 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'type' => UserType::class,
+        'type' => UserRole::class,
         'offices' => 'array',
     ];
 
@@ -81,14 +81,14 @@ class User extends Authenticatable
     public function administrator(): Attribute
     {
         return new Attribute(
-            fn () => $this->type === UserType::DEVELOPER || $this->type === UserType::ADMINISTRATOR
+            fn () => $this->type === UserRole::DEVELOPER || $this->type === UserRole::ADMINISTRATOR
         );
     }
 
     public function scopeAdmin(Builder $query): void
     {
-        $query->whereType(UserType::ADMINISTRATOR)
-            ->orWhereType(UserType::DEVELOPER);
+        $query->whereType(UserRole::ADMINISTRATOR)
+            ->orWhereType(UserRole::DEVELOPER);
     }
 
     public function getProfilePhotoUrlAttribute()

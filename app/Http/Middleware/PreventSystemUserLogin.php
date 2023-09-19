@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +16,7 @@ class PreventSystemUserLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->type === UserType::SYSTEM) {
+        if (auth()->check() && auth()->user()->type === UserRole::SYSTEM) {
             return redirect()->route('account.disallowed');
         }
 

@@ -2,7 +2,7 @@
 
 namespace App\Actions\Fortify;
 
-use App\Enums\UserType;
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -26,7 +26,7 @@ class CreateNewUser implements CreatesNewUsers
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
             'title' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(collect(UserType::cases())->map->value)],
+            'type' => ['required', Rule::in(collect(UserRole::cases())->map->value)],
             'disabled' => ['nullable', 'boolean'],
             'offices' => ['nullable', 'string'],
         ])->validate();

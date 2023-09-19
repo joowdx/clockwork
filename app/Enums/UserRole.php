@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum UserType: int
+enum UserRole: int
 {
     case DEVELOPER = -1;
     case USER = 0;
