@@ -11,7 +11,7 @@ use App\Services\TimeLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-class TimeLogController extends Controller
+class TimelogController extends Controller
 {
     public function index(Request $request, Employee $employee)
     {

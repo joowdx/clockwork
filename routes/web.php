@@ -7,7 +7,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ScannerController;
-use App\Http\Controllers\TimeLogController;
+use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\TimelogsDownloaderController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -33,9 +33,9 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
 
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('employees.timelogs', TimeLogController::class)->only(['index']);
+        Route::resource('employees.timelogs', TimelogController::class)->only(['index']);
         Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
-        Route::resource('timelogs', TimeLogController::class)->only(['store', 'update', 'destroy']);
+        Route::resource('timelogs', TimelogController::class)->only(['store', 'update', 'destroy']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
 
