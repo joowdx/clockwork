@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum TravelType: int
+enum TravelCategory: int
 {
     case LEAVE = 0;
     case MEMORANDUM_ORDER = 1;

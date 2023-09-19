@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Enums\TravelCategory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Travel extends Model
 {
     use HasUuids;
 
     protected $casts = [
-        'type' => TravelType::class,
+        'category' => TravelCategory::class,
         'dates' => 'array',
         'data' => 'object',
     ];
@@ -19,11 +21,11 @@ class Travel extends Model
         'control_number',
         'dates',
         'official',
-        'type',
+        'category',
         'data',
     ];
 
-    public function employees()
+    public function employees(): BelongsToMany
     {
         return $this->belongsToMany(Employee::class, 'trips')
             ->using(Trip::class);

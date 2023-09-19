@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('travels', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('control_number');
-            $table->smallInteger('type');
+            $table->smallInteger('category');
             $table->jsonb('dates')->default('[]');
             $table->string('destination');
             $table->string('position');
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->jsonb('data')->nullable();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['control_number', 'type', 'user_id']);
+            $table->unique(['control_number', 'category', 'user_id']);
         });
     }
 
