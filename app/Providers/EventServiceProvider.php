@@ -20,7 +20,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         TimelogsProcessed::class => [
             AddUploadHistory::class,
-        ]
+        ],
     ];
 
     /**

@@ -17,8 +17,8 @@ use Laravel\Scout\Searchable;
 class Employee extends Model
 {
     use HasFactory;
-    use HasUuids;
     use HasNameAccessorAndFormatter;
+    use HasUuids;
     use Searchable;
 
     protected $fillable = [

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('control_number');
             $table->smallInteger('type');
-            $table->jsonb('dates')->default("[]");
+            $table->jsonb('dates')->default('[]');
             $table->string('destination');
             $table->string('position');
             $table->text('purpose');

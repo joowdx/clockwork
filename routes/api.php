@@ -42,4 +42,3 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
     Route::get('uid', [UidSearchController::class, '__invoke']);
     Route::match(['get', 'post'], 'search', SearchController::class);
 });
-

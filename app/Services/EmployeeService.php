@@ -28,6 +28,8 @@ class EmployeeService implements Import
 {
     use ParsesEmployeeImport;
 
+    private string $error;
+
     private Request $request;
 
     public function __construct(
@@ -84,12 +86,10 @@ class EmployeeService implements Import
                         app(DeleteDuplicateEmployeeEnrollment::class)();
 
                         $this->repository->all()->searchable();
-                    })
-                    );
+                    }));
 
                 $this->repository->model()->unenrolled()->delete();
-            })
-            );
+            }));
     }
 
     public function get(?bool $unenrolled = false)

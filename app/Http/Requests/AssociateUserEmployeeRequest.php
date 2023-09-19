@@ -21,7 +21,7 @@ class AssociateUserEmployeeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             'POST' => ['employee_id' => ['required', 'uuid', 'exists:employees,id']],
             default => [],
         };

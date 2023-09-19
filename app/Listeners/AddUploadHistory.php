@@ -39,7 +39,7 @@ class AddUploadHistory
             'ip' => request()->ip(),
             'user_name' => $user?->username ?? '',
             'scanner_name' => $scanner->name,
-            'type' => match(get_class($event)) {
+            'type' => match (get_class($event)) {
                 TimelogsProcessed::class => Timelog::class,
                 EmployeesImported::class => Employee::class,
                 default => null,
@@ -52,15 +52,15 @@ class AddUploadHistory
                     'earliest' => '',
                     'latest' => '',
                     'rows' => '',
-                ]
+                ],
             ]);
-        } else if ($event instanceof EmployeesImported) {
+        } elseif ($event instanceof EmployeesImported) {
             $history->forceFill([
                 'data' => [
                     'earliest' => '',
                     'latest' => '',
                     'rows' => '',
-                ]
+                ],
             ]);
         }
 

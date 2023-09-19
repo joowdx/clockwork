@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('user_name');
             $table->string('scanner_name');
             $table->dateTime('time');
-            $table->jsonb('data')->default("{}");
+            $table->jsonb('data')->default('{}');
             $table->string('type')->nullable();
             $table->foreignIdFor(Scanner::class)
                 ->nullable()

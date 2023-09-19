@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Employee;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +20,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->tinyInteger('type')->default(0);
-            $table->jsonb('offices')->default("[]");
+            $table->jsonb('offices')->default('[]');
             $table->boolean('disabled')->default(false);
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
