@@ -3,11 +3,8 @@
 namespace App\Providers;
 
 use App\Events\EmployeesImported;
-use App\Events\TimeLogsProcessed;
-use App\Listeners\BackUpAndSync;
-use App\Listeners\MarkActiveAndInactiveEmployees;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use App\Events\TimelogsProcessed;
+use App\Listeners\AddUploadHistory;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -18,9 +15,12 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
+        EmployeesImported::class => [
+            AddUploadHistory::class,
         ],
+        TimelogsProcessed::class => [
+            AddUploadHistory::class,
+        ]
     ];
 
     /**
@@ -45,15 +45,6 @@ class EventServiceProvider extends ServiceProvider
 
     public function listens()
     {
-        return [
-            ...$this->listen,
-            EmployeesImported::class => [
-                BackUpAndSync::class,
-            ],
-            TimeLogsProcessed::class => [
-                MarkActiveAndInactiveEmployees::class,
-                // BackUpAndSync::class,
-            ],
-        ];
+        return $this->listen;
     }
 }

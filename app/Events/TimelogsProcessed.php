@@ -3,12 +3,13 @@
 namespace App\Events;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 
-class TimeLogsProcessed
+class TimelogsProcessed
 {
-    use SerializesModels;
+    use Dispatchable;
 
     /**
      * Create a new event instance.
@@ -18,7 +19,7 @@ class TimeLogsProcessed
      */
     public function __construct(
         public Authenticatable $user,
-        public UploadedFile $file,
+        public Collection|LazyCollection $data,
     ) {
     }
 }
