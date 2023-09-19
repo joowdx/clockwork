@@ -150,11 +150,3 @@ class Timelog extends Model
             && $this->user_id === $timeLog->user_id;
     }
 }
-
-enum TimeLogStates
-{
-    case IN1;
-    case IN2;
-    case OUT1;
-    case OUT2;
-}
