@@ -23,9 +23,20 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
     });
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/user', fn (Request $request) => ['user' => $request->user()->load(['employee'])->makeHidden(['type', 'disabled'])->toArray()]);
         Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
         Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
+        Route::get('/status', fn (Request $request) => [
+            'app' => [
+                'name' => config('app.name'),
+                'time' => now(),
+                'version' => app()->version(),
+            ],
+            'auth' => [
+                'user' => $request->user()->load(['employee'])->makeHidden(['type', 'disabled'])->toArray(),
+                'guard' => collect(array_keys(config('auth.guards')))->first(fn ($g) => auth()->guard($g)->check()),
+            ],
+            'uptime' => now()->diff(config('app.start_time')),
+        ]);
     });
 
     Route::get('uid', [UidSearchController::class, '__invoke']);

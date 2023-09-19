@@ -30,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        config(['app.start_time' => now()]);
+
         Telescope::night();
 
         $this->app->bind(ScannerDriver::class, function ($app) {
