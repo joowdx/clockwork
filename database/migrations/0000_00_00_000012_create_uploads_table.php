@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('uploads', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->dateTime('time');
             $table->jsonb('data')->default('{}');
             $table->string('type')->nullable();

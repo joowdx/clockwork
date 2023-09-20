@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('travels', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->string('control_number');
             $table->smallInteger('category');
             $table->jsonb('dates')->default('[]');
