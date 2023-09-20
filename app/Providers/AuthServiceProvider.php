@@ -22,6 +22,16 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
+    public function register()
+    {
+        Sanctum::ignoreMigrations();
+    }
+
+    /**
+     * Bootstrap any authentication / authorization services.
+     *
+     * @return void
+     */
     public function boot()
     {
         $this->registerPolicies();
