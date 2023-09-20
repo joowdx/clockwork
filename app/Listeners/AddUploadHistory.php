@@ -57,6 +57,7 @@ class AddUploadHistory
 
             $history->forceFill([
                 'scanner_name' => $scanner->name,
+                'scanner_id' => $scanner->id,
                 'data' => [
                     'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
                     'latest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
