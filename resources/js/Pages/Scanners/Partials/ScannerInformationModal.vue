@@ -265,7 +265,7 @@ watch(modelValue, (show) => {
 
                 <div class="form-control">
                     <label for="scanner_attlog_file" class="block text-sm font-medium text-base-content"> Attlog File </label>
-                    <input @keyup.enter="submit" v-model="informationForm.attlog_file" id="scanner_attlog_file" type="text" class="mt-1 uppercase input-sm input input-bordered" :disabled="! hasPrivilege" />
+                    <input @keyup.enter="submit" v-model="informationForm.attlog_file" id="scanner_attlog_file" type="text" class="mt-1 input-sm input input-bordered" :disabled="! hasPrivilege" />
                     <InputError class="mt-0.5" :message="informationForm.errors.attlog_file" />
                 </div>
 
