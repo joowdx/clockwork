@@ -61,14 +61,14 @@ class TimelogService implements Import
         return $this->error;
     }
 
-    public function parse(UploadedFile $file): void
+    public function parse(UploadedFile $file): mixed
     {
-        $this->insert(File::lines($file), true);
+        return $this->insert(File::lines($file), true);
     }
 
-    public function insert(Collection|LazyCollection|array $data, bool $fromFile = false)
+    public function insert(Collection|LazyCollection|array $data, bool $fromFile = false): mixed
     {
-        app(Pipeline::class)
+        return app(Pipeline::class)
             ->send(is_array($data) ? collect($data) : $data)
             ->through(
                 $fromFile ? [
@@ -83,7 +83,7 @@ class TimelogService implements Import
                 ]
             )->then(fn ($d) => $d->each(function ($chunked) {
                 app(InsertTimelogs::class)($chunked->toArray());
-            }));
+            }))->flatten(1);
     }
 
     public function logsForTheDay(Employee $employee, Carbon $date): array

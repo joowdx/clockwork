@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Import;
 use App\Enums\UserRole;
+use App\Events\TimelogsProcessed;
 use App\Http\Requests\TimeLog\StoreRequest;
 use App\Models\Employee;
 use App\Models\Timelog;
@@ -62,7 +63,9 @@ class TimelogController extends Controller
     public function store(StoreRequest $request, Import $import)
     {
         if ($request->has('file')) {
-            $import->parse($request->file);
+            $data = $import->parse($request->file);
+
+            TimelogsProcessed::dispatch($data);
 
             return redirect()->back();
         }

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\ScannerDriver;
+use App\Events\TimelogsProcessed;
 use App\Models\Scanner;
 use App\Services\TimelogService;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class TimelogsDownloaderController extends Controller
@@ -13,7 +15,6 @@ class TimelogsDownloaderController extends Controller
     /**
      * Download attlogs.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Contrants\ScannerDriver  $scanner
      * @param  \App\Actions\FileImport\InsertTimelogs  $inserter
      * @return \Illuminate\Http\Response
@@ -25,7 +26,11 @@ class TimelogsDownloaderController extends Controller
         }
 
         try {
-            $service->insert($driver->getFormattedAttlogs($scanner->id));
+            $data = $driver->getFormattedAttlogs($scanner->id);
+
+            $service->insert($data);
+
+            TimelogsProcessed::dispatch($data);
         } catch (ConnectionException  $exception) {
             throw ValidationException::withMessages(['message' => $exception->getMessage()]);
         }

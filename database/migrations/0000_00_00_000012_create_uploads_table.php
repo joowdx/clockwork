@@ -15,12 +15,12 @@ return new class extends Migration
     {
         Schema::create('uploads', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('ip_address');
-            $table->string('user_name');
-            $table->string('scanner_name');
             $table->dateTime('time');
             $table->jsonb('data')->default('{}');
             $table->string('type')->nullable();
+            $table->string('ip_address');
+            $table->string('user_name');
+            $table->string('scanner_name')->nullable();
             $table->foreignIdFor(Scanner::class)
                 ->nullable()
                 ->constrained()

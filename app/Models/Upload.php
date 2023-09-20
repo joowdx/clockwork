@@ -11,6 +11,7 @@ class Upload extends Model
     use HasUuids;
 
     protected $casts = [
+        'data' => 'object',
         'time' => 'datetime',
         'earliest' => 'datetime',
         'latest' => 'datetime',

@@ -8,15 +8,19 @@ use App\Models\Employee;
 use App\Models\Scanner;
 use App\Models\Timelog;
 use App\Models\Upload;
+use App\Pipes\SortTimelogs;
+use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 
 class AddUploadHistory
 {
     /**
      * Create the event listener.
      */
-    public function __construct()
-    {
-        //
+    public function __construct(
+        private Request $request
+    ) {
+
     }
 
     /**
@@ -28,17 +32,14 @@ class AddUploadHistory
             return;
         }
 
-        $user = $event->user;
-
-        $scanner = Scanner::find(request()->scanner_id);
+        $user = $this->request->user();
 
         $history = Upload::make();
 
         $history->forceFill([
             'time' => now(),
-            'ip' => request()->ip(),
+            'ip_address' => request()->ip(),
             'user_name' => $user?->username ?? '',
-            'scanner_name' => $scanner->name,
             'type' => match (get_class($event)) {
                 TimelogsProcessed::class => Timelog::class,
                 EmployeesImported::class => Employee::class,
@@ -47,19 +48,27 @@ class AddUploadHistory
         ]);
 
         if ($event instanceof TimelogsProcessed) {
+            $scanner = Scanner::find($this->request->scanner);
+
+            $sorted = app(Pipeline::class)
+                ->send($event->data)
+                ->through([SortTimelogs::class])
+                ->thenReturn();
+
             $history->forceFill([
+                'scanner_name' => $scanner->name,
                 'data' => [
-                    'earliest' => '',
-                    'latest' => '',
-                    'rows' => '',
+                    'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
+                    'latest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
+                    'rows' => $sorted->count(),
                 ],
             ]);
         } elseif ($event instanceof EmployeesImported) {
             $history->forceFill([
                 'data' => [
-                    'earliest' => '',
-                    'latest' => '',
-                    'rows' => '',
+                    'employees' => $event->data->count(),
+                    'enrollments' => $event->data->flatMap(fn ($e) => $e['scanners'])->count(),
+                    'offices' => $event->data->map->employee->countBy('office')->toArray(),
                 ],
             ]);
         }

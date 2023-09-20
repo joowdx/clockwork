@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\Import;
 use App\Contracts\Repository;
+use App\Events\EmployeesImported;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
 use App\Models\Employee;
@@ -30,7 +31,9 @@ class EmployeeController extends Controller
     {
         switch ($request->has('file')) {
             case true:
-                $import->parse($request->file);
+                $data = $import->parse($request->file);
+
+                EmployeesImported::dispatch($data);
 
                 return redirect()->back();
             default:

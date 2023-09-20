@@ -6,7 +6,7 @@ use Illuminate\Http\UploadedFile;
 
 interface Import
 {
-    public function parse(UploadedFile $file): void;
+    public function parse(UploadedFile $file): mixed;
 
     public function validate(UploadedFile $file): bool;
 

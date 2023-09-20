@@ -62,9 +62,9 @@ class EmployeeService implements Import
         return $this->error;
     }
 
-    public function parse(UploadedFile $file): void
+    public function parse(UploadedFile $file): mixed
     {
-        app(Pipeline::class)
+        return app(Pipeline::class)
             ->send(File::lines($file))
             ->through([
                 Sanitize::class,
@@ -89,7 +89,7 @@ class EmployeeService implements Import
                     }));
 
                 $this->repository->model()->unenrolled()->delete();
-            }));
+            }))->flatten(1);
     }
 
     public function get(?bool $unenrolled = false)
