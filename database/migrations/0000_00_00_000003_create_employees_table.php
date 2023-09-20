@@ -24,14 +24,6 @@ return new class extends Migration
             $table->jsonb('groups')->nullable();
             $table->timestamps();
         });
-
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignIdFor(Employee::class)
-                ->change()
-                ->constrained()
-                ->cascadeOnUpdate()
-                ->nullOnDelete();
-        });
     }
 
     /**
@@ -41,10 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('employee_id');
-        });
-
         Schema::dropIfExists('employees');
     }
 };
