@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('uploads', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->uuid('id')->primary();
             $table->string('ip_address');
             $table->string('user_name');
             $table->string('scanner_name');
