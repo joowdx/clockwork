@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Scout\Searchable;
 
 class Scanner extends Model
@@ -93,5 +94,15 @@ class Scanner extends Model
     public function getAttlogs(): array
     {
         return $this->getDriverInstance()?->getAttlogs();
+    }
+
+    public function uploads(): HasMany
+    {
+        return $this->hasMany(Upload::class);
+    }
+
+    public function lastUpload(): HasOne
+    {
+        return $this->hasOne(Upload::class)->latestOfMany('time');
     }
 }
