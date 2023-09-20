@@ -26,9 +26,9 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
     Route::middleware('auth:sanctum')->group(function () {
         Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
         Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
-        Route::get('/status', StatusController::class);
+        Route::get('status', StatusController::class);
     });
 
-    Route::get('uid', [UidSearchController::class, '__invoke']);
+    Route::get('uid', UidSearchController::class);
     Route::match(['get', 'post'], 'search', SearchController::class);
 });
