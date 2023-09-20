@@ -32,8 +32,6 @@ class AppServiceProvider extends ServiceProvider
     {
         config(['app.start_time' => now()]);
 
-        Telescope::night();
-
         $this->app->bind(ScannerDriver::class, function ($app) {
             $scanner = $app->request->route('scanner') ?? $app->request->scanner ?? $app->request->scanner_id;
 
