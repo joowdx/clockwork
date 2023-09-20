@@ -215,7 +215,7 @@ watch(modelValue, (show) => {
 
                 <div class="form-control">
                     <label for="user_title" class="block text-sm font-medium text-base-content"> Title </label>
-                    <input @keyup.enter="submit" v-model="profileForm.title" id="user_title" type="text" class="mt-1 uppercase input-sm input input-bordered" />
+                    <input @keyup.enter="submit" v-model="profileForm.title" id="user_title" type="text" class="mt-1 input-sm input input-bordered" />
                     <InputError class="mt-0.5" :message="profileForm.errors.title" />
                 </div>
 

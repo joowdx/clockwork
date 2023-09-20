@@ -58,7 +58,7 @@
             <!-- Title -->
             <div class="col-span-6 form-control sm:col-span-4">
                 <label for="title" class="block text-sm font-medium text-base-content"> Title </label>
-                <input v-model="form.title" id="title" type="text" class="mt-1 uppercase input input-bordered" />
+                <input v-model="form.title" id="title" type="text" class="mt-1 input input-bordered" />
                 <InputError class="mt-0.5" :message="form.errors.title" />
             </div>
         </template>
