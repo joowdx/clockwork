@@ -71,13 +71,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function hasTwoFactorAuthentication(): Attribute
-    {
-        return new Attribute(
-            fn () => $this->hasEnabledTwoFactorAuthentication()
-        );
-    }
-
     public function administrator(): Attribute
     {
         return new Attribute(
