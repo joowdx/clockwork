@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\DeviceAuthenticationController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\UidSearchController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*

@@ -13,7 +13,7 @@ enum TimelogState: int
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::IN => 'In',
             self::OUT => 'Out',
             self::OVERTIME_IN => 'Overtime In',

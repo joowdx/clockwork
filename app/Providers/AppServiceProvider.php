@@ -7,7 +7,6 @@ use App\Drivers\TadPhp;
 use App\Drivers\ZakZk;
 use App\Models\Scanner;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Telescope\Telescope;
 
 class AppServiceProvider extends ServiceProvider
 {
