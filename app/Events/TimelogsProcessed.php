@@ -17,7 +17,7 @@ class TimelogsProcessed
      * @return void
      */
     public function __construct(
-        public Collection|LazyCollection $data,
+        public Collection|LazyCollection|array $data,
     ) {
     }
 }

@@ -48,10 +48,10 @@ class AddUploadHistory
         ]);
 
         if ($event instanceof TimelogsProcessed) {
-            $scanner = Scanner::find($this->request->scanner);
+            $scanner = $this->request->hasFile('file') ? Scanner::find($this->request->scanner) : $this->request->route('scanner');
 
             $sorted = app(Pipeline::class)
-                ->send($event->data)
+                ->send(is_array($event->data) ? collect($event->data) : $event->data)
                 ->through([SortTimelogs::class])
                 ->thenReturn();
 
@@ -61,6 +61,7 @@ class AddUploadHistory
                     'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
                     'latest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
                     'rows' => $sorted->count(),
+                    'via' => $this->request->hasFile('file') ? 'File Upload' : 'Download',
                 ],
             ]);
         } elseif ($event instanceof EmployeesImported) {

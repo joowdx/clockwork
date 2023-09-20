@@ -5,6 +5,7 @@ namespace App\Drivers;
 use App\Contracts\ScannerDriver;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
 class ZakZk implements ScannerDriver
@@ -109,7 +110,7 @@ class ZakZk implements ScannerDriver
                     return [
                         'scanner_id' => $withScannerId,
                         'uid' => $attlog['uid'],
-                        'time' => $attlog['time'],
+                        'time' => Carbon::parse($attlog['time']),
                         'state' => $attlog['state'],
                     ];
                 }
