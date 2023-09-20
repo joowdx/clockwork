@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Actions\FileImport\InsertTimeLogs;
+use App\Actions\FileImport\InsertTimelogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
@@ -10,10 +10,10 @@ use App\Models\Timelog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
 use App\Pipes\Chunk;
-use App\Pipes\RemoveDuplicateTimeLog;
+use App\Pipes\RemoveDuplicateTimelog;
 use App\Pipes\Sanitize;
 use App\Pipes\SplitAttlogString;
-use App\Pipes\TransformTimeLogData;
+use App\Pipes\TransformTimelogData;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
@@ -74,15 +74,15 @@ class TimelogService implements Import
                 $fromFile ? [
                     Sanitize::class,
                     SplitAttlogString::class,
-                    TransformTimeLogData::class,
-                    RemoveDuplicateTimeLog::class,
+                    TransformTimelogData::class,
+                    RemoveDuplicateTimelog::class,
                     Chunk::class,
                 ] : [
-                    RemoveDuplicateTimeLog::class,
+                    RemoveDuplicateTimelog::class,
                     Chunk::class,
                 ]
             )->then(fn ($d) => $d->each(function ($chunked) {
-                app(InsertTimeLogs::class)($chunked->toArray());
+                app(InsertTimelogs::class)($chunked->toArray());
             }));
     }
 

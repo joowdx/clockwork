@@ -15,7 +15,7 @@ class TimelogsDownloaderController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Contrants\ScannerDriver  $scanner
-     * @param  \App\Actions\FileImport\InsertTimeLogs  $inserter
+     * @param  \App\Actions\FileImport\InsertTimelogs  $inserter
      * @return \Illuminate\Http\Response
      */
     public function download(Scanner $scanner, TimelogService $service, ?ScannerDriver $driver)

@@ -4,7 +4,7 @@ namespace App\Actions\FileImport;
 
 use App\Repositories\TimelogRepository;
 
-class InsertTimeLogs
+class InsertTimelogs
 {
     public function __construct(
         private TimelogRepository $timelog

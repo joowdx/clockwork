@@ -5,7 +5,7 @@ namespace App\Pipes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-class TransformTimeLogData
+class TransformTimelogData
 {
     public function __construct(
         private Request $request,

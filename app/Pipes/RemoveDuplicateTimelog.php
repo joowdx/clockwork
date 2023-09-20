@@ -4,7 +4,7 @@ namespace App\Pipes;
 
 use Illuminate\Http\Request;
 
-class RemoveDuplicateTimeLog
+class RemoveDuplicateTimelog
 {
     public function __construct(
         private Request $request,
