@@ -1,10 +1,11 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
-import { usePage } from '@inertiajs/vue3'
+import { useForm, usePage } from '@inertiajs/vue3'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
+import InputError from '@/Components/InputError.vue'
 
 dayjs.extend(advancedFormat)
 
@@ -28,9 +29,15 @@ const insert = ref({
     state: null,
 })
 
+const insertForm = useForm({
+    time: null,
+    scanner_id: null,
+    state: null,
+})
+
 const allowed = computed(() => usePage().props.user.type === -1)
 
-const invalid = computed(() => ! insert.value.time || ! date.value || insert.value.scanner_id === null || insert.value.state === null)
+const invalid = computed(() => ! insertForm.time || ! date.value || insertForm.scanner_id === null || insertForm.state === null)
 
 const toggleHidden = async (timelog) => {
     loading.value = true
@@ -44,21 +51,20 @@ const toggleHidden = async (timelog) => {
 }
 
 const insertTimelog = async () => {
-    loading.value = true
-
-    await axios.post(route('timelogs.store'), {
-        ...insert.value,
-        time: `${date.value} ${insert.value.time}`,
-        uid: employee.value.scanners.find(e => e.id === insert.value.scanner_id).pivot.uid,
-    }).finally(() => {
-        insert.value.time = null
-        insert.value.scanner_id = null
-        insert.value.state = null
-
-        loading.value = false
-
-        loadTimelogs(date.value)
-    })
+    insertForm
+        .transform(data => ({
+            ...data, time: `${date.value} ${data.time}`, uid: employee.value.scanners.find(e => e.id === data.scanner_id).pivot.uid,
+        }))
+        .post(route('timelogs.store'), {
+            only: ['errors'],
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                insertForm.reset()
+                insertForm.clearErrors()
+                loadTimelogs(date.value)
+            }
+        })
 }
 
 const deleteTimelog = async (timelog) => {
@@ -147,12 +153,14 @@ onMounted(() => {
                         </label>
                         <div class="w-full">
                             <input
-                                v-model="insert.time"
+                                v-model="insertForm.time"
                                 id="timelogs_date_insert"
                                 type="time"
+                                step="1"
                                 class="w-full input input-bordered input-sm"
                             />
                         </div>
+                        <InputError class="mt-0.5" :message="insertForm.errors.time" />
                     </div>
 
                     <div class="form-control">
@@ -160,12 +168,13 @@ onMounted(() => {
                             <span class="label-text">State</span>
                         </label>
                         <div class="w-full">
-                            <select id="timelogs_state_query" v-model="insert.state" class="w-full select select-sm select-bordered">
+                            <select id="timelogs_state_query" v-model="insertForm.state" class="w-full select select-sm select-bordered">
                                 <option :value="null"></option>
                                 <option :value="0">In</option>
                                 <option :value="1">Out</option>
                             </select>
                         </div>
+                        <InputError class="mt-0.5" :message="insertForm.errors.state" />
                     </div>
                 </template>
             </div>
@@ -176,11 +185,12 @@ onMounted(() => {
                         <span class="label-text">Scanner</span>
                     </label>
                     <div class="w-full">
-                        <select id="timelogs_scanner_insert" v-model="insert.scanner_id" class="w-full select select-sm select-bordered">
+                        <select id="timelogs_scanner_insert" v-model="insertForm.scanner_id" class="w-full select select-sm select-bordered">
                             <option :value="null"></option>
                             <option v-for="scanner in employee?.scanners" :value="scanner.id">{{ scanner.name }}</option>
                         </select>
                     </div>
+                    <InputError class="mt-0.5" :message="insertForm.errors.scanner_id" />
                 </div>
 
                 <button
@@ -203,7 +213,7 @@ onMounted(() => {
                 <div class="bg-base-200 pb-1 rounded-[--rounded-box]">
                     <div class="flex justify-between px-2 py-1 font-mono text-sm tracking-tighter">
                         Count: {{ timelogs.length }}
-                        <span v-if="loading" class="flex items-center align-middle">
+                        <span v-if="loading || insertForm.processing" class="flex items-center align-middle">
                             <svg class="w-4 h-4 fill-current stroke-current animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                                 <path d="M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z"/>
                             </svg>

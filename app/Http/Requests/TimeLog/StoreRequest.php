@@ -4,9 +4,7 @@ namespace App\Http\Requests\TimeLog;
 
 use App\Contracts\Import;
 use App\Models\Timelog;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
@@ -21,6 +19,7 @@ class StoreRequest extends FormRequest
         return [
             'scanner.required' => 'Please select which scanner to import device logs.',
             'file.required' => 'Please choose a file.',
+            'time.unique' => 'Select another time.',
         ];
     }
 
@@ -45,8 +44,18 @@ class StoreRequest extends FormRequest
         return [
             'scanner_id' => 'required|exists:scanners,id',
             'uid' => 'required|alpha_num',
-            'time' => 'required|date',
-            'state' => ['required', Rule::in(array_merge(Timelog::IN, Timelog::OUT))],
+            'time' => [
+                'required',
+                'date',
+                Rule::unique('timelogs')
+                    ->where('scanner_id', $this->scanner_id)
+                    ->where('uid', $this->uid)
+                    ->where('state', $this->state),
+            ],
+            'state' => [
+                'required',
+                Rule::in(array_merge(Timelog::IN, Timelog::OUT)),
+            ],
         ];
     }
 

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('state', 20);
             $table->boolean('hidden')->default(false);
             $table->timestamps();
-            $table->unique(['scanner_id', 'time', 'state']);
+            $table->unique(['uid', 'scanner_id', 'time', 'state']);
         });
     }
 
