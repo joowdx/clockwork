@@ -64,7 +64,7 @@ class AddUploadHistory implements ShouldQueue
                 'scanner_id' => $scanner->id,
                 'data' => [
                     'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
-                    'latest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
+                    'latest' => $sorted->last()['time']->format('Y-m-d H:i:s'),
                     'rows' => $sorted->count(),
                     'via' => $this->request->hasFile('file') ? 'File Upload' : 'Download',
                 ],
