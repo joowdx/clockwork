@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Assignment;
-use App\Models\Model;
 use App\Models\Scanner;
 use App\Models\User;
 

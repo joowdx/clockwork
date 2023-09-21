@@ -7,7 +7,6 @@ use App\Events\TimelogsProcessed;
 use App\Models\Scanner;
 use App\Services\TimelogService;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class TimelogsDownloaderController extends Controller

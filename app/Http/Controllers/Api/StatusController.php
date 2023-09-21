@@ -14,9 +14,9 @@ class StatusController extends Controller
      */
     public function __invoke(Request $request)
     {
-        $user=  $request->user();
+        $user = $request->user();
 
-        $scanners = match($user->type) {
+        $scanners = match ($user->type) {
             UserRole::ADMINISTRATOR, UserRole::DEVELOPER, UserRole::USER => $user->scanners,
             UserRole::DEPARTMENT_HEAD => Scanner::with(['lastUpload', 'latestTimelog'])->whereHas('employees', fn ($q) => $q->whereIn('office', $user->offices))->get(),
             default => [],
