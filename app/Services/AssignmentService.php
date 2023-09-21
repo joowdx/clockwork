@@ -31,7 +31,7 @@ class AssignmentService
         $assignment->delete();
     }
 
-    protected function relationship(Model $model, array|string $payload, string $action)
+    protected function relationship(User|Scanner $model, array|string $payload, string $action)
     {
         switch (get_class($model)) {
             case User::class:
