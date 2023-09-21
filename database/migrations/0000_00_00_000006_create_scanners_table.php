@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('scanners', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->string('name', 20)->unique();
             $table->string('attlog_file', 120)->unique()->nullable();
             $table->string('print_text_colour', 20)->default('#000000');

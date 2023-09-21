@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Contracts\ScannerDriver;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +13,7 @@ use Laravel\Scout\Searchable;
 
 class Scanner extends Model
 {
-    use HasUuids;
+    use HasUlids;
     use Searchable;
 
     protected $fillable = [

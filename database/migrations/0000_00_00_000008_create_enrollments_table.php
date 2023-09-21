@@ -16,7 +16,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('enrollments', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->unsignedInteger('uid');
             $table->boolean('enabled')->default(true);
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();

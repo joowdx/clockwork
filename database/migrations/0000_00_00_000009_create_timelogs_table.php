@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('timelogs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->unsignedInteger('uid');
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
