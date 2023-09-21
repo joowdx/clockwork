@@ -13,6 +13,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Carbon;
 
 class AddUploadHistory implements ShouldQueue
 {
@@ -41,7 +42,7 @@ class AddUploadHistory implements ShouldQueue
         $history = Upload::make();
 
         $history->forceFill([
-            'time' => now(),
+            'time' => $event->time,
             'ip_address' => request()->ip(),
             'user_name' => $user?->username ?? '',
             'type' => match (get_class($event)) {

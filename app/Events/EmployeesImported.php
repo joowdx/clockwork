@@ -3,12 +3,15 @@
 namespace App\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 
 class EmployeesImported
 {
     use Dispatchable;
+
+    public Carbon $time;
 
     /**
      * Create a new event instance.
@@ -19,5 +22,6 @@ class EmployeesImported
     public function __construct(
         public Collection|LazyCollection $data,
     ) {
+        $this->time = now();
     }
 }
