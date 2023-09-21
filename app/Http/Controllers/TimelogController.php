@@ -71,6 +71,8 @@ class TimelogController extends Controller
         }
 
         Timelog::make()->forceFill($request->validated())->save();
+
+        return redirect()->back();
     }
 
     public function update(Request $request, Timelog $timelog)
