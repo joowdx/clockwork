@@ -15,7 +15,7 @@ class TransformEmployeeScannerData
         return $next($request->skip(1)->map(function (array $entry) use ($headers) {
             return [
                 'employee' => [
-                    'id' => str()->orderedUuid()->toString(),
+                    'id' => strtolower(str()->ulid()),
                     'name' => [
                         'last' => $entry[$headers['last name']],
                         'first' => $entry[$headers['first name']],

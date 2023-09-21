@@ -25,7 +25,7 @@ class GetScannerUids
         return $next($request->flatMap(function ($entry) use ($scanners, $existing) {
             return collect($entry['scanners'])->map(function ($uid, $scanner) use ($entry, $scanners, $existing) {
                 return [
-                    'id' => str()->orderedUuid()->toString(),
+                    'id' => strtolower(str()->ulid()),
                     'employee_id' => $entry['employee']['id'],
                     'scanner_id' => @$scanners[strtoupper($scanner)] ??
                         (

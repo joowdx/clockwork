@@ -130,7 +130,7 @@ abstract class BaseRepository implements Repository
 
         DB::transaction(function () use ($payload) {
             $this->model()->insert(collect($payload)->map(fn ($e) => [
-                ...$this->generateUuid(generate: $this->hasUuidPrimaryKey()),
+                ...$this->generateUlid(generate: $this->hasUuidPrimaryKey()),
                 ...$this->transformData($e),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -159,7 +159,7 @@ abstract class BaseRepository implements Repository
 
         DB::transaction(function () use ($payload, $unique, $update, $except) {
             $this->model()->upsert(collect($payload)->map(fn ($e) => [
-                ...$this->generateUuid(generate: $this->hasUuidPrimaryKey()),
+                ...$this->generateUlid(generate: $this->hasUuidPrimaryKey()),
                 ...collect($this->transformData($e))->except($except)->toArray(),
             ])->toArray(), $unique, $update);
         });
@@ -223,14 +223,14 @@ abstract class BaseRepository implements Repository
 
     abstract protected function transformData(array $payload): array;
 
-    protected function generateUuid(string $column = 'id', bool $generate = true)
+    protected function generateUlid(string $column = 'id', bool $generate = true)
     {
-        return $generate ? [$column => str()->orderedUuid()] : [];
+        return $generate ? [$column => strtolower(str()->ulid())] : [];
     }
 
     protected function hasUuidPrimaryKey(): bool
     {
-        return trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUuids::class)
-            && in_array(\Illuminate\Database\Eloquent\Concerns\HasUuids::class, class_uses_recursive(get_class($this->model())));
+        return trait_exists(\Illuminate\Database\Eloquent\Concerns\HasUlids::class)
+            && in_array(\Illuminate\Database\Eloquent\Concerns\HasUlids::class, class_uses_recursive(get_class($this->model())));
     }
 }
