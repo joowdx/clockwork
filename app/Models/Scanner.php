@@ -105,4 +105,9 @@ class Scanner extends Model
     {
         return $this->hasOne(Upload::class)->latestOfMany('time');
     }
+
+    public function latestTimelog(): HasOne
+    {
+        return $this->hasOne(Timelog::class)->latestOfMany('time');
+    }
 }
