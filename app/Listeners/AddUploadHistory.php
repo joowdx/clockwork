@@ -9,11 +9,15 @@ use App\Models\Scanner;
 use App\Models\Timelog;
 use App\Models\Upload;
 use App\Pipes\SortTimelogs;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
 
-class AddUploadHistory
+class AddUploadHistory implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Create the event listener.
      */
