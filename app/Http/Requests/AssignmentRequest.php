@@ -20,7 +20,7 @@ class AssignmentRequest extends FormRequest
                 ? [
                     'scanner' => ['exists:scanners,id', 'required_without:user'],
                     'users' => ['required'],
-                    'users.*' => ['uuid', 'exists:users,id'],
+                    'users.*' => ['ulid', 'exists:users,id'],
                     'password' => function ($attribute, $password, $fail) {
                         if (! $this->validatePassword($password)) {
                             $fail(__('The password is incorrect.'));
@@ -31,7 +31,7 @@ class AssignmentRequest extends FormRequest
                     ? [
                         'user' => ['exists:users', 'required_without:scanner,id'],
                         'scanners' => ['required'],
-                        'scanners.*' => ['uuid', 'exists:scanners,id'],
+                        'scanners.*' => ['ulid', 'exists:scanners,id'],
                         'password' => function ($attribute, $password, $fail) {
                             if (! $this->validatePassword($password)) {
                                 $fail(__('The password is incorrect.'));
