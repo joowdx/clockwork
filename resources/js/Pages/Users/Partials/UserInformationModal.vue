@@ -19,7 +19,7 @@ const tab = ref('profile')
 const profileForm = useForm({
     name: null,
     title: null,
-    type: null,
+    role: null,
     username: null,
     password: null,
     password_confirmation: null,
@@ -51,7 +51,7 @@ const forUpdate = computed(() => user.value !== null)
 const profileFormLink = computed(() => forUpdate.value ? route('users.update', { id: user.value.id }) : route('users.store'))
 
 const availableTypes = computed(() => {
-    if (user.value?.type === -1) {
+    if (user.value?.role === -1) {
         return {...props.types, ADMINISTRATOR: -1}
     }
 
@@ -184,7 +184,7 @@ watch(modelValue, (show) => {
     profileForm.name = user.value?.name
     profileForm.username = user.value?.username
     profileForm.title = user.value?.title
-    profileForm.type = user.value?.type ?? 0
+    profileForm.role = user.value?.role ?? 0
     profileForm.disabled = user.value?.disabled ?? false
     profileForm.offices = user.value?.offices?.join(", ")
 
@@ -201,7 +201,7 @@ watch(modelValue, (show) => {
         <div class="w-full mb-5 tabs">
             <button @click="switchTab('profile')" class="tab tab-bordered" :class="{'tab-active': tab === 'profile', 'text-error': profileForm.hasErrors}">Profile</button>
             <button v-if="forUpdate" @click="switchTab('password')" class="tab tab-bordered" :class="{'tab-active': tab === 'password', 'text-error': passwordForm.hasErrors}">Password</button>
-            <button v-if="forUpdate && user.type !== 2" @click="switchTab('employee')" class="tab tab-bordered" :class="{'tab-active': tab === 'employee', 'text-error': passwordForm.hasErrors}">Employee</button>
+            <button v-if="forUpdate && user.role !== 2" @click="switchTab('employee')" class="tab tab-bordered" :class="{'tab-active': tab === 'employee', 'text-error': passwordForm.hasErrors}">Employee</button>
             <button v-if="forUpdate" @click="switchTab('delete')" class="tab tab-bordered" :class="{'tab-active': tab === 'delete', 'text-error': deleteForm.hasErrors}">Delete</button>
         </div>
 
@@ -284,7 +284,7 @@ watch(modelValue, (show) => {
             </div>
         </template>
 
-        <div v-if="tab === 'employee' && user.type !== 2" class="space-y-2">
+        <div v-if="tab === 'employee' && user.role !== 2" class="space-y-2">
             <div v-if="! user.employee_id" class="form-control">
                 <label for="employee_search" class="px-0 pt-0 label">
                     <span class="label-text">Search</span>

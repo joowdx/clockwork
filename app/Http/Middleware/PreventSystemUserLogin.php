@@ -16,7 +16,7 @@ class PreventSystemUserLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->type === UserRole::SYSTEM) {
+        if (auth()->check() && auth()->user()->role === UserRole::SYSTEM) {
             return redirect()->route('account.disallowed');
         }
 

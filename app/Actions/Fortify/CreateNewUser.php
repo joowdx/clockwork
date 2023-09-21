@@ -26,7 +26,7 @@ class CreateNewUser implements CreatesNewUsers
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
             'title' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(collect(UserRole::cases())->map->value)],
+            'role' => ['required', Rule::in(collect(UserRole::cases())->map->value)],
             'disabled' => ['nullable', 'boolean'],
             'offices' => ['nullable', 'string'],
         ])->validate();
@@ -36,7 +36,7 @@ class CreateNewUser implements CreatesNewUsers
             'username' => mb_strtolower($input['username']),
             'password' => Hash::make($input['password']),
             'title' => @$input['title'],
-            'type' => $input['type'],
+            'role' => $input['role'],
             'disabled' => (bool) @$input['disabled'],
             'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
         ]);

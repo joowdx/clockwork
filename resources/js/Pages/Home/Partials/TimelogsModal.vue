@@ -35,7 +35,7 @@ const insertForm = useForm({
     state: null,
 })
 
-const allowed = computed(() => usePage().props.user.type === -1)
+const allowed = computed(() => usePage().props.user.role === -1)
 
 const invalid = computed(() => ! insertForm.time || ! date.value || insertForm.scanner_id === null || insertForm.state === null)
 

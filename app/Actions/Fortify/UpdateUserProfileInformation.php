@@ -21,7 +21,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => ['required', 'string', 'unique:users,username,'.$user->id, 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', Rule::in(collect(UserRole::cases())->map->value)],
+            'role' => ['required', Rule::in(collect(UserRole::cases())->map->value)],
             'disabled' => ['nullable', 'boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
             'offices' => ['nullable', 'string'],
@@ -35,12 +35,12 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'username' => $input['username'],
             'name' => $input['name'],
             'title' => $input['title'],
-            'type' => $input['type'],
+            'role' => $input['role'],
             'disabled' => (bool) @$input['disabled'],
             'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
         ])->save();
 
-        if ($input['type'] == UserRole::SYSTEM->value) {
+        if ($input['role'] == UserRole::SYSTEM->value) {
             $user->employee()->dissociate()->save();
         }
     }

@@ -29,7 +29,7 @@ class User extends Authenticatable
         'title',
         'username',
         'password',
-        'type',
+        'role',
         'disabled',
         'offices',
     ];
@@ -40,7 +40,7 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'type' => UserRole::class,
+        'role' => UserRole::class,
         'offices' => 'array',
     ];
 
@@ -74,14 +74,14 @@ class User extends Authenticatable
     public function administrator(): Attribute
     {
         return new Attribute(
-            fn () => $this->type === UserRole::DEVELOPER || $this->type === UserRole::ADMINISTRATOR
+            fn () => $this->role === UserRole::DEVELOPER || $this->role === UserRole::ADMINISTRATOR
         );
     }
 
     public function scopeAdmin(Builder $query): void
     {
-        $query->whereType(UserRole::ADMINISTRATOR)
-            ->orWhereType(UserRole::DEVELOPER);
+        $query->whereRole(UserRole::ADMINISTRATOR)
+            ->orWhereRole(UserRole::DEVELOPER);
     }
 
     public function getProfilePhotoUrlAttribute()

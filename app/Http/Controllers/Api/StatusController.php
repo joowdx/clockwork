@@ -16,7 +16,7 @@ class StatusController extends Controller
     {
         $user = $request->user();
 
-        $scanners = match ($user->type) {
+        $scanners = match ($user->role) {
             UserRole::ADMINISTRATOR, UserRole::DEVELOPER, UserRole::USER => $user->scanners,
             UserRole::DEPARTMENT_HEAD => Scanner::with(['lastUpload', 'latestTimelog'])->whereHas('employees', fn ($q) => $q->whereIn('office', $user->offices))->get(),
             default => [],

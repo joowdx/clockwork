@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('title')->nullable();
             $table->string('username')->unique();
             $table->string('password');
-            $table->tinyInteger('type')->default(0);
+            $table->tinyInteger('role')->default(0);
             $table->jsonb('offices')->default('[]');
             $table->boolean('disabled')->default(false);
             $table->rememberToken();
