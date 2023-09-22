@@ -65,7 +65,7 @@ class TimelogController extends Controller
         if ($request->has('file')) {
             $data = $import->parse($request->file);
 
-            TimelogsProcessed::dispatch($request->user(), $data->toArray(), $request->scanner);
+            TimelogsProcessed::dispatch($request->user(), $data->toArray(), $request->scanner, $request->file('file')->getClientOriginalName());
 
             return redirect()->back();
         }

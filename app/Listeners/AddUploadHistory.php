@@ -50,7 +50,7 @@ class AddUploadHistory implements ShouldQueue
                     'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
                     'latest' => $sorted->last()['time']->format('Y-m-d H:i:s'),
                     'rows' => $sorted->count(),
-                    'via' => $event->download ? 'File Upload' : 'Download',
+                    'via' => $event->file ? "File Upload: $event->file" : "Download: $scanner->ip_address",
                 ],
             ]);
         } elseif ($event instanceof EmployeesImported) {

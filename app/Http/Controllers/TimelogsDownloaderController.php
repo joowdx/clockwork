@@ -29,7 +29,7 @@ class TimelogsDownloaderController extends Controller
 
             $service->insert($data);
 
-            TimelogsProcessed::dispatch(request()->user(), $data, $scanner, true);
+            TimelogsProcessed::dispatch(request()->user(), $data, $scanner);
         } catch (ConnectionException  $exception) {
             throw ValidationException::withMessages(['message' => $exception->getMessage()]);
         }

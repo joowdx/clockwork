@@ -24,7 +24,7 @@ class TimelogsProcessed
         public User $user,
         public Collection|array $data,
         public Scanner|string $scanner,
-        public bool $download = false,
+        public ?string $file = null,
     ) {
         $this->time = now();
     }
