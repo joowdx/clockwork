@@ -50,7 +50,7 @@ const forUpdate = computed(() => user.value !== null)
 
 const profileFormLink = computed(() => forUpdate.value ? route('users.update', { id: user.value.id }) : route('users.store'))
 
-const availableTypes = computed(() => {
+const availableRoles = computed(() => {
     if (user.value?.role === -1) {
         return {...props.types, ADMINISTRATOR: -1}
     }
@@ -243,9 +243,9 @@ watch(modelValue, (show) => {
 
                 <div class="grid grid-cols-2 gap-3.5">
                     <div class="form-control">
-                        <label for="user_type" class="block text-sm font-medium text-base-content"> Type </label>
-                        <select id="user_type" v-model="profileForm.type" class="mt-1 capitalize select select-sm select-bordered">
-                            <option v-for="(value, name) in availableTypes" :value="value">{{ name.toLowerCase() }}</option>
+                        <label for="user_type" class="block text-sm font-medium text-base-content"> Role </label>
+                        <select id="user_type" v-model="profileForm.role" class="mt-1 capitalize select select-sm select-bordered">
+                            <option v-for="(value, name) in availableRoles" :value="value">{{ name.toLowerCase() }}</option>
                         </select>
                         <InputError class="mt-0.5" :message="profileForm.errors.regular" />
                     </div>
@@ -260,7 +260,7 @@ watch(modelValue, (show) => {
                     </div>
                 </div>
 
-                <div v-if="profileForm.type === 3" class="form-control">
+                <div v-if="profileForm.role === 3" class="form-control">
                     <label for="user_offices" class="block text-sm font-medium text-base-content"> Offices </label>
                     <input @keyup.enter="submit" v-model="profileForm.offices" id="user_offices" type="text" class="mt-1 uppercase input-sm input input-bordered" />
                     <InputError class="mt-0.5" :message="profileForm.errors.offices" />
