@@ -212,13 +212,13 @@ watch(modelValue, (show) => {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3.5">
-                    <div class="form-control">
-                        <label for="employee_office" class="block text-sm font-medium text-base-content"> Office </label>
-                        <input @keyup.enter="submit" v-model="profileForm.office" id="employee_office" type="text" class="mt-1 uppercase input-sm input input-bordered" />
-                        <InputError class="mt-0.5" :message="profileForm.errors.office" />
-                    </div>
+                <div class="form-control">
+                    <label for="employee_office" class="block text-sm font-medium text-base-content"> Office </label>
+                    <input @keyup.enter="submit" v-model="profileForm.office" id="employee_office" type="text" class="mt-1 uppercase input-sm input input-bordered" />
+                    <InputError class="mt-0.5" :message="profileForm.errors.office" />
+                </div>
 
+                <div class="grid grid-cols-2 gap-3.5">
                     <div class="form-control">
                         <label for="employee_regular" class="block text-sm font-medium text-base-content"> Status </label>
                         <select id="employee_regular" v-model="profileForm.regular" class="mt-1 uppercase select select-sm select-bordered">
@@ -227,9 +227,7 @@ watch(modelValue, (show) => {
                         </select>
                         <InputError class="mt-0.5" :message="profileForm.errors.regular" />
                     </div>
-                </div>
 
-                <div class="grid grid-cols-2 gap-3.5">
                     <div class="form-control">
                         <label for="employee_active" class="block text-sm font-medium text-base-content"> Active </label>
                         <select id="employee_active" v-model="profileForm.active" class="mt-1 uppercase select select-sm select-bordered">
@@ -237,15 +235,6 @@ watch(modelValue, (show) => {
                             <option :value="false">inactive</option>
                         </select>
                         <InputError class="mt-0.5" :message="profileForm.errors.active" />
-                    </div>
-
-                    <div class="form-control">
-                        <label for="employee_print" class="block text-sm font-medium text-base-content"> Print </label>
-                        <select id="employee_print" v-model="profileForm.csc_format" class="mt-1 uppercase select select-sm select-bordered">
-                            <option :value="true">CSC form</option>
-                            <option :value="false">default</option>
-                        </select>
-                        <InputError class="mt-0.5" :message="profileForm.errors.csc_format" />
                     </div>
                 </div>
 

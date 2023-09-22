@@ -181,7 +181,6 @@ const formOptions = {
                             <span class="label-text">Format</span>
                         </label>
                         <select v-model="args.csc_format" id="print-format" class="col-span-6 select-sm sm:col-span-3 select select-bordered">
-                            <option value="null">Preferred</option>
                             <option :value="false">Default</option>
                             <option :value="true">CSC Form No. 48</option>
                         </select>

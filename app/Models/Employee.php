@@ -39,6 +39,10 @@ class Employee extends Model
         'full_name',
     ];
 
+    protected $hidden = [
+        'csc_format',
+    ];
+
     public function scanners(): BelongsToMany
     {
         return $this->belongsToMany(Scanner::class, 'enrollments')
