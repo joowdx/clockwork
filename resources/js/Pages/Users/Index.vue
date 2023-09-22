@@ -87,7 +87,7 @@ const showUserModal = (e) => {
                             {{ row.title }}
                         </td>
                         <td class="capitalize">
-                            {{ Object.keys(types).find(k => types[k] === row.type)?.toLowerCase() ?? 'administrator' }}
+                            {{ Object.keys(types).find(k => types[k] === row.role)?.toLowerCase() ?? 'administrator' }}
                         </td>
                         <td class="px-2 py-0 text-right">
                             <button @click="showUserModal(row)" class="hidden group-hover:block btn btn-primary btn-xs">
