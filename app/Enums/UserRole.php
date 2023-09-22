@@ -10,6 +10,7 @@ enum UserRole: int
     case SYSTEM = 2;
     case DEPARTMENT_HEAD = 3;
     case ADMINISTRATIVE_OFFICER = 4;
+    case SECURITY_PERSONNEL = 5;
 
     public function label(): string
     {
@@ -18,7 +19,8 @@ enum UserRole: int
             self::SYSTEM => 'System',
             self::DEVELOPER, self::ADMINISTRATOR => 'Administrator',
             self::DEPARTMENT_HEAD => 'Department Head',
-            self::ADMINISTRATIVE_OFFICER => 'Administrative Officer'
+            self::ADMINISTRATIVE_OFFICER => 'Administrative Officer',
+            self::SECURITY_PERSONNEL => 'Security Personnel',
         };
     }
 }
