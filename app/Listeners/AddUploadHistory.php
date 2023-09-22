@@ -11,7 +11,6 @@ use App\Models\Upload;
 use App\Pipes\SortTimelogs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
 
 class AddUploadHistory implements ShouldQueue
@@ -19,31 +18,16 @@ class AddUploadHistory implements ShouldQueue
     use Queueable;
 
     /**
-     * Create the event listener.
-     */
-    public function __construct(
-        private Request $request
-    ) {
-
-    }
-
-    /**
      * Handle the event.
      */
     public function handle(TimelogsProcessed|EmployeesImported $event): void
     {
-        if (app()->runningInConsole()) {
-            return;
-        }
-
-        $user = $this->request->user();
-
         $history = Upload::make();
 
         $history->forceFill([
             'time' => $event->time,
             'ip_address' => request()->ip(),
-            'user_name' => $user?->username ?? '',
+            'user_name' => $event->user?->username ?? '',
             'type' => match (get_class($event)) {
                 TimelogsProcessed::class => Timelog::class,
                 EmployeesImported::class => Employee::class,
@@ -52,7 +36,7 @@ class AddUploadHistory implements ShouldQueue
         ]);
 
         if ($event instanceof TimelogsProcessed) {
-            $scanner = $this->request->hasFile('file') ? Scanner::find($this->request->scanner) : $this->request->route('scanner');
+            $scanner = $event->scanner instanceof Scanner ? $event->scanner : Scanner::find($event->scanner);
 
             $sorted = app(Pipeline::class)
                 ->send(is_array($event->data) ? collect($event->data) : $event->data)
@@ -66,7 +50,7 @@ class AddUploadHistory implements ShouldQueue
                     'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
                     'latest' => $sorted->last()['time']->format('Y-m-d H:i:s'),
                     'rows' => $sorted->count(),
-                    'via' => $this->request->hasFile('file') ? 'File Upload' : 'Download',
+                    'via' => $event->download ? 'File Upload' : 'Download',
                 ],
             ]);
         } elseif ($event instanceof EmployeesImported) {
@@ -79,7 +63,7 @@ class AddUploadHistory implements ShouldQueue
             ]);
         }
 
-        $history->user()->associate($user);
+        $history->user()->associate($event->user);
 
         $history->save();
     }

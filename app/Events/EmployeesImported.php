@@ -2,10 +2,10 @@
 
 namespace App\Events;
 
+use App\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\LazyCollection;
 
 class EmployeesImported
 {
@@ -20,7 +20,8 @@ class EmployeesImported
      * @return void
      */
     public function __construct(
-        public Collection|LazyCollection $data,
+        public User $user,
+        public Collection|array $data,
     ) {
         $this->time = now();
     }

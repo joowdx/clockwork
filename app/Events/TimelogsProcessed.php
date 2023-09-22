@@ -2,10 +2,11 @@
 
 namespace App\Events;
 
+use App\Models\Scanner;
+use App\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\LazyCollection;
 
 class TimelogsProcessed
 {
@@ -20,7 +21,10 @@ class TimelogsProcessed
      * @return void
      */
     public function __construct(
-        public Collection|LazyCollection|array $data,
+        public User $user,
+        public Collection|array $data,
+        public Scanner|string $scanner,
+        public bool $download = false,
     ) {
         $this->time = now();
     }
