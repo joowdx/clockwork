@@ -33,7 +33,7 @@ class EmployeeController extends Controller
             case true:
                 $data = $import->parse($request->file);
 
-                EmployeesImported::dispatch($request->user(), $data);
+                EmployeesImported::dispatch($request->user(), $data->collect());
 
                 return redirect()->back();
             default:
