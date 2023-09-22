@@ -55,8 +55,8 @@ class TimelogController extends Controller
             ->oldest('id')
             ->get()
             ->when(
-                $request->user()->type === UserRole::DEVELOPER,
-                fn ($e) => $e->makeVisible('hidden')
+                $request->user()->role === UserRole::DEVELOPER,
+                fn ($e) => $e->makeVisible(['hidden', 'official'])
             );
     }
 
@@ -70,7 +70,7 @@ class TimelogController extends Controller
             return redirect()->back();
         }
 
-        Timelog::make()->forceFill($request->validated())->save();
+        Timelog::make()->forceFill($request->validated())->unofficialize()->save();
 
         return redirect()->back();
     }
@@ -80,10 +80,14 @@ class TimelogController extends Controller
         $validated = $request->validate(['hidden' => 'required|boolean']);
 
         $timelog->update($validated);
+
+        return redirect()->back();
     }
 
     public function destroy(Timelog $timelog)
     {
         $timelog->delete();
+
+        return redirect()->back();
     }
 }

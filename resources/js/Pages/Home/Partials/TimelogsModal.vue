@@ -15,19 +15,11 @@ const employee = defineModel('employee')
 
 const props = defineProps(['options', 'developer'])
 
-const tab = ref('query')
-
 const timelogs = ref([])
 
 const loading = ref(false)
 
 const date = ref(dayjs().format('YYYY-MM-DD'))
-
-const insert = ref({
-    time: null,
-    scanner_id: null,
-    state: null,
-})
 
 const insertForm = useForm({
     time: null,
@@ -35,22 +27,36 @@ const insertForm = useForm({
     state: null,
 })
 
+const form = useForm({
+})
+
 const allowed = computed(() => usePage().props.user.role === -1)
 
 const invalid = computed(() => ! insertForm.time || ! date.value || insertForm.scanner_id === null || insertForm.state === null)
 
-const toggleHidden = async (timelog) => {
+const toggleHidden = (timelog) => {
     loading.value = true
 
-    await axios.put(route('timelogs.update', { timelog: timelog.id }), {
-        hidden: ! Boolean(timelog.hidden),
-    }).finally(() => {
-        loading.value = false
-        loadTimelogs(date.value)
-    })
+    form
+        .transform(() => ({ hidden: !Boolean(timelog.hidden) }))
+        .put(route('timelogs.update', timelog.id), {
+            only: ['errors'],
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                form.reset()
+                form.clearErrors()
+                loadTimelogs(date.value)
+            },
+            onFinish: () => {
+                loading.value = false
+            }
+        })
 }
 
-const insertTimelog = async () => {
+const insertTimelog = () => {
+    loading.value = true
+
     insertForm
         .transform(data => ({
             ...data, time: `${date.value} ${data.time}`, uid: employee.value.scanners.find(e => e.id === data.scanner_id).pivot.uid,
@@ -63,18 +69,33 @@ const insertTimelog = async () => {
                 insertForm.reset()
                 insertForm.clearErrors()
                 loadTimelogs(date.value)
+            },
+            onFinish: () => {
+                loading.value = false
             }
         })
 }
 
-const deleteTimelog = async (timelog) => {
+const deleteTimelog = (timelog) => {
     if (!timelog.hidden) {
         return
     }
 
-    await axios.delete(route('timelogs.destroy', { timelog: timelog.id })).finally(() => {
-        loadTimelogs(date.value)
-    })
+    loading.value = true
+
+    form.delete(route('timelogs.destroy', timelog.id), {
+            only: ['errors'],
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                form.reset()
+                form.clearErrors()
+                loadTimelogs(date.value)
+            },
+            onFinish: () => {
+                loading.value = false
+            }
+        })
 }
 
 const loadTimelogs = async (date) => {
@@ -111,16 +132,9 @@ watch(modelValue, (show) => {
     }
 
     setTimeout(() => {
-        tab.value = 'query'
         date.value = dayjs().format('YYYY-MM-DD')
         timelogs.value = []
     }, 250)
-})
-
-onMounted(() => {
-    if (allowed.value) {
-        loadTimelogs(date.value)
-    }
 })
 </script>
 
@@ -213,7 +227,7 @@ onMounted(() => {
                 <div class="bg-base-200 pb-1 rounded-[--rounded-box]">
                     <div class="flex justify-between px-2 py-1 font-mono text-sm tracking-tighter">
                         Count: {{ timelogs.length }}
-                        <span v-if="loading || insertForm.processing" class="flex items-center align-middle">
+                        <span v-if="loading" class="flex items-center align-middle">
                             <svg class="w-4 h-4 fill-current stroke-current animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                                 <path d="M142.9 142.9c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5c0 0 0 0 0 0H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1C73.2 122 55.6 150.7 44.8 181.4c-5.9 16.7 2.9 34.9 19.5 40.8s34.9-2.9 40.8-19.5c7.7-21.8 20.2-42.3 37.8-59.8zM16 312v7.6 .7V440c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l41.6-41.6c87.6 86.5 228.7 86.2 315.8-1c24.4-24.4 42.1-53.1 52.9-83.7c5.9-16.7-2.9-34.9-19.5-40.8s-34.9 2.9-40.8 19.5c-7.7 21.8-20.2 42.3-37.8 59.8c-62.2 62.2-162.7 62.5-225.3 1L185 329c6.9-6.9 8.9-17.2 5.2-26.2s-12.5-14.8-22.2-14.8H48.4h-.7H40c-13.3 0-24 10.7-24 24z"/>
                             </svg>
@@ -252,7 +266,19 @@ onMounted(() => {
                                             {{ timelog.uid }}
                                         </td>
                                         <td :class="{'opacity-40': timelog.hidden}">
-                                            {{ timelog.type }}
+                                            <div class="flex items-center h-full gap-1 align-middle">
+                                                <template v-if="developer">
+                                                    <svg v-if="timelog.official" class="w-3 h-3 fill-success" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                                                        <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"/>
+                                                    </svg>
+
+                                                    <svg v-else class="w-3 h-3 fill-neutral" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                                                        <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"/>
+                                                    </svg>
+                                                </template>
+
+                                                {{ timelog.type }}
+                                            </div>
                                         </td>
                                         <td v-if="developer" class="text-right">
                                             <button

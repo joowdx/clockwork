@@ -39,6 +39,7 @@ class Timelog extends Model
 
     protected $hidden = [
         'hidden',
+        'official',
     ];
 
     protected $casts = [
@@ -148,5 +149,10 @@ class Timelog extends Model
             && $this->state === $timeLog->state
             && $this->employee_id === $timeLog->employee_id
             && $this->user_id === $timeLog->user_id;
+    }
+
+    public function unofficialize(): self
+    {
+        return $this->forceFill(['official' => false]);
     }
 }
