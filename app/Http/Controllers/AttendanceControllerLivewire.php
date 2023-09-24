@@ -9,7 +9,7 @@ use App\Services\OfficeService;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class AttendanceController extends Component
+class AttendanceControllerLivewire extends Component
 {
     use WithPagination;
 
