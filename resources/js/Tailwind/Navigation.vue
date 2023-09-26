@@ -31,7 +31,7 @@
                     </div>
                 </div>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                    <Menu as="div" class="relative ml-3">
+                    <Menu as="div" class="relative z-10 ml-3">
                         <div>
                             <MenuButton class="flex text-sm rounded-full">
                                 <span class="sr-only">Open user menu</span>
@@ -39,7 +39,7 @@
                             </MenuButton>
                         </div>
                         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-                            <MenuItems class="absolute right-0 w-48 py-1 mt-2 origin-top-right rounded-md shadow-lg opacity-100 bg-base-300 focus:outline-none">
+                            <MenuItems class="absolute right-0 w-48 py-1 mt-2 origin-top-right rounded-md shadow-lg opacity-[0.98] bg-base-300 focus:outline-none">
                                 <template v-for="item in dropdown" :key="item.name + item.href">
                                     <MenuItem v-if="item.show" v-slot="{ active }">
                                         <Link :href="item.href" :class="[active ? 'bg-base-100' : '', 'block px-4 py-2 text-sm']">{{ item.name }}</Link>

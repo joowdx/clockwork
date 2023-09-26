@@ -24,10 +24,13 @@ const navigation = [
         active: route().current('attendance'),
         show: true,
     },
+]
+
+const dropdown = [
     {
-        name: 'Scanners',
-        href: route('scanners.index'),
-        active: route().current('scanners.*'),
+        name: 'Account Settings',
+        href: route('profile.show'),
+        active: route().current('profile.show'),
         show: true,
     },
     {
@@ -36,13 +39,10 @@ const navigation = [
         active: route().current('users.*'),
         show: user.administrator,
     },
-]
-
-const dropdown = [
     {
-        name: 'Account Settings',
-        href: route('profile.show'),
-        active: route().current('profile.show'),
+        name: 'Scanners',
+        href: route('scanners.index'),
+        active: route().current('scanners.*'),
         show: true,
     },
 ]
