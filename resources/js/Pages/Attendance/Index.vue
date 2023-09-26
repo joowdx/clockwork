@@ -24,7 +24,7 @@ const queryStrings = ref({
 const args = ref({
     dates: [],
     scanners: [],
-    transmittal: true,
+    transmittal: false,
 })
 
 const list = computed(() => queryStrings.value.category === 'group' ? props.groups : props.offices)
