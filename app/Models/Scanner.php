@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\ScannerDriver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -80,7 +81,6 @@ class Scanner extends Model
     public function toSearchableArray(): array
     {
         return [
-            $this->getKeyName() => $this->getKey(),
             'name' => $this->name,
             'ip_address' => $this->ip_address,
         ];
@@ -109,5 +109,10 @@ class Scanner extends Model
     public function latestTimelog(): HasOne
     {
         return $this->hasOne(Timelog::class)->latestOfMany('time');
+    }
+
+    public function scopePriority(Builder $query, bool $priority = true): void
+    {
+        $query->wherePriority($priority);
     }
 }
