@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Requests\PrintRequest;
 use App\Models\Employee;
+use App\Models\Scanner;
 use App\Repositories\EmployeeRepository;
 use App\Repositories\ScannerRepository;
 use Illuminate\Database\Eloquent\Builder;
@@ -138,34 +139,19 @@ class PrintService
         switch ($this->request->by) {
             case 'group':
             case 'office':
-                $query->when($this->request->filled('groups'), function ($query) {
-                    $query->where(function ($query) {
-                        collect($this->request->groups)->each(fn ($group) => $query->orWhereJsonContains('groups', $group));
-                    });
-                }, function ($query) {
-                    $query->whereIn('office', $this->request->offices);
-                });
-                $query->whereHas('timelogs', function ($q) {
-                    $q->whereIn(DB::raw('DATE(time)'), $this->request->dates);
-                    $q->whereHas('scanner', function ($q) {
-                        $q->when(
-                            $this->request->has('scanners'),
-                            fn ($q) => $q->whereIn('scanners.id', $this->request->scanners),
-                            fn ($q) => $q->where('name', 'like', '%coliseum-%'),
-                        );
-                    });
-                });
-                $query->with([
-                    'timelogs.scanner',
-                    'timelogs' => function ($q) {
-                        $q->whereIn(DB::raw('DATE(time)'), $this->request->dates);
-                        $q->whereHas('scanner', function ($q) {
-                            $q->when(
+                $query->when(
+                    $this->request->filled('groups'),
+                    fn ($query) => $query->where(fn ($q) => collect($this->request->groups)->each(fn ($g) => $q->orWhereJsonContains('groups', $g))),
+                    fn ($query) => $query->whereIn('office', $this->request->offices),
+                )->with([
+                    'timelogs' => function ($query) {
+                        $query->with('scanner')
+                            ->whereIn(DB::raw('DATE(time)'), $this->request->dates)
+                            ->whereHas('scanner', fn ($q) => $q->when(
                                 $this->request->has('scanners'),
                                 fn ($q) => $q->whereIn('scanners.id', $this->request->scanners),
-                                fn ($q) => $q->where('name', 'like', '%coliseum%'),
-                            );
-                        });
+                                fn ($q) => $q->whereIn('scanners.id', Scanner::select('id')->priority()),
+                            ));
                     },
                 ]);
                 break;
