@@ -22,7 +22,7 @@ const navigation = [
         name: 'Attendance',
         href: route('attendance'),
         active: route().current('attendance'),
-        show: true,
+        show: user.administrator,
     },
 ]
 
