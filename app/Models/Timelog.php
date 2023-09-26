@@ -66,7 +66,9 @@ class Timelog extends Model
 
     public function scopeUnrecognized(Builder $query): void
     {
-        $query->whereNull('enrollment_id');
+        $query->whereNotExists(
+            Enrollment::selectRaw(1)->whereColumn('enrollments.uid', 'timelogs.uid')
+        );
     }
 
     protected function getArrayableAppends(): array
