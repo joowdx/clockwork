@@ -1,7 +1,7 @@
 <article style="width:100%">
     @php($byGroup = $group)
     @foreach ($employees->groupBy($byGroup ? 'groups' : 'office') as $office => $group)
-        @if($byGroup && ! in_array($office, request()->groups))
+        @if($byGroup && ! in_array($office, request()->groups ?? []))
             @continue
         @endif
 
@@ -91,7 +91,7 @@
                         </tr>
                         <tr height=19 style='height:14.25pt'>
                             <td></td>
-                            <td colspan=8 class="cascadia center font-lg bold">
+                            <td colspan=8 class="uppercase cascadia center font-lg bold">
                                 {{ $office }}
                             </td>
                             <td></td>

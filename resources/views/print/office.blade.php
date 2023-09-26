@@ -13,7 +13,6 @@
                     ])->flatten()->sortBy(fn ($employee) => $employee->name_format->fullStartLastInitialMiddle)->values()
                 "
                 :dates="$dates"
-                :group="true"
             />
         @endif
         @foreach ($dates as $date)
