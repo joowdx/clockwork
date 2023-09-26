@@ -96,7 +96,6 @@ return [
     ],
 
     'ignore_paths' => [
-        'attendance',
         'nova-api*',
     ],
 

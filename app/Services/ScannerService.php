@@ -14,7 +14,7 @@ class ScannerService
     ) {
     }
 
-    public function search(?string $query): Collection|LengthAwarePaginator
+    public function search(?string $query = ''): Collection|LengthAwarePaginator
     {
         return match ($query) {
             null => $this->get(),

@@ -1,8 +1,7 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import axios from 'axios'
+import { computed, nextTick, ref, watch } from 'vue'
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import InputError from '@/Components/InputError.vue'

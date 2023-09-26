@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AssociateUserEmployeeProfileController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
@@ -43,6 +44,8 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
             Route::post('users/{user}/employee', 'link')->name('user.employee.link');
             Route::delete('users/{user}/employee', 'unlink')->name('user.employee.unlink');
         });
+
+        Route::match(['get', 'post'], 'attendance', [AttendanceController::class, 'index'])->name('attendance');
     });
 
     Route::controller(TimelogsDownloaderController::class)->group(function () {

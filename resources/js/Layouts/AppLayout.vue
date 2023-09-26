@@ -19,6 +19,12 @@ const navigation = [
         show: true,
     },
     {
+        name: 'Attendance',
+        href: route('attendance'),
+        active: route().current('attendance'),
+        show: true,
+    },
+    {
         name: 'Scanners',
         href: route('scanners.index'),
         active: route().current('scanners.*'),
