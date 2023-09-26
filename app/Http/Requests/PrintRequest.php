@@ -88,7 +88,7 @@ class PrintRequest extends FormRequest
     {
         return $this->whenFilled('offices', function ($offices) {
             $this->merge([
-                'offices' => collect($offices)->map(fn ($o) => strtoupper($o))->toArray(),
+                'offices' => collect($offices)->map(fn ($o) => strtolower($o))->toArray(),
             ]);
         })->whenFilled('regular', function ($regular) {
             $this->merge([
