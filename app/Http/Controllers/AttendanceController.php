@@ -33,7 +33,7 @@ class AttendanceController extends Controller
             ->selectRaw("count(distinct employees.id) employees")
             ->selectRaw("string_agg(distinct scanners.name, ', ' order by scanners.name) scanners")
             ->fromSub($subquery, "groups")
-            ->leftJoin('employees', 'employees.groups', '@>', DB::raw('"groups"."g"::jsonb'))
+            ->rightJoin('employees', 'employees.groups', '@>', DB::raw('"groups"."g"::jsonb'))
             ->leftJoin('enrollments', 'employees.id', 'enrollments.employee_id')
             ->leftJoin('scanners', 'scanners.id', 'enrollments.scanner_id')
             ->when($request->search, fn ($q) => $q->where($column, 'ilike', "%$request->search%"));
