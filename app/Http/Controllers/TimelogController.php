@@ -16,7 +16,7 @@ class TimelogController extends Controller
 {
     public function index(Request $request, Employee $employee)
     {
-        if ($request->expectsJson() && $request->user()?->type === UserRole::DEPARTMENT_HEAD) {
+        if ($request->expectsJson()) {
             @['from' => $from, 'to' => $to] = match ($request->period) {
                 'full', '1st', '2nd' => [
                     'from' => ($month = Carbon::parse($request->month))->setDay($request->period == '2nd' ? 16 : 1),
@@ -34,16 +34,39 @@ class TimelogController extends Controller
             };
 
             $employee = Employee::whereId($employee->id)->with([
-                'timelogs' => fn ($q) => $q->whereBetween('time', [$from->subDay(), $to->addDay()]),
+                'timelogs' => fn ($q) => $q->select(['timelogs.id', 'time', 'state', 'timelogs.scanner_id'])
+                    ->whereBetween('time', [$from, $to])
+                    ->with('scanner:scanners.id,name,print_background_colour,print_text_colour,priority'),
             ])->first();
 
             $service = app(TimelogService::class);
 
-            $employee->timelog = $employee->timelogs
-                ->groupBy(fn ($timelog) => $timelog->time->format('Y-m-d'))
-                ->map(fn ($timelogs, $date) => $service->logsForTheDay($employee, Carbon::parse($date)));
-
-            return $employee;
+            return [
+                'from' => $from->format('Y-m-d'),
+                'to' => $to->format('Y-m-d'),
+                'timelogs' => $employee->timelogs->each
+                    ->setAppends([])
+                    ->makeHidden(['id', 'in', 'out', 'state', 'scanner_id', 'laravel_through_key'])
+                    ->groupBy(fn ($timelog) => $timelog->time->format('Y-m-d'))
+                    ->map(fn ($timelogs, $date) => $service->logsForTheDay($employee, Carbon::parse($date)))
+                    ->map(fn ($timelogs) =>
+                        collect($timelogs)
+                            ->filter(fn ($t, $k) => in_array($k, ['in1', 'in2', 'out1', 'out2']))
+                            ->map(fn ($t) => $t ? [
+                                'time' => $t?->time->format('H:i:s'),
+                                'scanner' => $t?->scanner->name,
+                                'print_background_colour' => $t?->scanner->print_background_colour,
+                                'print_text_colour' => $t?->scanner->print_text_colour,
+                            ] : null)->toArray()
+                    )
+                    ->map(fn ($timelogs, $date) => [
+                        'date' => $date,
+                        'am' => ['in' => $timelogs['in1'], 'out' => $timelogs['out1']],
+                        'pm' => ['in' => $timelogs['in2'], 'out' => $timelogs['out2']]
+                    ])
+                    ->sortKeys()
+                    ->values()
+            ];
         }
 
         return $employee
@@ -55,7 +78,7 @@ class TimelogController extends Controller
             ->oldest('id')
             ->get()
             ->when(
-                $request->user()->role === UserRole::DEVELOPER,
+                $request->user()->type === UserRole::DEVELOPER,
                 fn ($e) => $e->makeVisible(['hidden', 'official'])
             );
     }
