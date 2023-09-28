@@ -171,7 +171,7 @@
                         <tr>
                             <td colspan=2 class="font-md cascadia right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
                             @if (@$calculate)
-                                <td colspan=2 class="underline ">
+                                <td colspan=2 class="underline">
                                     <div @class(['invalid' => @$forChange, 'consolas font-md left bold']) style="width:fit-content;padding:1pt;border-radius:2.5pt;">
                                         {{ ($daysTotal ? "{$daysTotal} days " : '') }}
                                     </div>

@@ -71,7 +71,7 @@
             @endif
 
             @if ($url)
-                <div class="flex justify-center p-5 ">
+                <div class="flex justify-center p-5">
                     <iframe id="print" class="w-full h-screen rounded lg:w-3/4" x-bind:src="url" x-bind:title="@entangle('title')" x-on:load="generated = true"></iframe>
                 </div>
             @else
