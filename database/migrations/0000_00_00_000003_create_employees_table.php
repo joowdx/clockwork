@@ -22,6 +22,8 @@ return new class extends Migration
             $table->boolean('csc_format')->default(true);
             $table->jsonb('groups')->nullable();
             $table->timestamps();
+            $table->rawIndex('groups jsonb_path_ops', 'employees_groups_idx')
+                ->algorithm('gin');
         });
     }
 
