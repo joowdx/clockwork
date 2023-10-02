@@ -8,20 +8,17 @@ class CheckDuplicateUids
 {
     use ParsesEmployeeImport;
 
-    const ERROR = 'Duplicate UIDs detected.';
+    const ERROR = 'Duplicate UIDs detected: ';
 
     public function handle(mixed $request, \Closure $next)
     {
         if (! $request->error) {
-            if (
-                ! collect($this->scanners($request->headers))
-                    ->every(fn ($h) => $request->data->map(fn ($e) => $e[$h])
-                        ->filter(fn ($e) => $e !== '')
-                        ->duplicates()
-                        ->isEmpty()
-                    )
-            ) {
-                $request->error = self::ERROR;
+            $duplicates = collect($this->scanners($request->headers))
+                ->map(fn ($h) => $request->data->map(fn ($e) => $e[$h])->filter()->duplicates()->values()->toArray()
+            )->filter();
+
+            if ($duplicates->isNotEmpty()) {
+                $request->error = self::ERROR . $duplicates->toJson();
             }
         }
 
