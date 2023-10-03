@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -82,6 +84,25 @@ class User extends Authenticatable
     {
         $query->whereRole(UserRole::ADMINISTRATOR)
             ->orWhereRole(UserRole::DEVELOPER);
+    }
+
+    public function signature(): HasOne
+    {
+        return $this->hasOne(Signature::class);
+    }
+
+    public function specimens(): HasManyThrough
+    {
+        return $this->hasManyThrough(Specimen::class, Signature::class);
+    }
+
+    public function randomSpecimen(): Specimen
+    {
+        if ($this->relationLoaded('specimen')) {
+            return $this->specimens->shuffle()->first();
+        }
+
+        return $this->specimens()->inRandomOrder()->first();
     }
 
     public function getProfilePhotoUrlAttribute()
