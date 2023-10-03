@@ -65,12 +65,14 @@ const preselect = (mount = false) => {
 
     const previous = today.date() <= 15
 
-    const end = previous ? today.subtract(1, 'month').endOf('month').date() : 15
+    const month = previous ? today.clone().subtract(1, 'month').month() : today.month()
+
+    const end = previous ? today.clone().subtract(1, 'month').endOf('month').date() : 15
 
     const prop = mount ? data : selection
 
     prop.value = [...Array(end).keys()].map(e => e + 1)
-        .map(e => dayjs().startOf('month').set('date', e))
+        .map(e => (previous ? dayjs().subtract(1, 'month') : dayjs()).startOf('month').set('date', e))
         .filter(e => e.day() === 1)
         .map(e => e.format('YYYY-MM-DD'))
 }
