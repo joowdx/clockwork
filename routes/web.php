@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\TimelogsDownloaderController;
@@ -54,3 +55,5 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
 
     Route::match(['get', 'post'], 'print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
 });
+
+Route::get('user/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware('auth:sanctum');
