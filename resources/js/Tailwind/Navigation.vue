@@ -47,7 +47,7 @@
                                 </template>
 
                                 <MenuItem v-slot="{ active }">
-                                    <Link :href="route('logout')" method="post" :class="{'bg-base-100': active}" class="block w-full px-4 py-2 text-sm text-left" as="button">Sign out</Link>
+                                    <Link :href="route('logout')" method="post" :class="{'bg-base-100': active}" class="block w-full px-4 py-2 text-sm text-left" as="button">Logout</Link>
                                 </MenuItem>
                             </MenuItems>
                         </transition>

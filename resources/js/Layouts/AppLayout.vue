@@ -28,7 +28,7 @@ const navigation = [
 
 const dropdown = [
     {
-        name: 'Account Settings',
+        name: 'Account',
         href: route('profile.show'),
         active: route().current('profile.show'),
         show: true,
