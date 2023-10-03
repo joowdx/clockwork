@@ -104,9 +104,12 @@ const loadTimelogs = async (date) => {
 
     loading.value = true
 
-    timelogs.value = await fetch(route('employees.timelogs.index', { employee: employee.value.id, date }), {
-        headers: { 'Accept': 'application/json' }
-    })
+    timelogs.value = await fetch(
+        route('employees.timelogs.index', { employee: employee.value.id, date, raw: true }),
+        {
+            headers: { 'Accept': 'application/json' }
+        }
+    )
         .then(data => data.json())
         .finally(() => loading.value = false)
 
