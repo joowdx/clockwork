@@ -24,6 +24,7 @@ class AttendanceController extends Controller
 
         $subquery = fn (Builder $query) => $query
             ->selectRaw('distinct jsonb_array_elements(groups)::text as "g"')
+            ->where('active', true)
             ->from('employees')
             ->when($category === 'group', fn ($q) => $q->whereRaw('jsonb_array_length("groups") > 0'))
             ->when($category === 'office', fn ($q) => $q->whereNotIn('office', ['']))
@@ -32,6 +33,7 @@ class AttendanceController extends Controller
         $query = DB::query()
             ->selectRaw("count(distinct employees.id) employees")
             ->selectRaw("string_agg(distinct scanners.name, ', ' order by scanners.name) scanners")
+            ->where('active', true)
             ->fromSub($subquery, "groups")
             ->rightJoin('employees', 'employees.groups', '@>', DB::raw('"groups"."g"::jsonb'))
             ->leftJoin('enrollments', 'employees.id', 'enrollments.employee_id')

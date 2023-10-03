@@ -19,7 +19,7 @@ class PrintService
         private EmployeeRepository $employee,
         private ScannerRepository $scanner,
     ) {
-        $employee->query()->whereActive(true);
+
     }
 
     public function data(string $by): array
@@ -134,7 +134,7 @@ class PrintService
 
     private function query(string $query = null): Builder
     {
-        $query = $this->employee->query();
+        $query = $this->employee->query()->whereActive(true);
 
         switch ($this->request->by) {
             case 'group':
