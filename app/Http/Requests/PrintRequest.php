@@ -35,6 +35,7 @@ class PrintRequest extends FormRequest
                 'scanners.*' => 'ulid|exists:scanners,id',
                 'regular' => 'sometimes|boolean|exclude_with:employees',
                 'transmittal' => 'nullable|boolean',
+                'schedule' => 'nullable|string|in:default,fallback',
             ],
             'search' => [
                 'name' => 'array|required',
@@ -51,6 +52,7 @@ class PrintRequest extends FormRequest
                 'days' => 'array|nullable',
                 'days.*' => 'integer|min:1|max:31|distinct',
                 'transmittal' => 'nullable|boolean',
+                'schedule' => 'nullable|string|in:default,fallback',
             ],
             default => [
                 'period' => 'required|in:custom,full,1st,2nd',
@@ -80,6 +82,7 @@ class PrintRequest extends FormRequest
                 'days' => 'array|nullable',
                 'days.*' => 'integer|min:1|max:31|distinct',
                 'transmittal' => 'nullable|boolean',
+                'schedule' => 'nullable|string|in:default,fallback',
             ],
         };
     }
@@ -122,6 +125,26 @@ class PrintRequest extends FormRequest
             $this->merge([
                 'sign' => filter_var($sign, FILTER_VALIDATE_BOOLEAN),
             ]);
+        })->whenFilled('schedule', function ($schedule) {
+            if ($schedule !== 'fallback') {
+                return;
+            }
+
+            switch($schedule) {
+                case 'employee':
+                case 'search':
+                default: {
+                    $this->merge([
+                        'weekdays.am.in' => '08:00',
+                        'weekdays.pm.out' => '16:00',
+                        'weekends.am.in' => '08:00',
+                        'weekends.am.out' => '12:00',
+                        'weekends.pm.in' => '13:00',
+                        'weekends.pm.out' => '17:00',
+                        'calculate' => true,
+                    ]);
+                }
+            }
         });
     }
 
