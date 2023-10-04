@@ -9,6 +9,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScannerController;
+use App\Http\Controllers\SignatureController;
+use App\Http\Controllers\SpecimenController;
 use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\TimelogsDownloaderController;
 use App\Http\Controllers\UserController;
@@ -33,10 +35,16 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
     Route::middleware(['account.disallowed.system'])->group(function () {
         Route::get('/', HomeController::class)->name('home');
 
+
+        Route::resource('users.signature', SignatureController::class)->only(['store']);
+        Route::resource('signature', SignatureController::class)->only(['update']);
+        Route::resource('signature.specimens', SpecimenController::class)->only(['store']);
+        Route::resource('specimens', SpecimenController::class)->only(['update', 'destroy']);
         Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
+
         Route::resource('employees.timelogs', TimelogController::class)->only(['index']);
         Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
+        Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('timelogs', TimelogController::class)->only(['store', 'update', 'destroy']);
         Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
         Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
@@ -56,4 +64,6 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
     Route::match(['get', 'post'], 'print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
 });
 
-Route::get('user/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware('auth:sanctum');
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('user/profile', [ProfileController::class, 'show'])->name('profile.show');
+});
