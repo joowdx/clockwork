@@ -118,6 +118,10 @@ class PrintRequest extends FormRequest
             $this->merge([
                 'transmittal' => filter_var($transmittal, FILTER_VALIDATE_BOOLEAN),
             ]);
+        })->whenFilled('sign', function ($sign) {
+            $this->merge([
+                'sign' => filter_var($sign, FILTER_VALIDATE_BOOLEAN),
+            ]);
         });
     }
 

@@ -130,7 +130,14 @@
                                 @endfor
                                 <tr height="20">
                                     <td colspan="6"></td>
-                                    <td colspan="4" class="underline uppercase bold center bottom nowrap bahnschrift">
+                                    <td colspan="4" class="relative underline uppercase bold center bottom nowrap bahnschrift">
+                                        @if ($signature)
+                                            <img
+                                                class="electronic-signature"
+                                                src="{{$signature}}"
+                                                alt="esign"
+                                            >
+                                        @endif
                                         {{ auth()->user()?->name }}
                                     </td>
                                 </tr>

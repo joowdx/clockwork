@@ -239,17 +239,28 @@
                         </tr>
                         <tr>
                             <td colspan=1 style="position:relative;"></td>
-                            <td class="underline font-xs center bottom bold consolas" colspan=4 style="color:#000A;border-color:#000A!important;">
-                                {{ auth()?->user()?->name }}
+                            <td class="relative underline font-xs center bottom bold consolas" colspan=4 style="color:#000A;border-color:#000A!important;">
+                                @if ($signature)
+                                    <img
+                                        class="electronic-signature"
+                                        src="{{$signature}}"
+                                        alt="esign"
+                                    >
+                                @endif
+                                {{ $user->name }}
                             </td>
                             <td colspan=1></td>
                         </tr>
                         <tr>
                             <td colspan=1> </td>
                             <td class="font-xxs center arial top" colspan=4 style="color:#000A;">
-                                {{ auth()?->user()?->title }}
+                                {{ $user->title }}
                             </td>
-                            <td colspan=1></td>
+                            <td class="relative" colspan=1>
+                                <div class="absolute consolas" style="opacity:0.2;bottom:0;right:0;font-size:4.0pt;">
+                                    {{ now()->format('Y-m-d|H:i') }}
+                                </div>
+                            </td>
                         </tr>
                     </table>
                 </div>

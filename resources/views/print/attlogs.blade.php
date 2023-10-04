@@ -98,7 +98,14 @@
                     <tr height="20"></tr>
                     <tr height="20">
                         <td colspan="6"></td>
-                        <td colspan="4" class="underline font-sm bold center bottom nowrap consolas">
+                        <td colspan="4" class="relative underline font-sm bold center bottom nowrap consolas">
+                            @if ($signature)
+                                <img
+                                    class="electronic-signature"
+                                    src="{{$signature}}"
+                                    alt="esign"
+                                >
+                            @endif
                             {{ auth()->user()?->name }}
                         </td>
                     </tr>

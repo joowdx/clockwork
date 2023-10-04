@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Print;
 
+use App\Http\Requests\PrintRequest;
 use Livewire\Component;
 
 class Attlogs extends Component
@@ -12,8 +13,11 @@ class Attlogs extends Component
 
     public $to;
 
-    public function render()
+    public function render(PrintRequest $request)
     {
-        return view('print.attlogs');
+        return view('print.attlogs', [
+            'user' => $request->user(),
+            'signature' => $request->sign ? $request->user()->randomSpecimen()?->toSrc() : null,
+        ]);
     }
 }

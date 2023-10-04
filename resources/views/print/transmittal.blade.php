@@ -136,7 +136,16 @@
                             <td colspan=3></td>
                             <td></td>
                             <td></td>
-                            <td colspan=3 class="consolas bold bottom center">{{ auth()?->user()?->name }}</td>
+                            <td colspan=3 class="relative consolas bold bottom center">
+                                @if ($signature)
+                                    <img
+                                        class="electronic-signature"
+                                        src="{{$signature}}"
+                                        alt="esign"
+                                    >
+                                @endif
+                                {{ auth()?->user()?->name }}
+                            </td>
                             <td></td>
                         </tr>
                         <tr height=19 style='height:14.25pt'>

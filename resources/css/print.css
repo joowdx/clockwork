@@ -65,6 +65,14 @@ tr, td {
     visibility: hidden;
 }
 
+.absolute {
+    position: absolute;
+}
+
+.relative {
+    position: relative;
+}
+
 .absent {
     background: #F38c8caa;
     border-color: transparent !important;
@@ -217,4 +225,16 @@ tr, td {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.electronic-signature {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -20pt;
+    object-fit: fill;
+    height: 44pt;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.9;
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Print;
 
+use App\Http\Requests\PrintRequest;
 use App\Services\TimelogService;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -15,16 +16,10 @@ class Dtr extends Component
 
     public $to;
 
-    protected $timelogs;
-
-    public function mount()
-    {
-        $this->timelogs = app(TimelogService::class);
-    }
-
-    public function render(Request $request, TimelogService $service)
+    public function render(PrintRequest $request, TimelogService $service)
     {
         return view('print.dtr', [
+            'user' => $request->user(),
             'time' => $service->time(),
             'months' => CarbonPeriod::create($this->from, $this->to)->setDateInterval('1 mo')->toArray(),
             'attlogs' => collect(CarbonPeriod::create($this->from, $this->to))->mapWithKeys(function ($date) use ($service) {
@@ -33,6 +28,7 @@ class Dtr extends Component
             'calculate' => @$request->calculate,
             'days' => $request->days,
             'week' => (@$request->weekdays['excluded'] xor @$request->weekends['excluded']) ? (@$request->weekdays['excluded'] ? 'weekends' : 'weekdays') : null,
+            'signature' => $request->sign ? $request->user()->randomSpecimen()?->toSrc() : null,
         ]);
     }
 }
