@@ -1,6 +1,6 @@
 <script setup>
 const modelValue = defineModel('modelValue', {
-    type: Boolean,
+    type: [Boolean, String],
     default: false
 })
 

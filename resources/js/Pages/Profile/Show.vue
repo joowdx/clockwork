@@ -26,6 +26,10 @@
                    <hr class="hidden sm:block border-base-content" />
                 </div>
 
+                <signature-form :signature="$page.props.signature" class="py-4 sm:py-8" />
+
+                <hr class="hidden sm:block border-base-content" />
+
                 <logout-other-browser-sessions-form :sessions="sessions" class="py-4 sm:py-8" />
 
                 <template v-if="$page.props.jetstream.hasAccountDeletionFeatures">
@@ -43,6 +47,7 @@ import { defineComponent } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm.vue'
 import LogoutOtherBrowserSessionsForm from '@/Pages/Profile/Partials/LogoutOtherBrowserSessionsForm.vue'
+import SignatureForm from '@/Pages/Profile/Partials/SignatureForm.vue'
 import TwoFactorAuthenticationForm from '@/Pages/Profile/Partials/TwoFactorAuthenticationForm.vue'
 import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm.vue'
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue'
@@ -54,6 +59,7 @@ export default defineComponent({
         AppLayout,
         DeleteUserForm,
         LogoutOtherBrowserSessionsForm,
+        SignatureForm,
         TwoFactorAuthenticationForm,
         UpdatePasswordForm,
         UpdateProfileInformationForm,
