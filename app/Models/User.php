@@ -96,19 +96,30 @@ class User extends Authenticatable
         return $this->hasManyThrough(Specimen::class, Signature::class);
     }
 
-    public function randomSpecimen(): Specimen
+    public function randomSpecimen(): ?Specimen
     {
-        if ($this->relationLoaded('specimen')) {
-            return $this->specimens->shuffle()->first();
+        if (! $this->signature?->enabled) {
+            return null;
         }
 
-        return $this->specimens()->inRandomOrder()->first();
+        if ($this->relationLoaded('specimen')) {
+            return $this->specimens
+                ->filter
+                ->enabled
+                ->shuffle()
+                ->first();
+        }
+
+        return $this->specimens()
+            ->where('specimens.enabled', true)
+            ->inRandomOrder()
+            ->first();
     }
 
     public function getProfilePhotoUrlAttribute()
     {
         return $this->profile_photo_path
-                    ? str_replace('.app:8000', '', Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path))
-                    : $this->defaultProfilePhotoUrl();
+            ? str_replace('.app:8000', '', Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path))
+            : $this->defaultProfilePhotoUrl();
     }
 }
