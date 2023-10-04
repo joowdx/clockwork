@@ -13,10 +13,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('specimens', function (Blueprint $table) {
-            $table->ulid('id');
+            $table->ulid('id')->primary();
             $table->binary('sample');
+            $table->string('mime');
+            $table->string('checksum', 64)->unique();
             $table->boolean('enabled')->default(true);
-            $table->foreignIdFor(Signature::class);
+            $table->foreignIdFor(Signature::class)
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
         });
     }

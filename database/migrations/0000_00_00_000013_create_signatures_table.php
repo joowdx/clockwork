@@ -13,9 +13,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('signatures', function (Blueprint $table) {
-            $table->ulid('id');
+            $table->ulid('id')->primary();
             $table->boolean('enabled')->default(true);
-            $table->foreignIdFor(User::class)->unique();
+            $table->foreignIdFor(User::class)
+                ->unique()
+                ->constrained()
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
         });
     }
