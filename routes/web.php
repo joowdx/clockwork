@@ -40,7 +40,9 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
         Route::resource('signature', SignatureController::class)->only(['update']);
         Route::resource('signature.specimens', SpecimenController::class)->only(['store']);
         Route::resource('specimens', SpecimenController::class)->only(['update', 'destroy']);
-        Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('users', UserController::class)
+            ->middleware(['administrator'])
+            ->only(['index', 'store', 'update', 'destroy']);
 
         Route::resource('employees.timelogs', TimelogController::class)->only(['index']);
         Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
@@ -54,7 +56,9 @@ Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(fun
             Route::delete('users/{user}/employee', 'unlink')->name('user.employee.unlink');
         });
 
-        Route::match(['get', 'post'], 'attendance', [AttendanceController::class, 'index'])->name('attendance');
+        Route::match(['get', 'post'], 'attendance', [AttendanceController::class, 'index'])
+            ->middleware(['administrator'])
+            ->name('attendance');
     });
 
     Route::controller(TimelogsDownloaderController::class)->group(function () {
