@@ -66,6 +66,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'administrator' => \App\Http\Middleware\AdministratorOnly::class,
+        'required-password-reset' => \App\Http\Middleware\RequirePasswordReset::class,
         'account.disallowed' => \App\Http\Middleware\DisallowDisabledAccount::class,
         'account.disallowed.system' => \App\Http\Middleware\PreventSystemUserLogin::class,
     ];

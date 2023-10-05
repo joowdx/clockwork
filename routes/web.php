@@ -27,47 +27,53 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('account-disallowed', fn () => inertia('Auth/AccountDisallowed', ['user' => auth()->user()]))
-    ->middleware(['auth'])
-    ->name('account.disallowed');
-
-Route::middleware(['auth:sanctum', 'account.disallowed', 'verified'])->group(function () {
-    Route::middleware(['account.disallowed.system'])->group(function () {
-        Route::get('/', HomeController::class)->name('home');
 
 
-        Route::resource('users.signature', SignatureController::class)->only(['store']);
-        Route::resource('signature', SignatureController::class)->only(['update']);
-        Route::resource('signature.specimens', SpecimenController::class)->only(['store']);
-        Route::resource('specimens', SpecimenController::class)->only(['update', 'destroy']);
-        Route::resource('users', UserController::class)
-            ->middleware(['administrator'])
-            ->only(['index', 'store', 'update', 'destroy']);
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::get('account-disallowed', fn () => inertia('Auth/AccountDisallowed'))
+        ->name('account.disallowed');
 
-        Route::resource('employees.timelogs', TimelogController::class)->only(['index']);
-        Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
-        Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::resource('timelogs', TimelogController::class)->only(['store', 'update', 'destroy']);
-        Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
-        Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
+    Route::get('password-reset', function () {
+        return auth()->user()->needsPasswordReset()
+            ? inertia('Auth/PasswordReset')
+            : redirect()->route('home');
+    })->name('password-reset');
 
-        Route::controller(AssociateUserEmployeeProfileController::class)->group(function () {
-            Route::post('users/{user}/employee', 'link')->name('user.employee.link');
-            Route::delete('users/{user}/employee', 'unlink')->name('user.employee.unlink');
+    Route::middleware(['account.disallowed', 'required-password-reset'])->group(function () {
+        Route::get('user/profile', [ProfileController::class, 'show'])->name('profile.show');
+
+        Route::middleware(['account.disallowed.system'])->group(function () {
+            Route::get('/', HomeController::class)->name('home');
+
+            Route::resource('users.signature', SignatureController::class)->only(['store']);
+            Route::resource('signature', SignatureController::class)->only(['update']);
+            Route::resource('signature.specimens', SpecimenController::class)->only(['store']);
+            Route::resource('specimens', SpecimenController::class)->only(['update', 'destroy']);
+            Route::resource('users', UserController::class)
+                ->middleware(['administrator'])
+                ->only(['index', 'store', 'update', 'destroy']);
+
+            Route::resource('employees.timelogs', TimelogController::class)->only(['index']);
+            Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
+            Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::resource('timelogs', TimelogController::class)->only(['store', 'update', 'destroy']);
+            Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
+            Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
+
+            Route::controller(AssociateUserEmployeeProfileController::class)->group(function () {
+                Route::post('users/{user}/employee', 'link')->name('user.employee.link');
+                Route::delete('users/{user}/employee', 'unlink')->name('user.employee.unlink');
+            });
+
+            Route::match(['get', 'post'], 'attendance', [AttendanceController::class, 'index'])
+                ->middleware(['administrator'])
+                ->name('attendance');
         });
 
-        Route::match(['get', 'post'], 'attendance', [AttendanceController::class, 'index'])
-            ->middleware(['administrator'])
-            ->name('attendance');
+        Route::controller(TimelogsDownloaderController::class)->group(function () {
+            Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');
+        });
+
+        Route::match(['get', 'post'], 'print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
     });
-
-    Route::controller(TimelogsDownloaderController::class)->group(function () {
-        Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');
-    });
-
-    Route::match(['get', 'post'], 'print/{by}', PrintController::class)->whereIn('by', ['dtr', 'office', 'employee', 'search'])->name('print');
-});
-
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('user/profile', [ProfileController::class, 'show'])->name('profile.show');
 });

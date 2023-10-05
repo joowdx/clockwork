@@ -44,6 +44,7 @@ class User extends Authenticatable
     protected $casts = [
         'role' => UserRole::class,
         'offices' => 'array',
+        'password_updated_at' => 'date',
     ];
 
     protected $appends = [
@@ -73,10 +74,17 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function developer(): Attribute
+    {
+        return new Attribute(
+            fn () => $this->role === UserRole::DEVELOPER
+        );
+    }
+
     public function administrator(): Attribute
     {
         return new Attribute(
-            fn () => $this->role === UserRole::DEVELOPER || $this->role === UserRole::ADMINISTRATOR
+            fn () => $this->developer || $this->role === UserRole::ADMINISTRATOR
         );
     }
 
@@ -121,5 +129,20 @@ class User extends Authenticatable
         return $this->profile_photo_path
             ? str_replace('.app:8000', '', Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path))
             : $this->defaultProfilePhotoUrl();
+    }
+
+    public function getNeedsPasswordResetAttribute()
+    {
+        return $this->needsPasswordReset();
+    }
+
+    public function needsPasswordReset()
+    {
+        if ($this->developer) {
+            return false;
+        }
+
+        return is_null($this->password_updated_at) ||
+            $this->password_updated_at->startOfDay()->addMonths(6)->lte(today());
     }
 }

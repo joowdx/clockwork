@@ -40,7 +40,7 @@ class HandleInertiaRequests extends Middleware
                 'time' => now(),
             ],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user()?->append(['needs_password_reset']),
             ],
             'ziggy' => function () use ($request) {
                 return array_merge((new Ziggy)->toArray(), [

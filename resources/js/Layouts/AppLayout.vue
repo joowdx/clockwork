@@ -9,7 +9,7 @@ defineProps({
 
 const user = usePage().props.user
 
-const disabled = user.disabled || user.type === 2
+const disabled = user.disabled || user.needs_password_reset || user.role === 2
 
 const navigation = [
     {

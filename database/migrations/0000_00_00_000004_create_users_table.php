@@ -25,6 +25,7 @@ return new class extends Migration
             $table->boolean('disabled')->default(false);
             $table->rememberToken();
             $table->string('profile_photo_path', 2048)->nullable();
+            $table->timestamp('password_updated_at')->nullable();
             $table->foreignIdFor(Employee::class)
                 ->unique()
                 ->nullable()
