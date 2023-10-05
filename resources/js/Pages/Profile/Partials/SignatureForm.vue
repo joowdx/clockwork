@@ -1,9 +1,11 @@
 <script setup>
 import ActionSection from '@/Components/ActionSection.vue'
 import Modal from '@/Components/Modal.vue'
+import Specimen from './Specimen.vue'
+import InputError from '@/Components/InputError.vue'
+import preventTabClose from '@/Composables/preventTabClose'
 import { router, useForm, usePage } from '@inertiajs/vue3'
-import { computed, onMounted, ref } from 'vue'
-import Specimen from './Specimen.vue';
+import { computed, onMounted, ref, watch } from 'vue'
 
 const props = defineProps(['signature'])
 
@@ -18,6 +20,8 @@ const fileInput = ref(null)
 const uploadForm = useForm({
     samples: []
 })
+
+const deleteForm = useForm({})
 
 const update = (data) => {
     useForm(data).put(route('signature.update', { signature: props.signature.id }), {
@@ -67,7 +71,7 @@ const upload = () => {
 }
 
 const remove = (id) => {
-    useForm({}).delete(route('specimens.destroy', id), {
+    deleteForm.delete(route('specimens.destroy', id), {
         preserveScroll: true,
         preserveState: true,
         only: ['errors', 'signature'],
@@ -83,7 +87,19 @@ const clear = () => {
     uploadForm.clearErrors()
 }
 
+watch([confirm, modal], ([confirm, modal]) => {
+    if (!confirm) {
+        deleteForm.clearErrors()
+    }
+
+    if (!modal) {
+        uploadForm.clearErrors()
+    }
+})
+
 onMounted(() => router.reload({ only: ['signature'] }))
+
+preventTabClose(() => uploadForm.processing)
 </script>
 
 <template>
@@ -99,7 +115,7 @@ onMounted(() => router.reload({ only: ['signature'] }))
         <template #content>
             <div class="flex flex-col max-w-xl gap-2 text-sm">
                 <p>
-                    Please ensure that the sample file you upload has a transparent background and is in PNG or WebP format. For security, these specimen samples will be encrypted on our servers.
+                    Sign documents automatically with your electronic signature. Your signature specimen are <b class="text-warning">encrypted</b> for security.
                 </p>
                 <p>
                     You may have to enable this feature first, if you want to use its functionality.
@@ -109,7 +125,8 @@ onMounted(() => router.reload({ only: ['signature'] }))
             <div v-if="enabled" class="flex flex-row flex-wrap gap-3 my-5 break-all">
                 <div
                     v-for="specimen in signature?.specimens"
-                    class="max-w-[15rem] gap-3 p-3 rounded-[--rounded-box] bg-base-100/50 justify-center flex flex-col text-center items-center"
+                    :key="specimen.id"
+                    class="max-w-[15rem] gap-3 p-3 rounded-[--rounded-box] bg-base-300/50 justify-center flex flex-col text-center items-center"
                 >
                     <div class="flex justify-between w-full gap-3">
                         <label class="p-0 space-x-2 cursor-pointer label">
@@ -130,14 +147,10 @@ onMounted(() => router.reload({ only: ['signature'] }))
                     <div class="rounded-[--rounded-box] overflow-hidden w-fit">
                         <Specimen :mime="specimen.mime" :sample="specimen.sample" />
                     </div>
-
-                    <p class="font-mono text-xs">
-                        Checksum: {{ specimen.checksum }}
-                    </p>
                 </div>
             </div>
 
-            <div class="flex gap-2 mt-5">
+            <div class="flex items-stretch gap-2 mt-5">
                 <template v-if="enabled">
                     <button @click="modal = true" class="btn btn-primary btn-sm">
                         Upload
@@ -151,6 +164,10 @@ onMounted(() => router.reload({ only: ['signature'] }))
                 <button v-else @click="enable" class="btn btn-primary btn-sm">
                     Enable
                 </button>
+
+                <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                    <InputError class="flex items-center" :message="$page.props.errors?.enabled" />
+                </Transition>
             </div>
 
             <Modal v-model="confirm">
@@ -159,6 +176,10 @@ onMounted(() => router.reload({ only: ['signature'] }))
                 </template>
 
                 Are you sure you want to delete this specimen sample?
+
+                <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                    <InputError class="flex items-center mt-1" :message="deleteForm.errors.delete" />
+                </Transition>
 
                 <template #action>
                     <button @click="confirm = false" class="btn btn-sm">
@@ -176,34 +197,52 @@ onMounted(() => router.reload({ only: ['signature'] }))
                     Upload
                 </template>
 
-                <div class="form-control">
-                    <label for="specimen-samples-upload" class="px-0 label">
-                        <span class="label-text">
+                <div class="grid gap-2">
+                    <div class="grid gap-1">
+                        <p>Guide:</p>
+
+                        <ul class="px-4 text-sm tracking-tight list-disc">
+                            <li>Minimum of three samples required</li>
+                            <li>Make sure the samples are clear and have transparent background</li>
+                        </ul>
+
+                        <p class="font-mono text-sm tracking-tighter text-warning">
+                            Note: Dimensions (<u>64px</u> min) (<u>2048px</u> max)
+                        </p>
+                    </div>
+
+                    <div class="form-control">
+                        <label for="specimen-samples-upload" class="sr-only">
                             Specimens
-                        </span>
-                    </label>
+                        </label>
 
-                    <input
-                        ref="fileInput"
-                        id="specimen-samples-upload"
-                        class="w-full file-input file-input-bordered file-input-sm"
-                        type="file"
-                        accept="image/webp, image/png"
-                        multiple
-                        @input="uploadForm.samples = $event.target.files"
-                    />
+                        <input
+                            ref="fileInput"
+                            id="specimen-samples-upload"
+                            class="w-full file-input file-input-bordered file-input-sm"
+                            type="file"
+                            accept="image/webp, image/png"
+                            multiple
+                            @input="uploadForm.samples = $event.target.files"
+                            :disabled="uploadForm.processing"
+                        />
 
-                    <label v-for="error in uploadForm.errors" class="mt-1 text-sm text-error">
-                        {{ error }}
-                    </label>
+                        <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                            <div class="block" v-if="!!Object.keys(uploadForm.errors).length">
+                                <label v-for="error in uploadForm.errors" class="block mt-1 text-sm text-error">
+                                    {{ error }}
+                                </label>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
 
                 <template #action>
-                    <button @click="clear" class="btn btn-sm" >
+                    <button @click="clear" class="btn btn-sm" :disabled="uploadForm.processing">
                         Clear
                     </button>
 
-                    <button @click="upload" class="btn btn-sm btn-primary">
+                    <button @click="upload" class="btn btn-sm btn-primary" :disabled="uploadForm.processing">
                         Save
                     </button>
                 </template>

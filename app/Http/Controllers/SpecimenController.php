@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SpecimenUploadRequest;
+use App\Http\Requests\SpecimenRequest;
 use App\Models\Signature;
 use App\Models\Specimen;
 use Illuminate\Http\Request;
@@ -11,7 +11,7 @@ class SpecimenController extends Controller
 {
     public function store(
         Signature $signature,
-        SpecimenUploadRequest $request
+        SpecimenRequest $request
     ) {
         $samples = collect($request->samples)->map(fn ($e) => [
             'sample' => $e->get(),
@@ -24,16 +24,14 @@ class SpecimenController extends Controller
         return redirect()->back();
     }
 
-    public function update(Specimen $specimen, Request $request)
+    public function update(SpecimenRequest $request, Specimen $specimen)
     {
-        $validated = $request->validate(['enabled' => 'required|boolean']);
-
-        $specimen->update($validated);
+        $specimen->update($request->validated());
 
         return redirect()->back();
     }
 
-    public function destroy(Specimen $specimen)
+    public function destroy(SpecimenRequest $request, Specimen $specimen)
     {
         $specimen->delete();
 

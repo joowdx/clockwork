@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Facades\Crypt;
 
@@ -21,9 +23,19 @@ class Specimen extends Model
 
     private $stream;
 
+    public function signature(): BelongsTo
+    {
+        return $this->belongsTo(Signature::class);
+    }
+
     public function user(): HasOneThrough
     {
         return $this->hasOneThrough(User::class, Signature::class);
+    }
+
+    public function scopeEnabled(Builder $query, bool $enabled = true): void
+    {
+        $query->whereEnabled($enabled);
     }
 
     public function sample(): Attribute
