@@ -58,6 +58,11 @@ const upload = () => {
         preserveScroll: true,
         preserveState: true,
         only: ['errors', 'signature'],
+        onStart: () => uploadForm.clearErrors(),
+        onSuccess: () => {
+            clear()
+            modal.value = false
+        },
     })
 }
 
