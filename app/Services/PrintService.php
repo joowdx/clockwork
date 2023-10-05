@@ -64,6 +64,7 @@ class PrintService
             'scanners' => $this->scanners(),
             'dates' => collect($this->request->dates)->sort()->map(fn ($date) => Carbon::create($date)),
             'transmittal' => $this->request->transmittal,
+            'signature' => $this->request->user()->randomSpecimen()->toSrc()
         ];
     }
 

@@ -13,14 +13,17 @@ const value = ref({
     all: Boolean(data.value.all),
     unenrolled: Boolean(data.value.unenrolled),
     unenrolled_only: data.value.unenrolled === 'only',
+    sign: Boolean(data.value.sign),
 })
 
 const apply = () => {
-    data.value.all = value.value.all
+    data.value = {...data.value, ...value.value}
 
     localStorage.setItem(`employee-filter-all-${user.id}`, value.value.all)
 
     localStorage.setItem(`employee-filter-unenrolled-${user.id}`, value.value.unenrolled)
+
+    localStorage.setItem(`digital-signature-${user.id}`, value.value.sign)
 
     if (value.value.unenrolled_only) {
         data.value.unenrolled = 'only'
@@ -33,7 +36,10 @@ const apply = () => {
 
 onMounted(() => {
     let all = localStorage.getItem(`employee-filter-all-${user.id}`) === "true"
+
     let unenrolled = localStorage.getItem(`employee-filter-unenrolled-${user.id}`)
+
+    let sign = localStorage.getItem(`digital-signature-${user.id}`)
 
     unenrolled = unenrolled === "true" || unenrolled === "only"
 
@@ -45,7 +51,11 @@ onMounted(() => {
         value.value.unenrolled = unenrolled
     }
 
-    if (all || unenrolled) {
+    if (sign) {
+        value.value.sign = sign
+    }
+
+    if (all || unenrolled || sign) {
         apply()
     }
 })
@@ -62,6 +72,18 @@ watch(() => value.value.unenrolled, () => value.value.unenrolled_only = false, {
         </template>
 
         <div class="flex-1 w-full">
+            <div class="pb-4 form-control">
+                <label class="cursor-pointer label">
+                    <span class="label-text">
+                        Digitally <b>sign</b> documents
+                    </span>
+                    <input v-model="value.sign" type="checkbox" class="toggle">
+                </label>
+                <label class="px-1 opacity-50 label-text-alt">
+                    Automatically sign all document printouts electronically.
+                </label>
+            </div>
+
             <div class="pb-4 form-control">
                 <label class="cursor-pointer label">
                     <span class="label-text">

@@ -23,6 +23,7 @@ const args = ref({
     employees: {},
     from: usePage().props.from,
     to: usePage().props.to,
+    sign: false,
 })
 
 const queryStrings = ref({
@@ -86,6 +87,7 @@ watch([args, config], () => closePreview(), { deep: true, flush: 'sync' })
 watch(settings, (settings) => {
     queryStrings.value.all = settings.all ? true : null
     queryStrings.value.unenrolled = settings.unenrolled ? settings.unenrolled : null
+    args.value.sign = settings.sign ? settings.sign : null
 }, { deep: true })
 
 watch(() => usePage().props.flash?.employee, (employee) => {
