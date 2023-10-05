@@ -11,8 +11,8 @@
                     <table border=0 cellpadding=0 cellspacing=0 style="border-collapse:collapse;table-layout:fixed;width:fit-content;margin:auto!important;">
                         <col width=57 span=6>
                         <tr>
-                            <td colspan=6 style="position:relative;">
-                                <img src="{{ url('img/davao-del-sur(300x300).png') }}" alt="davao-del-sur" style="position:absolute;width:36pt;opacity:0.1;top:15pt;right:0;">
+                            <td colspan=6 class="relative">
+                                <img src="{{ url('img/davao-del-sur(300x300).png') }}" alt="davao-del-sur" class="absolute" style="width:36pt;opacity:0.1;top:15pt;right:0;">
                             </td>
                         </tr>
                         <tr>
@@ -47,16 +47,16 @@
                         </tr>
                         <tr>
                             <td class="font-xs left middle arial" colspan=2 rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
-                            <td class="arial font-xs bottom left nowrap" colspan=1 style="position:relative;">
-                                <span style="position:absolute;bottom:1pt;left:-11pt;">
+                            <td class="relative arial font-xs bottom left nowrap" colspan=1>
+                                <span class="absolute" style="bottom:1pt;left:-11pt;">
                                     Regular Days
                                 </span>
                             </td>
                             <td class="underline consolas font-sm bold bottom left" colspan=3>{{ $time->weekdays }}</td>
                         </tr>
                         <tr>
-                            <td class="arial font-xs bottom left" colspan=1 style="position:relative;">
-                                <span style="position:absolute;bottom:1pt;left:-11pt;">
+                            <td class="relative arial font-xs bottom left" colspan=1>
+                                <span class="absolute" style="bottom:1pt;left:-11pt;">
                                     Saturdays
                                 </span>
                             </td>
@@ -98,7 +98,7 @@
                                             {{ $date->format('l') }}
                                         </td>
                                     @else
-                                        <td class="border consolas" width=58 style="position:relative;">
+                                        <td class="relative border consolas" width=58>
                                             <div class="font-sm nowrap consolas {{ @$in1?->scanner->name }}" style="margin-left:5pt;">
                                                 {{ @$in1?->time->format('H:i') }}
                                             </div>
@@ -108,7 +108,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="border consolas" width=58 style="position:relative;">
+                                        <td class="relative border consolas" width=58>
                                             <div class="font-sm nowrap consolas {{ @$out1?->scanner->name }}" style="margin-left:5pt;">
                                                 {{ @$out1?->time->format('H:i') }}
                                             </div>
@@ -118,7 +118,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="border consolas" width=58 style="position:relative;">
+                                        <td class="relative border consolas" width=58>
                                             <div class="font-sm nowrap consolas {{ @$in2?->scanner->name }}" style="margin-left:5pt;">
                                                 {{ @$in2?->time->format('H:i') }}
                                             </div>
@@ -128,7 +128,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td class="border consolas" width=58 style="position:relative;">
+                                        <td class="relative border consolas" width=58>
                                             <div class="font-sm nowrap consolas {{ @$out2?->scanner->name }}" style="margin-left:5pt;">
                                                 {{ @$out2?->time->format('H:i') }}
                                             </div>
@@ -139,7 +139,7 @@
                                             @endif
                                         </td>
                                     @endif
-                                    <td class="border consolas" width=58 style="position:relative;">
+                                    <td class="relative border consolas" width=58>
                                         <div class="font-sm nowrap consolas right" style="margin-left:auto;width:fit-content;padding-right:5pt;">
                                             {{ @$ut?->total ?: '' }}
                                         </div>
@@ -224,29 +224,23 @@
                             <td colspan=6></td>
                         </tr>
                         <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
-                            <td colspan=1 style="position:relative;">
-                                <div class="font-xxs consolas" style="position:absolute;opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
+                            <td colspan=1 class="relative">
+                                <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
                                     {{ $week }}
                                 </div>
-                                <div class="consolas" style="position:absolute;opacity:0.3;font-size:5pt;top:0pt;">
+                                <div class="absolute consolas" style="opacity:0.3;font-size:5pt;top:0pt;">
                                     {{ collect($days)->sort()->map(fn($e) => str_pad($e, 2, '0', STR_PAD_LEFT))->join(', ') }}
                                 </div>
                             </td>
-                            <td colspan=4 style="position:relative;">
-                                <img src="{{ url('img/pgo-picto(300x300).png') }}" alt="pgo-picto" style="position:absolute;width:36pt;opacity:0.15;margin:auto;left:0;right:0;">
+                            <td colspan=4 class="relative">
+                                <img src="{{ url('img/pgo-picto(300x300).png') }}" alt="pgo-picto" class="absolute" style="width:36pt;opacity:0.15;margin:auto;left:0;right:0;">
                             </td>
                             <td colspan=1></td>
                         </tr>
                         <tr>
-                            <td colspan=1 style="position:relative;"></td>
+                            <td colspan=1></td>
                             <td class="relative underline font-xs center bottom bold consolas" colspan=4 style="color:#000A;border-color:#000A!important;">
-                                @if ($signature)
-                                    <img
-                                        class="electronic-signature"
-                                        src="{{$signature}}"
-                                        alt="esign"
-                                    >
-                                @endif
+                                <livewire:print.signature />
                                 {{ $user->name }}
                             </td>
                             <td colspan=1></td>
@@ -257,7 +251,7 @@
                                 {{ $user->title }}
                             </td>
                             <td class="relative" colspan=1>
-                                <div class="absolute consolas" style="opacity:0.2;bottom:0;right:0;font-size:4.0pt;">
+                                <div class="absolute consolas" style="opacity:0.3;bottom:0;right:0;font-size:4.0pt;">
                                     {{ now()->format('Y-m-d|H:i') }}
                                 </div>
                             </td>

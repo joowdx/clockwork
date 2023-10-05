@@ -22,7 +22,6 @@ class Transmittal extends Component
         return view('print.transmittal', [
             'group' => request()->filled('groups'),
             'user' => $request->user(),
-            'signature' => $request->sign ? $request->user()->randomSpecimen()?->toSrc() : null,
         ]);
     }
 }

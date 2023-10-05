@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Print;
 use App\Http\Requests\PrintRequest;
 use App\Services\TimelogService;
 use Carbon\CarbonPeriod;
-use Illuminate\Http\Request;
 use Livewire\Component;
 
 class Dtr extends Component
@@ -28,7 +27,6 @@ class Dtr extends Component
             'calculate' => @$request->calculate,
             'days' => $request->days,
             'week' => (@$request->weekdays['excluded'] xor @$request->weekends['excluded']) ? (@$request->weekdays['excluded'] ? 'weekends' : 'weekdays') : null,
-            'signature' => $request->sign ? $request->user()->randomSpecimen()?->toSrc() : null,
         ]);
     }
 }

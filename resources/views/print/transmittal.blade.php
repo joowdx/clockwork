@@ -137,13 +137,7 @@
                             <td></td>
                             <td></td>
                             <td colspan=3 class="relative consolas bold bottom center">
-                                @if ($signature)
-                                    <img
-                                        class="electronic-signature"
-                                        src="{{$signature}}"
-                                        alt="esign"
-                                    >
-                                @endif
+                                <livewire:print.signature />
                                 {{ auth()?->user()?->name }}
                             </td>
                             <td></td>

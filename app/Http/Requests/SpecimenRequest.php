@@ -43,7 +43,7 @@ class SpecimenRequest extends FormRequest
                     'image',
                     'mimes:png,webp',
                     'max:4096',
-                    'dimensions:min_width=64,max_width=1024,min_height=64,max_height=1024',
+                    'dimensions:min_width=64,max_width=2048,min_height=64,max_height=2048',
                     function ($_, $file, $fail) {
                         if (
                             Specimen::query()

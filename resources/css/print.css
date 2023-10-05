@@ -226,15 +226,3 @@ tr, td {
     align-items: center;
     justify-content: center;
 }
-
-.electronic-signature {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: -40pt;
-    object-fit: fill;
-    height: 70pt;
-    pointer-events: none;
-    user-select: none;
-    opacity: 0.9;
-}

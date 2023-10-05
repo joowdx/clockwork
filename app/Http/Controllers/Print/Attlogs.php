@@ -17,7 +17,6 @@ class Attlogs extends Component
     {
         return view('print.attlogs', [
             'user' => $request->user(),
-            'signature' => $request->sign ? $request->user()->randomSpecimen()?->toSrc() : null,
         ]);
     }
 }
