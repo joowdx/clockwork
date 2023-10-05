@@ -115,7 +115,7 @@ preventTabClose(() => uploadForm.processing)
         <template #content>
             <div class="flex flex-col max-w-xl gap-2 text-sm">
                 <p>
-                    Sign documents automatically with your electronic signature. Your signature specimen are <b class="text-warning">encrypted</b> for security.
+                    Sign documents automatically with your electronic signature. Your signature specimen are <b class="text-warning">encrypted</b> for security where only you have access to these.
                 </p>
                 <p>
                     You may have to enable this feature first, if you want to use its functionality.
@@ -202,13 +202,11 @@ preventTabClose(() => uploadForm.processing)
                         <p>Guide:</p>
 
                         <ul class="px-4 text-sm tracking-tight list-disc">
-                            <li>Minimum of three samples required</li>
+                            <li>Minimum of three active samples required</li>
                             <li>Make sure the samples are clear and have transparent background</li>
+                            <li>Maximum dimension is 2048px</li>
+                            <li>Minimum dimension is 64px</li>
                         </ul>
-
-                        <p class="font-mono text-sm tracking-tighter text-warning">
-                            Note: Dimensions (<u>64px</u> min) (<u>2048px</u> max)
-                        </p>
                     </div>
 
                     <div class="form-control">
