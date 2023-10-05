@@ -12,7 +12,7 @@
 
     @routes
 
-    <script src="tsparticles.min.js"></script>
+    <script src="{{ url('tsparticles.min.js') }}"></script>
 
     <script>
         (async () => {
