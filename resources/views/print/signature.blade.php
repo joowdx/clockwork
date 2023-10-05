@@ -1,4 +1,5 @@
 <div
+    class="print-only"
     @style([
         'position: absolute',
         'left: 50%',
