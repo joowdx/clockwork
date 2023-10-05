@@ -231,9 +231,9 @@ tr, td {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    top: -20pt;
+    top: -40pt;
     object-fit: fill;
-    height: 44pt;
+    height: 70pt;
     pointer-events: none;
     user-select: none;
     opacity: 0.9;
