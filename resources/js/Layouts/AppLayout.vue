@@ -1,7 +1,7 @@
 <script setup>
 import TailwindNavigation from '@/Tailwind/Navigation.vue'
 import { Head, usePage } from '@inertiajs/vue3'
-import Echo from './../echo'
+import echo from './../echo'
 
 defineProps({
     title: String,
@@ -47,7 +47,7 @@ const dropdown = [
     },
 ]
 
-Echo.join('presence')
+echo.join('presence')
     .here((authenticated) => console.log(`online users [${authenticated.map((e) => e.username).join(', ')}].`))
     .joining((authenticated) => console.log(`${authenticated.username} is now online.`))
     .leaving((authenticated) => console.log(`${authenticated.username} is now offline.`))

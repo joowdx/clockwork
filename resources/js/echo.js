@@ -8,7 +8,7 @@ import Echo from 'laravel-echo'
 
 import 'pusher-js'
 
-export default new Echo({
+const echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1',
@@ -19,3 +19,5 @@ export default new Echo({
     enabledTransports: ['ws', 'wss'],
     encrypted: true,
 })
+
+export default echo
