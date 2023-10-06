@@ -19,6 +19,8 @@ return [
 
     'label' => env('APP_LABEL'),
 
+    'version' => '2.1.0',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

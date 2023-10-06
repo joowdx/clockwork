@@ -25,14 +25,15 @@ class StatusController extends Controller
         return [
             'app' => [
                 'name' => config('app.name'),
+                'label' => config('app.label'),
+                'version' => config('app.version'),
                 'time' => now(),
-                'version' => app()->version(),
             ],
             'auth' => [
-                'user' => $user->load(['employee'])->makeHidden(['type', 'disabled'])->toArray(),
+                'user' => $user->load(['employee'])->makeHidden(['role', 'disabled'])->toArray(),
                 'guard' => collect(array_keys(config('auth.guards')))->first(fn ($g) => auth()->guard($g)->check()),
             ],
-            'uptime' => now()->diffForHumans(config('app.start_time'), true),
+            'uptime' => now()->diffForHumans(config('app.initiated'), true),
             'timelogs' => [
                 'last_update' => ($uploads = $scanners->pluck('lastUpload')->filter()->map->time->toArray()) ? max($uploads) : null,
                 'latest_data' => ($timelogs = $scanners->pluck('latestTimelog')->filter()->map->time->toArray()) ? max($timelogs) : null,

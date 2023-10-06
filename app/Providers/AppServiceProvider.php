@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        config(['app.start_time' => now()]);
+        config(['app.initiated' => now()]);
 
         $this->app->bind(ScannerDriver::class, function ($app) {
             $scanner = $app->request->route('scanner') ?? $app->request->scanner ?? $app->request->scanner_id;
