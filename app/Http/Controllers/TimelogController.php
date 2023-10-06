@@ -65,18 +65,24 @@ class TimelogController extends Controller
                 ->map(fn ($timelogs, $date) => $service->logsForTheDay($employee, Carbon::parse($date)))
                 ->map(fn ($timelogs) =>
                     collect($timelogs)
-                        ->filter(fn ($t, $k) => in_array($k, ['in1', 'in2', 'out1', 'out2']))
-                        ->map(fn ($t) => $t ? [
+                        ->filter(fn ($t, $k) => in_array($k, ['in1', 'in2', 'out1', 'out2', 'ut']))
+                        ->map(fn ($t, $k) => $t && $k !== 'ut' ? [
                             'time' => $t?->time->format('H:i:s'),
                             'scanner' => $t?->scanner->name,
                             'print_background_colour' => $t?->scanner->print_background_colour,
                             'print_text_colour' => $t?->scanner->print_text_colour,
-                        ] : null)->toArray()
+                        ] : ($k === 'ut' ? $t : null))->toArray()
                 )
                 ->map(fn ($timelogs, $date) => [
                     'date' => $date,
+                    'valid' => ! @$timelogs['ut']?->invalid,
+                    'shortfall' => [
+                        'late' => @$timelogs['ut']?->in1 + @$timelogs['ut']?->in2,
+                        'undertime' => @$timelogs['ut']?->out1 + @$timelogs['ut']?->out2,
+                        'total' => @$timelogs['ut']?->total,
+                    ],
                     'am' => ['in' => $timelogs['in1'], 'out' => $timelogs['out1']],
-                    'pm' => ['in' => $timelogs['in2'], 'out' => $timelogs['out2']]
+                    'pm' => ['in' => $timelogs['in2'], 'out' => $timelogs['out2']],
                 ])
                 ->sortKeys()
                 ->values()

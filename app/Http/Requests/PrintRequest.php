@@ -11,6 +11,7 @@ class PrintRequest extends FormRequest
     public function rules(): array
     {
         return match ($this->route('by')) {
+            null => [],
             'office' => [
                 'dates' => 'required|array',
                 'dates.*' => 'required|date:Y-m-d',
@@ -131,10 +132,11 @@ class PrintRequest extends FormRequest
             }
 
             switch($schedule) {
-                case 'employee':
-                case 'search':
+                case 'office': {
+                    break;
+                }
                 default: {
-                    $this->merge([
+                    $this->merge(collect([
                         'weekdays.am.in' => '08:00',
                         'weekdays.pm.out' => '16:00',
                         'weekends.am.in' => '08:00',
@@ -142,7 +144,7 @@ class PrintRequest extends FormRequest
                         'weekends.pm.in' => '13:00',
                         'weekends.pm.out' => '17:00',
                         'calculate' => true,
-                    ]);
+                    ])->undot()->toArray());
                 }
             }
         });

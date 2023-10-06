@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Actions\FileImport\InsertTimelogs;
 use App\Contracts\Import;
 use App\Contracts\Repository;
+use App\Http\Requests\PrintRequest;
 use App\Models\Employee;
 use App\Models\Timelog;
 use App\Pipes\CheckNumericUid;
@@ -88,6 +89,8 @@ class TimelogService implements Import
 
     public function logsForTheDay(Employee $employee, Carbon $date): array
     {
+        $request = app(PrintRequest::class);
+
         $logs = $employee->logsForTheDay($date)->sort(fn ($log) => (int) $log->scanner->priority);
 
         $in = $logs->filter->in
@@ -103,13 +106,13 @@ class TimelogService implements Import
             'out1' => $out1 = $this->filterTime($out, 'out', 'am'),
             'in2' => $in2 = $this->filterTime($in->reject(fn ($log) => $in1?->time->gt($log->time) || $out1?->time->gt($log->time)), 'in', 'pm'),
             'out2' => $out2 = $this->filterTime($out->reject(fn ($log) => $in2?->time->gt($log->time) || $out1?->time->gt($log->time)), 'out', 'pm'),
-            'ut' => $this->calculateUndertime($date, $in1, $out1, $in2, $out2, @request()->weekends['regular'] ? ! request()->weekends['regular'] : $employee->regular),
+            'ut' => $this->calculateUndertime($date, $in1, $out1, $in2, $out2, @$request->weekends['regular'] ? ! $request->weekends['regular'] : $employee->regular),
         ];
     }
 
     public function time(): mixed
     {
-        $request = request();
+        $request = app(PrintRequest::class);;
 
         $parse = function (string $week) use ($request) {
             if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
@@ -155,23 +158,25 @@ class TimelogService implements Import
 
     public function calculateUndertime(Carbon $date, ?Timelog $in1, ?Timelog $out1, ?Timelog $in2, ?Timelog $out2, ?bool $excludeWeekends = true): object|int|null
     {
-        $calculate = function () use ($date, $in1, $out1, $in2, $out2) {
+        $request = app(PrintRequest::class);
+
+        $calculate = function () use ($date, $in1, $out1, $in2, $out2, $request) {
             $week = $date->isWeekday() ? 'weekdays' : 'weekends';
 
-            if (request()->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
+            if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
                 return (object) [
-                    'in1' => $in1ut = max($in1?->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
-                    'in2' => $in2ut = max($in2?->time->clone()->setTime(...explode(':', request()->$week['pm']['in']))->diffInMinutes($in2->time, false), 0),
-                    'out1' => $out1ut = max($out1?->time->setSeconds(0)->diffInMinutes($out1->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['am']['out'])), false), 0),
-                    'out2' => $out2ut = max($out2?->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
+                    'in1' => $in1ut = max($in1?->time->clone()->setTime(...explode(':', $request->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'in2' => $in2ut = max($in2?->time->clone()->setTime(...explode(':', $request->$week['pm']['in']))->diffInMinutes($in2->time, false), 0),
+                    'out1' => $out1ut = max($out1?->time->setSeconds(0)->diffInMinutes($out1->time->setSeconds(0)->clone()->setTime(...explode(':', $request->$week['am']['out'])), false), 0),
+                    'out2' => $out2ut = max($out2?->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', $request->$week['pm']['out'])), false), 0),
                     'total' => $in1ut + $out1ut + $in2ut + $out2ut,
                     'count' => $in1 || $out1 || $in2 || $out2,
                     'invalid' => ! $in1 || ! $out1 || ! $in2 || ! $out2,
                 ];
-            } elseif (request()->filled(["$week.am.in", "$week.pm.out"])) {
+            } elseif ($request->filled(["$week.am.in", "$week.pm.out"])) {
                 return (object) [
-                    'in1' => $in1ut = max($in1?->time->clone()->setTime(...explode(':', request()->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
-                    'out2' => $out2ut = max($out2?->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', request()->$week['pm']['out'])), false), 0),
+                    'in1' => $in1ut = max($in1?->time->clone()->setTime(...explode(':', $request->$week['am']['in']))->diffInMinutes($in1->time, false), 0),
+                    'out2' => $out2ut = max($out2?->time->setSeconds(0)->diffInMinutes($out2->time->setSeconds(0)->clone()->setTime(...explode(':', $request->$week['pm']['out'])), false), 0),
                     'total' => $in1ut + $out2ut,
                     'count' => $in1 || $out2,
                     'invalid' => ! $in1 || ! $out2,
