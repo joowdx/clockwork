@@ -11,13 +11,21 @@ trait PasswordValidationRules
      *
      * @return array
      */
-    protected function passwordRules()
+    protected function passwordRules($user)
     {
-        return [
-            'required',
-            'string',
-            'confirmed',
-            (new Password())->requireUppercase()->requireNumeric()->requireSpecialCharacter(),
-        ];
+        return match($user->developer) {
+            true => [
+                'required',
+                'string',
+                'confirmed',
+                new Password,
+            ],
+            default => [
+                'required',
+                'string',
+                'confirmed',
+                (new Password())->requireUppercase()->requireNumeric()->requireSpecialCharacter(),
+            ],
+        };
     }
 }
