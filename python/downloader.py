@@ -40,7 +40,7 @@ def main():
     parser.add_argument("-P", "--port", type=int, default=4370, help="port number of the device")
     parser.add_argument("-K", "--key", type=int, default=0, help="device passkey/password")
     parser.add_argument("-T", "--timeout", type=int, default=5, help="timeout in seconds (default: 5)")
-    parser.add_argument("--ping", action="store_true", help="check host using ping before connecting")
+    parser.add_argument("--ping", type=bool, default=True, help="check host using ping before connecting")
 
     args = parser.parse_args()
 
