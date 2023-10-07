@@ -40,7 +40,12 @@ class ScannerRequest extends FormRequest
                 'shared' => 'nullable|boolean',
                 'print_text_colour' => 'required|color',
                 'print_background_colour' => 'required|color',
-                'ip_address' => 'required_with:port,password|nullable|ip',
+                'ip_address' => [
+                    'required_with:port,password',
+                    'nullable',
+                    'ip',
+                    $this->isMethod('post') ? 'unique:scanners' : 'unique:scanners,ip_address,'.$this->id,
+                ],
                 'port' => 'nullable|integer|min:0',
                 'password' => 'nullable|integer',
             ];

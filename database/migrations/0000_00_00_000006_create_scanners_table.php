@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('remarks', 120)->nullable();
             $table->boolean('shared')->default(false);
             $table->boolean('priority')->default(false);
-            $table->string('ip_address')->nullable();
+            $table->string('ip_address')->unique()->nullable();
             $table->integer('port')->nullable();
             $table->string('password')->nullable();
             $table->timestamps();
