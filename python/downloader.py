@@ -40,7 +40,7 @@ def main():
     parser.add_argument("-P", "--port", type=int, default=4370, help="port number of the device")
     parser.add_argument("-K", "--key", type=int, default=0, help="device passkey/password")
     parser.add_argument("-T", "--timeout", type=int, default=5, help="timeout in seconds (default: 5)")
-    parser.add_argument("--ping", type=bool, default=True, help="check host using ping before connecting")
+    parser.add_argument("--no-ping", action="store_true", help="directly connect to device without pinging first")
 
     args = parser.parse_args()
 
@@ -65,11 +65,11 @@ def main():
     port = args.port
     password = args.key
     timeout = args.timeout
-    ping = args.ping
+    no_ping = args.no_ping
 
     device = None
     try:
-        device = zk.ZK(host, port, timeout, password, ommit_ping=not ping).connect()
+        device = zk.ZK(host, port, timeout, password, ommit_ping=no_ping).connect()
         device.disable_device()
 
         records = device.get_attendance()
