@@ -2,10 +2,8 @@
 
 namespace App\Providers;
 
-use App\Contracts\ScannerDriver;
-use App\Drivers\TadPhp;
-use App\Drivers\ZakZk;
 use App\Models\Scanner;
+use App\Services\DownloaderService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,18 +29,14 @@ class AppServiceProvider extends ServiceProvider
     {
         config(['app.initiated' => now()]);
 
-        $this->app->bind(ScannerDriver::class, function ($app) {
+        $this->app->bind(DownloaderService::class, function ($app) {
             $scanner = $app->request->route('scanner') ?? $app->request->scanner ?? $app->request->scanner_id;
 
             if (! $scanner instanceof Scanner) {
                 $scanner = Scanner::find($scanner);
             }
 
-            return match (strtolower($scanner->driver)) {
-                'zakzk' => new ZakZk($scanner->ip_address, $scanner->port),
-                'tadphp' => new TadPhp($scanner->ip_address, $scanner->port),
-                default => null,
-            };
+            return $scanner ? new DownloaderService($scanner) : null;
         });
     }
 }

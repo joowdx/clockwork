@@ -40,7 +40,7 @@ const informationForm = useForm({
     remarks: null,
     ip_address: null,
     port: null,
-    driver: null,
+    password: null,
     shared: false,
     priority: false,
     print_text_colour: '#000000',
@@ -94,7 +94,7 @@ const removeUser = (user) => {
 
 const informationFormLink = computed(() => forUpdate.value ? route('scanners.update', { id: scanner.value.id }) : route('scanners.store'))
 
-const hasErrorsOnConnection = computed(() => informationForm.errors.ip_address || informationForm.errors.port || informationForm.errors.driver)
+const hasErrorsOnConnection = computed(() => informationForm.errors.ip_address || informationForm.errors.port || informationForm.errors.password)
 
 const hasErrorsOnInformation = computed(() => informationForm.errors.name || informationForm.errors.attlog_file || informationForm.errors.remarks || informationForm.errors.shared || informationForm.errors.priority || informationForm.errors.print_text_colour || informationForm.errors.print_background_colour)
 
@@ -192,7 +192,7 @@ watch(modelValue, (show) => {
     informationForm.remarks = scanner.value?.remarks
     informationForm.ip_address = scanner.value?.ip_address
     informationForm.port = scanner.value?.port
-    informationForm.driver = scanner.value?.driver
+    informationForm.password = scanner.value?.password
     informationForm.shared = scanner.value?.shared ?? false
     informationForm.priority = scanner.value?.priority ?? false
     informationForm.print_text_colour = scanner.value?.print_text_colour ?? '#000000'
@@ -328,34 +328,28 @@ watch(modelValue, (show) => {
 
         <div v-if="tab === 'connection'" class="space-y-5">
             <div class="flex flex-col gap-2">
-                <div class="grid grid-cols-2 gap-3.5">
+                <div class="form-control">
                     <div class="form-control">
                         <label for="scanner_ip_address" class="block text-sm font-medium text-base-content"> Ip Address </label>
                         <input @keyup.enter="submit" v-model="informationForm.ip_address" id="scanner_ip_address" type="text" class="mt-1 uppercase input-sm input input-bordered" :disabled="! hasPrivilege" />
                         <InputError class="mt-0.5" :message="informationForm.errors.ip_address" />
                     </div>
+                </div>
 
+                <div class="grid grid-cols-2 gap-3">
                     <div class="form-control">
                         <label for="scanner_port" class="block text-sm font-medium text-base-content"> Port </label>
                         <input @keyup.enter="submit" v-model="informationForm.port" id="scanner_port" type="text" class="mt-1 uppercase input-sm input input-bordered" :disabled="! hasPrivilege" />
                         <InputError class="mt-0.5" :message="informationForm.errors.port" />
                     </div>
-                </div>
 
-                <div class="form-control">
-                    <label for="scanner_driver" class="block text-sm font-medium text-base-content"> Driver </label>
-                    <select id="scanner_driver" v-model="informationForm.driver" class="mt-1 select select-sm select-bordered" :disabled="! hasPrivilege">
-                        <option :value="null"></option>
-                        <option value="zakzk">ZakZk</option>
-                        <option value="tadphp">TadPhp</option>
-                    </select>
-                    <InputError class="mt-0.5" :message="informationForm.errors.driver" />
+                    <div class="form-control">
+                        <label for="scanner_password" class="block text-sm font-medium text-base-content"> Password </label>
+                        <input @keyup.enter="submit" v-model="informationForm.password" id="scanner_password" type="text" class="mt-1 uppercase input-sm input input-bordered" :disabled="! hasPrivilege" />
+                        <InputError class="mt-0.5" :message="informationForm.errors.password" />
+                    </div>
                 </div>
             </div>
-
-            <span v-if="informationForm.driver === 'zakzk'" class="block text-xs tracking-tight text-base-content/70">
-                ZakZK driver needs an external service setup. Please contact administrators for help.
-            </span>
         </div>
 
         <div v-if="tab == 'assignees' && forUpdate" class="space-y-5">

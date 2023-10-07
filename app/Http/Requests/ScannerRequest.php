@@ -22,11 +22,6 @@ class ScannerRequest extends FormRequest
         return $this->isMethod('delete')
             ? [
                 'timelogs' => ['nullable', 'boolean'],
-                'password' => function ($attribute, $password, $fail) {
-                    if (! $this->validatePassword($password)) {
-                        $fail(__('The password is incorrect.'));
-                    }
-                },
             ] : [
                 'id' => $this->isMethod('post') ? 'nullable' : 'bail|required',
                 'name' => [
@@ -45,9 +40,9 @@ class ScannerRequest extends FormRequest
                 'shared' => 'nullable|boolean',
                 'print_text_colour' => 'required|color',
                 'print_background_colour' => 'required|color',
-                'driver' => 'required_with:ip_address|nullable|string|in:zakzk,tadphp',
-                'ip_address' => 'required_with:driver,port|nullable|ip',
+                'ip_address' => 'required_with:port,password|nullable|ip',
                 'port' => 'nullable|integer|min:0',
+                'password' => 'nullable|integer',
             ];
     }
 }

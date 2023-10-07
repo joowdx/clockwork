@@ -24,9 +24,9 @@ class ScannerRepository extends BaseRepository
             'priority' => (bool) @$payload['priority'],
             'print_text_colour' => strtolower(@$payload['print_text_colour'] ?? '#000000'),
             'print_background_colour' => strtolower(@$payload['print_background_colour'] ?? '#ffffff'),
-            'driver' => @$payload['driver'],
             'ip_address' => @$payload['ip_address'],
             'port' => @$payload['port'],
+            'password' => @$payload['password'],
         ];
     }
 }

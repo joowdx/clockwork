@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Contracts\ScannerDriver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,7 +26,7 @@ class Scanner extends Model
         'remarks',
         'ip_address',
         'port',
-        'driver',
+        'password',
     ];
 
     public function name(): Attribute
@@ -84,16 +83,6 @@ class Scanner extends Model
             'name' => $this->name,
             'ip_address' => $this->ip_address,
         ];
-    }
-
-    public function getDriverInstance(): ?ScannerDriver
-    {
-        return null;
-    }
-
-    public function getAttlogs(): array
-    {
-        return $this->getDriverInstance()?->getAttlogs();
     }
 
     public function uploads(): HasMany

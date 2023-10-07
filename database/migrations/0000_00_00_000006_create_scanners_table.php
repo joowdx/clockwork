@@ -24,7 +24,7 @@ return new class extends Migration
             $table->boolean('priority')->default(false);
             $table->string('ip_address')->nullable();
             $table->integer('port')->nullable();
-            $table->string('driver')->nullable();
+            $table->string('password')->nullable();
             $table->timestamps();
         });
     }
