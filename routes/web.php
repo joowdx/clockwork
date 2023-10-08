@@ -6,6 +6,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LiveCaptureController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScannerController;
@@ -63,6 +64,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::controller(AssociateUserEmployeeProfileController::class)->group(function () {
                 Route::post('users/{user}/employee', 'link')->name('user.employee.link');
                 Route::delete('users/{user}/employee', 'unlink')->name('user.employee.unlink');
+            });
+
+            Route::controller(LiveCaptureController::class)->group(function () {
+                Route::post('capture/{scanner}', 'start')->name('scanner.capture.start');
             });
 
             Route::match(['get', 'post'], 'attendance', [AttendanceController::class, 'index'])
