@@ -15,11 +15,7 @@ trait RunsZkScript
     public function __construct(
         protected Scanner $scanner
     ) {
-        $this->python = trim(`which python3` ?? `which python`);
-
-        $this->script = base_path('python/'.@self::SCRIPT);
-
-        $this->ping = is_string(`which ping`);
+        $this->initialize();
     }
 
     public function setScanner(Scanner $scanner): self
@@ -57,5 +53,14 @@ trait RunsZkScript
         }
 
         return array_merge($command, array_diff($args, ['']));
+    }
+
+    protected function initialize()
+    {
+        $this->python = trim(`which python3` ?? `which python`);
+
+        $this->script = base_path('python/'.@self::SCRIPT);
+
+        $this->ping = is_string(`which ping`);
     }
 }
