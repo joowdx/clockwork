@@ -16,7 +16,7 @@ class Capture extends Model
         'pid',
         'runtime',
         'result',
-        'job_id',
+        'uuid',
     ];
 
     public function scanner(): BelongsTo

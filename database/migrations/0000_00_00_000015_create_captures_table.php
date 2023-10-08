@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('command')->nullable();
             $table->unsignedBigInteger('runtime')->default(0);
             $table->text('result')->nullable();
-            $table->uuid('job_id')->nullable()->index();
+            $table->uuid('uuid')->nullable()->index();
             $table->foreignIdFor(Scanner::class)->unique();
             $table->timestamps();
         });

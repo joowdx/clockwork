@@ -57,7 +57,7 @@ class RunLiveCapture implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'command' => join(' ', $this->command()),
                 'runtime' => 0,
                 'result' => '',
-                'job_id' => $this->job->getJobId(),
+                'uuid' => $this->job->uuid(),
             ]);
 
             while ($process->running()) {
