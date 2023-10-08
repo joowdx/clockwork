@@ -66,6 +66,11 @@ class Scanner extends Model
             ->latest('id');
     }
 
+    public function capture(): HasOne
+    {
+        return $this->hasOne(Capture::class);
+    }
+
     public function unrecognized(): HasMany
     {
         return $this->timelogs()
