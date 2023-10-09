@@ -15,9 +15,8 @@ return new class extends Migration
         Schema::create('captures', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('status')->default('capturing');
-            $table->string('pid')->nullable();
+            $table->unsignedInteger('pid')->nullable();
             $table->string('command')->nullable();
-            $table->unsignedBigInteger('runtime')->default(0);
             $table->text('result')->nullable();
             $table->uuid('uuid')->nullable()->index();
             $table->foreignIdFor(Scanner::class)->unique();
