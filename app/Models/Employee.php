@@ -28,11 +28,13 @@ class Employee extends Model
         'active',
         'csc_format',
         'groups',
+        'pin',
     ];
 
     protected $casts = [
         'name' => 'object',
         'groups' => 'array',
+        'pin' => 'hashed',
     ];
 
     protected $appends = [
@@ -41,6 +43,7 @@ class Employee extends Model
 
     protected $hidden = [
         'csc_format',
+        'pin',
     ];
 
     public function scanners(): BelongsToMany

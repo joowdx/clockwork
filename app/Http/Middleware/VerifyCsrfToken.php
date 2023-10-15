@@ -14,5 +14,6 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'print/*',
         'api/search',
+        'employees/*/pin',
     ];
 }

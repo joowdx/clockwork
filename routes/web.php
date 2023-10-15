@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LiveCaptureController;
+use App\Http\Controllers\PinController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScannerController;
@@ -29,6 +30,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+Route::middleware('guest')->group(function () {
+    Route::controller(PinController::class)->middleware('throttle')->group(function () {
+        Route::get('employees/{employee}/pin', 'index')->name('pin.index');
+        Route::post('employees/{employee}/pin', 'store')->name('pin.store');
+        Route::put('employees/{employee}/pin', 'update')->name('pin.update');
+        Route::delete('employees/{employee}/pin', 'delete')->name('pin.delete');
+    });
+});
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('account-disallowed', fn () => inertia('Auth/AccountDisallowed'))
