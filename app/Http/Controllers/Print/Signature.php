@@ -31,7 +31,7 @@ class Signature extends Component
 
         $this->portrait = ! $this->landscape;
 
-        $this->signature = $specimen->toSrc();
+        $this->signature = $specimen?->toSrc();
 
         imagedestroy($sample);
     }
