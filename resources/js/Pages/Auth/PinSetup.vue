@@ -17,7 +17,7 @@ const form = useForm({
 
 const submit = () => {
     if (props.action === 'update') {
-        form.put(route('pin.update', props.employee.id), {
+        form.put(route('pin.change', props.employee.id), {
             preserveScroll: true,
             preserveState: true,
             onFinish: () => form.reset('pin_confirmation'),
@@ -28,12 +28,9 @@ const submit = () => {
                     document.getElementById('pin').focus()
                 }
             },
-            onSuccess: () => {
-                form.reset('current_pin', 'pin', 'pin_confirmation')
-            }
         })
     } else {
-        form[props.action === 'setup' ? 'post' : 'delete'](route([props.action === 'setup' ? 'pin.store' : 'pin.delete'], props.employee.id), {
+        form[props.action === 'setup' ? 'post' : 'delete'](route([props.action === 'setup' ? 'pin.initialize' : 'pin.reset'], props.employee.id), {
             preserveScroll: true,
             preserveState: true,
             onFinish: () => form.reset('pin_confirmation'),
@@ -44,9 +41,6 @@ const submit = () => {
                     to(2)
                 }
             },
-            onSuccess: () => {
-                form.reset('pin', 'pin_confirmation')
-            }
         })
     }
 }

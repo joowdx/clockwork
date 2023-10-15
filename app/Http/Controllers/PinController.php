@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PinRequest;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class PinController extends Controller
 {
-    public function index(Employee $employee, Request $request)
+    public function setup(Employee $employee, Request $request)
     {
         $action = in_array(strtolower($request->action), ['update', 'setup', 'reset'])
             ? $request->action
@@ -37,24 +39,44 @@ class PinController extends Controller
         ]);
     }
 
-    public function store(Employee $employee, PinRequest $request)
+    public function check(Employee $employee, Request $request)
     {
-        $employee->update(['pin' => $request->pin]);
+        $request->validate(['pin' => 'required|string']);
 
-        return redirect()->back();
+        throw_unless(
+            Hash::check($request->pin, $employee->pin),
+            ValidationException::withMessages(['pin' => 'Incorrect pin.'])
+        );
+
+        if ($request->inertia()) {
+            return redirect()->back();
+        }
     }
 
-    public function update(Employee $employee, PinRequest $request)
+    public function initialize(Employee $employee, PinRequest $request)
     {
         $employee->update(['pin' => $request->pin]);
 
-        return redirect()->back();
+        if ($request->inertia()) {
+            return redirect()->route('query.search', ['employee' => $employee->id]);
+        }
     }
 
-    public function delete(Employee $employee, PinRequest $request)
+    public function change(Employee $employee, PinRequest $request)
     {
         $employee->update(['pin' => $request->pin]);
 
-        return redirect()->back();
+        if ($request->inertia()) {
+            return redirect()->route('query.search', ['employee' => $employee->id]);
+        }
+    }
+
+    public function reset(Employee $employee, PinRequest $request)
+    {
+        $employee->update(['pin' => $request->pin]);
+
+        if ($request->inertia()) {
+            return redirect()->route('query.search', ['employee' => $employee->id]);
+        }
     }
 }

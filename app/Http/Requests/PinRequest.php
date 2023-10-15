@@ -122,17 +122,20 @@ class PinRequest extends FormRequest
 
     protected function after(): array
     {
-        return [
-            function (Validator $validator) {
-                $scanners = $this->route('employee')->scanners()->where('enabled', true)->get();
+        return match(strtolower($this->method())) {
+            "post", "delete" => [
+                function (Validator $validator) {
+                    $scanners = $this->route('employee')->scanners()->where('enabled', true)->get();
 
-                $failed = $scanners->some(fn ($scanner) => @$this->scanners[$scanner->id] !==  $scanner->pivot->uid);
+                    $failed = $scanners->some(fn ($scanner) => @$this->scanners[$scanner->id] !==  $scanner->pivot->uid);
 
-                if($failed && empty($validator->errors()->messages())) {
-                    $validator->errors()->add('scanners', 'Given data did not match our records.');
+                    if($failed && empty($validator->errors()->messages())) {
+                        $validator->errors()->add('scanners', 'Given data did not match our records.');
+                    }
                 }
-            }
-        ];
+            ],
+            default => [],
+        };
     }
 
     protected function prepareForValidation()

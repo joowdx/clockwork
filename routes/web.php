@@ -10,12 +10,14 @@ use App\Http\Controllers\LiveCaptureController;
 use App\Http\Controllers\PinController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QueryController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\SpecimenController;
 use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\TimelogsDownloaderController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\RequireEmployeePin;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,10 +34,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::controller(PinController::class)->middleware('throttle')->group(function () {
-        Route::get('employees/{employee}/pin', 'index')->name('pin.index');
-        Route::post('employees/{employee}/pin', 'store')->name('pin.store');
-        Route::put('employees/{employee}/pin', 'update')->name('pin.update');
-        Route::delete('employees/{employee}/pin', 'delete')->name('pin.delete');
+        Route::get('employees/{employee}/pin', 'setup')->name('pin.setup');
+        Route::patch('employees/{employee}/pin', 'check')->name('pin.check');
+        Route::post('employees/{employee}/pin', 'initialize')->name('pin.initialize');
+        Route::put('employees/{employee}/pin', 'change')->name('pin.change');
+        Route::delete('employees/{employee}/pin', 'reset')->name('pin.reset');
     });
 });
 
