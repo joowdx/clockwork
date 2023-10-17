@@ -20,7 +20,7 @@ const toggle = () => (modelValue.value = !modelValue.value)
 <template>
     <Teleport to="body">
         <div class="modal modal-bottom sm:modal-middle" :class="{ 'modal-open': modelValue }">
-            <div class="modal-box bg-base-300">
+            <div class="modal-box bg-base-300/[0.99]">
                 <div v-if="closeable" class="absolute right-3 top-3">
                     <button v-if="closeable" :disabled="disableClosing" type="button" @click="toggle" class="flex items-center text-center align-middle btn btn-sm btn-circle btn-secondary" style="display: initial;">
                         ✕
