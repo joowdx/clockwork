@@ -17,7 +17,7 @@ use App\Http\Controllers\SpecimenController;
 use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\TimelogsDownloaderController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\RequireEmployeePin;
+use App\Http\Middleware\EmployeeToken;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +39,11 @@ Route::middleware('guest')->group(function () {
         Route::post('employees/{employee}/pin', 'initialize')->name('pin.initialize');
         Route::put('employees/{employee}/pin', 'change')->name('pin.change');
         Route::delete('employees/{employee}/pin', 'reset')->name('pin.reset');
+    });
+
+    Route::controller(QueryController::class)->group(function () {
+        Route::match(['get', 'post'], 'query/search', 'search')->name('query.search');
+        Route::get('query/result/{employee}', 'result')->middleware(EmployeeToken::class)->name('query.result');
     });
 });
 

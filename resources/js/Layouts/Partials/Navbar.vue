@@ -76,6 +76,14 @@ const dropdown = [
             </div>
             <div class="navbar-end">
                 <Link
+                    v-if="!authenticated && !route().current('query.search')"
+                    as="button"
+                    :href="route('query.search')"
+                    class="ml-4 normal-case btn btn-outline btn-sm"
+                >
+                    Query
+                </Link>
+                <Link
                     v-if="!authenticated && !route().current('login')"
                     as="button"
                     :href="route('login')"
