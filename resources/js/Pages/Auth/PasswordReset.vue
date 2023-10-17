@@ -8,6 +8,10 @@ const props = defineProps({
     user: Object
 })
 
+if (! props.user.needs_password_reset) {
+    router.visit(route('home'))
+}
+
 const current_password = ref(null)
 
 const password = ref(null)
@@ -19,6 +23,10 @@ const form = useForm({
 })
 
 const submit = () => {
+    if (!props.user.needs_password_reset) {
+        return
+    }
+
     form.put(route('user-password.update'), {
         errorBag: 'updatePassword',
         onError: () => {

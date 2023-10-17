@@ -54,7 +54,6 @@ class HomeController extends Controller
                 'employees' => Employee::search($request->search)
                     ->query($employee)
                     ->paginate($request->paginate ?? 25)
-                    ->withQueryString()
                     ->appends('query', null),
             ];
         }
@@ -68,7 +67,6 @@ class HomeController extends Controller
                 fn () => Employee::search($request->search)
                     ->query($employee)
                     ->paginate($request->paginate ?? 50)
-                    ->withQueryString()
                     ->appends('query', null)
             ),
             'offices' => Inertia::lazy(

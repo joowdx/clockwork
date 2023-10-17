@@ -51,11 +51,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('account-disallowed', fn () => inertia('Auth/AccountDisallowed'))
         ->name('account.disallowed');
 
-    Route::get('password-reset', function () {
-        return auth()->user()->needsPasswordReset()
-            ? inertia('Auth/PasswordReset')
-            : redirect()->route('home');
-    })->name('password-reset');
+    Route::get('password-reset', fn () => inertia('Auth/PasswordReset'))->name('password-reset');
 
     Route::middleware(['account.disallowed', 'required-password-reset'])->group(function () {
         Route::get('user/profile', [ProfileController::class, 'show'])->name('profile.show');
