@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Laravel\Fortify\Features;
+use Laravel\Fortify\Fortify;
 use Laravel\Jetstream\Http\Controllers\Inertia\UserProfileController;
 use Laravel\Jetstream\Jetstream;
 
@@ -19,5 +21,18 @@ class ProfileController extends UserProfileController
             'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
             'sessions' => $this->sessions($request)->all(),
         ]);
+    }
+
+    public function update(Request $request, UpdatesUserProfileInformation $updater)
+    {
+        if (config('fortify.lowercase_usernames')) {
+            $request->merge([
+                Fortify::username() => str($request->{Fortify::username()})->lower(),
+            ]);
+        }
+
+        $updater->update($request->user(), $request->all());
+
+        return app(ProfileInformationUpdatedResponse::class);
     }
 }
