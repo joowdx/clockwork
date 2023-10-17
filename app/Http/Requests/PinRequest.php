@@ -3,10 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
-use Illuminate\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Validator;
 use Laravel\Fortify\Rules\Password;
 
 class PinRequest extends FormRequest
@@ -21,7 +21,7 @@ class PinRequest extends FormRequest
 
     public function messages(): array
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             default => [
                 'scanners.*.required' => 'Fields must not be blank.',
                 'scanners.*.numeric' => 'Fields must only contain numeric characters.',
@@ -32,7 +32,7 @@ class PinRequest extends FormRequest
 
     public function rules(): array
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             'POST' => [
                 'scanners' => 'bail|required|array',
                 'scanners.*' => [
@@ -52,9 +52,9 @@ class PinRequest extends FormRequest
                             $fail("Your $attribute must not be a single repeating digit.");
                         }
 
-                        if(in_array($value, [1234, 4321, 9876, 2580, 9630, 1212, 1122, 6969, 0101, 123456, 654321])) {
+                        if (in_array($value, [1234, 4321, 9876, 2580, 9630, 1212, 1122, 6969, 0101, 123456, 654321])) {
                             $fail("Your $attribute must not be easily guessable.");
-                        };
+                        }
                     },
                 ],
             ],
@@ -64,7 +64,7 @@ class PinRequest extends FormRequest
                     'string',
                     function ($attribute, $value, $fail) {
                         if (! Hash::check($value, $this->route('employee')->pin)) {
-                            $fail("Incorrect " . str($attribute)->replace('_', ' ') . ".");
+                            $fail('Incorrect '.str($attribute)->replace('_', ' ').'.');
                         }
                     },
                 ],
@@ -78,11 +78,11 @@ class PinRequest extends FormRequest
                             $fail("Your $attribute must not be a single repeating digit.");
                         }
 
-                        if(in_array($value, [1234, 4321, 9876, 2580, 9630, 1212, 1122, 6969, 0101, 123456, 654321])) {
+                        if (in_array($value, [1234, 4321, 9876, 2580, 9630, 1212, 1122, 6969, 0101, 123456, 654321])) {
                             $fail("Your $attribute must not be easily guessable.");
-                        };
+                        }
 
-                        if($value === $this->current_pin && Hash::check($value, $this->route('employee')->pin)) {
+                        if ($value === $this->current_pin && Hash::check($value, $this->route('employee')->pin)) {
                             $fail("Your $attribute must not your current pin.");
                         }
                     },
@@ -107,11 +107,11 @@ class PinRequest extends FormRequest
                             $fail("Your $attribute must not be a single repeating digit.");
                         }
 
-                        if(in_array($value, [1234, 4321, 9876, 2580, 9630, 1212, 1122, 6969, 0101, 123456, 654321])) {
+                        if (in_array($value, [1234, 4321, 9876, 2580, 9630, 1212, 1122, 6969, 0101, 123456, 654321])) {
                             $fail("Your $attribute must not be easily guessable.");
-                        };
+                        }
 
-                        if(Hash::check($value, $this->route('employee')->pin)) {
+                        if (Hash::check($value, $this->route('employee')->pin)) {
                             $fail("Your $attribute must not your current pin.");
                         }
                     },
@@ -122,17 +122,17 @@ class PinRequest extends FormRequest
 
     protected function after(): array
     {
-        return match(strtolower($this->method())) {
-            "post", "delete" => [
+        return match (strtolower($this->method())) {
+            'post', 'delete' => [
                 function (Validator $validator) {
                     $scanners = $this->route('employee')->scanners()->where('enabled', true)->get();
 
-                    $failed = $scanners->some(fn ($scanner) => @$this->scanners[$scanner->id] !==  $scanner->pivot->uid);
+                    $failed = $scanners->some(fn ($scanner) => @$this->scanners[$scanner->id] !== $scanner->pivot->uid);
 
-                    if($failed && empty($validator->errors()->messages())) {
+                    if ($failed && empty($validator->errors()->messages())) {
                         $validator->errors()->add('scanners', 'Given data did not match our records.');
                     }
-                }
+                },
             ],
             default => [],
         };
@@ -144,7 +144,7 @@ class PinRequest extends FormRequest
             $scanners = $this->route('employee')->scanners()->where('enabled', true)->get();
 
             $this->merge([
-                'scanners' => $scanners->mapWithKeys(fn ($scanner) => [ $scanner->id => @$this->scanners[$scanner->id] ])->toArray()
+                'scanners' => $scanners->mapWithKeys(fn ($scanner) => [$scanner->id => @$this->scanners[$scanner->id]])->toArray(),
             ]);
         }
     }
@@ -154,12 +154,11 @@ class PinRequest extends FormRequest
         $errors = collect($validator->errors()->messages())->undot();
 
         $message = collect()
-            ->when($errors->has('current_pin'), fn ($message) => $message->put('current_pin', join(' ', $errors->get('current_pin'))))
-            ->when($errors->has('pin'), fn ($message) => $message->put('pin', join(' ', $errors->get('pin'))))
+            ->when($errors->has('current_pin'), fn ($message) => $message->put('current_pin', implode(' ', $errors->get('current_pin'))))
+            ->when($errors->has('pin'), fn ($message) => $message->put('pin', implode(' ', $errors->get('pin'))))
             ->when($errors->has('scanners'), fn ($message) => $message->put('scanners', collect($errors['scanners'])->flatten()->unique()->join(' ')))
             ->toArray();
 
         throw ValidationException::withMessages($message);
     }
-
 }

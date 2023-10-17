@@ -17,7 +17,7 @@ class AttendanceController extends Controller
             ? $request->category
             : 'office';
 
-        $column = match($category) {
+        $column = match ($category) {
             'group' => 'groups',
             default => $category,
         };
@@ -31,10 +31,10 @@ class AttendanceController extends Controller
             ->when($request->search, fn ($q) => $q->where($column, 'ilike', "%$request->search%"));
 
         $query = DB::query()
-            ->selectRaw("count(distinct employees.id) employees")
+            ->selectRaw('count(distinct employees.id) employees')
             ->selectRaw("string_agg(distinct scanners.name, ', ' order by scanners.name) scanners")
             ->where('active', true)
-            ->fromSub($subquery, "groups")
+            ->fromSub($subquery, 'groups')
             ->rightJoin('employees', 'employees.groups', '@>', DB::raw('"groups"."g"::jsonb'))
             ->leftJoin('enrollments', 'employees.id', 'enrollments.employee_id')
             ->leftJoin('scanners', 'scanners.id', 'enrollments.scanner_id')
@@ -50,7 +50,7 @@ class AttendanceController extends Controller
                     ->orderBy('name')
                     ->get(),
             ],
-            ...match($request->category) {
+            ...match ($request->category) {
                 'group' => [
                     'groups' => Inertia::lazy(function () use ($request, $query) {
                         return $query
@@ -59,7 +59,7 @@ class AttendanceController extends Controller
                             ->whereRaw('jsonb_array_length("employees"."groups") > 0')
                             ->groupBy('group')
                             ->paginate($request->paginate ?? 25);
-                    })
+                    }),
                 ],
                 default => [
                     'offices' => Inertia::lazy(function () use ($request, $query) {
@@ -69,7 +69,7 @@ class AttendanceController extends Controller
                             ->whereNotIn('office', [''])
                             ->groupBy('office')
                             ->paginate($request->paginate ?? 25);
-                    })
+                    }),
                 ],
             },
         ]);

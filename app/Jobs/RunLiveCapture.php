@@ -16,9 +16,8 @@ use Illuminate\Support\Facades\Process;
 
 class RunLiveCapture implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
-    use RunsZkScript;
-
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use RunsZkScript;
 
     const SCRIPT = 'capture.py';
 
@@ -54,7 +53,7 @@ class RunLiveCapture implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             $this->capture->update([
                 'status' => 'capturing',
                 'pid' => $process->id(),
-                'command' => join(' ', $this->command()),
+                'command' => implode(' ', $this->command()),
                 'runtime' => 0,
                 'result' => '',
                 'uuid' => $this->job->uuid(),

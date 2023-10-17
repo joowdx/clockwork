@@ -19,9 +19,9 @@ class DownloaderService
         $process = Process::timeout(120)->run($this->command($from, $to));
 
         if ($process->failed()) {
-            switch(trim(strtolower($process->output()))) {
+            switch (trim(strtolower($process->output()))) {
                 case 'unauthenticated':throw new RuntimeException($this->ping ? 'Invalid password provided.' : 'Cannot reach device or invalid password provided.');
-                case 'timed out': throw new RuntimeException('Timed out.' . ($this->ping ? 'Device may be unreachable' : ''));
+                case 'timed out': throw new RuntimeException('Timed out.'.($this->ping ? 'Device may be unreachable' : ''));
                 default: throw new RuntimeException($process->output() ?? $process->errorOutput());
             }
         }

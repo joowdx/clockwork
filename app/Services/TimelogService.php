@@ -112,7 +112,7 @@ class TimelogService implements Import
 
     public function time(): mixed
     {
-        $request = app(PrintRequest::class);;
+        $request = app(PrintRequest::class);
 
         $parse = function (string $week) use ($request) {
             if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {

@@ -26,7 +26,7 @@ class QuerySearchRequest extends FormRequest
 
     public function rules(): array
     {
-        return match(strtolower($this->method())) {
+        return match (strtolower($this->method())) {
             'post' => [
                 'name.first' => 'required|string',
                 'name.last' => 'required|string',

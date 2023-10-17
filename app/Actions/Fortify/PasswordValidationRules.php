@@ -13,7 +13,7 @@ trait PasswordValidationRules
      */
     protected function passwordRules($user)
     {
-        return match($user->developer) {
+        return match ($user->developer) {
             true => [
                 'required',
                 'string',

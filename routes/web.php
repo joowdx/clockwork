@@ -31,7 +31,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
 Route::middleware('guest')->group(function () {
     Route::controller(PinController::class)->middleware('throttle')->group(function () {
         Route::get('employees/{employee}/pin', 'setup')->name('pin.setup');

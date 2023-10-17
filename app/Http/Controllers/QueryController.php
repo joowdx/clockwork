@@ -14,12 +14,12 @@ class QueryController extends Controller
         if ($request->isMethod('GET')) {
             $employee = Employee::find($request->employee);
 
-            return inertia('Query/Search', match(empty($employee)) {
+            return inertia('Query/Search', match (empty($employee)) {
                 true => [],
                 default => [
                     'employee' => $employee->id,
                     'name' => $employee->name_format->shortStartLast,
-                    'proceed' => ! empty($employee->pin)
+                    'proceed' => ! empty($employee->pin),
                 ]
             });
         }

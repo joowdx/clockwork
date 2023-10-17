@@ -30,26 +30,26 @@ trait RunsZkScript
         return $this->scanner;
     }
 
-    public function command(null|string ...$args): array
+    public function command(?string ...$args): array
     {
         if (empty($this->python)) {
-            throw new \RuntimeException("Python interpreter not found. Please install Python.");
+            throw new \RuntimeException('Python interpreter not found. Please install Python.');
         }
 
         $command = [$this->python, $this->script, $this->scanner->ip_address];
 
         if ($this->scanner->port) {
-            $args[] = "-P";
+            $args[] = '-P';
             $args[] = $this->scanner->port;
         }
 
         if ($this->scanner->password) {
-            $args[] = "-K";
+            $args[] = '-K';
             $args[] = $this->scanner->password;
         }
 
         if (! $this->ping) {
-            $args[] = "--no-ping";
+            $args[] = '--no-ping';
         }
 
         return array_merge($command, array_diff($args, ['']));

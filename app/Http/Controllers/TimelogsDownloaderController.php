@@ -37,7 +37,6 @@ class TimelogsDownloaderController extends Controller
             throw ValidationException::withMessages(['message' => $ex->getMessage()]);
         }
 
-
         return redirect()->back();
     }
 }

@@ -18,9 +18,9 @@ class PinController extends Controller
 
         if ($action === 'setup' && ! empty($employee->pin)) {
             $action = 'update';
-        } else if ($action === 'update' && empty($employee->pin)) {
+        } elseif ($action === 'update' && empty($employee->pin)) {
             $action = 'setup';
-        } else if ($action === 'reset' && empty($employee->pin)) {
+        } elseif ($action === 'reset' && empty($employee->pin)) {
             $action = 'setup';
         }
 
@@ -35,7 +35,7 @@ class PinController extends Controller
         return inertia('Auth/PinSetup', [
             'employee' => $employee,
             'scanners' => $scanners->makeHidden(['pivot']),
-            'action' => $action ?? (empty($employee->pin) ? 'setup' : 'update')
+            'action' => $action ?? (empty($employee->pin) ? 'setup' : 'update'),
         ]);
     }
 

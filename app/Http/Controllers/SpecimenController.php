@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SpecimenRequest;
 use App\Models\Signature;
 use App\Models\Specimen;
-use Illuminate\Http\Request;
 
 class SpecimenController extends Controller
 {

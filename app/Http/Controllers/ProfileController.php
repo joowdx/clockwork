@@ -15,7 +15,7 @@ class ProfileController extends UserProfileController
         $this->validateTwoFactorAuthenticationState($request);
 
         return Jetstream::inertia()->render($request, 'Profile/Show', [
-            'signature' => Inertia::lazy(fn () => ($s = $request->user()->signature) ? $s->load(['specimens' => fn($q) => $q->orderBy('id')]) : null),
+            'signature' => Inertia::lazy(fn () => ($s = $request->user()->signature) ? $s->load(['specimens' => fn ($q) => $q->orderBy('id')]) : null),
             'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
             'sessions' => $this->sessions($request)->all(),
         ]);

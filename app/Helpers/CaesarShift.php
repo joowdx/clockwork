@@ -29,7 +29,7 @@ class CaesarShift
 
             $delta = (($decrypt ? $index - $shift : $index + $shift) + $total) % $total;
 
-            return $ciphered . ($index !== false ? self::CHARS[$delta] : $char);
+            return $ciphered.($index !== false ? self::CHARS[$delta] : $char);
         }, '');
     }
 }

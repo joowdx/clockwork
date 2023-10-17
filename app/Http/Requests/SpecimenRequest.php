@@ -12,9 +12,9 @@ class SpecimenRequest extends FormRequest
 
     public function messages()
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             'POST' => [
-                'samples.required' => 'Specimen sample is required.'
+                'samples.required' => 'Specimen sample is required.',
             ],
             default => [],
         };
@@ -22,7 +22,7 @@ class SpecimenRequest extends FormRequest
 
     public function attributes()
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             'POST' => [
                 'samples.*' => 'specimen :position',
             ],
@@ -32,7 +32,7 @@ class SpecimenRequest extends FormRequest
 
     public function rules(): array
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             'POST' => [
                 'samples' => [
                     'required',
@@ -53,10 +53,10 @@ class SpecimenRequest extends FormRequest
                             $fail('The specimen :position already exists in the database.');
                         }
                     },
-                ]
+                ],
             ],
             'PUT', 'PATCH' => [
-                'enabled' => 'required|boolean'
+                'enabled' => 'required|boolean',
             ],
             default => []
         };
@@ -64,11 +64,11 @@ class SpecimenRequest extends FormRequest
 
     public function after(): array
     {
-        return match($this->method()) {
+        return match ($this->method()) {
             'POST' => [
                 function (Validator $validator) {
                     $files = collect($this->samples)->mapWithKeys(fn ($s) => [
-                        $s->getClientOriginalName() => hash_file('sha3-256', $s->getRealPath())
+                        $s->getClientOriginalName() => hash_file('sha3-256', $s->getRealPath()),
                     ]);
 
                     $duplicates = $files->duplicates();
@@ -82,16 +82,16 @@ class SpecimenRequest extends FormRequest
 
                         $validator->errors()->add(
                             'samples',
-                            "{$copies->count()} distinct samples have some duplicates uploaded the same time: " . json_encode($copies)
+                            "{$copies->count()} distinct samples have some duplicates uploaded the same time: ".json_encode($copies)
                         );
                     }
 
                     $required = self::MINIMUM - $this->user()->specimens()->count() - $files->count();
 
-                    if($required > 0) {
+                    if ($required > 0) {
                         $validator->errors()->add('samples', "Please add $required more samples.");
-                    };
-                }
+                    }
+                },
             ],
             'PUT', 'PATCH' => [
                 function (Validator $validator) {
@@ -100,7 +100,7 @@ class SpecimenRequest extends FormRequest
                     if (! $this->enabled && $specimen->signature->specimens()->enabled()->count() <= self::MINIMUM) {
                         $validator->errors()->add('enabled', 'Must have at least 3 active specimens enabled.');
                     }
-                }
+                },
             ],
             default => [
                 function (Validator $validator) {
@@ -109,7 +109,7 @@ class SpecimenRequest extends FormRequest
                     if ($specimen->enabled && $specimen->signature->specimens()->enabled()->count() <= self::MINIMUM) {
                         $validator->errors()->add('delete', 'Must have at least 3 active specimens enabled.');
                     }
-                }
+                },
             ],
         };
     }

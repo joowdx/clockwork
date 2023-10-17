@@ -63,15 +63,14 @@ class TimelogController extends Controller
                 ->makeHidden(['id', 'in', 'out', 'state', 'scanner_id', 'laravel_through_key'])
                 ->groupBy(fn ($timelog) => $timelog->time->format('Y-m-d'))
                 ->map(fn ($timelogs, $date) => $service->logsForTheDay($employee, Carbon::parse($date)))
-                ->map(fn ($timelogs) =>
-                    collect($timelogs)
-                        ->filter(fn ($t, $k) => in_array($k, ['in1', 'in2', 'out1', 'out2', 'ut']))
-                        ->map(fn ($t, $k) => $t && $k !== 'ut' ? [
-                            'time' => $t?->time->format('H:i:s'),
-                            'scanner' => $t?->scanner->name,
-                            'print_background_colour' => $t?->scanner->print_background_colour,
-                            'print_text_colour' => $t?->scanner->print_text_colour,
-                        ] : ($k === 'ut' ? $t : null))->toArray()
+                ->map(fn ($timelogs) => collect($timelogs)
+                    ->filter(fn ($t, $k) => in_array($k, ['in1', 'in2', 'out1', 'out2', 'ut']))
+                    ->map(fn ($t, $k) => $t && $k !== 'ut' ? [
+                        'time' => $t?->time->format('H:i:s'),
+                        'scanner' => $t?->scanner->name,
+                        'print_background_colour' => $t?->scanner->print_background_colour,
+                        'print_text_colour' => $t?->scanner->print_text_colour,
+                    ] : ($k === 'ut' ? $t : null))->toArray()
                 )
                 ->map(fn ($timelogs, $date) => [
                     'date' => $date,
@@ -85,7 +84,7 @@ class TimelogController extends Controller
                     'pm' => ['in' => $timelogs['in2'], 'out' => $timelogs['out2']],
                 ])
                 ->sortKeys()
-                ->values()
+                ->values(),
         ];
     }
 

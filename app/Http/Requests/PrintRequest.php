@@ -131,11 +131,11 @@ class PrintRequest extends FormRequest
                 return;
             }
 
-            switch($schedule) {
-                case 'office': {
+            switch ($schedule) {
+                case 'office':
                     break;
-                }
-                default: {
+
+                default:
                     $this->merge(collect([
                         'weekdays.am.in' => '08:00',
                         'weekdays.pm.out' => '16:00',
@@ -145,7 +145,7 @@ class PrintRequest extends FormRequest
                         'weekends.pm.out' => '17:00',
                         'calculate' => true,
                     ])->undot()->toArray());
-                }
+
             }
         });
     }

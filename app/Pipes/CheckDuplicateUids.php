@@ -14,11 +14,11 @@ class CheckDuplicateUids
     {
         if (! $request->error) {
             $duplicates = collect($this->scanners($request->headers))
-                ->map(fn ($h) => $request->data->map(fn ($e) => $e[$h])->filter()->duplicates()->values()->toArray()
-            )->filter();
+                ->map(fn ($h) => $request->data->map(fn ($e) => $e[$h])->filter()->duplicates()->values()->toArray())
+                ->filter();
 
             if ($duplicates->isNotEmpty()) {
-                $request->error = self::ERROR . $duplicates->toJson();
+                $request->error = self::ERROR.$duplicates->toJson();
             }
         }
 

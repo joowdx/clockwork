@@ -69,10 +69,10 @@ class Specimen extends Model
     {
         $data = parent::toArray();
 
-        if (array_key_exists("sample", $data)) {
+        if (array_key_exists('sample', $data)) {
             return [
                 ...$data,
-                'sample' => $this->toBase64()
+                'sample' => $this->toBase64(),
             ];
         }
 
