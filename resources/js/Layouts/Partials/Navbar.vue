@@ -48,7 +48,7 @@ const dropdown = [
                     :class="[authenticated ? 'hidden lg:flex' : 'flex']"
                     class="items-center gap-3 text-xl font-bold normal-case lg:flex fill-base-content"
                 >
-                    <Application class="w-8 h-8" /> {{ $page.props.app.label }}
+                    <Application class="w-8 h-8" /> {{ $page.props.app.name }}
                 </Link>
                 <div v-if="authenticated" class="items-end hidden h-full ml-5 lg:flex">
                     <ul class="flex p-0">

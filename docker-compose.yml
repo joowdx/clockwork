@@ -1,14 +1,14 @@
 # For more information: https://laravel.com/docs/sail
 version: '3'
 services:
-    ttts.app:
-        container_name: ttts-app
+    clockwork.app:
+        container_name: clockwork-app
         build:
             context: .
             dockerfile: docker/Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: joowdx/ttts
+        image: joowdx/clockwork
         restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
@@ -25,7 +25,7 @@ services:
         depends_on:
             - pgsql
     nginx:
-        container_name: ttts-webserver
+        container_name: clockwork-webserver
         image: 'nginx:alpine'
         restart: unless-stopped
         ports:
@@ -38,12 +38,12 @@ services:
         networks:
             - 'sail'
         depends_on:
-            - 'ttts.app'
+            - 'clockwork.app'
         healthcheck:
             test: ["CMD", "wget -O /dev/null http://localhost || exit 1"]
             timeout: 10s
     pgsql:
-        container_name: ttts-database
+        container_name: clockwork-database
         image: 'postgres:15-alpine'
         restart: unless-stopped
         ports:
@@ -63,7 +63,7 @@ services:
             retries: 3
             timeout: 5s
     redis:
-        container_name: ttts-cache
+        container_name: clockwork-cache
         image: 'redis:alpine'
         restart: unless-stopped
         ports:
@@ -77,7 +77,7 @@ services:
             retries: 3
             timeout: 5s
     soketi:
-        container_name: ttts-websocket
+        container_name: clockwork-websocket
         image: 'joowdx/soketi'
         restart: unless-stopped
         environment:
@@ -92,12 +92,12 @@ services:
             - sail
 networks:
     sail:
-        name: ttts
+        name: clockwork
         driver: bridge
 volumes:
     pgsql:
-        name: ttts-pgsql
+        name: clockwork-pgsql
         driver: local
     redis:
-        name: ttts-redis
+        name: clockwork-redis
         driver: local

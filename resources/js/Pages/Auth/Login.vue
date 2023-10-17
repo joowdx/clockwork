@@ -44,7 +44,7 @@ onMounted(() => {
                     <div class="flex-col hero-content lg:flex-row-reverse lg:gap-20">
                         <div class="text-center lg:text-left">
                             <h1 class="text-5xl font-bold">Login now!</h1>
-                            <span class="py-6 font-mono text-sm text-primary-focus">{{ $page.props.app.label }}</span>
+                            <span class="py-6 font-mono text-sm text-primary-focus">{{ $page.props.app.name }}</span>
                             <p class="py-6" style="text-wrap: balance;">
                                 Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi
                                 exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.
