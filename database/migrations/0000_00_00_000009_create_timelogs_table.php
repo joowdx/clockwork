@@ -21,6 +21,7 @@ return new class extends Migration
             $table->dateTime('time');
             $table->string('state', 20);
             $table->boolean('hidden')->default(false);
+            $table->boolean('official')->default(true);
             $table->timestamps();
             $table->unique(['uid', 'scanner_id', 'time', 'state']);
         });
