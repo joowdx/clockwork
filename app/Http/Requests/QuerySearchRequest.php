@@ -53,8 +53,8 @@ class QuerySearchRequest extends FormRequest
             $name['last'] = mb_strtoupper($this->name['last']);
         }
 
-        if (isset($this->name['last'])) {
-            $name['last'] = mb_strtoupper($this->name['last']);
+        if (isset($this->name['extension'])) {
+            $name['extension'] = mb_strtoupper($this->name['extension']);
         }
 
         $this->merge(['name' => $name]);
