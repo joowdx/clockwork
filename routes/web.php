@@ -54,8 +54,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::middleware(['account.disallowed', 'required-password-reset'])->group(function () {
         Route::controller(ProfileController::class)->group(function () {
-            Route::get('user/profile')->name('profile.show');
-            Route::put('user/profile')->name('profile.update');
+            Route::get('user/profile', 'show')->name('profile.show');
+            Route::put('user/profile', 'update')->name('profile.update');
         });
 
         Route::middleware(['account.disallowed.system'])->group(function () {
