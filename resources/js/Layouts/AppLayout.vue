@@ -2,6 +2,7 @@
 import TailwindNavigation from '@/Tailwind/Navigation.vue'
 import { Head, usePage } from '@inertiajs/vue3'
 import echo from './../echo'
+import Banner from './Partials/Banner.vue';
 
 defineProps({
     title: String,
@@ -45,6 +46,12 @@ const dropdown = [
         active: route().current('scanners.*'),
         show: true,
     },
+    {
+        name: 'Configuration',
+        href: route('configuration.index'),
+        active: route().current('configuration.*'),
+        show: user.administrator,
+    },
 ]
 
 echo.join('presence')
@@ -61,10 +68,14 @@ echo.join('presence')
             <TailwindNavigation :navigation="disabled ? [] : navigation" :dropdown="disabled ? [] : dropdown" />
         </section>
 
-        <header class="shadow bg-base-300/40" v-if="$slots.header">
-            <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
-                <slot name="header"> </slot>
+        <header>
+            <div v-if="$slots.header" class="shadow bg-base-300/40">
+                <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
+                    <slot name="header"> </slot>
+                </div>
             </div>
+
+            <Banner />
         </header>
 
         <main class="flex-1" v-bind="$attrs">

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AssociateUserEmployeeProfileController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\HomeController;
@@ -56,6 +57,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::controller(ProfileController::class)->group(function () {
             Route::get('user/profile', 'show')->name('profile.show');
             Route::put('user/profile', 'update')->name('profile.update');
+        });
+
+        Route::controller(ConfigurationController::class)->name('configuration.')->prefix('configuration')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::put('alert', 'alert')->name('set.alert');
         });
 
         Route::middleware(['account.disallowed.system'])->group(function () {
