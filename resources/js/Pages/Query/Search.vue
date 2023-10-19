@@ -4,9 +4,8 @@ import InputError from '@/Components/InputError.vue'
 import Modal from '@/Components/Modal.vue'
 import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import { nextTick, onMounted, ref } from 'vue'
-import cipher from '@/cipher'
 
-const props = defineProps(['employee', 'name', 'proceed'])
+const props = defineProps(['encrypted', 'employee', 'name', 'proceed'])
 
 const modal = ref(false)
 
@@ -41,10 +40,14 @@ const check = () => {
     pin.patch(route('pin.check', props.employee), {
         preserveScroll: true,
         preserveState: true,
-        onSuccess: () => {
-            router.visit(route('query.result', props.employee), {
-                headers: {'X-Employee-Token': btoa(cipher(pin.pin, props.employee))},
-            }, { replace: true })
+        onSuccess: async () => {
+            const encrypted = await axios.post(route('encrypt'), { message: '1234' }).then(({data}) => data.encrypted)
+
+            const link = route('query.result', props.employee)
+
+            const headers = {'X-Employee-Token': encrypted}
+
+            router.visit(link, { headers })
         },
         onError: () => {
             pin.reset()

@@ -47,17 +47,18 @@ class QueryController extends Controller
             ->orderBy('priority', 'desc')
             ->where('enabled', true)
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->makeHidden(['pivot']);
 
-        if ($employee && ! $request->inertia() && $request->expectsJson()) {
-            return [
-                'employee' => $employee,
-                'scanners' => $scanners,
-                'action' => $employee->pin ? 'proceed' : 'setup',
-            ];
+        if (! $request->expectsJson()) {
+            return redirect()->route('query.search', ['employee' => $employee->id]);
         }
 
-        return redirect()->route('query.search', ['employee' => $employee->id]);
+        return [
+            'employee' => $employee,
+            'scanners' => $scanners,
+            'action' => $employee->pin ? 'proceed' : 'setup',
+        ];
     }
 
     public function result(Request $request, Employee $employee)

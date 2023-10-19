@@ -48,9 +48,7 @@ class PinController extends Controller
             ValidationException::withMessages(['pin' => 'Incorrect pin.'])
         );
 
-        if ($request->inertia()) {
-            return redirect()->back();
-        }
+        return $request->inertia() ? redirect()->back() : ['encrypted' => encrypt($request->pin)];
     }
 
     public function initialize(Employee $employee, PinRequest $request)

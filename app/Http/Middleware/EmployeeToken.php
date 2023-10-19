@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\CaesarShift;
 use App\Models\Employee;
 use Closure;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,9 +36,10 @@ class EmployeeToken
      */
     protected function check(Employee $employee, string $pin): bool
     {
-        return Hash::check(
-            CaesarShift::cipher(base64_decode($pin), $employee?->id, true),
-            $employee->pin,
-        );
+        try {
+            return Hash::check(decrypt($pin), $employee->pin);
+        } catch (DecryptException) {
+            return false;
+        }
     }
 }
