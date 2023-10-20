@@ -34,9 +34,9 @@ export const daisyui = {
         {
             dark: {
                 'color-scheme': 'dark',
-                primary: '#F2F2F2',
+                primary: '#145A92',
                 secondary: '#C5C6C6',
-                accent: '#A9A9A9',
+                accent: 'aqua',
                 neutral: '#FFFFFF',
                 'base-100': '#111',
                 'base-200': '#222',
@@ -53,7 +53,7 @@ export const daisyui = {
                 '--animation-input': '0',
                 '--btn-focus-scale': '1',
                 '--tab-radius': '0.3rem'
-            }
+            },
         }
     ]
 }

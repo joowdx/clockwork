@@ -104,7 +104,7 @@ defineExpose({
                     />
                     <button
                         :class="{ 'btn-sm': isCompact() }"
-                        class="btn btn-square join-item btn-primary"
+                        class="btn btn-square join-item"
                         @click="update"
                         :disabled="form.processing"
                     >
@@ -131,7 +131,7 @@ defineExpose({
         <div class="py-4 bg-base-300/40 rounded-[--rounded-box]">
             <slot name="pre"></slot>
 
-            <div class="overflow-y-scroll" :class="[wrapperClass, isCompact() ? 'h-[34.5em]' : 'h-[28.75em]']">
+            <div :class="[wrapperClass, isCompact() ? 'h-[34.5em]' : 'h-[28.75em]']">
                 <table ref="table" class="table w-full table-zebra table-pin-rows" v-bind="$attrs">
                     <thead>
                         <slot name="head">
@@ -204,7 +204,7 @@ defineExpose({
                 <div class="inline-block w-full md:w-fit">
                     <div class="justify-center join">
                         <button
-                            class="w-24 btn join-item"
+                            class="w-24 btn-primary btn join-item"
                             :class="{ 'btn-sm': isCompact() }"
                             @click="update"
                             :disabled="form.processing"
@@ -212,7 +212,7 @@ defineExpose({
                             Paginate
                         </button>
                         <select
-                            class="w-24 select select-bordered join-item"
+                            class="w-24 btn-primary select select-bordered join-item"
                             :class="{ 'select-sm': isCompact() }"
                             v-model="form.paginate"
                             :disabled="form.processing"
@@ -228,51 +228,59 @@ defineExpose({
                 <slot name="links">
                     <div class="justify-center w-full join md:w-fit">
                         <button
-                            class="btn join-item"
+                            class="btn btn-square btn-primary join-item"
                             :class="{ 'btn-sm': isCompact() }"
                             @click="jump()"
                             :disabled="form.processing || (items?.current_page == 1 ? true : null)"
                             preserve-scroll
                             preserve-state
                         >
-                            ⇚
+                            <svg class="w-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                                <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160zm352-160l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L301.3 256 438.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0z"/>
+                            </svg>
                         </button>
                         <button
-                            class="btn join-item"
+                            class="btn btn-primary join-item"
                             :class="{ 'btn-sm': isCompact() }"
                             @click="jump(items?.current_page - 1)"
                             :disabled="form.processing || (items?.current_page == 1 ? true : null)"
                             preserve-scroll
                             preserve-state
                         >
-                            ⇐
+                            <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 320 512">
+                                <path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/>
+                            </svg>
                         </button>
                         <button
-                            class="btn btn-square disabled:text-base-content join-item"
+                            class="btn btn-square btn-primary disabled:text-base-content join-item"
                             disabled
                             :class="{ 'btn-sm': isCompact() }"
                         >
                             {{ items?.current_page }}
                         </button>
                         <button
-                            class="btn join-item"
+                            class="btn btn-square btn-primary join-item"
                             :class="{ 'btn-sm': isCompact() }"
                             @click="jump(items?.current_page + 1)"
                             :disabled="form.processing || (items?.current_page == items?.last_page ? true : null)"
                             preserve-scroll
                             preserve-state
                         >
-                            ⇒
+                            <svg class="w-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 320 512">
+                                <path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/>
+                            </svg>
                         </button>
                         <button
-                            class="btn join-item"
+                            class="btn btn-square btn-primary join-item"
                             :class="{ 'btn-sm': isCompact() }"
                             @click="jump(items?.last_page)"
                             :disabled="form.processing || (items?.current_page == items?.last_page ? true : null)"
                             preserve-scroll
                             preserve-state
                         >
-                            ⇛
+                            <svg class="w-4 fill-current" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
+                                <path d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z"/>
+                            </svg>
                         </button>
                     </div>
                 </slot>
@@ -280,7 +288,7 @@ defineExpose({
                 <div class="inline-block w-full form-control md:w-fit">
                     <div class="justify-center join">
                         <button
-                            class="w-24 btn join-item"
+                            class="w-24 btn-primary btn join-item"
                             :class="{ 'btn-sm': isCompact() }"
                             @click="update"
                             :disabled="form.processing"
@@ -289,7 +297,7 @@ defineExpose({
                         </button>
                         <input
                             type="number"
-                            class="w-24 input input-bordered join-item"
+                            class="w-24 btn-primary input input-bordered join-item disabled:bg-neutral"
                             :class="{ 'input-sm': isCompact() }"
                             v-model="form.page"
                             @keypress.enter="update"
@@ -308,6 +316,16 @@ defineExpose({
 </template>
 
 <style scoped>
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 .table :where(thead, tbody) :where(tr:not(:last-child)), .table :where(thead, tbody) :where(tr:first-child:last-child) {
     border-bottom: none;
 }

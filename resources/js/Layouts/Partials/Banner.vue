@@ -77,12 +77,12 @@ const dismissed = ref(!(alert.title && alert.message) || isAlertDismissed())
         <div
             v-if="!dismissed"
             :class="{
-                'bg-error/90': type.error,
-                'bg-info/90': type.info,
-                'bg-accent/90': type.question,
-                'bg-success/90': type.success,
-                'bg-warning/90': type.warning,
-                'bg-primary/90': type.normal,
+                'bg-error': type.error,
+                'bg-info': type.info,
+                'bg-accent': type.question,
+                'bg-success': type.success,
+                'bg-warning': type.warning,
+                'bg-neutral': type.normal,
             }"
         >
             <div
@@ -93,7 +93,7 @@ const dismissed = ref(!(alert.title && alert.message) || isAlertDismissed())
                     'text-accent-content': type.question,
                     'text-success-content': type.success,
                     'text-warning-content': type.warning,
-                    'text-primary-content': type.normal,
+                    'text-neutral-content': type.normal,
                 }"
             >
                 <svg v-if="type.error" class="w-5 h-5 fill-current shrink-0" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">

@@ -64,18 +64,16 @@ echo.join('presence')
     <Head :title="title" />
 
     <div class="flex flex-col min-h-screen">
-        <section class="bg-base-100/90">
+        <section class="sticky top-0 z-10 bg-base-100">
+            <Banner />
+
             <TailwindNavigation :navigation="disabled ? [] : navigation" :dropdown="disabled ? [] : dropdown" />
         </section>
 
-        <header>
-            <div v-if="$slots.header" class="shadow bg-base-300/40">
-                <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
-                    <slot name="header"> </slot>
-                </div>
+        <header v-if="$slots.header" class="shadow bg-base-300/40">
+            <div class="px-4 py-2 mx-auto max-w-7xl sm:px-6 lg:px-8 text-base-content">
+                <slot name="header"> </slot>
             </div>
-
-            <Banner />
         </header>
 
         <main class="flex-1" v-bind="$attrs">

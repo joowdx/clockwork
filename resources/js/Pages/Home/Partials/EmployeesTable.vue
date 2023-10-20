@@ -19,6 +19,8 @@ const results = computed(() => props.employees.data.map(e => e.id))
 
 const selected = computed(() => Object.keys(data.value).filter(e => data.value[e]))
 
+const loaded = ref(false)
+
 let skipCheck = false
 
 const clearSelection = () => {
@@ -83,7 +85,8 @@ onMounted(() => {
     nextTick(() => {
         router.reload({
             data: props.queryStrings,
-            only: ['employees', 'groups', 'offices']
+            only: ['employees', 'groups', 'offices'],
+            onSuccess: () => loaded.value = true
         })
     })
 })
@@ -91,12 +94,13 @@ onMounted(() => {
 
 <template>
     <DataTable
+        v-if="loaded"
         ref="datatable"
         class="table-sm"
         :class="{'opacity-50 pointer-events-none': datatable?.processing}"
         :items="employees"
         :queryStrings="queryStrings"
-        :wrapperClass="`h-[calc(100vh-425px)] min-h-[29em]`"
+        :wrapperClass="`h-fit min-h-[29em]`"
         :options="options"
         @updated="checkSelection"
     >

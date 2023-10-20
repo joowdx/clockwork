@@ -7,7 +7,7 @@ import Banner from './Partials/Banner.vue'
 <template>
     <div class="flex flex-col min-h-screen">
         <section>
-            <Banner />
+            <Banner class="bg-opacity-100" />
 
             <Navbar />
         </section>

@@ -12,18 +12,17 @@
                 </div>
                 <div class="flex items-center justify-center flex-1 sm:items-stretch sm:justify-start">
                     <div class="flex items-center flex-shrink-0">
-                        <Application class="block w-auto h-8 lg:hidden" />
-                        <Application class="hidden w-auto h-8 lg:block" />
+                        <ApplicationBanner class="block w-auto h-8" />
                     </div>
                     <div class="hidden sm:block sm:ml-6">
                         <div class="flex space-x-4">
                             <template v-for="item in navigation" :key="item.name">
-                                <Link v-if="item.show && ! item.refresh" :href="item.href" :class="[item.active ? 'bg-base-300' : '', 'hover:bg-base-200 px-3 py-2 rounded-[--rounded-btn] text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
+                                <Link v-if="item.show && ! item.refresh" :href="item.href" :class="[item.active ? 'bg-primary' : '', 'hover:bg-accent/70 px-3 py-2 rounded-[--rounded-btn] text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
                                     {{ item.name }}
 
                                 </Link>
 
-                                <a v-if="item.refresh" :href="item.href" :class="[item.active ? 'bg-base-300' : '', 'hover:bg-base-200 px-3 py-2 rounded-[--rounded-btn] text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
+                                <a v-if="item.refresh" :href="item.href" :class="[item.active ? 'bg-primary' : '', 'hover:bg-accent/70 px-3 py-2 rounded-[--rounded-btn] text-sm font-medium']" :aria-current="item.active ? 'page' : undefined">
                                     {{ item.name }}
                                 </a>
                             </template>
@@ -42,12 +41,12 @@
                             <MenuItems class="absolute right-0 w-48 py-1 mt-2 origin-top-right rounded-md shadow-lg opacity-[0.98] bg-base-300 focus:outline-none">
                                 <template v-for="item in dropdown" :key="item.name + item.href">
                                     <MenuItem v-if="item.show" v-slot="{ active }">
-                                        <Link :href="item.href" :class="[active ? 'bg-base-100' : '', 'block px-4 py-2 text-sm']">{{ item.name }}</Link>
+                                        <Link :href="item.href" :class="[active ? 'bg-primary' : '', 'block px-4 py-2 text-sm']">{{ item.name }}</Link>
                                     </MenuItem>
                                 </template>
 
                                 <MenuItem v-slot="{ active }">
-                                    <Link :href="route('logout')" method="post" :class="{'bg-base-100': active}" class="block w-full px-4 py-2 text-sm text-left" as="button">Logout</Link>
+                                    <Link :href="route('logout')" method="post" :class="{'bg-primary': active}" class="block w-full px-4 py-2 text-sm text-left" as="button">Logout</Link>
                                 </MenuItem>
                             </MenuItems>
                         </transition>
@@ -57,7 +56,7 @@
         </div>
         <DisclosurePanel class="sm:hidden">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <Link v-for="item in navigation" :key="item.name" :href="item.href" :class="[item.active ? 'bg-base-300' : '', 'block px-3 py-2 rounded-md text-base font-medium']" :aria-current="item.active ? 'page' : undefined" preserveState preserveScroll>
+                <Link v-for="item in navigation" :key="item.name" :href="item.href" :class="[item.active ? 'bg-primary' : '', 'block px-3 py-2 rounded-md text-base font-medium']" :aria-current="item.active ? 'page' : undefined" preserveState preserveScroll>
                     {{ item.name }}
                 </Link>
             </div>
@@ -84,7 +83,7 @@ import {
 
 import { Link } from '@inertiajs/vue3';
 
-import Application from '@/Components/Icons/Application.vue';
+import ApplicationBanner from '@/Components/Icons/ApplicationBanner.vue';
 
 export default {
     components: {
@@ -99,7 +98,7 @@ export default {
         MenuIcon,
         XIcon,
         Link,
-        Application
+        ApplicationBanner
     },
 
     props: {

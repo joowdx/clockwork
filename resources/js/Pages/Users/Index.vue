@@ -43,7 +43,7 @@ const showUserModal = (e) => {
                 :rowAction="showUserModal"
                 ref="dataTable"
                 class="table-sm"
-                wrapperClass="h-[calc(100vh-329px)] min-h-[29em]"
+                wrapperClass="min-h-[29em]"
             >
                 <template #actions>
                     <div class="flex items-end content-end justify-end flex-1 order-first w-full md:order-none">

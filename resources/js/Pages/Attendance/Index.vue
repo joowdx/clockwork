@@ -34,6 +34,8 @@ const dataTable = ref(null)
 
 const selection = ref([])
 
+const loaded = ref(false)
+
 const loading = ref(false)
 
 const attendancePreview = ref(null)
@@ -118,6 +120,7 @@ onMounted(() => {
         router.reload({
             data: queryStrings.value,
             only: [`${props.category}s`],
+            onSuccess: () => loaded.value = true
         })
     })
 })
@@ -200,12 +203,13 @@ const formOptions = {
                 </div>
 
                 <DataTable
+                    v-if="loaded"
                     ref="dataTable"
                     class="table-sm"
                     :class="{'opacity-50 pointer-events-none': dataTable?.processing}"
                     :items="list"
                     :queryStrings="queryStrings"
-                    :wrapperClass="`h-[calc(100vh-425px)] min-h-[29em]`"
+                    :wrapperClass="`h-fit min-h-[29em]`"
                     :options="formOptions"
                 >
                     <template #pre>
