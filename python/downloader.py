@@ -71,15 +71,10 @@ def main():
     try:
         device = zk.ZK(host, port, timeout, password, ommit_ping=no_ping).connect()
         device.disable_device()
-
         records = device.get_attendance()
-
         attendance = [record for record in records if start <= record.timestamp <= end] if args.date else records
-
-        for log in map(lambda x: {"uid": int(x.user_id), "time": x.timestamp.strftime("%Y-%m-%d %H:%m:%S"), "state": x.punch}, attendance):
+        for log in map(lambda x: {"uid": int(x.user_id), "time": x.timestamp.strftime("%Y-%m-%d %H:%M:%S"), "state": x.punch}, attendance):
             print(json.dumps(log))
-
-        device.enable_device()
     except (zk.exception.ZKNetworkError, zk.exception.ZKErrorResponse, zk.exception.ZKErrorConnection) as e:
         print(e)
         sys.exit(-2)
@@ -88,6 +83,7 @@ def main():
         sys.exit(-1)
     finally:
         if device:
+            device.enable_device()
             device.disconnect()
 
 if __name__ == "__main__":
