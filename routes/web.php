@@ -16,7 +16,7 @@ use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\SpecimenController;
 use App\Http\Controllers\TimelogController;
-use App\Http\Controllers\TimelogsDownloaderController;
+use App\Http\Controllers\DownloaderController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EmployeeToken;
 use Illuminate\Support\Facades\Route;
@@ -96,7 +96,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
                 ->name('attendance');
         });
 
-        Route::controller(TimelogsDownloaderController::class)->group(function () {
+        Route::controller(DownloaderController::class)->group(function () {
             Route::post('scanners/{scanner}/download', 'download')->name('scanners.download');
         });
 

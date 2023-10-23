@@ -9,7 +9,7 @@ use App\Services\TimelogService;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
-class TimelogsDownloaderController extends Controller
+class DownloaderController extends Controller
 {
     /**
      * Download attendance.
