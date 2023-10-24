@@ -1,8 +1,11 @@
 <script setup>
-import TailwindNavigation from '@/Tailwind/Navigation.vue'
 import { Head, usePage } from '@inertiajs/vue3'
-import echo from './../echo'
-import Banner from './Partials/Banner.vue';
+import { watch } from 'vue'
+import echo from '@/echo'
+import Banner from './Partials/Banner.vue'
+import TailwindNavigation from '@/Tailwind/Navigation.vue'
+import sendToast from '@/Composables/toasts'
+import Toast from '@/Components/Toast.vue'
 
 defineProps({
     title: String,
@@ -58,6 +61,15 @@ echo.join('presence')
     .here((authenticated) => console.log(`online users [${authenticated.map((e) => e.username).join(', ')}].`))
     .joining((authenticated) => console.log(`${authenticated.username} is now online.`))
     .leaving((authenticated) => console.log(`${authenticated.username} is now offline.`))
+
+
+watch(() => usePage().props.flash?.toast, (toast) => {
+    if (!toast.title || !toast.message) {
+        return
+    }
+
+    sendToast(toast.type, toast.title, toast.message)
+})
 </script>
 
 <template>
@@ -80,4 +92,6 @@ echo.join('presence')
             <slot></slot>
         </main>
     </div>
+
+    <Toast />
 </template>
