@@ -10,7 +10,7 @@
         "@vitejs/plugin-vue": "^3.2.0",
         "@vue/compiler-sfc": "^3.0.5",
         "alpinejs": "^3.10.3",
-        "axios": "^0.25",
+        "axios": "^1.6",
         "browser-sync": "^2.27.7",
         "browser-sync-webpack-plugin": "^2.3.0",
         "del": "^6.1.1",
