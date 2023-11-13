@@ -31,13 +31,18 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->updateProfilePhoto($input['photo']);
         }
 
+        if (isset($input['offices']) && $user->administrator) {
+            $user->forceFill([
+                'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
+            ]);
+        }
+
         $user->forceFill([
             'username' => $input['username'],
             'name' => $input['name'],
             'title' => $input['title'],
             'role' => $input['role'],
             'disabled' => (bool) @$input['disabled'],
-            'offices' => collect(str_getcsv(@$input['offices'] ?? ''))->map(fn ($o) => trim($o))->toArray(),
         ])->save();
 
         if ($input['role'] == UserRole::SYSTEM->value) {
