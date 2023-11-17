@@ -43,6 +43,7 @@ class SearchRequest extends FormRequest
             'weekends.pm.in' => 'sometimes|nullable|string|date_format:H:i',
             'weekends.pm.out' => 'sometimes|nullable|string|date_format:H:i',
             'weekends.regular' => 'sometimes|boolean',
+            'schedule' => 'nullable|string|in:default,fallback',
         ];
     }
 
@@ -65,6 +66,22 @@ class SearchRequest extends FormRequest
                 default => [],
             }
         );
+
+        $this->whenFilled('schedule', function ($schedule) {
+            if ($schedule !== 'fallback') {
+                return;
+            }
+
+            $this->merge(collect([
+                'weekdays.am.in' => '08:00',
+                'weekdays.pm.out' => '16:00',
+                'weekends.am.in' => '08:00',
+                'weekends.am.out' => '12:00',
+                'weekends.pm.in' => '13:00',
+                'weekends.pm.out' => '17:00',
+                'calculate' => true,
+            ])->undot()->toArray());
+        });
     }
 
     public function passedValidation(): void
@@ -106,9 +123,13 @@ class SearchRequest extends FormRequest
                     $this->formatName($employee['name']) => [
                         'name' => $employee['name'],
                         'employee' => @$model->name_format->fullStartLast,
-                        'days' => @$days->map->ut->map->count->filter()->count(),
-                        'tardy' => @$days->map->ut->map->total->sum(),
+                        'count' => @$days->map->ut->map->count->filter()->count(),
                         'invalid' => $days->contains(fn ($day, $date) => @$day['ut']->invalid && ! $model->absentForTheDay(Carbon::parse($date))),
+                        'days' => @$days->filter(fn ($day) => $day['ut']->count)->map(fn ($day) => [
+                            'standard' => @$day['st'],
+                            'tardy' => @$day['ut']->total,
+                            'overtime' => @$day['ot']->total,
+                        ]),
                     ],
                 ];
             }),

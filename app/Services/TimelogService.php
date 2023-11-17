@@ -87,7 +87,7 @@ class TimelogService implements Import
             }))->flatten(1);
     }
 
-    public function logsForTheDay(Employee $employee, Carbon $date): array
+    public function logsForTheDay(Employee $employee, Carbon $date): ?array
     {
         $request = app(PrintRequest::class);
 
@@ -107,6 +107,8 @@ class TimelogService implements Import
             'in2' => $in2 = $this->filterTime($in->reject(fn ($log) => $in1?->time->gt($log->time) || $out1?->time->gt($log->time)), 'in', 'pm'),
             'out2' => $out2 = $this->filterTime($out->reject(fn ($log) => $in2?->time->gt($log->time) || $out1?->time->gt($log->time)), 'out', 'pm'),
             'ut' => $this->calculateUndertime($date, $in1, $out1, $in2, $out2, @$request->weekends['regular'] ? ! $request->weekends['regular'] : $employee->regular),
+            'ot' => $this->calculateOvertime($date, $out2),
+            'st' => $this->calculateStandardTime($date),
         ];
     }
 
@@ -190,6 +192,60 @@ class TimelogService implements Import
             true => $calculate(),
             false => $excludeWeekends ? null : $calculate(),
             default => null,
+        };
+    }
+
+    public function calculateOvertime(Carbon $date, ?Timelog $out2): ?object
+    {
+        $request = app(PrintRequest::class);
+
+        if ($date->isWeekday() && ! $request->filled(['weekends.am.in', 'weekends.pm.out'])) {
+            return 0;
+        }
+
+        if ($date->isWeekend() && ! $request->filled(['weekends.am.in', 'weekends.pm.out'])) {
+            return 0;
+        }
+
+        return match ($date->isWeekday()) {
+            true => (object) [
+                'total' => $total = $out2?->time->clone()->setTime(...explode(':', $request->weekdays['pm']['out']))->diffInMinutes($out2->time, false) ?? 0,
+                'minutes' => $total % 60,
+                'hours' => (int) ($total / 60),
+            ],
+            false => (object) [
+                'total' => $total = $out2?->time->clone()->setTime(...explode(':', $request->weekends['pm']['out']))->diffInMinutes($out2->time, false) ?? 0,
+                'minutes' => $total % 60,
+                'hours' => (int) ($total / 60),
+            ],
+            default => 0,
+        };
+    }
+
+    public function calculateStandardTime(Carbon $date): ?int
+    {
+        $request = app(PrintRequest::class);
+
+        $calculate = function () use ($date, $request) {
+            $week = $date->isWeekday() ? 'weekdays' : 'weekends';
+
+            if ($request->filled(["$week.am.in", "$week.am.out", "$week.pm.in", "$week.am.out"])) {
+                $am = today()->setTime(...explode(':', $request->$week['am']['in']))->diffInHours(today()->setTime(...explode(':', $request->$week['am']['out'])), false);
+
+                $pm = today()->setTime(...explode(':', $request->$week['pm']['in']))->diffInHours(today()->setTime(...explode(':', $request->$week['pm']['out'])), false);
+
+                return $am + $pm;
+            } elseif ($request->filled(["$week.am.in", "$week.pm.out"])) {
+                return today()->setTime(...explode(':', $request->$week['am']['in']))->diffInHours(today()->setTime(...explode(':', $request->$week['pm']['out'])), false);
+            }
+
+            return 0;
+        };
+
+        return match ($date->isWeekday()) {
+            true => $calculate(),
+            false => $calculate(),
+            default => 0,
         };
     }
 }

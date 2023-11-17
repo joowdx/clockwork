@@ -131,22 +131,15 @@ class PrintRequest extends FormRequest
                 return;
             }
 
-            switch ($schedule) {
-                case 'office':
-                    break;
-
-                default:
-                    $this->merge(collect([
-                        'weekdays.am.in' => '08:00',
-                        'weekdays.pm.out' => '16:00',
-                        'weekends.am.in' => '08:00',
-                        'weekends.am.out' => '12:00',
-                        'weekends.pm.in' => '13:00',
-                        'weekends.pm.out' => '17:00',
-                        'calculate' => true,
-                    ])->undot()->toArray());
-
-            }
+            $this->merge(collect([
+                'weekdays.am.in' => '08:00',
+                'weekdays.pm.out' => '16:00',
+                'weekends.am.in' => '08:00',
+                'weekends.am.out' => '12:00',
+                'weekends.pm.in' => '13:00',
+                'weekends.pm.out' => '17:00',
+                'calculate' => true,
+            ])->undot()->toArray());
         });
     }
 
