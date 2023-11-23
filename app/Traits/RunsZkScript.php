@@ -36,7 +36,7 @@ trait RunsZkScript
             throw new \RuntimeException('Python interpreter not found. Please install Python.');
         }
 
-        $command = [$this->python, $this->script, $this->scanner->ip_address];
+        $command = [$this->python, $this->script, '-T 300', $this->scanner->ip_address];
 
         if ($this->scanner->port) {
             $args[] = '-P';

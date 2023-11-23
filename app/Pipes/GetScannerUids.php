@@ -20,19 +20,12 @@ class GetScannerUids
     {
         $scanners = $this->scanner->nameAsKeysForId();
 
-        $existing = $this->scanner->nameAsKeysForId(owned: false);
-
-        return $next($request->flatMap(function ($entry) use ($scanners, $existing) {
-            return collect($entry['scanners'])->map(function ($uid, $scanner) use ($entry, $scanners, $existing) {
+        return $next($request->flatMap(function ($entry) use ($scanners) {
+            return collect($entry['scanners'])->map(function ($uid, $scanner) use ($entry, $scanners) {
                 return [
                     'id' => strtolower(str()->ulid()),
                     'employee_id' => $entry['employee']['id'],
-                    'scanner_id' => @$scanners[strtoupper($scanner)] ??
-                        (
-                            ! array_key_exists(strtoupper($scanner), $existing)
-                            ? $this->create($scanner)
-                            : null
-                        ),
+                    'scanner_id' => @$scanners[strtoupper($scanner)] ?? $this->create($scanner)->id,
                     'uid' => $uid,
                 ];
             })->filter(fn ($enrollment) => $enrollment['scanner_id'])->toArray();

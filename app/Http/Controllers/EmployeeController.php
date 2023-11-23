@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Events\EmployeesImported;
 use App\Http\Requests\Employee\StoreRequest;
 use App\Http\Requests\Employee\UpdateRequest;
+use App\Jobs\ImportEmployees;
 use App\Models\Employee;
 use App\Services\EmployeeService;
 use App\Services\ScannerService;
@@ -24,25 +24,28 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Contracts\Import  $import;
+     * @param  \App\Http\Requests\Employee\StoreRequest  $request;
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreRequest $request, Import $import)
+    public function store(StoreRequest $request)
     {
-        switch ($request->has('file')) {
-            case true:
-                $data = $import->parse($request->file);
+        if ($request->has('file')) {
 
-                EmployeesImported::dispatch($request->user(), $data->collect());
+            ImportEmployees::dispatch(
+                storage_path('app/' . $request->file->store()),
+                $request->file->getClientOriginalName(),
+                $request->user(),
+                now(),
+            );
 
-                return redirect()->back();
-            default:
-                $employee = $this->repository->create($request->all());
-
-                return redirect()->back()->with('flash', [
-                    'employee' => $employee->load('scanners'),
-                ]);
+            return redirect()->back();
         }
+
+        $employee = $this->repository->create($request->all());
+
+        return redirect()->back()->with('flash', [
+            'employee' => $employee->load('scanners'),
+        ]);
     }
 
     /**

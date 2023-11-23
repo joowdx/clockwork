@@ -47,7 +47,9 @@ class HandleInertiaRequests extends Middleware
                 'time' => now(),
             ],
             'auth' => [
-                'user' => $request->user()?->append(['needs_password_reset']),
+                'user' => $request->user()
+                    ?->append(['needs_password_reset'])
+                    ->load('scanners'),
             ],
             'alert' => $this->configuration->getAlert($request->user() ? 'user' : 'guest'),
             'ziggy' => function () use ($request) {

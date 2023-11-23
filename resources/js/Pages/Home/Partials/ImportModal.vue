@@ -1,8 +1,9 @@
 <script setup>
 import Modal from '@/Components/Modal.vue'
 import preventTabClose from '@/Composables/preventTabClose'
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
+import echo from '@/echo'
 
 const props = defineProps({
     scanners: Object,
@@ -12,6 +13,8 @@ const props = defineProps({
 const modelValue = defineModel()
 
 const tab = ref('attlogs')
+
+const success = ref(false)
 
 const form = useForm({
     scanner: null,
@@ -32,7 +35,11 @@ const upload = () => {
         preserveScroll: true,
         preserveState: true,
         onStart: () => form.clearErrors(),
-        onSuccess: () => clear(),
+        onSuccess: () => {
+            clear()
+            modelValue.value = false
+            success.value = true
+        },
         ...(props.options ?? {})
     })
 }
@@ -70,6 +77,14 @@ watch(modelValue, (show) => {
 })
 
 preventTabClose(() => form.processing)
+
+onMounted(() => {
+    props.scanners?.forEach(scanner => {
+        echo.private(`scanners.${scanner.id}`).listen('TimelogsImportation', (event) => {
+            success.value = false
+        })
+    })
+})
 </script>
 
 <template>
@@ -113,11 +128,25 @@ preventTabClose(() => form.processing)
 
         </div>
 
+        <Modal v-model="success" class="bg-neutral/[.99] text-neutral-content">
+            <template #header>
+                Upload Success!
+            </template>
+
+            We'll notify you once the import process is finished.
+
+            <template #action>
+                <button @click="success = false" type="button" class="btn btn-sm">
+                    Close
+                </button>
+            </template>
+        </Modal>
+
         <template #action>
             <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
                 <div class="flex items-center">
                     <p v-if="form.recentlySuccessful" class="mr-3 text-sm opacity-50 text-base-content">
-                        Success!
+                        Uploaded! We'll notify you once it's done.
                     </p>
                 </div>
             </Transition>

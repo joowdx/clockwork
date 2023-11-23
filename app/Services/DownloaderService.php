@@ -16,7 +16,7 @@ class DownloaderService
 
     public function getAttendance(string $from = null, string $to = null, bool $array = true): Collection|array
     {
-        $process = Process::timeout(120)->run($this->command($from, $to));
+        $process = Process::forever()->run($this->command($from, $to));
 
         if ($process->failed()) {
             switch (trim(strtolower($process->output()))) {

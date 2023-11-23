@@ -3,6 +3,7 @@
 namespace App\Http\Requests\TimeLog;
 
 use App\Contracts\Import;
+use App\Models\Scanner;
 use App\Models\Timelog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -37,6 +38,17 @@ class StoreRequest extends FormRequest
                     'required',
                     'file',
                     'mimes:csv,txt',
+                    function ($attribute, $value, $fail) {
+                        $scanner = Scanner::find($this->scanner);
+
+                        if (is_null($scanner)) {
+                            return;
+                        }
+
+                        if ($scanner->attlog_file !== pathinfo($value->getClientOriginalName(), PATHINFO_FILENAME)) {
+                            $fail("Scanner and $attribute mismatch.");
+                        }
+                    }
                 ],
             ];
         }

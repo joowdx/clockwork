@@ -1,11 +1,15 @@
 <script setup>
-import { Head, usePage } from '@inertiajs/vue3'
-import { watch } from 'vue'
-import echo from '@/echo'
 import Banner from './Partials/Banner.vue'
 import TailwindNavigation from '@/Tailwind/Navigation.vue'
 import sendToast from '@/Composables/toasts'
 import Toast from '@/Components/Toast.vue'
+import { Head, usePage } from '@inertiajs/vue3'
+import { onBeforeUnmount, onMounted, watch } from 'vue'
+import echo from '@/echo'
+import dayjs from 'dayjs'
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+
+dayjs.extend(localizedFormat)
 
 defineProps({
     title: String,
@@ -57,18 +61,69 @@ const dropdown = [
     },
 ]
 
-echo.join('presence')
-    .here((authenticated) => console.log(`online users [${authenticated.map((e) => e.username).join(', ')}].`))
-    .joining((authenticated) => console.log(`${authenticated.username} is now online.`))
-    .leaving((authenticated) => console.log(`${authenticated.username} is now offline.`))
-
-
 watch(() => usePage().props.flash?.toast, (toast) => {
     if (!toast.title || !toast.message) {
         return
     }
 
     sendToast(toast.type, toast.title, toast.message)
+})
+
+onMounted(() => {
+    echo.join('presence')
+        .here((authenticated) => console.log(`online users [${authenticated.map((e) => e.username).join(', ')}].`))
+        .joining((authenticated) => console.log(`${authenticated.username} is now online.`))
+        .leaving((authenticated) => console.log(`${authenticated.username} is now offline.`))
+
+    if (user.administrator) {
+        echo.private(`administrators`).listen('EmployeesImportation ', (event) => {
+            sendToast(
+                event.status,
+                `Update ${event.status.charAt(0).toUpperCase() + event.status.slice(1)}`,
+                event.message,
+                `Updated by @${event.username} at ${dayjs(event.time).format('llll')} for ${event.duration} seconds.`,
+            )
+        })
+    } else {
+        echo.private(`users.${user.id}`).listen('EmployeesImportation ', (event) => {
+            sendToast(
+                event.status,
+                `Update ${event.status.charAt(0).toUpperCase() + event.status.slice(1)}`,
+                event.message,
+                `Updated by @${event.username} at ${dayjs(event.time).format('llll')} for ${event.duration} seconds.`,
+            )
+        })
+    }
+
+    user.scanners?.forEach(scanner => {
+        echo.private(`scanners.${scanner.id}`).listen('TimelogsSynchronization', (event) => {
+            sendToast(
+                event.status,
+                `Synchronize ${event.status.charAt(0).toUpperCase() + event.status.slice(1)}`,
+                event.message,
+                `Synchronized by @${event.user} at ${dayjs(event.time).format('llll')} for ${event.duration} seconds.`,
+            )
+        })
+
+        echo.private(`scanners.${scanner.id}`).listen('TimelogsImportation', (event) => {
+            sendToast(
+                event.status,
+                `Import ${event.status.charAt(0).toUpperCase() + event.status.slice(1)}`,
+                event.message,
+                `Imported by @${event.user} at ${dayjs(event.time).format('llll')} for ${event.duration} seconds.`,
+            )
+        })
+    })
+})
+
+onBeforeUnmount(() => {
+    echo.leave('presence')
+
+    echo.leave(`users.${user.id}`)
+
+    echo.leave(`administrators`)
+
+    user.scanners?.forEach(scanner => echo.leave(`scanners.${scanner.id}`))
 })
 </script>
 

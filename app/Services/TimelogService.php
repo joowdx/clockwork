@@ -7,6 +7,7 @@ use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Http\Requests\PrintRequest;
 use App\Models\Employee;
+use App\Models\Scanner;
 use App\Models\Timelog;
 use App\Pipes\CheckNumericUid;
 use App\Pipes\CheckStateEntries;
@@ -42,7 +43,7 @@ class TimelogService implements Import
         ];
     }
 
-    public function validate(UploadedFile $file): bool
+    public function validate(UploadedFile|string $file): bool
     {
         return app(Pipeline::class)
             ->send((object) [
@@ -62,12 +63,12 @@ class TimelogService implements Import
         return $this->error;
     }
 
-    public function parse(UploadedFile $file): mixed
+    public function parse(Scanner $scanner, UploadedFile|string $file): mixed
     {
-        return $this->insert(File::lines($file), true);
+        return $this->insert($scanner, File::lines($file), true);
     }
 
-    public function insert(Collection|LazyCollection|array $data, bool $fromFile = false): mixed
+    public function insert(Scanner $scanner, Collection|LazyCollection|array $data, bool $fromFile = false): mixed
     {
         return app(Pipeline::class)
             ->send(is_array($data) ? collect($data) : $data)
@@ -75,7 +76,7 @@ class TimelogService implements Import
                 $fromFile ? [
                     Sanitize::class,
                     SplitAttlogString::class,
-                    TransformTimelogData::class,
+                    new TransformTimelogData($scanner->id),
                     RemoveDuplicateTimelog::class,
                     Chunk::class,
                 ] : [

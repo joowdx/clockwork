@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Actions\FileImport\DeleteDuplicateEmployeeEnrollment;
 use App\Actions\FileImport\InsertEmployees;
 use App\Actions\FileImport\InsertEnrollments;
-use App\Contracts\Import;
 use App\Contracts\Repository;
 use App\Models\Employee;
 use App\Pipes\CheckDuplicateUids;
@@ -24,7 +23,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\File;
 
-class EmployeeService implements Import
+class EmployeeService
 {
     use ParsesEmployeeImport;
 
@@ -38,7 +37,7 @@ class EmployeeService implements Import
         $this->request = app(Request::class);
     }
 
-    public function validate(UploadedFile $file): bool
+    public function validate(UploadedFile|string $file): bool
     {
         return app(Pipeline::class)
             ->send((object) [
@@ -62,7 +61,7 @@ class EmployeeService implements Import
         return $this->error;
     }
 
-    public function parse(UploadedFile $file): mixed
+    public function parse(UploadedFile|string $file): mixed
     {
         return app(Pipeline::class)
             ->send(File::lines($file))

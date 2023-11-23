@@ -2,14 +2,14 @@
 
 namespace App\Http\Requests\Employee;
 
-use App\Contracts\Import;
 use App\Models\Employee;
+use App\Services\EmployeeService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRequest extends FormRequest
 {
     public function __construct(
-        private Import $import
+        private EmployeeService $import
     ) {
     }
 

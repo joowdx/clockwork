@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\Import;
 use App\Enums\UserRole;
-use App\Events\TimelogsProcessed;
 use App\Http\Requests\TimeLog\StoreRequest;
+use App\Jobs\ImportTimelogs;
 use App\Models\Employee;
+use App\Models\Scanner;
 use App\Models\Timelog;
 use App\Services\TimelogService;
 use Illuminate\Http\Request;
@@ -88,12 +88,16 @@ class TimelogController extends Controller
         ];
     }
 
-    public function store(StoreRequest $request, Import $import)
+    public function store(StoreRequest $request)
     {
         if ($request->has('file')) {
-            $data = $import->parse($request->file);
-
-            TimelogsProcessed::dispatch($request->user(), $data->toArray(), $request->scanner, $request->file('file')->getClientOriginalName());
+            ImportTimelogs::dispatch(
+                Scanner::find($request->scanner),
+                storage_path('app/' . $request->file->store()),
+                $request->file->getClientOriginalName(),
+                $request->user(),
+                now()
+            );
 
             return redirect()->back();
         }
