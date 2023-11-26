@@ -38,21 +38,31 @@ class AddUploadHistory implements ShouldQueue
         if ($event instanceof TimelogsProcessed) {
             $scanner = $event->scanner instanceof Scanner ? $event->scanner : Scanner::find($event->scanner);
 
-            $sorted = app(Pipeline::class)
-                ->send(is_array($event->data) ? collect($event->data) : $event->data)
-                ->through([SortTimelogs::class])
-                ->thenReturn();
+            if (! empty($event->data)) {
+                $sorted = app(Pipeline::class)
+                    ->send(is_array($event->data) ? collect($event->data) : $event->data)
+                    ->through([SortTimelogs::class])
+                    ->thenReturn();
 
-            $history->forceFill([
-                'scanner_name' => $scanner->name,
-                'scanner_id' => $scanner->id,
-                'data' => [
-                    'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
-                    'latest' => $sorted->last()['time']->format('Y-m-d H:i:s'),
-                    'rows' => $sorted->count(),
-                    'via' => $event->file ? "File Upload: $event->file" : "Download: $scanner->ip_address",
-                ],
-            ]);
+                $history->forceFill([
+                    'scanner_name' => $scanner->name,
+                    'scanner_id' => $scanner->id,
+                    'data' => [
+                        'earliest' => $sorted->first()['time']->format('Y-m-d H:i:s'),
+                        'latest' => $sorted->last()['time']->format('Y-m-d H:i:s'),
+                        'rows' => $sorted->count(),
+                        'via' => $event->file ? "File Upload: $event->file" : "Download: $scanner->ip_address",
+                    ],
+                ]);
+            } else {
+                $history->forceFill([
+                    'scanner_name' => $scanner->name,
+                    'scanner_id' => $scanner->id,
+                    'data' => [
+                        'action' => "Clear scanner '$scanner->name' timelogs.",
+                    ],
+                ]);
+            }
         } elseif ($event instanceof EmployeesImported) {
             $history->forceFill([
                 'data' => [

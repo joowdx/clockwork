@@ -22,7 +22,7 @@ class TimelogsProcessed
      */
     public function __construct(
         public User $user,
-        public Collection|array $data,
+        public Collection|array|null $data,
         public Scanner|string $scanner,
         public ?string $file = null,
     ) {

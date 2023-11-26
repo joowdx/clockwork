@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\UserRepository;
 use App\Http\Requests\ScannerRequest;
+use App\Jobs\ClearScannerTimelogs;
 use App\Models\Scanner;
 use App\Models\User;
 use App\Services\ScannerService;
@@ -83,7 +84,7 @@ class ScannerController extends Controller
     public function destroy(ScannerRequest $request, Scanner $scanner)
     {
         if ($request->timelogs) {
-            $scanner->timelogs()->delete();
+            ClearScannerTimelogs::dispatch($request->user(), $scanner);
 
             return redirect()->back();
         }

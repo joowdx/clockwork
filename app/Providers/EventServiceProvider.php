@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Events\EmployeesImported;
 use App\Events\TimelogsProcessed;
 use App\Listeners\AddUploadHistory;
+use App\Listeners\TimelogsPostProcessor;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -20,6 +21,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         TimelogsProcessed::class => [
             AddUploadHistory::class,
+            TimelogsPostProcessor::class,
         ],
     ];
 

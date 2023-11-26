@@ -71,6 +71,11 @@ class Timelog extends Model
         );
     }
 
+    public function scopeOfficial(Builder $query, bool $official = true): void
+    {
+        $query->whereOfficial($official);
+    }
+
     protected function getArrayableAppends(): array
     {
         $appends = array_merge($this->appends, ['in', 'out']);
