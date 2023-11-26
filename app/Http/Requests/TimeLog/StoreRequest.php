@@ -41,7 +41,7 @@ class StoreRequest extends FormRequest
                     function ($attribute, $value, $fail) {
                         $scanner = Scanner::find($this->scanner);
 
-                        if (is_null($scanner)) {
+                        if (empty($scanner?->attlog_file)) {
                             return;
                         }
 
@@ -70,13 +70,4 @@ class StoreRequest extends FormRequest
             ],
         ];
     }
-
-    // protected function failedValidation(Validator $validator): never
-    // {
-    //     throw new HttpResponseException(
-    //         response()->json([
-    //             'errors' => $validator->errors(),
-    //         ], 422)
-    //     );
-    // }
 }
