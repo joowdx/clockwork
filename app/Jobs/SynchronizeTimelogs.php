@@ -57,22 +57,24 @@ class SynchronizeTimelogs implements ShouldQueue, ShouldBeUnique
             throw new RuntimeException('Scanner is not properly configured.');
         }
 
-        $data = $this->downloader->getPreformattedAttendance();
+        DB::transaction(function () use ($service) {
+            $data = $this->downloader->getPreformattedAttendance();
 
-        DB::transaction(fn () => $service->insert($this->scanner, $data));
+            $service->insert($this->scanner, $data);
 
-        $message = "Timelogs have been succesfully synchronized from {$this->scanner->name} at '{$this->scanner->ip_address}' with " . count($data) . " records.";
+            $message = "Timelogs have been succesfully synchronized from {$this->scanner->name} at '{$this->scanner->ip_address}' with " . count($data) . " records.";
 
-        TimelogsSynchronization::dispatch(
-            $this->scanner,
-            "success",
-            $message,
-            $this->user->username,
-            $this->time,
-            now()->diffInSeconds($this->time),
-        );
+            TimelogsProcessed::dispatch($this->user, $data, $this->scanner);
 
-        TimelogsProcessed::dispatch($this->user, $data, $this->scanner);
+            TimelogsSynchronization::dispatch(
+                $this->scanner,
+                "success",
+                $message,
+                $this->user->username,
+                $this->time,
+                now()->diffInSeconds($this->time),
+            );
+        });
     }
 
     /**
@@ -83,7 +85,7 @@ class SynchronizeTimelogs implements ShouldQueue, ShouldBeUnique
         TimelogsSynchronization::dispatch(
             $this->scanner,
             "error",
-            trim($exception->getMessage()),
+            "Sync error | {$this->scanner->name}: " . trim($exception->getMessage()),
             $this->user->username,
             $this->time,
             now()->diffInSeconds($this->time),

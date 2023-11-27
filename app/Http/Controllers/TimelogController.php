@@ -90,11 +90,9 @@ class TimelogController extends Controller
 
     public function store(StoreRequest $request)
     {
-        $scanner = Scanner::find($request->scanner);
-
         if ($request->has('file')) {
             ImportTimelogs::dispatch(
-                $scanner,
+                $request->scanner(),
                 storage_path('app/' . $request->file->store()),
                 $request->file->getClientOriginalName(),
                 $request->user(),
@@ -106,7 +104,7 @@ class TimelogController extends Controller
 
         Timelog::make()->forceFill($request->validated())
             ->unofficialize()
-            ->fill(['hidden' => $scanner->latestTimelog->time->lt($request->time)])
+            ->fill(['hidden' => $request->scanner()->latestTimelog->time->lt($request->time)])
             ->save();
 
         return redirect()->back();

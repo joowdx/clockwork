@@ -70,4 +70,9 @@ class StoreRequest extends FormRequest
             ],
         ];
     }
+
+    public function scanner(): Scanner
+    {
+        return Scanner::find($this->hasFile('file') ? $this->scanner : $this->scanner_id);
+    }
 }
