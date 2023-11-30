@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeviceAuthenticationController;
 use App\Http\Controllers\Api\EncryptionController;
 use App\Http\Controllers\Api\SearchController;
@@ -30,6 +31,7 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
     });
 
     Route::get('uid', UidSearchController::class);
+    Route::get('dashboard', DashboardController::class);
     Route::match(['get', 'post'], 'search', SearchController::class);
 });
 
