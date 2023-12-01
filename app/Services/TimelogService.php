@@ -88,7 +88,7 @@ class TimelogService implements Import
             }))->flatten(1);
     }
 
-    public function logsForTheDay(Employee $employee, Carbon $date): ?array
+    public function logsForTheDay(Employee $employee, Carbon $date, ?array $schedule = null): ?array
     {
         $request = app(PrintRequest::class);
 
@@ -196,7 +196,7 @@ class TimelogService implements Import
         };
     }
 
-    public function calculateOvertime(Carbon $date, ?Timelog $out2): ?object
+    public function calculateOvertime(Carbon $date, ?Timelog $out2): object|int|null
     {
         $request = app(PrintRequest::class);
 
