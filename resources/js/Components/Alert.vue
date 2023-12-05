@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 const { alert } = defineProps(['alert'])
 
-const dismissed = ref(false)
+const dismissed = defineModel()
 
 const type = ref({
     error: alert.type === 'error',

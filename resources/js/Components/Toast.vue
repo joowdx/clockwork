@@ -8,7 +8,7 @@ import { toasts } from '@/Composables/toasts'
     <Teleport to="body">
         <div class="z-[99] items-end gap-0 toast">
             <div class="text-right w-fit" v-for="toast in toasts" :key="toast.title+toast.message+toast.type">
-                <Alert class="mt-2.5" :alert="toast"/>
+                <Alert class="mt-2.5" v-model="toast.dismissed" :alert="toast"/>
             </div>
         </div>
     </Teleport>
