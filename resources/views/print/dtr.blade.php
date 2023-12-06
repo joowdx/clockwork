@@ -251,7 +251,7 @@
                                 {{ $user->title }}
                             </td>
                             <td class="relative" colspan=1>
-                                <div class="absolute consolas" style="opacity:0.3;bottom:0;right:0;font-size:4.0pt;">
+                                <div class="absolute consolas" style="opacity:0.5;bottom:8pt;right:0;font-size:4.0pt;">
                                     {{ now()->format('Y-m-d|H:i') }}
                                 </div>
                             </td>
