@@ -12,11 +12,11 @@ const defaultValue = {
     weekdays: {
         am: {
             in: '08:00',
-            out: null,
+            out: '12:00',
         },
         pm: {
-            in: null,
-            out: '16:00',
+            in: '13:00',
+            out: '17:00',
         },
         excluded: false,
     },
