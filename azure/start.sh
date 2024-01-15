@@ -1,7 +1,7 @@
 #!/bin/bash
 
 apt-get update
-apt-get install supervisor redis-server cron libc-ares-dev -y
+apt-get install supervisor redis-server cron libc-ares-dev libssl-dev -y
 apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
