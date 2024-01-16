@@ -90,6 +90,10 @@ class QueryController extends Controller
         $service = app(TimelogService::class);
 
         $data = [
+            'update' => [
+                'scanners' => $recent = $employee->scanners->mapWithKeys(fn ($s) => [$s->name => $s->lastUpload?->time]),
+                'recent' => $recent->filter()->max(),
+            ],
             'employee' => $employee,
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
