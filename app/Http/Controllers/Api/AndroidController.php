@@ -10,8 +10,10 @@ class AndroidController extends Controller
 {
     public function __invoke(): mixed
     {
+        $directory = ! app()->environment('local') ? 'var/www/html/public/android' : '/home/site/wwwroot/public/android';
+
         return [
-            'url' => $file = collect(File::allFiles('/var/www/html/public/android'))
+            'url' => $file = collect(File::allFiles($directory))
                 ->map
                 ->getFilename()
                 ->filter(fn ($file) => str_starts_with($file, 'clockwork'))
