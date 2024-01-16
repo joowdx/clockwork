@@ -28,11 +28,11 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
         Route::delete('device/deauthenticate', [DeviceAuthenticationController::class, 'deauthenticate']);
         Route::delete('device/destroy-all-session', [DeviceAuthenticationController::class, 'destroyAllSession']);
         Route::get('status', StatusController::class);
+        Route::get('employees', [App\Http\Controllers\Api\EmployeeController::class, 'index']);
     });
 
     Route::get('android', App\Http\Controllers\Api\AndroidController::class);
 
-    Route::get('employees', [App\Http\Controllers\Api\EmployeeController::class, 'index']);
 
     Route::get('uid', UidSearchController::class);
     Route::get('dashboard', DashboardController::class);
