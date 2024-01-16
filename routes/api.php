@@ -30,6 +30,8 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
         Route::get('status', StatusController::class);
     });
 
+    Route::get('android', App\Http\Controllers\Api\AndroidController::class);
+
     Route::get('employees', [App\Http\Controllers\Api\EmployeeController::class, 'index']);
 
     Route::get('uid', UidSearchController::class);
