@@ -94,6 +94,7 @@ class QueryController extends Controller
                 'scanners' => $recent = $employee->scanners->mapWithKeys(fn ($s) => [$s->name => $s->lastUpload?->time]),
                 'recent' => $recent->filter()->max(),
             ],
+            'time' => now(),
             'employee' => $employee,
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
