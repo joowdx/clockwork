@@ -74,7 +74,9 @@ class SearchRequest extends FormRequest
 
             $this->merge(collect([
                 'weekdays.am.in' => '08:00',
-                'weekdays.pm.out' => '16:00',
+                'weekdays.am.out' => '12:00',
+                'weekdays.pm.in' => '13:00',
+                'weekdays.pm.out' => '17:00',
                 'weekends.am.in' => '08:00',
                 'weekends.am.out' => '12:00',
                 'weekends.pm.in' => '13:00',
