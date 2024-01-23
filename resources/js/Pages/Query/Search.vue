@@ -41,7 +41,7 @@ const check = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: async () => {
-            const encrypted = await axios.post(route('encrypt'), { message: pin.pin }).then(({data}) => data.encrypted)
+            const encrypted = await axios.post(route('encrypt'), { message: '1234' }).then(({data}) => data.encrypted)
 
             const link = route('query.result', props.employee)
 
@@ -77,56 +77,31 @@ onMounted(() => {
             <div class="hero">
                 <div class="p-12 bg-gradient-to-bl via-50% via-base-100/80 to-100% to-base-200/80 from-base-300/80 rounded-none sm:rounded-sm">
                     <div class="flex-col hero-content lg:flex-row lg:gap-20">
-                        <div class="text-center lg:text-left" style="text-wrap: balance;">
+                        <div class="text-center lg:text-left">
                             <h1 class="text-5xl font-bold">
-                                Download the app!
-                            </h1>
-                            <span class="py-4 font-mono text-sm text-primary-focus">{{ $page.props.app.name }}</span>
-
-                            <p class="py-4">
-                                Check your attendance records as we update them via your mobile device.
-
-                                <a class="link" href="">
-                                    Click here to download.
-                                </a>
-                            </p>
-
-                            <p class="py-4 text-warning">
-                                <span class="font-bold">Note:</span> Some features are not yet available and is only available for Android devices.
-                            </p>
-
-                            <h1 class="py-4 text-5xl font-bold">
-                                Need Help ?
+                                Employee Query
                             </h1>
 
-                            <div class="w-full join join-vertical">
-                                <div class="border collapse collapse-arrow join-item border-base-300">
-                                    <input type="radio" name="help" checked="checked" />
-                                    <div class="text-xl font-medium collapse-title">
-                                        What are these fields for?
-                                    </div>
-                                    <div class="collapse-content">
-                                        <p>First, you need to tell us who you are so we know whom we are searching for. Please fill out all the necessary fields, namely: your first name, last name, middle name, and name extension.</p>
-                                    </div>
-                                </div>
-                                <div class="border collapse collapse-arrow join-item border-base-300">
-                                    <input type="radio" name="help" />
-                                    <div class="text-xl font-medium collapse-title">
-                                        Not found?
-                                    </div>
-                                    <div class="collapse-content">
-                                        <p>If you're having trouble finding your record, try leaving out your middle name, using just the initial, or excluding any name extensions like Jr., Sr., III. Adjusting these fields might help locate your information in the database.</p>
-                                    </div>
-                                </div>
-                                <div class="border collapse collapse-arrow join-item border-base-300">
-                                    <input type="radio" name="help" />
-                                    <div class="text-xl font-medium collapse-title">
-                                        Already tried, still not found?
-                                    </div>
-                                    <div class="collapse-content">
-                                        <p>Please don't hesitate to report it directly to us. We're here to assist you, and we'll do our utmost to resolve this issue you may have. Also, your feedback and questions are important to us, and we appreciate your communication.</p>
-                                    </div>
-                                </div>
+                            <span class="py-6 font-mono text-sm text-primary-focus">
+                                {{ $page.props.app.label }}
+                            </span>
+
+                            <p class="py-6">
+                                First, you need to tell us who you are so we know whom we are searching for. Please fill out all the necessary fields, namely: your first name, last name, middle name, and name extension.
+                            </p>
+
+                            <p class="font-mono text-sm text-error">
+                                If by any chance, there's not a single match found, you may try ommitting either the middle or extension fields or both...
+                            </p>
+
+                            <p class="py-3">
+                                <span class="mr-1 text-xl italic font-extrabold text-error">...still not found?</span> Please don't hesitate to report it directly to us. We're here to assist you, and we'll do our utmost to resolve this issue you may have. Also, your feedback and questions are important to us, and we appreciate your communication.
+                            </p>
+
+                            <div class="py-6">
+                                <Link class="text-lg font-bold normal-case w-fit btn glass btn-md" :href="route('download')">
+                                    Download our Mobile App!
+                                </Link>
                             </div>
                         </div>
                         <div class="flex-shrink-0 w-full max-w-sm rounded-sm card bg-gradient-to-br from-base-300/80">

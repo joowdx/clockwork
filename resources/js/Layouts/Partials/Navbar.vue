@@ -16,6 +16,14 @@ import ApplicationBanner from '@/Components/Icons/ApplicationBanner.vue'
             </div>
             <div class="navbar-end">
                 <Link
+                    v-if="!route().current('download')"
+                    as="button"
+                    :href="route('download')"
+                    class="ml-4 normal-case btn btn-primary btn-sm"
+                >
+                    Download
+                </Link>
+                <Link
                     v-if="!route().current('query.search')"
                     as="button"
                     :href="route('query.search')"
