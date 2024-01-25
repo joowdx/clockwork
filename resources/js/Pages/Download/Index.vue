@@ -53,35 +53,35 @@ defineProps(['link', 'version'])
                                     <div class="p-0 phone-1">
                                         <div class="w-60 carousel">
                                             <div id="dtr" class="relative overflow-hidden w-60 carousel-item">
-                                                <img src="./assets/dtr.jpg" class="w-72" />
+                                                <img src="./assets/dtr.jpg" class="w-full" />
                                                 <div class="absolute flex justify-between transform -translate-y-1/2 -left-6 -right-6 top-1/2">
                                                     <a href="#splash" class="pl-3 btn btn-circle">❮</a>
                                                     <a href="#profile" class="pr-3 btn btn-circle">❯</a>
                                                 </div>
                                             </div>
                                             <div id="profile" class="relative overflow-hidden w-60 carousel-item">
-                                                <img src="./assets/profile.jpg" class="w-72" />
+                                                <img src="./assets/profile.jpg" class="w-full" />
                                                 <div class="absolute flex justify-between transform -translate-y-1/2 -left-6 -right-6 top-1/2">
                                                     <a href="#dtr" class="pl-3 btn btn-circle">❮</a>
                                                     <a href="#pin" class="pr-3 btn btn-circle">❯</a>
                                                 </div>
                                             </div>
                                             <div id="pin" class="relative overflow-hidden w-60 carousel-item">
-                                                <img src="./assets/pin.jpg" class="w-72" />
+                                                <img src="./assets/pin.jpg" class="w-full" />
                                                 <div class="absolute flex justify-between transform -translate-y-1/2 -left-6 -right-6 top-1/2">
                                                     <a href="#profile" class="pl-3 btn btn-circle">❮</a>
                                                     <a href="#loading" class="pr-3 btn btn-circle">❯</a>
                                                 </div>
                                             </div>
                                             <div id="loading" class="relative overflow-hidden w-60 carousel-item">
-                                                <img src="./assets/loading.jpg" class="w-72" />
+                                                <img src="./assets/loading.jpg" class="w-full" />
                                                 <div class="absolute flex justify-between transform -translate-y-1/2 -left-6 -right-6 top-1/2">
                                                     <a href="#pin" class="pl-3 btn btn-circle">❮</a>
                                                     <a href="#splash" class="pr-3 btn btn-circle">❯</a>
                                                 </div>
                                             </div>
                                             <div id="splash" class="relative overflow-hidden w-60 carousel-item">
-                                                <img src="./assets/splash.jpg" class="w-72" />
+                                                <img src="./assets/splash.jpg" class="w-full" />
                                                 <div class="absolute flex justify-between transform -translate-y-1/2 -left-6 -right-6 top-1/2">
                                                     <a href="#loading" class="pl-3 btn btn-circle">❮</a>
                                                     <a href="#dtr" class="pr-3 btn btn-circle">❯</a>
