@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Timelog extends Model
@@ -13,21 +15,9 @@ class Timelog extends Model
 
     const GRACE_PERIOD = 15;
 
-    const IN = [
-        1000,
-        1010,
-        0000,
-        0004,
-    ];
+    const IN = [ 0, 3, 4, 6 ];
 
-    const OUT = [
-        1100,
-        1110,
-        0001,
-        0005,
-    ];
-
-    public int $undertime;
+    const OUT = [ 1, 2, 5, 7 ];
 
     protected $fillable = [
         'scanner_id',
@@ -59,6 +49,16 @@ class Timelog extends Model
             });
     }
 
+    public function original(): BelongsTo
+    {
+        return $this->belongsTo(Timelog::class, 'timelog_id');
+    }
+
+    public function correction(): HasOne
+    {
+        return $this->hasOne(Timelog::class, 'timelog_id');
+    }
+
     public function scanner(): HasOneThrough
     {
         return $this->hasOneThrough(Scanner::class, Enrollment::class, 'scanners.id', 'id', 'scanner_id', 'scanner_id');
@@ -88,6 +88,11 @@ class Timelog extends Model
     public function getTypeAttribute(): string
     {
         return $this->in ? 'In' : ($this->out ? 'Out' : '**');
+    }
+
+    public function getAmmendedAttribute(): bool
+    {
+        return isset($this->timelog_id);
     }
 
     public function getInAttribute(): bool

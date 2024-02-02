@@ -6,10 +6,10 @@ enum TimelogState: int
 {
     case IN = 0;
     case OUT = 1;
-    case OVERTIME_IN = 2;
-    case OVERTIME_OUT = 3;
-    case BREAK_IN = 4;
-    case BREAK_OUT = 5;
+    case BREAK_IN = 3;
+    case BREAK_OUT = 2;
+    case OVERTIME_IN = 4;
+    case OVERTIME_OUT = 5;
 
     public function label(): string
     {
