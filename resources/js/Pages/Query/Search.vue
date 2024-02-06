@@ -41,7 +41,7 @@ const check = () => {
         preserveScroll: true,
         preserveState: true,
         onSuccess: async () => {
-            const encrypted = await axios.post(route('encrypt'), { message: '1234' }).then(({data}) => data.encrypted)
+            const encrypted = await axios.post(route('encrypt'), { message: pin.pin }).then(({data}) => data.encrypted)
 
             const link = route('query.result', props.employee)
 
