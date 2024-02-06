@@ -43,7 +43,7 @@ class AttendanceController extends Controller
         return inertia('Attendance/Index', [
             'category' => $category,
             'search' => $request->search,
-            'paginate' => $request->paginate ?? 25,
+            'paginate' => $request->paginate ?? 5,
             'scanners' => [
                 'assigned' => $scanner->get(),
                 'all' => Scanner::search($request->scanner)
@@ -58,7 +58,7 @@ class AttendanceController extends Controller
                             ->selectRaw("string_agg(distinct office, ', ') offices")
                             ->whereRaw('jsonb_array_length("employees"."groups") > 0')
                             ->groupBy('group')
-                            ->paginate($request->paginate ?? 25);
+                            ->paginate($request->paginate ?? 5);
                     }),
                 ],
                 default => [
@@ -68,7 +68,7 @@ class AttendanceController extends Controller
                             ->selectRaw("string_agg(distinct trim('\"' from g), ', ') groups")
                             ->whereNotIn('office', [''])
                             ->groupBy('office')
-                            ->paginate($request->paginate ?? 25);
+                            ->paginate($request->paginate ?? 5);
                     }),
                 ],
             },

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Builder;
 
 class Enrollment extends Pivot
 {
@@ -32,5 +33,10 @@ class Enrollment extends Pivot
     public function timelogs(): HasMany
     {
         return $this->hasMany(Timelog::class);
+    }
+
+    public function scopeEnabled(Builder $query)
+    {
+        return $query->where('enabled', true);
     }
 }

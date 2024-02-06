@@ -19,6 +19,7 @@ use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\DownloaderController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EmployeeToken;
+use App\Http\Middleware\RedirectIfNotAllowed;
 use App\Services\MobileApplicationDownloader as DL;
 use Illuminate\Support\Facades\Route;
 
@@ -47,10 +48,7 @@ Route::middleware('guest')->group(function () {
         Route::get('query/result/{employee}', 'result')->middleware(EmployeeToken::class)->name('query.result');
     });
 
-
-
     Route::get('download', fn (DL $dl) => inertia('Download/Index', ['link' => $dl->link(), 'version' => $dl->version()]))->name('download');
-
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
@@ -85,7 +83,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::resource('employees', EmployeeController::class)->only(['store', 'update', 'destroy']);
             Route::resource('scanners', ScannerController::class)->only(['index', 'store', 'update', 'destroy']);
             Route::resource('timelogs', TimelogController::class)->only(['store', 'update', 'destroy']);
-            Route::resource('enrollment', EnrollmentController::class)->only(['store', 'destroy']);
+            Route::get('enrollment/export', [EnrollmentController::class, 'export'])->name('enrollment.export');
+            Route::resource('enrollment', EnrollmentController::class)->only(['index', 'store', 'destroy']);
             Route::resource('assignment', AssignmentController::class)->only(['store', 'destroy']);
 
             Route::controller(AssociateUserEmployeeProfileController::class)->group(function () {

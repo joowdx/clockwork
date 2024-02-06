@@ -20,16 +20,23 @@ return new class extends Migration
             $table->unsignedInteger('uid');
             $table->foreignIdFor(Scanner::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->dateTime('time');
-            $table->string('state', 20);
+            $table->unsignedTinyInteger('state');
             $table->boolean('hidden')->default(false);
             $table->boolean('official')->default(true);
-            $table->ulid('timelog_id');
+            $table->ulid('timelog_id')->nullable();
             $table->timestamps();
             $table->unique(['uid', 'scanner_id', 'time', 'state']);
         });
 
         Schema::table('timelogs', function (Blueprint $table) {
-            $table->ulid('timelog_id')->nullable()->references('id')->on('timelogs')->cascadeOnUpdate()->cascadeOnDelete()->change();
+            $table->foreign('timelog_id')
+                ->references('id')
+                ->on('timelogs')
+                ->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete()
+                ->change();
         });
     }
 

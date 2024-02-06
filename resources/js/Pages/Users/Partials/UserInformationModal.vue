@@ -52,7 +52,7 @@ const profileFormLink = computed(() => forUpdate.value ? route('users.update', {
 
 const availableRoles = computed(() => {
     if (user.value?.role === -1) {
-        return {...props.types, ADMINISTRATOR: -1}
+        return {...props.types, FOR: -1}
     }
 
     return props.types
@@ -260,7 +260,7 @@ watch(modelValue, (show) => {
                     </div>
                 </div>
 
-                <div v-if="profileForm.role === 3" class="form-control">
+                <div v-if="profileForm.role === 3 || profileForm.role === 4 || profileForm.role === 6" class="form-control">
                     <label for="user_offices" class="block text-sm font-medium text-base-content"> Offices </label>
                     <input @keyup.enter="submit" v-model="profileForm.offices" id="user_offices" type="text" class="mt-1 uppercase input-sm input input-bordered" />
                     <InputError class="mt-0.5" :message="profileForm.errors.offices" />

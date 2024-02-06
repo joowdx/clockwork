@@ -131,7 +131,7 @@ defineExpose({
         <div class="py-4 bg-base-300/40 rounded-[--rounded-box]">
             <slot name="pre"></slot>
 
-            <div :class="[wrapperClass, isCompact() ? 'h-[34.5em]' : 'h-[28.75em]']">
+            <div :class="[wrapperClass]">
                 <table ref="table" class="table w-full table-zebra table-pin-rows" v-bind="$attrs">
                     <thead>
                         <slot name="head">
@@ -217,6 +217,8 @@ defineExpose({
                             v-model="form.paginate"
                             :disabled="form.processing"
                         >
+                            <option>5</option>
+                            <option>10</option>
                             <option>25</option>
                             <option>50</option>
                             <option>100</option>

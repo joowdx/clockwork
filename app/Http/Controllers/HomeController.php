@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\Employee;
+use App\Models\Timelog;
 use App\Services\ScannerService;
 use App\Services\TimelogService;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class HomeController extends Controller
     public function __invoke(Request $request, ScannerService $scanner, TimelogService $timelog): mixed
     {
         $filter = function ($query) use ($request) {
-            if ($request->user()->role === UserRole::DEPARTMENT_HEAD) {
+            if ($this->allowed()) {
                 $query->whereIn('office', $request->user()->offices);
             } elseif ($request->all) {
                 if ($request->unenrolled === 'only') {
@@ -43,8 +44,7 @@ class HomeController extends Controller
             ->orderBy('name->middle')
             ->orderBy('name->extension')
             ->where($filter)
-            ->whereActive($request->active ?? true)
-            ->when($request->user()->role === UserRole::DEPARTMENT_HEAD, fn ($q) => $q->setEagerLoads([]))
+            ->when($this->allowed(), fn ($q) => $q->active()->setEagerLoads([]), fn ($q) => $q->active($request->active ?? true))
             ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtolower($request->office)))
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
             ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));
@@ -53,7 +53,7 @@ class HomeController extends Controller
             return [
                 'employees' => Employee::search($request->search)
                     ->query($employee)
-                    ->paginate($request->paginate ?? 25)
+                    ->paginate($request->paginate ?? 5)
                     ->appends('query', null),
             ];
         }
@@ -62,11 +62,11 @@ class HomeController extends Controller
             ...$request->except(['page', 'paginate', 'search']),
             'scanners' => $scanner->get(),
             'search' => $request->search,
-            'paginate' => $request->paginate ?? 50,
+            'paginate' => $request->paginate ?? 5,
             'employees' => Inertia::lazy(
                 fn () => Employee::search($request->search)
                     ->query($employee)
-                    ->paginate($request->paginate ?? 50)
+                    ->paginate($request->paginate ?? 5)
                     ->appends('query', null)
             ),
             'offices' => Inertia::lazy(
@@ -95,5 +95,10 @@ class HomeController extends Controller
             ),
             ...$timelog->dates(),
         ]);
+    }
+
+    private function allowed()
+    {
+        return in_array(auth()->user()->role, [UserRole::DEPARTMENT_HEAD, UserRole::ADMINISTRATIVE_OFFICER]);
     }
 }

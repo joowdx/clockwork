@@ -11,9 +11,9 @@ trait PasswordValidationRules
      *
      * @return array
      */
-    protected function passwordRules($user)
+    protected function passwordRules($user = null)
     {
-        return match ($user->developer) {
+        return match ($user?->developer) {
             true => [
                 'required',
                 'string',

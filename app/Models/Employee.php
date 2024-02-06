@@ -78,6 +78,7 @@ class Employee extends Model
             'name->first' => $this->name?->first,
             'name->middle' => $this->name?->middle,
             'name->last' => $this->name?->last,
+            'name->extension' => $this->name?->extension,
         ];
     }
 

@@ -35,6 +35,10 @@ const queryStrings = ref({
     unenrolled: props.unenrolled,
 })
 
+if (usePage().props.user.role === 3 || usePage().props.user.role === 4) {
+    delete queryStrings.value.active
+}
+
 const settings = ref({
     all: queryStrings.value.all,
     unenrolled: queryStrings.value.unenrolled,

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import DataTable from '@/Components/DataTable.vue'
 
 const emits = defineEmits(['edit', 'timelogs'])
@@ -10,6 +10,8 @@ const props = defineProps(['employees', 'groups', 'offices', 'options'])
 const data = defineModel()
 
 const queryStrings = defineModel('queryStrings')
+
+const user = usePage().props.user
 
 const datatable = ref(null)
 
@@ -31,11 +33,16 @@ const clearSelection = () => {
 
 const resetFilter = () => {
     clearSelection()
+
     queryStrings.value.active = true
     queryStrings.value.regular = undefined
     queryStrings.value.office = undefined
     queryStrings.value.group = undefined
     queryStrings.value.search = undefined
+
+    if (usePage().props.user.role === 3 || usePage().props.user.role === 4) {
+        delete queryStrings.value.active
+    }
 
     datatable.value.clearSearch()
 }
@@ -100,7 +107,6 @@ onMounted(() => {
         :class="{'opacity-50 pointer-events-none': datatable?.processing}"
         :items="employees"
         :queryStrings="queryStrings"
-        :wrapperClass="`h-fit min-h-[29em]`"
         :options="options"
         @updated="checkSelection"
     >
@@ -121,6 +127,10 @@ onMounted(() => {
         <template #actions>
             <div>
                 <div class="grid grid-cols-12 col-span-12 gap-3">
+                    <div v-if="user.role >= 1" class="col-span-6 form-control sm:col-span-3">
+
+                    </div>
+
                     <div class="col-span-6 form-control sm:col-span-3">
                         <label for="period" class="p-0 label">
                             <span class="label-text">Status</span>
@@ -153,7 +163,7 @@ onMounted(() => {
                     </div>
 
 
-                    <div class="col-span-6 form-control sm:col-span-3">
+                    <div v-if="user.role <= 1" class="col-span-6 form-control sm:col-span-3">
                         <label for="period" class="p-0 label">
                             <span class="label-text">Active</span>
                         </label>

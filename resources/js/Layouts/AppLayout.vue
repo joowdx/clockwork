@@ -24,13 +24,19 @@ const navigation = [
         name: 'Home',
         href: route('home'),
         active: route().current('home'),
-        show: true,
+        show: user.administrator || user.role === 0 || user.role === 3 || user.role === 4,
     },
     {
         name: 'Attendance',
         href: route('attendance'),
         active: route().current('attendance'),
         show: user.administrator,
+    },
+    {
+        name: 'Enrollment',
+        href: route('enrollment.index'),
+        active: route().current('enrollment.index'),
+        show: user.administrator || user.role === 3 || user.role === 4,
     },
 ]
 

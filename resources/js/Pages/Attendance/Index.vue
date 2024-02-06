@@ -209,7 +209,6 @@ const formOptions = {
                     :class="{'opacity-50 pointer-events-none': dataTable?.processing}"
                     :items="list"
                     :queryStrings="queryStrings"
-                    :wrapperClass="`h-fit min-h-[29em]`"
                     :options="formOptions"
                 >
                     <template #pre>
