@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\DeviceAuthenticationController;
 use App\Http\Controllers\Api\EncryptionController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatusController;
+use App\Http\Controllers\Api\TimelogController;
 use App\Http\Controllers\Api\UidSearchController;
+use App\Http\Middleware\EmployeeToken;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,5 +40,7 @@ Route::middleware(['account.disallowed', 'account.disallowed.system'])->group(fu
     Route::get('dashboard', DashboardController::class);
     Route::match(['get', 'post'], 'search', SearchController::class);
 });
+
+Route::put('timelogs/{employee}', [TimelogController::class, 'update'])->middleware(EmployeeToken::class);
 
 Route::any('encrypt', EncryptionController::class)->name('encrypt');

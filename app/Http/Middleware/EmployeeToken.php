@@ -22,11 +22,11 @@ class EmployeeToken
 
         $token = $request->header('x-employee-token');
 
-        if (empty($token)) {
+        if (empty($token) && $request->is('query/*')) {
             return redirect()->route('query.search', ['employee' => $employee?->id]);
         }
 
-        abort_unless($this->check($employee, $token), 403);
+        abort_unless($this->check($employee, $token), 403, 'Forbidden.');
 
         return $next($request);
     }
@@ -34,7 +34,7 @@ class EmployeeToken
     /**
      * Verify if given credential matches the current employee.
      */
-    protected function check(Employee $employee, string $pin): bool
+    protected function check(Employee $employee, ?string $pin): bool
     {
         try {
             return Hash::check(decrypt($pin), $employee->pin);

@@ -19,7 +19,6 @@ use App\Http\Controllers\TimelogController;
 use App\Http\Controllers\DownloaderController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EmployeeToken;
-use App\Http\Middleware\RedirectIfNotAllowed;
 use App\Services\MobileApplicationDownloader as DL;
 use Illuminate\Support\Facades\Route;
 
