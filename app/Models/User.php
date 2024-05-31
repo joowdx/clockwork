@@ -2,38 +2,33 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use App\Enums\UserRole;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
-use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
-use Laravel\Scout\Searchable;
+use UnitEnum;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
-    use HasApiTokens;
-    use HasFactory;
-    use HasProfilePhoto;
-    use HasUlids;
-    use Notifiable;
-    use Searchable;
+    use HasApiTokens, HasFactory, HasUlids, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
-        'title',
-        'username',
+        'email',
         'password',
-        'role',
-        'disabled',
-        'offices',
+        'roles',
+        'permissions',
     ];
 
     protected $hidden = [
@@ -42,107 +37,105 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'role' => UserRole::class,
-        'offices' => 'array',
-        'password_updated_at' => 'date',
+        'roles' => 'json',
+        'permissions' => 'json',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
-    protected $appends = [
-        'administrator',
-        'profile_photo_url',
-    ];
-
-    public function toSearchableArray(): array
+    public static function booted()
     {
-        return [
-            $this->getKeyName() => $this->getKey(),
-            'name' => $this->name,
-            'username' => $this->username,
-        ];
+
     }
 
-    public function employee()
+    public function root(): Attribute
     {
-        return $this->belongsTo(Employee::class)
-            ->withDefault();
+        return Attribute::make(fn () => $this->hasRole(UserRole::ROOT));
     }
 
-    public function scanners(): BelongsToMany
+    public function superuser(): Attribute
     {
-        return $this->belongsToMany(Scanner::class, 'assignments')
-            ->using(Assignment::class)
-            ->withTimestamps();
+        return Attribute::make(fn () => $this->hasAnyRole(UserRole::ROOT, UserRole::SUPERUSER));
     }
 
-    public function developer(): Attribute
+    public function signature(): MorphOne
     {
-        return new Attribute(
-            fn () => $this->role === UserRole::DEVELOPER
-        );
+        return $this->morphOne(Signature::class, 'signaturable');
     }
 
-    public function administrator(): Attribute
+    public function scanners(): MorphToMany
     {
-        return new Attribute(
-            fn () => $this->developer || $this->role === UserRole::ADMINISTRATOR
-        );
+        return $this->morphedByMany(Scanner::class, 'assignable', Assignment::class);
     }
 
-    public function scopeAdmin(Builder $query): void
+    public function offices(): MorphToMany
     {
-        $query->whereRole(UserRole::ADMINISTRATOR)
-            ->orWhereRole(UserRole::DEVELOPER);
+        return $this->morphedByMany(Office::class, 'assignable', Assignment::class);
     }
 
-    public function signature(): HasOne
+    public function canAccessPanel(Panel $panel, ?string $id = null): bool
     {
-        return $this->hasOne(Signature::class);
-    }
-
-    public function specimens(): HasManyThrough
-    {
-        return $this->hasManyThrough(Specimen::class, Signature::class);
-    }
-
-    public function randomSpecimen(): ?Specimen
-    {
-        if (! $this->signature?->enabled) {
-            return null;
+        if (($id ?? $panel->getId()) === 'app') {
+            return true;
         }
 
-        if ($this->relationLoaded('specimen')) {
-            return $this->specimens
-                ->filter
-                ->enabled
-                ->shuffle()
-                ->first();
+        if ($this->hasRole(UserRole::ROOT)) {
+            return true;
         }
 
-        return $this->specimens()
-            ->where('specimens.enabled', true)
-            ->inRandomOrder()
-            ->first();
+        return match (($id ?? $panel->getId())) {
+            'superuser' => $this->hasRole(UserRole::SUPERUSER),
+            'developer' => $this->hasRole(UserRole::DEVELOPER),
+            'executive' => $this->hasRole(UserRole::EXECUTIVE),
+            'bureaucrat' => $this->hasRole(UserRole::BUREAUCRAT),
+            'director' => $this->hasRole(UserRole::DIRECTOR),
+            'manager' => $this->hasRole(UserRole::MANAGER),
+            'secretary' => $this->hasRole(UserRole::SECRETARY),
+            'security' => $this->hasRole(UserRole::SECURITY),
+            default => false,
+        };
     }
 
-    public function getProfilePhotoUrlAttribute()
+    public function hasRole(UserRole|string $role): bool
     {
-        return $this->profile_photo_path
-            ? str_replace('.app:8000', '', Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path))
-            : $this->defaultProfilePhotoUrl();
+        return in_array($role instanceof UserRole ? $role->value : $role, $this->roles ?? []);
     }
 
-    public function getNeedsPasswordResetAttribute()
+    public function hasAnyRole(UserRole|string ...$roles): bool
     {
-        return $this->needsPasswordReset();
+        $roles = array_map(fn ($role) => $role instanceof UserRole ? $role->value : $role, $roles);
+
+        return count(array_intersect($roles, $this->roles ?? [])) > 0;
     }
 
-    public function needsPasswordReset()
+    public function hasAllRoles(UserRole|string ...$roles): bool
     {
-        if ($this->developer) {
-            return false;
-        }
+        $roles = array_map(fn ($role) => $role instanceof UserRole ? $role->value : $role, $roles);
 
-        return is_null($this->password_updated_at) ||
-            $this->password_updated_at->startOfDay()->addMonths(6)->lte(today());
+        return count(array_diff($roles, $this->roles ?? [])) === 0;
+    }
+
+    public function hasPermission(UnitEnum|string $permission): bool
+    {
+        return in_array($permission instanceof UnitEnum ? $permission->value : $permission, $this->permissions ?? []);
+    }
+
+    public function hasAnyPermission(UnitEnum|string ...$permissions): bool
+    {
+        $permissions = array_map(fn ($permission) => $permission instanceof UnitEnum ? $permission->value : $permission, $permissions);
+
+        return count(array_intersect($permissions, $this->permissions ?? [])) > 0;
+    }
+
+    public function hasAllPermissions(UnitEnum|string ...$permissions): bool
+    {
+        $permissions = array_map(fn ($permission) => $permission instanceof UnitEnum ? $permission->value : $permission, $permissions);
+
+        return count(array_diff($permissions, $this->permissions ?? [])) === 0;
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

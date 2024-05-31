@@ -2,169 +2,139 @@
 
 namespace App\Models;
 
+use App\Enums\TimelogMode;
+use App\Enums\TimelogState;
+use App\Models\Scopes\ActiveScope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Support\Carbon;
 
 class Timelog extends Model
 {
-    use HasUlids;
+    use HasFactory, HasUlids;
 
-    const GRACE_PERIOD = 15;
-
-    const IN = [ 0, 3, 4, 6 ];
-
-    const OUT = [ 1, 2, 5, 7 ];
-
-    protected $fillable = [
-        'scanner_id',
-        'user_id',
-        'time',
-        'state',
-        'hidden',
-    ];
-
-    protected $hidden = [
-        'hidden',
-        'official',
-    ];
+    public $timestamps = false;
 
     protected $casts = [
-        'time' => 'datetime',
+        'time' => 'datetime:Y-m-d H:i:s',
     ];
 
-    protected $appends = [
-        'type',
-    ];
+    protected $temp = [];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('excludeShadow', fn (Builder $builder) => $builder->where('shadow', false));
+    }
+
+    public function state(): Attribute
+    {
+        return Attribute::make(
+            function (TimelogState|int $state) {
+                $new = is_int($state) ? (TimelogState::tryFrom($state) ?? TimelogState::UNKNOWN) : $state;
+
+                if ($new === TimelogState::UNKNOWN) {
+                    $this->temp['state'] = $state;
+                }
+
+                return $new;
+            },
+            function (TimelogState|int $state) {
+                if ($state === TimelogState::UNKNOWN) {
+                    return $this->temp['state'];
+                }
+
+                return $state instanceof TimelogState ? $state->value : $state;
+            },
+        )->shouldCache();
+    }
+
+    public function mode(): Attribute
+    {
+        return Attribute::make(
+            function (TimelogMode|int $mode) {
+                $new = is_int($mode) ? (TimelogMode::tryFrom($mode) ?? TimelogMode::UNKNOWN) : $mode;
+
+                if ($new === TimelogMode::UNKNOWN) {
+                    $this->temp['mode'] = $mode;
+                }
+
+                return $new;
+            },
+            function (TimelogMode|int $mode) {
+                if ($mode === TimelogMode::UNKNOWN) {
+                    return $this->temp['mode'];
+                }
+
+                return $mode instanceof TimelogMode ? $mode->value : $mode;
+            },
+        )->shouldCache();
+    }
+
+    public function in(): Attribute
+    {
+        return Attribute::make(fn (): bool => $this->state->in());
+    }
+
+    public function out(): Attribute
+    {
+        return Attribute::make(fn (): bool => $this->state->out());
+    }
+
+    public function uid(): Attribute
+    {
+        return Attribute::make(fn ($uid): int|string => is_numeric($uid) ? (int) $uid : $uid);
+    }
+
+    public function scopeDay(Builder $query, Carbon|string $date, string $take = 'normal'): void
+    {
+        $date = $date ? ($date instanceof Carbon ? $date : Carbon::parse($date))->startOfDay() : today();
+
+        $start = $take === 'pre' ? $date->clone()->subDay() : $date->clone();
+
+        $end = $take === 'post' ? $date->clone()->addDay()->endOfDay() : $date->clone()->endOfDay();
+
+        $query->whereBetween('time', [$start, $end]);
+    }
+
+    public function scopeMonth(Builder $query, Carbon|string $date): void
+    {
+        $date = $date ? ($date instanceof Carbon ? $date : Carbon::parse($date))->startOfMonth() : today()->startOfMonth();
+
+        $query->whereBetween('time', [$date, $date->clone()->endOfMonth()]);
+    }
+
+    public function scopeFirstHalf(Builder $query): void
+    {
+        $query->whereDay('time', '<=', 15);
+    }
+
+    public function scopeSecondHalf(Builder $query): void
+    {
+        $query->whereDay('time', '>', 15);
+    }
+
+    public function scopeCustomRange(Builder $query, int $day, int $to): void
+    {
+        $query->whereDay('time', '>=', $day)->whereDay('time', '<=', $to);
+    }
+
+    public function scanner(): BelongsTo
+    {
+        return $this->belongsTo(Scanner::class, 'device', 'uid');
+    }
 
     public function employee(): HasOneThrough
     {
         return $this->hasOneThrough(Employee::class, Enrollment::class, 'timelogs.id', 'id', secondLocalKey: 'employee_id')
-            ->join($this->getTable(), function ($join) {
-                $join->on('enrollments.uid', 'timelogs.uid');
-                $join->on('enrollments.scanner_id', 'timelogs.scanner_id');
-            });
-    }
-
-    public function original(): BelongsTo
-    {
-        return $this->belongsTo(Timelog::class, 'timelog_id');
-    }
-
-    public function correction(): HasOne
-    {
-        return $this->hasOne(Timelog::class, 'timelog_id');
-    }
-
-    public function scanner(): HasOneThrough
-    {
-        return $this->hasOneThrough(Scanner::class, Enrollment::class, 'scanners.id', 'id', 'scanner_id', 'scanner_id');
-    }
-
-    public function scopeUnrecognized(Builder $query): void
-    {
-        $query->whereNotExists(
-            Enrollment::selectRaw(1)->whereColumn('enrollments.uid', 'timelogs.uid')
-        );
-    }
-
-    public function scopeOfficial(Builder $query, bool $official = true): void
-    {
-        $query->whereOfficial($official);
-    }
-
-    protected function getArrayableAppends(): array
-    {
-        $appends = array_merge($this->appends, ['in', 'out']);
-
-        return $this->getArrayableItems(
-            array_combine($appends, $appends)
-        );
-    }
-
-    public function getTypeAttribute(): string
-    {
-        return $this->in ? 'In' : ($this->out ? 'Out' : '**');
-    }
-
-    public function getAmmendedAttribute(): bool
-    {
-        return isset($this->timelog_id);
-    }
-
-    public function getInAttribute(): bool
-    {
-        return $this->isTimeIn();
-    }
-
-    public function getOutAttribute(): bool
-    {
-        return $this->isTimeOut();
-    }
-
-    public function getTardyAttribute(): ?bool
-    {
-        return $this->isTardy();
-    }
-
-    public function getUnderTimeAttribute(): ?bool
-    {
-        return $this->isUnderTime();
-    }
-
-    public function getProperAttribute(): ?bool
-    {
-        return $this->isTardy();
-    }
-
-    public function getUnderGracePeriodAttribute(): ?bool
-    {
-        return $this->isUnderGracePeriod();
-    }
-
-    public function getAcceptableAttribute(): ?bool
-    {
-        return $this->isUnderGracePeriod();
-    }
-
-    public function isTimeIn(): bool
-    {
-        return in_array($this->state, self::IN);
-    }
-
-    public function isTimeOut(): bool
-    {
-        return in_array($this->state, self::OUT);
-    }
-
-    public function isTardy(): ?bool
-    {
-        return $this->in ? $this->time->clone()->setTime($this->employee->getSchedule($this->time)->in, '01')->lte($this->time) : null;
-    }
-
-    public function isUnderTime(): ?bool
-    {
-        return $this->out ? $this->time->clone()->setHour($this->employee->getSchedule($this->time)->out)->gt($this->time) : null;
-    }
-
-    public function isUnderGracePeriod(): mixed
-    {
-        return $this->in ? $this->time->clone()->setTime($this->employee->getSchedule($this->time)->in, 0)->diffInMinutes($this->time) <= self::GRACE_PERIOD : null;
-    }
-
-    public function isSame(self $timeLog, bool $strict = false): bool
-    {
-        return $this->time->{$strict ? 'eq' : 'isSameDay'}($timeLog)
-            && $this->state === $timeLog->state
-            && $this->employee_id === $timeLog->employee_id
-            && $this->user_id === $timeLog->user_id;
-    }
-
-    public function unofficialize(): self
-    {
-        return $this->forceFill(['official' => false]);
+            ->join('timelogs', 'employees.id', 'enrollment.employee_id')
+            ->join('scanners', fn ($join) => $join->on('scanners.uid', 'timelogs.device')->on('scanners.id', 'enrollment.scanner_id'))
+            ->whereColumn('timelogs.uid', 'enrollment.uid')
+            ->whereColumn('employees.id', 'enrollment.employee_id')
+            ->withoutGlobalScope(ActiveScope::class);
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Assignment;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -15,14 +13,6 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('presence', fn (Authenticatable $authenticated) => $authenticated);
-
-Broadcast::channel('administrators', fn (Authenticatable $authenticated) => $authenticated->administrator);
-
-Broadcast::channel('users.{user}', function (Authenticatable $authenticated, string $user) {
-    return $authenticated->id === $user;
-});
-
-Broadcast::channel('scanners.{scanner}', function (Authenticatable $authenticated, string $scanner) {
-    return $authenticated->administrator ?: Assignment::whereScannerId($scanner)->whereUserId($authenticated->id)->exists();
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
 });

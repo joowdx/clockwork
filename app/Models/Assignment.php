@@ -2,26 +2,32 @@
 
 namespace App\Models;
 
+use App\Traits\HasActiveState;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphPivot;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class Assignment extends Pivot
+class Assignment extends MorphPivot
 {
-    use HasUlids;
-
-    public $timestamps = true;
+    use HasActiveState, HasUlids;
 
     protected $table = 'assignments';
 
-    protected $touches = ['user', 'scanner'];
+    protected $fillable = [
+        'user_id',
+        'active',
+        'assignable_type',
+        'assignable_id',
+    ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function scanner()
+    public function assignable(): MorphTo
     {
-        return $this->belongsTo(Scanner::class);
+        return $this->morphTo();
     }
 }

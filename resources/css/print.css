@@ -1,9 +1,4 @@
 @media print {
-    @page {
-        margin: 0;
-        size: 8.5in 13in;
-    }
-
     .pagebreak {
         page-break-before: always;
     }
@@ -46,7 +41,7 @@ table {
 }
 
 tr, td {
-    height: 15pt;
+    height: 14.6125pt;
 }
 
 .print-only {
@@ -74,13 +69,12 @@ tr, td {
 }
 
 .absent {
-    background: #F38c8caa;
+    background: #F38c8c77;
     border-color: transparent !important;
-    text-decoration: line-through;
 }
 
 .empty {
-    background: #777777cc;
+    background: #777777CC;
     border-color: transparent !important;
 }
 
@@ -90,42 +84,41 @@ tr, td {
 }
 
 .holiday {
-    background: #18749844;
+    background: #7469B655;
     border-color: transparent !important;
 }
 
 .invalid {
-    background-color: #FF6D2844;
+    background-color: #FF6D2844 !important;
 }
 
 .scanner {
-    border-right: solid;
-    border-color: white;
-    padding-left: 8pt;
+    display: flex;
+    justify-content: space-between;
 }
 
 .arial {
-    font-family: Arial, sans-serif;
+    font-family: Bitter;
 }
 
 .bahnschrift {
-    font-family: Bahnschrift, sans-serif;;
+    font-family: Roboto;
 }
 
 .bahnschrift-light {
-    font-family: "Bahnschrift Light", sans-serif;
+    font-family: Ubuntu;
 }
 
 .cascadia {
-    font-family: "Cascadia Code", monospace;
+    font-family: Sono;
 }
 
 .consolas {
-    font-family: Consolas, monospace;
+    font-family: Cousine;
 }
 
 .courier {
-    font-family: "Courier New", monospace;
+    font-family: Lekton;
 }
 
 .bold {
@@ -140,8 +133,16 @@ tr, td {
     text-transform: uppercase;
 }
 
+.lowercase {
+    text-transform: lowercase;
+}
+
 .center {
     text-align: center;
+}
+
+.left {
+    text-align: left;
 }
 
 .right {
@@ -209,6 +210,7 @@ tr, td {
 
 .underline {
     border-bottom: .5pt solid windowtext;
+    text-decoration: none;
 }
 
 .undertime-badge {
@@ -217,7 +219,21 @@ tr, td {
     right:0pt;
     color:red;
     border-radius: 999999999pt;
-    background-color: #3333;
+    background-color: #FFF9;
+    width: 10pt;
+    height: 10pt;
+    font-size: 6pt;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.non-same-day-badge {
+    position:absolute;
+    bottom:-2.5pt;
+    right:0pt;
+    color:#333C;
     width: 10pt;
     height: 10pt;
     font-size: 6pt;

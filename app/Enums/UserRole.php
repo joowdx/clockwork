@@ -2,25 +2,63 @@
 
 namespace App\Enums;
 
-enum UserRole: int
-{
-    case SYSTEM = 2;
-    case USER = 0;
-    case DEVELOPER = -1;
-    case ADMINISTRATOR = 1;
-    case DEPARTMENT_HEAD = 3;
-    case SHIFT_MANAGER = 6;
-    case ADMINISTRATIVE_OFFICER = 4;
+use Filament\Support\Contracts\HasLabel;
 
-    public function label(): string
+enum UserRole: string implements HasLabel
+{
+    case ROOT = 'root';
+    case SUPERUSER = 'superuser';
+    case DEVELOPER = 'developer';
+    case EXECUTIVE = 'executive';
+    case BUREAUCRAT = 'bureaucrat';
+    case DIRECTOR = 'director';
+    case MANAGER = 'manager';
+    case SECRETARY = 'secretary';
+    case SECURITY = 'security';
+    case DRIVER = 'driver';
+    case NONE = '';
+
+    public static function escalatable(bool $value = false)
     {
-        return match ($this) {
-            self::SYSTEM => 'System',
-            self::USER => 'User',
-            self::DEVELOPER, self::ADMINISTRATOR => 'Administrator',
-            self::DEPARTMENT_HEAD => 'Department Head',
-            self::SHIFT_MANAGER => 'Shift Manager',
-            self::ADMINISTRATIVE_OFFICER => 'Administrative Officer',
-        };
+        $escalatable = [
+            UserRole::MANAGER->value,
+            UserRole::DIRECTOR->value,
+            UserRole::BUREAUCRAT->value,
+            UserRole::EXECUTIVE->value,
+        ];
+
+        return collect(UserRole::cases())
+            ->filter(fn ($role) => in_array($role->value, $escalatable))
+            ->mapWithKeys(fn ($role) => [$value ? $role->getLabel() : $role->value => $value ? $role->value : $role->getLabel()])
+            ->toArray();
+    }
+
+    public static function requestable(bool $value = false)
+    {
+        $requestables = [
+            UserRole::MANAGER->value,
+            UserRole::DIRECTOR->value,
+            UserRole::BUREAUCRAT->value,
+            UserRole::EXECUTIVE->value,
+        ];
+
+        return collect(UserRole::cases())
+            ->filter(fn ($role) => in_array($role->value, $requestables))
+            ->mapWithKeys(fn ($role) => [$value ? $role->getLabel() : $role->value => $value ? $role->value : $role->getLabel()])
+            ->toArray();
+    }
+
+    public function alias(): ?string
+    {
+        return settings($this->value);
+    }
+
+    public function getLabel(bool $aliased = true): ?string
+    {
+        if ($aliased) {
+            return str($this->alias() ?: $this->name)->lower()->headline();
+        }
+
+        return str($this->name)->lower()->headline();
     }
 }

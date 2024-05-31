@@ -2,40 +2,27 @@
 
 namespace App\Providers;
 
-use App\Models\Token;
+use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Laravel\Sanctum\Sanctum;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
     /**
-     * The policy mappings for the application.
+     * The model to policy mappings for the application.
      *
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        //
     ];
 
     /**
      * Register any authentication / authorization services.
-     *
-     * @return void
      */
-    public function register()
+    public function boot(): void
     {
-        Sanctum::ignoreMigrations();
-    }
-
-    /**
-     * Bootstrap any authentication / authorization services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->registerPolicies();
-
-        Sanctum::usePersonalAccessTokenModel(Token::class);
+        Gate::before(fn (User $user) => $user->hasRole(UserRole::ROOT) ? true : null);
     }
 }

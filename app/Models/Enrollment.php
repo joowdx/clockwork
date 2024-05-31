@@ -2,41 +2,32 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ActiveScope;
+use App\Traits\HasActiveState;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Database\Eloquent\Builder;
 
 class Enrollment extends Pivot
 {
-    use HasUlids;
+    use HasActiveState, HasUlids;
 
-    public $timestamps = true;
-
-    protected $table = 'enrollments';
-
-    protected $touches = ['employee'];
-
-    protected $fillable = ['uid', 'enabled'];
+    protected $fillable = [
+        'uid',
+        'employee_id',
+        'scanner_id',
+        'active',
+    ];
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class)
+            ->withoutGlobalScopes(['excludeInterns', ActiveScope::class]);
     }
 
     public function scanner(): BelongsTo
     {
-        return $this->belongsTo(Scanner::class);
-    }
-
-    public function timelogs(): HasMany
-    {
-        return $this->hasMany(Timelog::class);
-    }
-
-    public function scopeEnabled(Builder $query)
-    {
-        return $query->where('enabled', true);
+        return $this->belongsTo(Scanner::class)
+            ->withoutGlobalScopes(['excludeInterns', ActiveScope::class]);
     }
 }

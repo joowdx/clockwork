@@ -2,41 +2,50 @@
 
 namespace App\Providers;
 
-use App\Models\Scanner;
-use App\Services\DownloaderService;
+use App\Models\Token;
+use Filament\Forms\Components\Select;
+use Filament\Http\Responses\Auth\Contracts\LoginResponse;
+use Filament\Notifications\Livewire\Notifications;
+use Filament\Support\Assets\Css;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\VerticalAlignment;
+use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Facades\FilamentIcon;
+use Filament\Tables\Table;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
-        $this->app->register(ImportServiceProvider::class);
 
-        $this->app->register(RepositoryServiceProvider::class);
     }
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        config(['app.initiated' => now()]);
+        App::bind(LoginResponse::class, \App\Http\Responses\LoginResponse::class);
 
-        $this->app->bind(DownloaderService::class, function ($app) {
-            $scanner = $app->request->route('scanner') ?? $app->request->scanner ?? $app->request->scanner_id;
+        Sanctum::usePersonalAccessTokenModel(Token::class);
 
-            if (! $scanner instanceof Scanner) {
-                $scanner = Scanner::find($scanner);
-            }
+        FilamentAsset::register([Css::make('app', __DIR__.'/../../resources/css/app.css'), Css::make('blade', Vite::asset('resources/css/blade.css'))]);
 
-            return $scanner ? new DownloaderService($scanner) : null;
-        });
+        Select::configureUsing(fn (Select $select) => $select->native(false));
+
+        Table::configureUsing(fn (Table $table) => $table->paginated([10, 25, 50, 100])->defaultPaginationPageOption(25)->striped());
+
+        Notifications::verticalAlignment(VerticalAlignment::End);
+
+        Notifications::alignment(Alignment::Start);
+
+        FilamentIcon::register(['panels::user-menu.logout-button' => 'gmdi-logout-o', 'panels::user-menu.profile-item' => 'gmdi-account-circle-o']);
     }
 }

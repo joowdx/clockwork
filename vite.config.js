@@ -1,44 +1,11 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import vue from '@vitejs/plugin-vue';
-import fs from 'fs';
-import dns from 'dns';
-
-dns.setDefaultResultOrder('verbatim')
+import { defineConfig } from 'vite'
+import laravel from 'laravel-vite-plugin'
 
 export default defineConfig({
     plugins: [
-        laravel([
-            'resources/css/print.css',
-            'resources/js/inertia.js',
-            'resources/js/livewire.js',
-        ]),
-        vue({
-            template: {
-                transformAssetUrls: {
-                    base: null,
-                    includeAbsolute: false,
-                },
-            },
-            script: {
-                defineModel: true,
-            }
+        laravel({
+            input: ['resources/css/blade.css'],
+            refresh: ['resources/views/**/*.blade.php'],
         }),
     ],
-    server: {
-        https: {
-            key: fs.readFileSync('./docker/private/localhost.key'),
-            cert: fs.readFileSync('./docker/private/localhost.crt'),
-        },
-        host: '0.0.0.0',
-        hmr: {
-            host: 'localhost',
-            protocol: 'wss'
-        }
-    },
-    resolve: {
-        alias: {
-            '@': '/resources/js'
-        }
-    }
 });

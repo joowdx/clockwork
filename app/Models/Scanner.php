@@ -2,111 +2,100 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Contracts\Auditable;
+use App\Traits\Assignmentable;
+use App\Traits\HasActiveState;
+use App\Traits\HasActivityLogs;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Laravel\Scout\Searchable;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Scanner extends Model
+class Scanner extends Model implements Auditable
 {
-    use HasUlids;
-    use Searchable;
+    use Assignmentable, HasActiveState, HasActivityLogs, HasFactory, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'name',
-        'attlog_file',
+        'uid',
+        'print',
+        'remarks',
         'shared',
         'priority',
-        'print_text_colour',
-        'print_background_colour',
-        'remarks',
-        'ip_address',
+        'host',
         'port',
-        'password',
+        'pass',
     ];
 
-    public function name(): Attribute
+    protected $casts = [
+        'print' => 'json',
+    ];
+
+    public function foregroundColor(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => strtoupper($value ?? '')
+            fn () => $this->print['foreground_color'] ?? 'rgba(0, 0, 0, 1)',
         );
     }
 
-    public function printBackgroundColour(): Attribute
+    public function backgroundColor(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => strtolower($value) === '#ffffff' || empty($value) ? '#ffffff' : $value
+            fn () => $this->print['background_color'] ?? 'rgba(0, 0, 0, 0)',
+        );
+    }
+
+    public function fontSize(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->print['font_size'] ?? 12,
+        );
+    }
+
+    public function fontStyle(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->print['font_style'] ?? 'normal',
         );
     }
 
     public function employees(): BelongsToMany
     {
-        return $this->belongsToMany(Employee::class, 'enrollments')
+        return $this->belongsToMany(Employee::class, 'enrollment')
             ->using(Enrollment::class)
-            ->withPivot(['id', 'uid'])
-            ->withTimestamps();
+            ->withPivot('uid', 'active');
     }
 
-    public function users(): BelongsToMany
+    public function enrollments(): HasMany
     {
-        return $this->belongsToMany(User::class, 'assignments')
-            ->using(Assignment::class)
-            ->withPivot('id')
-            ->withTimestamps();
+        return $this->hasMany(Enrollment::class);
     }
 
     public function timelogs(): HasMany
     {
-        return $this->hasMany(Timelog::class)
+        return $this->hasMany(Timelog::class, 'device', 'uid')
             ->latest('time')
             ->latest('id');
     }
 
-    public function capture(): HasOne
-    {
-        return $this->hasOne(Capture::class);
-    }
-
-    public function unrecognized(): HasMany
-    {
-        return $this->timelogs()
-            ->whereNotExists(function ($query) {
-                $query->select('uid')
-                    ->from('enrollments')
-                    ->whereColumn('timelogs.scanner_id', 'enrollments.scanner_id')
-                    ->whereColumn('timelogs.uid', 'enrollments.uid');
-            });
-    }
-
-    public function toSearchableArray(): array
-    {
-        return [
-            'name' => $this->name,
-            'ip_address' => $this->ip_address,
-        ];
-    }
-
-    public function uploads(): HasMany
-    {
-        return $this->hasMany(Upload::class);
-    }
-
-    public function lastUpload(): HasOne
-    {
-        return $this->hasOne(Upload::class)->latestOfMany('time');
-    }
-
     public function latestTimelog(): HasOne
     {
-        return $this->hasOne(Timelog::class)->latestOfMany('time');
+        return $this->timelogs()
+            ->reorder()
+            ->one()
+            ->ofMany('time');
     }
 
-    public function scopePriority(Builder $query, bool $priority = true): void
+    public function lastSync(): MorphOne
     {
-        $query->wherePriority($priority);
+        return $this->activities()
+            ->one()
+            ->ofMany('time')
+            ->where(fn ($query) => $query->whereIn('data->action', ['import', 'fetch']));
     }
 }
