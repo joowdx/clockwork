@@ -97,4 +97,14 @@ class TimesheetResource extends Resource
             'index' => Pages\ListTimesheets::route('/'),
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $offices = auth()->user()->offices?->pluck('id')->toArray();
+
+        return parent::getEloquentQuery()
+            ->whereHas('offices', function (Builder $query) use ($offices) {
+                $query->whereIn('offices.id', $offices);
+            });
+    }
 }

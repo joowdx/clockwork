@@ -97,6 +97,7 @@ class OfficeResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()
+            ->whereIn('offices.id', auth()->user()->offices?->pluck('id')->toArray());
     }
 }
