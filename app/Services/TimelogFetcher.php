@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Scanner;
 use App\Services\TimelogsFetcher\TimelogsFetcherException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 
@@ -29,6 +30,10 @@ class TimelogFetcher
 
     public function fetchTimelogs(?string $from = null, ?string $to = null): Collection|array
     {
+        $from = isset($from) ? Carbon::parse($from)->format('Y-m-d') : null;
+
+        $to = isset($to) ? Carbon::parse($to)->format('Y-m-d') : null;
+
         $process = Process::forever()->run($this->command($from, $to));
 
         if ($process->failed()) {
@@ -65,9 +70,9 @@ class TimelogFetcher
             $args[] = $this->scanner->port;
         }
 
-        if ($this->scanner->password) {
+        if ($this->scanner->pass) {
             $args[] = '-K';
-            $args[] = $this->scanner->password;
+            $args[] = $this->scanner->pass;
         }
 
         if (! $this->ping) {

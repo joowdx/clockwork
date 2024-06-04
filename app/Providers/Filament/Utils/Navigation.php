@@ -18,7 +18,7 @@ class Navigation
                 ->visible(fn () => $visibility())
                 ->url(fn () => route('filament.app.pages.dashboard')),
             MenuItem::make('security')
-                ->label(str(settings('security') ?: 'securty')->headline())
+                ->label(str(settings('security') ?: 'security')->headline())
                 ->icon('gmdi-enhanced-encryption-o')
                 ->visible(fn () => $visibility('security'))
                 ->url(fn () => route('filament.security.pages.dashboard')),
