@@ -64,15 +64,15 @@ class Navigation
     {
         return function (): array {
             $routes = [
-                route('filament.app.pages.dashboard'),
-                route('filament.security.pages.dashboard'),
-                route('filament.secretary.pages.dashboard'),
-                route('filament.manager.pages.dashboard'),
-                route('filament.director.pages.dashboard'),
-                route('filament.bureaucrat.pages.dashboard'),
-                route('filament.executive.pages.dashboard'),
-                route('filament.developer.pages.dashboard'),
-                route('filament.superuser.pages.dashboard'),
+                // route('filament.app.pages.dashboard'),
+                // route('filament.security.pages.dashboard'),
+                // route('filament.secretary.pages.dashboard'),
+                // route('filament.manager.pages.dashboard'),
+                // route('filament.director.pages.dashboard'),
+                // route('filament.bureaucrat.pages.dashboard'),
+                // route('filament.executive.pages.dashboard'),
+                // route('filament.developer.pages.dashboard'),
+                // route('filament.superuser.pages.dashboard'),
             ];
 
             return collect($routes)
