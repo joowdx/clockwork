@@ -35,6 +35,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'name' => 'Superuser',
+            'username' => 'admin',
             'email' => 'admin@local.com',
             'password' => Hash::make('1'),
             'roles' => ['root'],
