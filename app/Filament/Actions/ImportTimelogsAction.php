@@ -16,6 +16,8 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImportTimelogsAction extends Action
 {
+    protected bool $onlyAssigned = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -114,22 +116,33 @@ class ImportTimelogsAction extends Action
                         $number = substr_replace($file, '', strrpos($file, '_attlog.dat'), strlen('_attlog.dat'));
 
                         if (is_numeric($number) && $number <= 255 && $number !== $first[2]) {
-                            $fail("File uploaded {$file} is invalid.");
+                            $fail("File uploaded {$file} is invalid");
                         }
 
                         if (count($first) !== 6) {
-                            $fail("File uploaded {$file} is invalid.");
+                            $fail("File uploaded {$file} is invalid");
                         }
 
                         if (isset($first[2]) && is_numeric($first[2])) {
-                            if (Scanner::where('uid', $first[2])->doesntExist()) {
-                                $fail("No device found for these records from device with UID2 in file 2");
+                            if (
+                                Scanner::where('uid', $first[2])
+                                    ->when($this->onlyAssigned, fn ($query) => $query->whereIn('scanners.uid', auth()->user()->scanners->pluck('uid')))
+                                    ->doesntExist()
+                            ) {
+                                $fail("No device found for these records from device {$first[2]} with UID in file $file");
                             }
                         } else {
-                            $fail("File uploaded {$file} is invalid.");
+                            $fail("File uploaded {$file} is invalid");
                         }
                     },
                 ]),
         ]);
+    }
+
+    public function onlyAssigned(bool $true = true)
+    {
+        $this->onlyAssigned = $true;
+
+        return $this;
     }
 }

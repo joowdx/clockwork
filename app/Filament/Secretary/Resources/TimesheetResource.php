@@ -59,11 +59,22 @@ class TimesheetResource extends Resource
                 ActiveFilter::make(),
                 StatusFilter::make(),
                 SelectFilter::make('offices')
-                    ->relationship('offices', 'name')
+                    ->relationship('offices', 'name', fn ($query) => $query->whereIn('offices.id', auth()->user()->offices->pluck('id')))
                     ->multiple()
                     ->preload(),
                 SelectFilter::make('groups')
-                    ->relationship('groups', 'name')
+                    ->relationship(
+                        'groups',
+                        'name',
+                        fn ($query) => $query->whereHas('employees', function ($query) {
+                            $query->whereHas('offices', function ($query) {
+                                $query->whereIn('offices.id', auth()->user()->offices->pluck('id'));
+                            })
+                            ->orWhereHas('scanners', function (Builder $query) {
+                                $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                            });
+                        })
+                    )
                     ->multiple()
                     ->preload(),
             ])
@@ -100,11 +111,14 @@ class TimesheetResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $offices = auth()->user()->offices?->pluck('id')->toArray();
-
         return parent::getEloquentQuery()
-            ->whereHas('offices', function (Builder $query) use ($offices) {
-                $query->whereIn('offices.id', $offices);
+            ->where(function ($query) {
+                $query->whereHas('offices', function (Builder $query) {
+                    $query->whereIn('offices.id', auth()->user()->offices->pluck('id')->toArray());
+                })
+                ->orWhereHas('scanners', function (Builder $query) {
+                    $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                });
             });
     }
 }

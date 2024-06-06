@@ -23,16 +23,16 @@ class ActiveScope implements Scope
      */
     public function extend(Builder $builder)
     {
-        $builder->macro('withInactive', function (Builder $builder) {
-            $builder->withoutGlobalScope($this);
+        $builder->macro('withInactive', function (Builder $builder): Builder {
+            return $builder->withoutGlobalScope($this);
         });
 
-        $builder->macro('onlyInactive', function (Builder $builder) {
-            $builder->withoutGlobalScope($this)->where($builder->getModel()->getTable().'.active', false);
+        $builder->macro('onlyInactive', function (Builder $builder): Builder {
+            return $builder->withoutGlobalScope($this)->where($builder->getModel()->getTable().'.active', false);
         });
 
-        $builder->macro('withoutInactive', function (Builder $builder) {
-            $builder->withoutGlobalScope($this)->where($builder->getModel()->getTable().'.active', true);
+        $builder->macro('withoutInactive', function (Builder $builder): Builder {
+            return $builder->withoutGlobalScope($this)->where($builder->getModel()->getTable().'.active', true);
         });
     }
 }
