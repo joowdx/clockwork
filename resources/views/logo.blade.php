@@ -55,7 +55,7 @@
             }
 
             .rotate {
-                animation: rotate 10s linear infinite;
+                animation: rotate 5s linear infinite;
                 transform-box: fill-box;
                 transform-origin: center;
             }
@@ -65,7 +65,7 @@
             }
 
             .booster-inner {
-                animation: booster-inner 0.25s linear infinite alternate;
+                animation: booster-inner 0.75s linear infinite alternate;
             }
 
             @keyframes rotate {

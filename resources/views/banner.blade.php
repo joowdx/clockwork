@@ -45,15 +45,15 @@
 
     <style>
         .rocket-main {
-        fill: url(#rocket-main);
+            fill: url(#rocket-main);
         }
 
         .rocket-boost {
-        fill: url(#rocket-boost);
+            fill: url(#rocket-boost);
         }
 
         .clockwork-gradient {
-        fill: url(#clockwork-gradient);
+            fill: url(#clockwork-gradient);
         }
     </style>
 </svg>
