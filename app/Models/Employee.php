@@ -178,7 +178,7 @@ class Employee extends Model
     public function currentDeployment(): HasOne
     {
         return $this->hasOne(Deployment::class)
-            ->ofMany('current')
+            ->ofMany()
             ->where('current', true);
     }
 
