@@ -52,7 +52,6 @@ class UserResource extends Resource
                             ->rule(Password::default())
                             ->rule(fn (string $operation) => $operation === 'create' ? 'required' : null)
                             ->markAsRequired(fn (string $operation) => $operation === 'create')
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                             ->dehydrated(fn (?string $state) => ! empty($state))
                             ->requiredWith('passwordConfirmation')
                             ->same('passwordConfirmation')
@@ -196,7 +195,7 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereNot('id', auth()->id())
+            // ->whereNot('id', auth()->id())
             ->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 }
