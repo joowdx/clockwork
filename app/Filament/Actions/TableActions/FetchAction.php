@@ -19,6 +19,8 @@ class FetchAction extends Action
 
         $this->name ??= 'fetch-timelogs';
 
+        $this->label('Fetch');
+
         $this->icon('heroicon-m-arrow-path-rounded-square');
 
         $this->requiresConfirmation();
