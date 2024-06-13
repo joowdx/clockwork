@@ -62,6 +62,9 @@ class Settings extends Page
                             Forms\Components\TextInput::make('name')
                                 ->markAsRequired()
                                 ->rule('required'),
+                            Forms\Components\TextInput::make('address')
+                                ->markAsRequired()
+                                ->rule('required'),
                             Forms\Components\TextInput::make('url')
                                 ->activeUrl(),
                         ])->columnSpan(2),
