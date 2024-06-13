@@ -3,7 +3,6 @@
 namespace App\Filament\Manager\Resources\RequestResource\Pages;
 
 use App\Filament\Manager\Resources\RequestResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListRequests extends ListRecords

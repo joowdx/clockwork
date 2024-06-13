@@ -5,7 +5,7 @@ namespace App\Enums;
 use Filament\Support\Contracts\HasDescription;
 use Filament\Support\Contracts\HasLabel;
 
-enum WorkArrangement: string implements HasLabel, HasDescription
+enum WorkArrangement: string implements HasDescription, HasLabel
 {
     case STANDARD_WORK_HOUR = 'standard-work-hour';
     case FLEXI_TIME = 'flexi-time';

@@ -8,20 +8,13 @@ use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
 use App\Filament\Filters\ActiveFilter;
 use App\Filament\Filters\StatusFilter;
 use App\Filament\Secretary\Resources\TimesheetResource\Pages;
-use App\Filament\Secretary\Resources\TimesheetResource\RelationManagers;
 use App\Models\Employee;
-use App\Models\Timesheet;
-use Filament\Actions\ViewAction;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\SelectAction;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TimesheetResource extends Resource
 {
@@ -73,9 +66,9 @@ class TimesheetResource extends Resource
                             $query->whereHas('offices', function ($query) {
                                 $query->whereIn('offices.id', auth()->user()->offices->pluck('id'));
                             })
-                            ->orWhereHas('scanners', function (Builder $query) {
-                                $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
-                            });
+                                ->orWhereHas('scanners', function (Builder $query) {
+                                    $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                                });
                         })
                     )
                     ->multiple()
@@ -89,7 +82,7 @@ class TimesheetResource extends Resource
                     ExportTimesheetAction::make()
                         ->label('Timesheet'),
                     Tables\Actions\BulkAction::make('transmittal')
-                        ->icon('heroicon-o-clipboard-document-check')
+                        ->icon('heroicon-o-clipboard-document-check'),
                 ])
                     ->label('Export')
                     ->icon('heroicon-o-document-arrow-down'),
@@ -121,9 +114,9 @@ class TimesheetResource extends Resource
                 $query->whereHas('offices', function (Builder $query) {
                     $query->whereIn('offices.id', auth()->user()->offices->pluck('id')->toArray());
                 })
-                ->orWhereHas('scanners', function (Builder $query) {
-                    $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
-                });
+                    ->orWhereHas('scanners', function (Builder $query) {
+                        $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                    });
             });
     }
 }

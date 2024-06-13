@@ -29,7 +29,7 @@ class Signature extends Model
     ];
 
     protected $casts = [
-        'password' => 'encrypted'
+        'password' => 'encrypted',
     ];
 
     protected static function booted(): void

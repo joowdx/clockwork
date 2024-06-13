@@ -5,7 +5,7 @@ namespace App\Enums;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum RequestStatus: string implements HasLabel, HasColor
+enum RequestStatus: string implements HasColor, HasLabel
 {
     case REQUEST = 'requested';
     case CANCEL = 'cancelled';

@@ -6,7 +6,6 @@ use App\Filament\Actions\TableActions\FetchAction;
 use App\Filament\Superuser\Resources\ScannerResource\Pages;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\UsersRelationManager;
-use App\Jobs\FetchTimelogs;
 use App\Models\Scanner;
 use Filament\Forms;
 use Filament\Forms\Form;

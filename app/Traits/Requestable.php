@@ -94,7 +94,7 @@ trait Requestable
                         return false;
                     }
 
-                    if(
+                    if (
                         $this->relationLoaded('request') &&
                         is_null($this->request) ||
                         $this->request()->doesntExist()
@@ -136,8 +136,8 @@ trait Requestable
     public function requestable(): Attribute
     {
         return Attribute::make(
-            fn () => match($this::class) {
-                Schedule::class => !$this->global && in_array($this->request?->status, [null, RequestStatus::REJECT]),
+            fn () => match ($this::class) {
+                Schedule::class => ! $this->global && in_array($this->request?->status, [null, RequestStatus::REJECT]),
                 default => true,
             },
         )->shouldCache();
@@ -153,7 +153,7 @@ trait Requestable
     public function cancellable(): Attribute
     {
         return Attribute::make(
-            fn () => !$this->global ? in_array($this->request?->status, [RequestStatus::REQUEST]) : null
+            fn () => ! $this->global ? in_array($this->request?->status, [RequestStatus::REQUEST]) : null
         )->shouldCache();
     }
 

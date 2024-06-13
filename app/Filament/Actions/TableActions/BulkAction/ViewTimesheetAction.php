@@ -51,11 +51,11 @@ class ViewTimesheetAction extends BulkAction
                     return View::make('print.csc')->view('print.csc', [
                         'preview' => true,
                         'timesheets' => Timesheet::whereHas('employee', fn ($query) => $query->whereIn('id', $records->pluck('id')))
-                            ->whereDate('month', $data['month'] . '-01')->get()
+                            ->whereDate('month', $data['month'].'-01')->get(),
                     ]);
                 }
 
-                $month =  $month = Carbon::parse($data['month']);
+                $month = $month = Carbon::parse($data['month']);
 
                 $from = $month->clone();
 
@@ -86,7 +86,7 @@ class ViewTimesheetAction extends BulkAction
 
             $this->modalHeading('View timesheets');
 
-            $this->modalDescription(fn (Collection $records) => "View timesheets of {$records->count()} selected " . str('employee')->plural($records->count()) . '.');
+            $this->modalDescription(fn (Collection $records) => "View timesheets of {$records->count()} selected ".str('employee')->plural($records->count()).'.');
 
             $this->modalIcon('gmdi-document-scanner-o');
 

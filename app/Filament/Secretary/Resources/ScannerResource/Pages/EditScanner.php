@@ -26,15 +26,15 @@ class EditScanner extends EditRecord
         return [
             Actions\ActionGroup::make([
                 Actions\DeleteAction::make()
-                ->form([
-                    TextInput::make('password')
-                        ->label('Password')
-                        ->password()
-                        ->currentPassword()
-                        ->markAsRequired()
-                        ->rules(['required', 'string']),
-                ]),
-            ])
+                    ->form([
+                        TextInput::make('password')
+                            ->label('Password')
+                            ->password()
+                            ->currentPassword()
+                            ->markAsRequired()
+                            ->rules(['required', 'string']),
+                    ]),
+            ]),
         ];
     }
 }

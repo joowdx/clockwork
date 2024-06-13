@@ -61,10 +61,9 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         $sheet->timetables()->delete();
 
         $time = function (string $week) use ($schedules) {
-            return match(true) {
+            return match (true) {
                 $schedules?->$week?->count() === 1 => $schedules?->$week?->first()->time,
-                $schedules?->$week?->filter(fn ($schedule) => $schedule->{str($week)->singular()->toString()})->count() === 1 =>
-                    $schedules?->$week?->filter(fn ($schedule) => $schedule->{str($week)->singular()->toString()})->first()?->time,
+                $schedules?->$week?->filter(fn ($schedule) => $schedule->{str($week)->singular()->toString()})->count() === 1 => $schedules?->$week?->filter(fn ($schedule) => $schedule->{str($week)->singular()->toString()})->first()?->time,
                 default => 'As required'
             };
         };

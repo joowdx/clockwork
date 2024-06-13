@@ -31,7 +31,6 @@ class FetchAction extends Action
 
         $this->closeModalByClickingAway(false);
 
-
         $this->modalDescription(function (Scanner $record) {
             if (empty($record->host)) {
                 return 'Device connection is not yet configured. Please set it up first before using this feature.';

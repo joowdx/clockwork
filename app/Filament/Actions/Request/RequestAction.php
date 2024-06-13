@@ -11,7 +11,6 @@ use Filament\Actions\Concerns\InteractsWithRecord;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -49,7 +48,7 @@ class RequestAction extends Action
 
         $this->slideOver();
 
-        $this->modalDescription(<<<DESC
+        $this->modalDescription(<<<'DESC'
             Be sure to finalize everything else before proceeding as you will not be able to make adjustments after this action.
             Would you like to continue?
         DESC);
@@ -131,7 +130,7 @@ class RequestAction extends Action
 
         $this->route = Route::whereModel($type)->first();
 
-        if(is_null($this->route)) {
+        if (is_null($this->route)) {
             throw new InvalidArgumentException("Route for {$type} not found. Please contact the system administrators.");
         }
 

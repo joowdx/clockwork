@@ -4,7 +4,6 @@ namespace App\Filament\Secretary\Resources;
 
 use App\Filament\Actions\TableActions\FetchAction;
 use App\Filament\Secretary\Resources\ScannerResource\Pages;
-use App\Filament\Secretary\Resources\ScannerResource\RelationManagers;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\EmployeesRelationManager;
 use App\Models\Scanner;
 use Filament\Forms;
@@ -13,7 +12,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ScannerResource extends Resource
 {
@@ -140,7 +138,7 @@ class ScannerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            EmployeesRelationManager::class
+            EmployeesRelationManager::class,
         ];
     }
 

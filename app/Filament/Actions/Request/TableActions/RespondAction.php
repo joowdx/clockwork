@@ -4,23 +4,17 @@ namespace App\Filament\Actions\Request\TableActions;
 
 use App\Enums\RequestStatus;
 use App\Enums\WorkArrangement;
-use App\Filament\App\Pages\Forms;
 use App\Models\Request;
 use App\Models\Schedule;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\View;
 use Filament\Forms\Components\ViewField;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Get;
 use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
@@ -85,12 +79,11 @@ class RespondAction extends Action
                             Select::make('target')
                                 ->visible(fn (Get $get) => $get('status') === RequestStatus::ESCALATE->value)
                                 ->required()
-                                ->options(fn (Request $record) =>
-                                    collect($record->requestable->route->escalation)
-                                        ->mapWithKeys(fn ($target) => [$target => ucwords(settings($target) ?? $target)]),
+                                ->options(fn (Request $record) => collect($record->requestable->route->escalation)
+                                    ->mapWithKeys(fn ($target) => [$target => ucwords(settings($target) ?? $target)]),
                                 ),
                             RichEditor::make('remarks')
-                                ->hidden(fn (Get $get, Model $record) => $record->final &&  $get('status') === RequestStatus::APPROVE->value)
+                                ->hidden(fn (Get $get, Model $record) => $record->final && $get('status') === RequestStatus::APPROVE->value)
                                 ->visible(fn (Get $get) => $get('status') !== null && $get('status') !== RequestStatus::APPROVE->value)
                                 ->markAsRequired()
                                 ->toolbarButtons([
@@ -105,8 +98,8 @@ class RespondAction extends Action
                         ]),
                     Tab::make('Threshold')
                         ->visible(fn (Get $get, Request $record) => $record->requestable instanceof Schedule ? $record->final && $get('status') === 'approved' : false)
-                        ->schema($this->scheduleThresholdForm())
-            ]),
+                        ->schema($this->scheduleThresholdForm()),
+                ]),
         ]);
 
         $this->action(function (Request $record, array $data) {
@@ -119,7 +112,7 @@ class RespondAction extends Action
                         'user_id' => auth()->id(),
                         'remarks' => $data['remarks'] ?? null,
                     ]);
-                } else if ($data['status'] === RequestStatus::DEFLECT->value) {
+                } elseif ($data['status'] === RequestStatus::DEFLECT->value) {
                     $record->requestable->requests()->create([
                         'status' => RequestStatus::DEFLECT,
                         'to' => $record->requestable->route->final(),
@@ -146,15 +139,14 @@ class RespondAction extends Action
                                 'threshold' => $data['threshold'],
                             ]);
                         }
-                    }
-                    else if ($record->escalated) {
+                    } elseif ($record->escalated) {
                         $record->requestable->requests()->create([
                             'status' => RequestStatus::REQUEST,
                             'to' => $record->requestable->route->final(),
                             'step' => $record->requestable->route->final(true),
                             'user_id' => null,
                         ]);
-                    } else if ($record->requestable->next_route) {
+                    } elseif ($record->requestable->next_route) {
                         $record->requestable->requests()->create([
                             'status' => RequestStatus::REQUEST,
                             'to' => $record->requestable->next_route,

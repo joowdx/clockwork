@@ -20,7 +20,7 @@ class CancelAction extends Action
 
         $this->hidden(fn (Model $record) => $record->drafted);
 
-        $this->disabled(fn (Model $record) => !$record->cancellable);
+        $this->disabled(fn (Model $record) => ! $record->cancellable);
 
         $this->form([
             RichEditor::make('remarks')
