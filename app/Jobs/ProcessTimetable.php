@@ -177,7 +177,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
             $roster[$state]['undertime'] = match ($state) {
                 'p1', 'p3' => ($diff = (int) $punchTime->diffInMinutes($punched->time)) > ($schedule->threshold[$state]['tardy'] ?? 0) ? $diff : 0,
-                'p2', 'p4' => ($diff = (int) $punched->time->diffInMinutes($punchTime)) > 0 ? $diff : 0,
+                'p2', 'p4' => ($diff = (int) $punched->time->setSeconds(0)->diffInMinutes($punchTime)) > 0 ? $diff : 0,
                 default => null,
             };
         }

@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $first_name = 'first_name';
-            $middle_name = "CASE WHEN TRIM(middle_name) = '' THEN '' ELSE ', ' END, TRIM(middle_name)";
-            $last_name = "last_name, ', '";
-            $middle_initial = "CASE WHEN TRIM(middle_name) = '' THEN '' ELSE ' ' END, SUBSTRING(TRIM(middle_name), 1, 1), CASE WHEN LENGTH(TRIM(middle_name)) <= 1 THEN '' ELSE '.' END";
-            $qualifier_name = "CASE WHEN qualifier_name = '' THEN '' ELSE ', ' END, qualifier_name";
+            $middle_name = "CASE WHEN TRIM(BOTH '' FROM middle_name) = '' THEN '' ELSE ', ' END || TRIM(BOTH '' FROM middle_name)";
+            $last_name = "last_name || ', '";
+            $middle_initial = "CASE WHEN TRIM(BOTH '' FROM middle_name) = '' THEN '' ELSE ' ' END || SUBSTRING(TRIM(BOTH '' FROM middle_name), 1, 1) || CASE WHEN LENGTH(TRIM(BOTH '' FROM middle_name)) <= 1 THEN '' ELSE '.' END";
+            $qualifier_name = "CASE WHEN qualifier_name = '' THEN '' ELSE ', ' END || qualifier_name";
+
+            $nameExpression = "$last_name || $first_name || $middle_initial || $qualifier_name";
+            $fullNameExpression = "$last_name || $first_name || $middle_name || $qualifier_name";
 
             $table->ulid('id')->primary();
             $table->string('prefix_name', 60)->nullable();
@@ -25,8 +28,8 @@ return new class extends Migration
             $table->string('middle_name', 60)->default('');
             $table->string('last_name', 60);
             $table->string('qualifier_name', 60)->default('');
-            $table->string('name', 240)->storedAs("TRIM(CONCAT($last_name, $first_name, $middle_initial, $qualifier_name))");
-            $table->string('full_name', 240)->storedAs("TRIM(CONCAT($last_name, $first_name, $middle_name, $qualifier_name))");
+            $table->string('name', 240)->storedAs("TRIM(BOTH ' ' FROM $nameExpression)");
+            $table->string('full_name', 240)->storedAs("TRIM(BOTH ' ' FROM $fullNameExpression)");
             $table->date('birthdate')->nullable();
             $table->string('sex')->nullable();
             $table->string('designation')->nullable();

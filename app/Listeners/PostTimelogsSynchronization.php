@@ -42,19 +42,13 @@ class PostTimelogsSynchronization
                 return;
             }
 
-            // $jobs = $employees->map(function (Employee $employee) use ($event) {
-            //     return new ProcessTimesheet($employee, Carbon::parse($event->month)->startOfMonth());
-            // });
-
-            $employees->each(function (Employee $employee) use ($event) {
-                return ProcessTimesheet::dispatchSync($employee, Carbon::parse($event->month)->startOfMonth());
+            $jobs = $employees->map(function (Employee $employee) use ($event) {
+                return new ProcessTimesheet($employee, Carbon::parse($event->month)->startOfMonth());
             });
 
-            // Bus::batch($jobs->all())
-            //     ->then(function () {
-
-            //     })
-            //     ->dispatch();
+            Bus::batch($jobs->all())
+                ->onQueue('main')
+                ->dispatch();
         }
     }
 }

@@ -81,19 +81,19 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
     public function handle(): void
     {
         try {
-            DB::transaction(function () {
-                if (empty($this->scanner->host)) {
-                    throw new TimelogsFetcherException('Device connection not configured.');
-                }
+            if (empty($this->scanner->host)) {
+                throw new TimelogsFetcherException('Device connection not configured.');
+            }
 
-                $timelogs = $this->fetcher->fetchTimelogs($this->from, $this->to)->map(fn ($entry) => [
-                    'device' => $this->device,
-                    'uid' => $entry['uid'],
-                    'time' => $entry['time'],
-                    'state' => $entry['state'],
-                    'mode' => $entry['mode'],
-                ]);
+            $timelogs = $this->fetcher->fetchTimelogs($this->from, $this->to)->map(fn ($entry) => [
+                'device' => $this->device,
+                'uid' => $entry['uid'],
+                'time' => $entry['time'],
+                'state' => $entry['state'],
+                'mode' => $entry['mode'],
+            ]);
 
+            DB::transaction(function () use ($timelogs) {
                 $timelogs->chunk($this->chunkSize)->each(function ($entries) {
                     Timelog::upsert($entries->toArray(), [
                         'device',
@@ -108,37 +108,37 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                         'mode',
                     ]);
                 });
-
-                TimelogsSynchronized::dispatch(
-                    $this->scanner,
-                    $this->user,
-                    'fetch',
-                    $this->month,
-                    $timelogs->first()['time'] ?? null,
-                    $timelogs->last()['time'] ?? null,
-                    $timelogs->count(),
-                    null,
-                    [
-                        'host' => $this->scanner->host,
-                        'port' => $this->scanner->port,
-                        'pass' => $this->scanner->pass,
-                    ]
-                );
-
-                if ($this->notify) {
-                    Notification::make()
-                        ->success()
-                        ->title('Fetch successful')
-                        ->body(
-                            str(<<<HTML
-                                Timelogs of <i>{$this->scanner->name}</i> has been successfully fetched from the device <br>
-                                <i>You may have to wait for a bit before the employees' records are updated</i>
-                            HTML)
-                                ->toHtmlString()
-                        )
-                        ->sendToDatabase($this->user);
-                }
             });
+
+            TimelogsSynchronized::dispatch(
+                $this->scanner,
+                $this->user,
+                'fetch',
+                $this->month,
+                $timelogs->first()['time'] ?? null,
+                $timelogs->last()['time'] ?? null,
+                $timelogs->count(),
+                null,
+                [
+                    'host' => $this->scanner->host,
+                    'port' => $this->scanner->port,
+                    'pass' => $this->scanner->pass,
+                ]
+            );
+
+            if ($this->notify) {
+                Notification::make()
+                    ->success()
+                    ->title('Fetch successful')
+                    ->body(
+                        str(<<<HTML
+                            Timelogs of <i>{$this->scanner->name}</i> has been successfully fetched from the device <br>
+                            <i>You may have to wait for a bit before the employees' records are updated</i>
+                        HTML)
+                            ->toHtmlString()
+                    )
+                    ->sendToDatabase($this->user);
+            }
         } catch (TimelogsFetcherException $exception) {
             Notification::make()
                 ->danger()
