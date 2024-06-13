@@ -11,13 +11,16 @@ use App\Filament\Secretary\Resources\TimesheetResource\Pages;
 use App\Filament\Secretary\Resources\TimesheetResource\RelationManagers;
 use App\Models\Employee;
 use App\Models\Timesheet;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\SelectAction;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TimesheetResource extends Resource
@@ -42,7 +45,7 @@ class TimesheetResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('offices.name')
+                Tables\Columns\TextColumn::make('offices.code')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->toggleable()
@@ -92,7 +95,9 @@ class TimesheetResource extends Resource
                     ->icon('heroicon-o-document-arrow-down'),
                 GenerateTimesheetAction::make()
                     ->label('Generate'),
-            ]);
+            ])
+            ->recordAction(null)
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
