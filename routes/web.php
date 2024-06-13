@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\Schedule;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,13 +13,3 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('test', fn () => 'Hello World!')->name('test');
-
-Route::get('t', function () {
-    return
-
-
-        Schedule::whereHas('request')->with('requests')->get()->map->requests
-
-
-    ;
-});
