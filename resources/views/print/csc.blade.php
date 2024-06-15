@@ -47,7 +47,7 @@
                             <col width=57 span=6>
                             <tr>
                                 <td colspan=6 class="relative">
-                                    <span class="absolute" style="font-size:4.65pt;opacity:0.05;right:0;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
+                                    <span class="absolute" style="font-size:4.65pt;opacity:0.05;right:0.65pt;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
                                     <img src="{{ url('storage/'.settings('seal')) }}" alt="davao-del-sur" class="absolute" style="width:36pt;opacity:0.2;top:15pt;right:0;">
                                 </td>
                             </tr>
@@ -355,6 +355,11 @@
                                     </div>
                                 </td>
                             </tr>
+                            @if ($size === 'folio')
+                                <tr>
+                                    <td colspan=6></td>
+                                </tr>
+                            @endif
                         @endif
                     </table>
                 </div>
