@@ -176,7 +176,7 @@ class ExportTimesheet implements Responsable
                 };
             };
 
-            $this->employee->load(['timelogs' => $timelogs, 'timelogs.scanner', 'scanners']);
+            $this->employee->load(['timelogs' => $timelogs, 'timelogs.scanner', 'scanners'])->sortBy('full_name');
 
             return match ($this->individual) {
                 true => $this->exportAsZip(),
@@ -194,6 +194,7 @@ class ExportTimesheet implements Responsable
             ->when($period === 'regular', fn ($query) => $query->with('regularDays'))
             ->when($period === 'overtime', fn ($query) => $query->with('overtimeWork'))
             ->with(['employee:id,name'])
+            ->orderBy(Employee::select('full_name')->whereColumn('employees.id', 'timesheets.employee_id')->limit(1))
             ->lazy();
 
         $timesheets = match ($period) {
@@ -345,7 +346,7 @@ class ExportTimesheet implements Responsable
 
     protected function filename(): string
     {
-        $prefix = $this->month->format('Y-m ').match ($this->period) {
+        $prefix = 'Timesheets '.$this->month->format('Y-m ').match ($this->period) {
             'full' => '',
             '1st' => '(First half)',
             '2nd' => '(Second half)',
