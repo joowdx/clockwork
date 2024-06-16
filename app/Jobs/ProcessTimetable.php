@@ -39,7 +39,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $sheet = $this->employee->timesheets()->firstOrCreate(['month' => $this->date->clone()->startOfMonth()]);
 
-        $timetable = Timetable::create(['date' => $this->date, 'timesheet_id' => $sheet->id, 'punch' => []]);
+        $timetable = Timetable::firstOrCreate(['date' => $this->date, 'timesheet_id' => $sheet->id], ['punch' => []]);
 
         switch ($schedule?->arrangement) {
             case 'standard-work-hour':

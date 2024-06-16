@@ -135,7 +135,7 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
             $timelogs->chunk($this->chunkSize)->each(function ($entries) {
                 Timelog::upsert($entries->toArray(), [
-                    'scanner_id',
+                    'device',
                     'uid',
                     'time',
                     'state',
