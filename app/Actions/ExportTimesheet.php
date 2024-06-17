@@ -309,13 +309,7 @@ class ExportTimesheet implements Responsable
         }
 
         $export = Pdf::view($this->format === 'csc' ? 'print.csc' : 'print.default', [...$args, 'signed' => (bool) $this->password])
-            ->withBrowsershot(function (Browsershot $browsershot) {
-                if (app()->isLocal() && posix_getuid() === 0) {
-                    $browsershot->noSandbox();
-                }
-
-                $browsershot->setOption('args', ['--disable-web-security']);
-            });
+            ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
             'folio' => $export->paperSize(8.5, 13, 'in'),

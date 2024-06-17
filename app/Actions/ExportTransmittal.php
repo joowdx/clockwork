@@ -205,13 +205,7 @@ class ExportTransmittal implements Responsable
         ];
 
         $export = Pdf::view('print.transmittal', [...$args, 'signed' => (bool) $this->password])
-            ->withBrowsershot(function (Browsershot $browsershot) {
-                if (app()->isLocal() && posix_getuid() === 0) {
-                    $browsershot->noSandbox();
-                }
-
-                $browsershot->setOption('args', ['--disable-web-security']);
-            });
+            ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));;
 
         match ($this->size) {
             'folio' => $export->paperSize(8.5, 13, 'in'),
