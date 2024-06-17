@@ -57,7 +57,6 @@ class OfficesRelationManager extends RelationManager
                     })
                     ->searchable()
                     ->preload()
-                    ->required()
                     ->columnSpanFull()
                     ->validationMessages(['unique' => 'Employee is already deployed to this office.'])
                     ->rules([
