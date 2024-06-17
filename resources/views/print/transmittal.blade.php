@@ -44,6 +44,7 @@
 
                                         @if (file_exists(storage_path('app/public/'.settings('seal'))))
                                             <img
+                                                src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.settings('seal')))) }}"
                                                 src="{{ url('storage/'.settings('seal')) }}"
                                                 alt="davao-del-sur"
                                                 class="absolute"
