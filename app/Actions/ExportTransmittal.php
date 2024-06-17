@@ -185,8 +185,8 @@ class ExportTransmittal implements Responsable
             };
         }
 
-        $employees = match($this->format) {
-            'csc' => $this->employee->toQuery()->whereHas('timesheets', fn ($q) => $q->whereDate('month', $this->month . '-01')),
+        $employees = match ($this->format) {
+            'csc' => $this->employee->toQuery()->whereHas('timesheets', fn ($q) => $q->whereDate('month', $this->month.'-01')),
             default => $this->employee->toQuery(),
         };
 
@@ -205,7 +205,7 @@ class ExportTransmittal implements Responsable
         ];
 
         $export = Pdf::view('print.transmittal', [...$args, 'signed' => (bool) $this->password])
-            ->withBrowsershot(function(Browsershot $browsershot) {
+            ->withBrowsershot(function (Browsershot $browsershot) {
                 if (app()->isLocal() && posix_getuid() === 0) {
                     $browsershot->noSandbox();
                 }

@@ -309,7 +309,7 @@ class ExportTimesheet implements Responsable
         }
 
         $export = Pdf::view($this->format === 'csc' ? 'print.csc' : 'print.default', [...$args, 'signed' => (bool) $this->password])
-            ->withBrowsershot(function(Browsershot $browsershot) {
+            ->withBrowsershot(function (Browsershot $browsershot) {
                 if (app()->isLocal() && posix_getuid() === 0) {
                     $browsershot->noSandbox();
                 }
