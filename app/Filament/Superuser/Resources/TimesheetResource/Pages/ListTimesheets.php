@@ -2,12 +2,14 @@
 
 namespace App\Filament\Superuser\Resources\TimesheetResource\Pages;
 
-use App\Actions\ExportTimesheet;
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
 use App\Filament\Actions\ImportTimelogsAction;
+use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
+use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
+use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
 use App\Filament\Superuser\Resources\TimesheetResource;
 use App\Jobs\ProcessTimesheet;
 use App\Models\Employee;
@@ -15,14 +17,12 @@ use App\Models\Group;
 use App\Models\Office;
 use App\Models\Timelog;
 use App\Models\Timetable;
-use Exception;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard\Actions\FilterAction;
 use Filament\Pages\Dashboard\Concerns\HasFiltersAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
@@ -30,9 +30,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class ListTimesheets extends ListRecords
 {
@@ -313,22 +310,17 @@ class ListTimesheets extends ListRecords
                     }),
             ])
             ->bulkActions([
+                ViewTimesheetAction::make(listing: true),
+                ViewTimesheetAction::make()
+                    ->label('View'),
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('timesheet')
-                        ->requiresConfirmation()
-                        ->icon('heroicon-o-clipboard-document-list')
-                        ->modalHeading('Export')
-                        ->modalDescription($this->exportConfirmation())
-                        ->modalIcon('heroicon-o-document-arrow-down')
-                        ->form($this->exportForm(bulk: true))
-                        ->action(fn (Collection $records, array $data) => $this->exportAction($records, $data)),
-                    Tables\Actions\BulkAction::make('transmittal')
-                        ->icon('heroicon-o-clipboard-document-check')
-                        ->disabled(fn () => isset($this->filters['transmittal']) && $this->filters['transmittal']),
+                    ExportTimesheetAction::make()
+                        ->label('Timesheet'),
+                    ExportTransmittalAction::make()
+                        ->label('Transmittal'),
                 ])
                     ->label('Export')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->visible(true),
+                    ->icon('heroicon-o-document-arrow-down'),
                 Tables\Actions\BulkAction::make('generate')
                     ->icon('heroicon-o-bolt')
                     ->color('gray')
@@ -419,148 +411,11 @@ class ListTimesheets extends ListRecords
             ->toHtmlString();
     }
 
-    protected function exportConfirmation(): Htmlable
-    {
-        $html = <<<'HTML'
-            <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                Note: Exporting in CSC format does not include employees with no timesheet for the selected period.
-                You may need to generate their timesheets manually otherwise.
-            </span>
-        HTML;
-
-        return str($html)->toHtmlString();
-    }
-
     protected function generateConfirmation(): string
     {
         return 'Timesheets are automatically generated.
         Only do this when you know what you are doing as this will overwrite the existing timesheet data.
         To proceed, please enter your password.';
-    }
-
-    protected function exportForm(bool $bulk = false): array
-    {
-        return [
-            Forms\Components\Checkbox::make('individual')
-                ->visible($bulk)
-                ->hintIcon('heroicon-o-question-mark-circle')
-                ->hintIconTooltip('Export employee timesheet separately generating multiple files to be downloaded as an archive. However, this requires more processing time and to prevent server overload or request timeouts, please select no more than 25 records.')
-                ->rule(fn (HasTable $livewire) => function ($attribute, $value, $fail) use ($livewire) {
-                    if ($value && count($livewire->selectedTableRecords) > 25) {
-                        $fail('Please select less than 25 records when exporting individually.');
-                    }
-                }),
-            Forms\Components\TextInput::make('month')
-                ->live()
-                ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m'))
-                ->type('month')
-                ->required(),
-            Forms\Components\Select::make('period')
-                ->default(today()->day > 15 ? '1st' : 'full')
-                ->required()
-                ->live()
-                ->options([
-                    'full' => 'Full month',
-                    '1st' => 'First half',
-                    '2nd' => 'Second half',
-                    'regular' => 'Regular days',
-                    'overtime' => 'Overtime work',
-                    'custom' => 'Custom range',
-                ])
-                ->disableOptionWhen(function (Forms\Get $get, ?string $value) {
-                    if ($get('format') === 'csc') {
-                        return false;
-                    }
-
-                    return match ($value) {
-                        'full', '1st', '2nd', 'custom' => false,
-                        default => true,
-                    };
-                })
-                ->dehydrateStateUsing(function (Forms\Get $get, ?string $state) {
-                    if ($state !== 'custom') {
-                        return $state;
-                    }
-
-                    return $state.'|'.date('d', strtotime($get('from'))).'-'.date('d', strtotime($get('to')));
-                })
-                ->in(fn (Forms\Components\Select $component): array => array_keys($component->getEnabledOptions())),
-            Forms\Components\DatePicker::make('from')
-                ->label('Start')
-                ->visible(fn (Forms\Get $get) => $get('period') === 'custom')
-                ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d'))
-                ->validationAttribute('start')
-                ->minDate(fn (Forms\Get $get) => $get('month').'-01')
-                ->maxDate(fn (Forms\Get $get) => Carbon::parse($get('month'))->endOfMonth())
-                ->required()
-                ->dehydrated(false)
-                ->beforeOrEqual('to'),
-            Forms\Components\DatePicker::make('to')
-                ->label('End')
-                ->visible(fn (Forms\Get $get) => $get('period') === 'custom')
-                ->default(today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d'))
-                ->validationAttribute('end')
-                ->minDate(fn (Forms\Get $get) => $get('month').'-01')
-                ->maxDate(fn (Forms\Get $get) => Carbon::parse($get('month'))->endOfMonth())
-                ->required()
-                ->dehydrated(false)
-                ->afterOrEqual('from'),
-            Forms\Components\Select::make('format')
-                ->live()
-                ->placeholder('Print format')
-                ->default('csc')
-                ->required()
-                ->options(['default' => 'Default format', 'csc' => 'CSC format']),
-            Forms\Components\Select::make('size')
-                ->live()
-                ->placeholder('Paper Size')
-                ->default('folio')
-                ->required()
-                ->options([
-                    'a4' => 'A4 (210mm x 297mm)',
-                    'letter' => 'Letter (216mm x 279mm)',
-                    'folio' => 'Folio (216mm x 330mm)',
-                    'legal' => 'Legal (216mm x 356mm)',
-                ]),
-            // Forms\Components\Select::make('transmittal')
-            //     ->visible($bulk)
-            //     ->live()
-            //     ->default(false)
-            //     ->boolean()
-            //     ->required()
-            //     ->placeholder('Generate transmittal'),
-            Forms\Components\Checkbox::make('electronic_signature')
-                ->hintIcon('heroicon-o-check-badge')
-                ->hintIconTooltip('Electronically sign the document for quick and convenient validation. This does not provide security against tampering.')
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! auth()->user()->signature) {
-                        $fail('Configure your electronic signature first');
-                    }
-                }),
-            Forms\Components\Checkbox::make('digital_signature')
-                ->hintIcon('heroicon-o-shield-check')
-                ->hintIconTooltip('Digitally sign the document to prevent tampering.')
-                ->dehydrated(true)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
-                ->rule(fn (Forms\Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    if ($value && ! $get('electronic_signature')) {
-                        $fail('Digital signature requires electronic signature');
-                    }
-                }),
-            Forms\Components\TextInput::make('password')
-                ->password()
-                ->visible(fn (Forms\Get $get) => $get('digital_signature') && $get('electronic_signature'))
-                ->markAsRequired(fn (Forms\Get $get) => $get('digital_signature'))
-                ->rule(fn (Forms\Get $get) => $get('digital_signature') ? 'required' : '')
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if (! auth()->user()->signature->verify($value)) {
-                        $fail('The password is incorrect');
-                    }
-                }),
-        ];
     }
 
     protected function generateForm(): array
@@ -587,52 +442,6 @@ class ListTimesheets extends ListRecords
                     },
                 ]),
         ];
-    }
-
-    protected function exportAction(Collection|Employee $employee, array $data): StreamedResponse|BinaryFileResponse|Notification
-    {
-        $actionException = new class extends Exception
-        {
-            public function __construct(public readonly ?string $title = null, public readonly ?string $body = null)
-            {
-                parent::__construct();
-            }
-        };
-
-        try {
-            if ($employee instanceof Collection && $employee->count() > 100) {
-                throw new $actionException('Too many records', 'To prevent server overload, please select less than 100 records');
-            }
-
-            return (new ExportTimesheet)
-                ->employee($employee)
-                ->month($data['month'])
-                ->period($data['period'])
-                ->format($data['format'])
-                ->size($data['size'])
-                ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
-                ->password($data['digital_signature'] ? $data['password'] : null)
-                ->individual($data['individual'] ?? false)
-                ->download();
-        } catch (ProcessFailedException $exception) {
-            $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";
-
-            return Notification::make()
-                ->danger()
-                ->title($message)
-                ->body('Please try again later')
-                ->send();
-        } catch (Exception $exception) {
-            if ($exception instanceof $actionException) {
-                return Notification::make()
-                    ->danger()
-                    ->title($exception->title)
-                    ->body($exception->body)
-                    ->send();
-            }
-
-            throw $exception;
-        }
     }
 
     protected function generateAction(Collection|Employee $employee, array $data): void

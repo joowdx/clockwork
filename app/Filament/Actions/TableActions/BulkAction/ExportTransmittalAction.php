@@ -2,7 +2,7 @@
 
 namespace App\Filament\Actions\TableActions\BulkAction;
 
-use App\Actions\ExportTimesheet;
+use App\Actions\ExportTransmittal;
 use App\Models\Employee;
 use Exception;
 use Filament\Forms\Components\Checkbox;
@@ -19,13 +19,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
-class ExportTimesheetAction extends BulkAction
+class ExportTransmittalAction extends BulkAction
 {
     public static function make(?string $name = null): static
     {
         $class = static::class;
 
-        $name ??= 'export-timesheet';
+        $name ??= 'export-transmittal';
 
         $static = app($class, ['name' => $name]);
 
@@ -40,9 +40,9 @@ class ExportTimesheetAction extends BulkAction
 
         $this->requiresConfirmation();
 
-        $this->icon('heroicon-o-clipboard-document-list');
+        $this->icon('heroicon-o-clipboard-document-check');
 
-        $this->modalHeading('Export Timesheets');
+        $this->modalHeading('Export Transmittal');
 
         $this->modalDescription($this->exportConfirmation());
 
@@ -57,8 +57,7 @@ class ExportTimesheetAction extends BulkAction
     {
         $html = <<<'HTML'
             <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                Note: Exporting in CSC format does not include employees with no timesheet for the selected period.
-                You may need to generate their timesheets manually otherwise.
+                Note: Kindly use the same options as how you'd like the timesheet exported for consistency.
             </span>
         HTML;
 
@@ -80,7 +79,7 @@ class ExportTimesheetAction extends BulkAction
                 throw new $actionException('Too many records', 'To prevent server overload, please select less than 100 records');
             }
 
-            return (new ExportTimesheet)
+            return (new ExportTransmittal)
                 ->employee($employee)
                 ->month($data['month'])
                 ->period($data['period'])
@@ -88,7 +87,7 @@ class ExportTimesheetAction extends BulkAction
                 ->size($data['size'])
                 ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
                 ->password($data['digital_signature'] ? $data['password'] : null)
-                ->individual($data['individual'] ?? false)
+                ->groups($data['groups'] ?? [])
                 ->download();
         } catch (ProcessFailedException $exception) {
             $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";

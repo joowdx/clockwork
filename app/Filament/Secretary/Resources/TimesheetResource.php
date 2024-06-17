@@ -3,6 +3,7 @@
 namespace App\Filament\Secretary\Resources;
 
 use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
+use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
 use App\Filament\Filters\ActiveFilter;
@@ -81,8 +82,8 @@ class TimesheetResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     ExportTimesheetAction::make()
                         ->label('Timesheet'),
-                    Tables\Actions\BulkAction::make('transmittal')
-                        ->icon('heroicon-o-clipboard-document-check'),
+                    ExportTransmittalAction::make()
+                        ->label('Transmittal'),
                 ])
                     ->label('Export')
                     ->icon('heroicon-o-document-arrow-down'),

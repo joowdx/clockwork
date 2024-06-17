@@ -4,7 +4,7 @@
 
 @php($preview ??= false)
 
-@php($grouping ??= 'offices')
+@php($grouping ??= empty($groups) ? 'offices' : 'groups')
 
 @php($grouper = fn ($employee) => $employee->$grouping->pluck($grouping === 'groups' ? 'name' : 'code')->toArray())
 
@@ -82,9 +82,9 @@
                                             </p>
                                             <p class="italic" style="text-decoration:underline;text-underline-offset:2pt;margin:0;">
                                                 Daily time record printouts for
-                                                {{ $reciever->name }}
+                                                <span class="bold" style="text-transform: capitalize">{{ $reciever->name }}</span>
                                                 for the month of
-                                                {{ (isset($from, $to) ? $from . '-' . $to : '') . ' '. $month->format('F Y') }}
+                                                <span class="bold nowrap">{{ (isset($from, $to) ? $from . '-' . $to : '') . ' '. $month->format('F Y') }}</span>
                                             </p>
                                         </div>
                                     </td>
