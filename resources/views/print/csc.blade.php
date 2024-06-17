@@ -342,7 +342,7 @@
                                             src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$office->logo))) }}"
                                             alt="{{ $office->code }}"
                                             class="absolute"
-                                            style="width:36pt;height:auto;opacity:0.15;margin:auto;top:-10pt;left:0;right:0;"
+                                            style="width:36pt;height:auto;opacity:0.15;margin:auto;top:-1pt;left:0;right:0;"
                                         >
                                     @endif
                                 </td>
