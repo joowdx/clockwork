@@ -112,7 +112,7 @@
                                 @endif
                                 <tr>
                                     <td rowspan="2" colspan="10" style="padding:0 1rem;text-indent:2rem;" class="arial">
-                                        Attached herewith, are the daily time record printouts of the committed employees of this office, to wit:
+                                        Attached herewith are the daily time record printouts of the committed employees of this office, to wit:
                                     </td>
                                 </tr>
                                 <tr></tr>
