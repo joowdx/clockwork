@@ -155,6 +155,7 @@
 
                                     </td>
                                     <td colspan="4" class="uppercase center consolas font-lg" style="padding-right:1rem;">
+                                        @includeWhen($signature ??= null, 'print.signature', ['signature' => $signature, 'signed' => $signed ?? false])
                                         {{ auth()->user()?->name }}
                                     </td>
                                 </tr>
