@@ -36,7 +36,14 @@ use App\Enums\TimelogMode;
                         <tr>
                             <td colspan="10" class="relative right">
                                 <span style="font-size:4.65pt;opacity:0.05;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
-                                <img src="{{ url('storage/'.settings('seal')) }}" alt="davao-del-sur" class="absolute" style="width:36pt;opacity:0.2;top:15pt;right:0;">
+                                @if (file_exists(storage_path('app/public/'.settings('seal'))))
+                                    <img
+                                        src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.settings('seal')))) }}"
+                                        alt="davao-del-sur"
+                                        class="absolute"
+                                        style="width:36pt;opacity:0.2;top:15pt;right:0;"
+                                    >
+                                @endif
                             </td>
                         </tr>
                         <tr>

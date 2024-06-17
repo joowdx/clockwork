@@ -41,9 +41,23 @@
                                 <tr>
                                     <td colspan="10" class="relative right">
                                         <span class="absolute" style="font-size:4.65pt;opacity:0.15;left:6pt;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
-                                        <img src="{{ url('storage/'.settings('seal')) }}" alt="davao-del-sur" class="absolute" style="width:48pt;top:15pt;left:0;">
-                                        @if ($logo = auth()->user()?->employee?->currentDeployment?->office->logo)
-                                            <img src="{{ asset('storage/'. $logo) }}" alt="davao-del-sur" class="absolute" style="width:48pt;top:15pt;right:0;">
+
+                                        @if (file_exists(storage_path('app/public/'.settings('seal'))))
+                                            <img
+                                                src="{{ url('storage/'.settings('seal')) }}"
+                                                alt="davao-del-sur"
+                                                class="absolute"
+                                                style="width:48pt;top:15pt;left:0;"
+                                            >
+                                        @endif
+
+                                        @if (($logo = auth()->user()?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
+                                            <img
+                                                src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$logo))) }}"
+                                                alt="davao-del-sur"
+                                                class="absolute"
+                                                style="width:48pt;top:15pt;right:0;"
+                                            >
                                         @endif
                                     </td>
                                 </tr>

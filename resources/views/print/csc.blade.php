@@ -48,7 +48,14 @@
                             <tr>
                                 <td colspan=6 class="relative">
                                     <span class="absolute" style="font-size:4.65pt;opacity:0.05;right:0.65pt;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
-                                    <img src="{{ url('storage/'.settings('seal')) }}" alt="davao-del-sur" class="absolute" style="width:36pt;opacity:0.2;top:15pt;right:0;">
+                                    @if (file_exists(storage_path('app/public/'.settings('seal'))))
+                                        <img
+                                            src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.settings('seal')))) }}"
+                                            alt="davao-del-sur"
+                                            class="absolute"
+                                            style="width:36pt;opacity:0.2;top:15pt;right:0;"
+                                        >
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
@@ -330,8 +337,13 @@
                                     </div>
                                 </td>
                                 <td colspan=4 class="relative">
-                                    @if(($office = auth()->user()?->employee?->currentDeployment?->office)?->logo)
-                                        <img src="{{ url('storage/'.$office->logo) }}" alt="{{ $office->code }}" class="absolute" style="width:36pt;height:auto;opacity:0.15;margin:auto;top:-10pt;left:0;right:0;">
+                                    @if(($office = auth()->user()?->employee?->currentDeployment?->office)?->logo && file_exists(storage_path('app/public/'.$office->logo)))
+                                        <img
+                                            src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$office->logo))) }}"
+                                            alt="{{ $office->code }}"
+                                            class="absolute"
+                                            style="width:36pt;height:auto;opacity:0.15;margin:auto;top:-10pt;left:0;right:0;"
+                                        >
                                     @endif
                                 </td>
                                 <td colspan=1></td>
