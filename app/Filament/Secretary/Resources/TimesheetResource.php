@@ -38,7 +38,8 @@ class TimesheetResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('offices.code')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
@@ -91,7 +92,9 @@ class TimesheetResource extends Resource
                     ->label('Generate'),
             ])
             ->recordAction(null)
-            ->recordUrl(null);
+            ->recordUrl(null)
+            ->defaultSort('name', 'asc')
+            ->deselectAllRecordsWhenFiltered(false);
     }
 
     public static function getRelations(): array
