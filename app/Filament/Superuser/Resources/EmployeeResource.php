@@ -4,6 +4,7 @@ namespace App\Filament\Superuser\Resources;
 
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
+use App\Filament\Filters\ActiveFilter;
 use App\Filament\Superuser\Resources\EmployeeResource\Pages;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\GroupsRelationManager;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\OfficesRelationManager;
@@ -207,6 +208,17 @@ class EmployeeResource extends Resource
                         fn ($query) => $query->whereHas('offices'),
                         fn ($query) => $query->whereDoesntHave('offices'),
                     ),
+                Tables\Filters\SelectFilter::make('offices')
+                    ->multiple()
+                    ->searchable()
+                    ->relationship('offices', 'code')
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('groups')
+                    ->multiple()
+                    ->searchable()
+                    ->relationship('groups', 'name')
+                    ->preload(),
+                ActiveFilter::make(),
                 Tables\Filters\TrashedFilter::make()
                     ->native(false),
             ])
