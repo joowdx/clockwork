@@ -335,12 +335,25 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                         return EmploymentSubstatus::tryFrom($substatus) ?? EmploymentSubstatus::from($mapped);
                     };
 
+                    $activeMapper = function ($value) {
+                        return trim($value) === '' ? null : (bool) $value;
+                    };
+
+                    $data = array_intersect_key(
+                        [
+                            ...$row,
+                            'status' => $statusMapper(@$row['status']),
+                            'substatus' => $substatusMapper(@$row['substatus'], @$row['status']),
+                            'active' => $activeMapper(@$row['active']),
+                        ],
+                        array_flip(Employee::make()->getFillable())
+                    );
+
                     $employee = Employee::withoutGlobalScopes()->updateOrCreate(
                         $name,
-                        array_intersect_key(
-                            [...$row, 'status' => $statusMapper(@$row['status']), 'substatus' => $substatusMapper(@$row['substatus'], @$row['status'])],
-                            array_flip(Employee::make()->getFillable())
-                        )
+                        collect($data)
+                            ->reject(fn ($value, $key) => $key === 'active' && is_null($value))
+                            ->toArray(),
                     );
 
                     $enrollments = collect(array_intersect_key($row, $existingScanners));
