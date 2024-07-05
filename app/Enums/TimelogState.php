@@ -17,6 +17,16 @@ enum TimelogState: int implements HasIcon, HasLabel
     case CHECK_IN_PM = 6;
     case CHECK_OUT_PM = 7;
 
+    public static function login(): array
+    {
+        return collect(self::cases())->filter->in()->toArray();
+    }
+
+    public static function logout(): array
+    {
+        return collect(self::cases())->filter->out()->toArray();
+    }
+
     public function in(): bool
     {
         return in_array($this, [

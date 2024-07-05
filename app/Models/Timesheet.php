@@ -27,6 +27,8 @@ class Timesheet extends Model
 
     protected string $span = 'full';
 
+    protected array $dates = [];
+
     protected ?int $from = null;
 
     protected ?int $to = null;
@@ -66,6 +68,17 @@ class Timesheet extends Model
         return $this;
     }
 
+    public function setCustomDates(array $dates): self
+    {
+        $this->span = 'dates';
+
+        $this->dates = collect($dates)
+            ->filter(fn ($date) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $date))
+            ->toArray();
+
+        return $this;
+    }
+
     public function setCustomRange(int $from, int $to): self
     {
         if ($from > $to || $from < 0) {
@@ -76,7 +89,7 @@ class Timesheet extends Model
             throw new InvalidArgumentException('Argument $to cannot be greater than the value '.$max);
         }
 
-        $this->span = 'custom';
+        $this->span = 'range';
 
         $this->from = $from;
 
@@ -92,7 +105,8 @@ class Timesheet extends Model
             '2nd' => 'secondHalf',
             'overtime' => 'overtimeWork',
             'regular' => 'regularDays',
-            'custom' => 'customRange',
+            'dates' => 'customDates',
+            'range' => 'customRange',
             default => 'fullMonth',
         };
     }
@@ -103,12 +117,43 @@ class Timesheet extends Model
             function () {
                 $month = Carbon::parse($this->month);
 
+                $formatted = (function () {
+                    $days = $this->{$this->getPeriod()}->map->date->map(fn ($date) => $date->format('j'))->sort()->values()->toArray();
+
+                    $formatted = [];
+                    $start = $days[0];
+                    $end = $days[0];
+
+                    for ($i = 1; $i < count($days); $i++) {
+                        if ($days[$i] == $end + 1) {
+                            $end = $days[$i];
+                        } else {
+                            if ($start == $end) {
+                                $formatted[] = $start;
+                            } else {
+                                $formatted[] = "$start-$end";
+                            }
+                            $start = $days[$i];
+                            $end = $days[$i];
+                        }
+                    }
+
+                    if ($start == $end) {
+                        $formatted[] = $start;
+                    } else {
+                        $formatted[] = "$start-$end";
+                    }
+
+                    return implode(',', $formatted).' '.$this->overtimeWork->map->date->first()->format('F Y');
+                });
+
                 return match ($this->span) {
-                    '1st' => $month->format('F').' 01-15',
-                    '2nd' => $month->format('F').' 16-'.$month->endOfMonth()->day,
-                    'overtime' => $month->format('F ').$this->overtimeWork->map->date->map->format('d')->join(','),
-                    'custom' => $month->format('F').' '.$this->from.'-'.$this->to,
-                    default => $month->format('F').' 01-'.$month->endOfMonth()->day,
+                    '1st' => '01-15 '.$month->format('F Y'),
+                    '2nd' => '16-'.$month->endOfMonth()->day.' '.$month->format('F Y'),
+                    'overtime' => $formatted(),
+                    'dates' => $formatted(),
+                    'range' => $this->from.'-'.$this->to.' '.$month->format('F Y'),
+                    default => '01-'.$month->endOfMonth()->day.' '.$month->format('F Y'),
                 };
             },
         )->shouldCache();
@@ -155,14 +200,20 @@ class Timesheet extends Model
     {
         return Attribute::make(
             function () {
-                $overtime = function () {
-                    $overtime = $this->overtimeWork->sum('overtime');
+                $format = function ($minutes) {
+                    $hours = (int) ($minutes / 60);
 
-                    $hours = (int) ($overtime / 60);
-
-                    $mins = $overtime % 60;
+                    $mins = $minutes % 60;
 
                     return "$hours hrs".($mins > 0 ? " $mins mins" : '');
+                };
+
+                $overtime = function () use ($format) {
+                    $wd = $this->overtimeWork->reject->regular->sum('overtime');
+
+                    $we = $this->overtimeWork->filter->regular->sum('overtime');
+
+                    return "wkd: {$format($wd)}, wke: {$format($we)}";
                 };
 
                 return match ($this->span) {
@@ -224,6 +275,24 @@ class Timesheet extends Model
         return $this->hasMany(Timetable::class)
             ->secondHalf()
             ->orderBy('date');
+    }
+
+    public function customDates(): HasMany
+    {
+        $month = Carbon::parse($this->month);
+
+        $relationship = $this->hasMany(Timetable::class)
+            ->whereYear('date', $month->year)
+            ->whereMonth('date', $month->month)
+            ->orderBy('date');
+
+        $relationship->where(function ($query) {
+            foreach ($this->dates as $date) {
+                $query->orWhereDate('date', $date);
+            }
+        });
+
+        return $relationship;
     }
 
     public function customRange(): HasMany

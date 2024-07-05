@@ -26,7 +26,7 @@ class GenerateTimesheetAction extends BulkAction
         return $static;
     }
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -45,16 +45,17 @@ class GenerateTimesheetAction extends BulkAction
         $this->action(fn (Collection $records, array $data) => $this->generateAction($records, $data));
     }
 
-    protected function generateConfirmation(): string
+    public function generateConfirmation(): string
     {
         return 'Timesheets are automatically generated.
         Only do this when you know what you are doing as this will overwrite the existing timesheet data.
         To proceed, please enter your password.';
     }
 
-    protected function generateAction(Collection|Employee $employee, array $data): void
+    public function generateAction(Collection|Employee $employee, array $data): void
     {
         if ($employee instanceof Employee || $employee->count() === 1) {
+
             $employee = $employee instanceof Collection ? $employee->first() : $employee;
 
             ProcessTimesheet::dispatchSync($employee, $data['month']);
@@ -101,7 +102,7 @@ class GenerateTimesheetAction extends BulkAction
             ->dispatch();
     }
 
-    protected function generateForm(): array
+    public function generateForm(): array
     {
         return [
             TextInput::make('month')

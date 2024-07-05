@@ -4,8 +4,9 @@ namespace App\Listeners;
 
 use App\Events\TimelogsFlushed;
 use App\Events\TimelogsSynchronized;
-use App\Jobs\ProcessTimesheet;
+use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 
@@ -20,34 +21,43 @@ class PostTimelogsSynchronization
          * UPDATE AFFECTED TIMETABLE FROM EARLIEST TO LATEST
          */
         if (in_array($event->action, ['fetch', 'import'])) {
-            $uids = $event->scanner->timelogs()
-                ->reorder()
-                ->whereHas('employee')
+            $jobs = $event->scanner
+                ->timelogs()
                 ->whereBetween('time', [
                     Carbon::parse($event->earliest)->startOfDay(),
                     Carbon::parse($event->latest)->endOfDay(),
                 ])
-                ->select('uid')
-                ->distinct();
+                ->selectRaw('DATE(time) as date')
+                ->distinct()
+                ->reorder()
+                ->pluck('date')
+                ->flatMap(function ($date) use ($event) {
+                    $uids = $event->scanner->timelogs()
+                        ->reorder()
+                        ->whereHas('employee')
+                        ->whereDate('time', $date)
+                        ->select('uid')
+                        ->distinct();
 
-            $employees = Employee::query()
-                ->whereHas('enrollments', fn ($q) => $q->where('enrollment.scanner_id', $event->scanner->id)->whereIn('enrollment.uid', $uids))
-                ->with([
-                    'schedules' => fn ($q) => $q->active($event->earliest, $event->latest),
-                    'timelogs' => fn ($q) => $q->whereBetween('time', [$event->earliest, $event->latest]),
-                ])
-                ->lazyById();
+                    return Employee::query()
+                        ->whereHas('enrollments', fn ($q) => $q->where('enrollment.scanner_id', $event->scanner->id)->whereIn('enrollment.uid', $uids))
+                        ->lazyById()
+                        ->map(fn ($employee) => new ProcessTimetable($employee, Carbon::parse($date)))
+                        ->toArray();
+                });
 
-            if ($employees->isEmpty()) {
+            if ($jobs->isEmpty()) {
                 return;
             }
 
-            $jobs = $employees->map(function (Employee $employee) use ($event) {
-                return new ProcessTimesheet($employee, Carbon::parse($event->month)->startOfMonth());
-            });
-
             Bus::batch($jobs->all())
                 ->onQueue('main')
+                ->then(function () {
+                    Notification::make()
+                        ->success()
+                        ->title('Upload successful')
+                        ->sendToDatabase(auth()->user());
+                })
                 ->dispatch();
         }
     }

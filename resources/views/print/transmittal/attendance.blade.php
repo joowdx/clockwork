@@ -10,14 +10,98 @@
 
 @php($pagination = match($size) { 'folio' => 40, 'legal' => 45, default => 30 } * 3)
 
-@section('content')
-    @foreach ($employees->loadMissing('office')->sortBy('full_name')->groupBy($grouper)->sortKeys() as $group => $employees)
-        @continue($grouping === 'groups' && ! in_array($group, $groups ?? []))
 
+
+@php($dates ??= [])
+
+@php($from ??= null)
+
+@php($to ??= null)
+
+@php($modes ??= [])
+
+@php($scanners ??= [])
+
+@php($states ??= [])
+
+@php($filter = function (&$query, $filter = false) use ($dates, $from, $to, $modes, $scanners, $states) {
+    foreach ($dates as $date) {
+        $query->whereDate('time', $date);
+    }
+
+    $query->when($from, fn ($q) => $q->whereTime('time', '>=', $from));
+
+    $query->when($to, fn ($q) => $q->whereTime('time', '<=', $to));
+
+    $query->when($modes, fn ($q) => $q->whereIn('mode', $modes));
+
+    $query->when($states, fn ($q) => $q->whereIn('state', $states));
+
+    $query->when(is_array($scanners) ? count($scanners) : $scanners->isNotEmpty(), fn ($q) => $q->whereIn('device', $scanners->pluck('uid')->toArray()));
+
+    $query->when($filter, fn ($q) => $q->limit(1));
+
+    if (
+        collect($states)
+            ->map(fn ($state) => $state instanceof \UnitEnum ? $state : \App\Enums\TimelogState::from($state))
+            ->ensure(\App\Enums\TimelogState::class)
+            ->every(fn ($state) => $state->out())
+    ) {
+        $query->reorder()->orderByDesc('time');
+    } else {
+        $query->reorder()->orderBy('time');
+    }
+})
+
+@php($range = (function () use ($dates) {
+    $dates = collect($dates)->map(fn ($date) => \Carbon\Carbon::parse($date))->unique()->sort();
+
+    $formatted = $dates->groupBy(fn ($date) => $date->format('Y-m'))
+        ->map(function ($dates) {
+            $days = $dates->map(fn ($date) => $date->format('d'))->sort()->toArray();
+
+            $formatted = [];
+            $start = $days[0];
+            $end = $days[0];
+
+            for ($i = 1; $i < count($days); $i++) {
+                if ($days[$i] == $end + 1) {
+                    $end = $days[$i];
+                } else {
+                    if ($start == $end) {
+                        $formatted[] = $start;
+                    } else {
+                        $formatted[] = "$start-$end";
+                    }
+                    $start = $days[$i];
+                    $end = $days[$i];
+                }
+            }
+
+            if ($start == $end) {
+                $formatted[] = $start;
+            } else {
+                $formatted[] = "$start-$end";
+            }
+
+            return implode(', ', $formatted) . ' ' . $dates->first()->format('F Y');
+        });
+
+    return $formatted->join(', ', $formatted->count() > 2 ? ', and ' : ' and ');
+})())
+
+
+@section('content')
+    @foreach ($offices as $office)
         @php(
-            $reciever = (str($grouping)->prepend('App\Models\\')->title()->singular()->toString())::query()
-                ->where($grouping === 'offices' ? 'code' : 'name', $group)
-                ->first()
+            $employees = $office->employees()
+                ->when($strict ??= false, fn ($query) => $query->whereHas('timelogs', fn ($query) => $filter($query, true)))
+                ->with(['timelogs' => fn ($query) => $filter($query)])
+                ->when($status ??= null, fn ($q) => is_array($status) ? $q->whereIn('status', $status) : $q->where('status', $status))
+                ->when(($substatus ??= null) && $status, fn ($q) => is_array($substatus) ? $q->whereIn('substatus', $substatus) : $q->where('substatus', $substatus))
+                ->get()
+                ->when($strict, fn ($employees) => $employees->reject(fn ($employee) => $employee->timelogs->isEmpty())) // bugged - don't remove
+                ->values()
         )
 
         @for ($copy = 0; (($copies ??= 1) < 0 ? 1 : $copies) > $copy; $copy++)
@@ -96,10 +180,10 @@
                                                 Subject:
                                             </p>
                                             <p class="italic" style="text-decoration:underline;text-underline-offset:2pt;margin:0;">
-                                                Daily time record printouts for
-                                                <span class="bold" style="text-transform: capitalize">{{ $reciever->name }}</span>
-                                                for the month of
-                                                <span class="bold nowrap">{{ (isset($from, $to) ? $from . '-' . $to : '') . ' '. $month->format('F Y') }}</span>
+                                                Office attendance printouts for
+                                                <span class="bold" style="text-transform: capitalize">{{ $office->name }}</span>
+                                                for the dates
+                                                <span class="bold nowrap"> {{ $range }} </span>
                                             </p>
                                         </div>
                                     </td>

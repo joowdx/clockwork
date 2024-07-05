@@ -200,7 +200,7 @@ use App\Enums\TimelogMode;
                                     "height:auto!important;" => $preview,
                                 ])
                             >
-                                @foreach ($employee->scanners as $scanner)
+                                @foreach ($employee->scanners->sortBy('name') as $scanner)
                                     <div class="lowercase font-xs" style="padding:1pt;">
                                         <div
                                             @style([
@@ -227,7 +227,7 @@ use App\Enums\TimelogMode;
                             <td colspan="6"></td>
                             <td colspan="4" class="relative underline font-sm center bottom nowrap consolas">
                                 @includeWhen($signature ??= null, 'print.signature', ['signature' => $signature, 'signed' => $signed ?? false])
-                                Jude C. Pineda
+                                {{ auth()->user()?->name }}
                             </td>
                         </tr>
                         <tr>

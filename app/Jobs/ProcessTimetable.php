@@ -208,9 +208,9 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ($shift2 ? $shift2 - $roster['p3']['undertime'] - $roster['p4']['undertime'] : 0);
 
         if ($regular) {
-            $overtime = $excess >= ($schedule->threshold['overtime'] ?? 0) ? $excess : 0;
+            $overtime = $excess >= ($schedule->threshold['overtime'] ?? 0) ? (int) ($excess / 60) * 60 : 0;
         } else {
-            $overtime = $shift1 + $shift2 - $undertime;
+            $overtime = ($ot = ($shift1 + $shift2 - $undertime)) > $schedule->timetable['duration'] ? (int) ($ot / 60) * 60 : $ot;
         }
 
         $timetable->update([
@@ -317,11 +317,11 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         $excess = isset($roster['p2']['time']) ? (int) $out->diffInMinutes($out->clone()->setTime(...explode(':', $roster['p2']['time']))) : 0;
 
         if ($regular) {
-            $overtime = $excess > ($schedule->threshold['overtime'] ?? INF) ? $excess : 0;
+            $overtime = $excess > ($schedule->threshold['overtime'] ?? INF) ? (int) ($excess / 60) * 60 : 0;
         } elseif (isset($roster['p1']['time']) && isset($roster['p2']['time'])) {
-            $overtime = $this->date->clone()->setTime(...explode(':', $p1))
+            $overtime = ($ot = $this->date->clone()->setTime(...explode(':', $p1))
                 ->diffInMinutes($this->date->clone()->setTime(...explode(':', $p2)), false) -
-                    $undertime;
+                    $undertime) > $schedule->timetable['duration'] ? (int) ($ot / 60) * 60 : $ot;
         } else {
             $overtime = 0;
         }

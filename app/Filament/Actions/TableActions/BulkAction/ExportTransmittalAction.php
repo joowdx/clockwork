@@ -4,9 +4,11 @@ namespace App\Filament\Actions\TableActions\BulkAction;
 
 use App\Actions\ExportTransmittal;
 use App\Models\Employee;
+use App\Models\Group;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
@@ -83,6 +85,7 @@ class ExportTransmittalAction extends BulkAction
                 ->employee($employee)
                 ->month($data['month'])
                 ->period($data['period'])
+                ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
                 ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
@@ -136,7 +139,8 @@ class ExportTransmittalAction extends BulkAction
                     '2nd' => 'Second half',
                     'regular' => 'Regular days',
                     'overtime' => 'Overtime work',
-                    'custom' => 'Custom range',
+                    'dates' => 'Custom dates',
+                    'range' => 'Custom range',
                 ])
                 ->disableOptionWhen(function (Get $get, ?string $value) {
                     if ($get('format') === 'csc') {
@@ -144,12 +148,12 @@ class ExportTransmittalAction extends BulkAction
                     }
 
                     return match ($value) {
-                        'full', '1st', '2nd', 'custom' => false,
+                        'full', '1st', '2nd', 'range' => false,
                         default => true,
                     };
                 })
                 ->dehydrateStateUsing(function (Get $get, ?string $state) {
-                    if ($state !== 'custom') {
+                    if ($state !== 'range') {
                         return $state;
                     }
 
@@ -158,7 +162,7 @@ class ExportTransmittalAction extends BulkAction
                 ->in(fn (Select $component): array => array_keys($component->getEnabledOptions())),
             DatePicker::make('from')
                 ->label('Start')
-                ->visible(fn (Get $get) => $get('period') === 'custom')
+                ->visible(fn (Get $get) => $get('period') === 'range')
                 ->default(fn ($livewire) => $livewire->filters['from'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d')))
                 ->validationAttribute('start')
                 ->minDate(fn (Get $get) => $get('month').'-01')
@@ -168,7 +172,7 @@ class ExportTransmittalAction extends BulkAction
                 ->beforeOrEqual('to'),
             DatePicker::make('to')
                 ->label('End')
-                ->visible(fn (Get $get) => $get('period') === 'custom')
+                ->visible(fn (Get $get) => $get('period') === 'range')
                 ->default(fn ($livewire) => $livewire->filters['to'] ?? (today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d')))
                 ->validationAttribute('end')
                 ->minDate(fn (Get $get) => $get('month').'-01')
@@ -176,6 +180,18 @@ class ExportTransmittalAction extends BulkAction
                 ->required()
                 ->dehydrated(false)
                 ->afterOrEqual('from'),
+            Repeater::make('dates')
+                ->visible(fn (Get $get) => $get('period') === 'dates')
+                ->dehydratedWhenHidden()
+                ->required()
+                ->reorderable(false)
+                ->simple(
+                    DatePicker::make('date')
+                        ->minDate(fn (Get $get) => $get('../../month').'-01')
+                        ->maxDate(fn (Get $get) => Carbon::parse($get('../../month'))->endOfMonth())
+                        ->markAsRequired()
+                        ->rule('required')
+                ),
             Select::make('format')
                 ->live()
                 ->placeholder('Print format')
@@ -195,6 +211,11 @@ class ExportTransmittalAction extends BulkAction
                     'folio' => 'Folio (216mm x 330mm)',
                     'legal' => 'Legal (216mm x 356mm)',
                 ]),
+            Select::make('groups')
+                ->multiple()
+                ->searchable()
+                ->getSearchResultsUsing(fn (?string $search) => Group::where('name', 'ilike', "%$search%")->get()->pluck('name', 'name'))
+                ->preload(),
             // Select::make('transmittal')
             //     ->visible($bulk)
             //     ->live()

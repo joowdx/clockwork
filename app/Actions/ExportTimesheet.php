@@ -36,6 +36,8 @@ class ExportTimesheet implements Responsable
 
     private string $period = 'full';
 
+    private array $dates = [];
+
     private string $format = 'csc';
 
     private string $size = 'folio';
@@ -62,6 +64,7 @@ class ExportTimesheet implements Responsable
         Collection|Employee $employee,
         Carbon|string $month,
         string $period = 'full',
+        array $dates = [],
         string $format = 'csc',
         string $size = 'folio',
         ?Signature $signature = null,
@@ -71,6 +74,7 @@ class ExportTimesheet implements Responsable
         return $this->employee($employee)
             ->month($month)
             ->period($period)
+            ->dates($dates)
             ->format($format)
             ->size($size)
             ->signature($signature)
@@ -112,11 +116,20 @@ class ExportTimesheet implements Responsable
 
     public function period(string $period = 'full'): static
     {
-        if (! in_array(explode('|', $period)[0], ['full', '1st', '2nd', 'overtime', 'regular', 'custom'])) {
+        if (! in_array(explode('|', $period)[0], ['full', '1st', '2nd', 'overtime', 'regular', 'dates', 'range'])) {
             throw new InvalidArgumentException('Unknown period: '.$period);
         }
 
         $this->period = $period;
+
+        return $this;
+    }
+
+    public function dates(array $dates): static
+    {
+        $this->dates = collect($dates)
+            ->filter(fn ($date) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $date))
+            ->toArray();
 
         return $this;
     }
@@ -171,7 +184,8 @@ class ExportTimesheet implements Responsable
                 match ($period) {
                     '1st' => $query->firstHalf(),
                     '2nd' => $query->secondHalf(),
-                    'custom' => $query->customRange($from, $to),
+                    'dates' => $query->customDates($this->dates),
+                    'range' => $query->customRange($from, $to),
                     default => $query,
                 };
             };
@@ -193,7 +207,7 @@ class ExportTimesheet implements Responsable
             ->when($period === '2nd', fn ($query) => $query->with('secondHalf'))
             ->when($period === 'regular', fn ($query) => $query->with('regularDays'))
             ->when($period === 'overtime', fn ($query) => $query->with('overtimeWork'))
-            ->with(['employee:id,name'])
+            ->with(['employee:id,name,status'])
             ->orderBy(Employee::select('full_name')->whereColumn('employees.id', 'timesheets.employee_id')->limit(1))
             ->lazy();
 
@@ -202,7 +216,8 @@ class ExportTimesheet implements Responsable
             '2nd' => $timesheets->map->setSecondHalf(),
             'overtime' => $timesheets->map->setOvertimeWork(),
             'regular' => $timesheets->map->setRegularDays(),
-            'custom' => $timesheets->map->setCustomRange($from, $to),
+            'dates' => $timesheets->map->setCustomDates($this->dates),
+            'range' => $timesheets->map->setCustomRange($from, $to),
             default => $timesheets,
         };
 
@@ -284,7 +299,7 @@ class ExportTimesheet implements Responsable
 
             @[$period, $range] = explode('|', $this->period, 2);
 
-            if ($period === 'custom') {
+            if ($period === 'range') {
                 [$from, $to] = explode('-', $range, 2);
             } else {
                 $from = match ($period) {
@@ -346,7 +361,7 @@ class ExportTimesheet implements Responsable
             '2nd' => '(Second half)',
             'overtime' => '(Overtime Work)',
             'regular' => '(Regular Days)',
-            default => '('.str($this->period)->replace('custom|', '').')',
+            default => '('.str($this->period)->replace('range|', '').')',
         };
 
         $name = $this->employee instanceof Collection ? substr($this->employee->pluck('last_name')->sort()->join(','), 0, 60) : $this->employee->name;

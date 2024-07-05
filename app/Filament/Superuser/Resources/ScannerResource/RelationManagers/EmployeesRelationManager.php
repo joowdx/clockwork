@@ -60,7 +60,7 @@ class EmployeesRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('uid')
                     ->label('UID')
-                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw("CAST(uid as UNSIGNED) $direction"))
+                    ->sortable(query: fn ($query, $direction) => $query->orderByRaw("CAST(uid as INT) $direction"))
                     ->searchable(query: fn ($query, $search) => $query->where('uid', $search)),
                 Tables\Columns\TextColumn::make('employee.full_name')
                     ->label('Name')

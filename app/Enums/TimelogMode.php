@@ -51,7 +51,7 @@ enum TimelogMode: int implements HasIcon, HasLabel
         };
     }
 
-    public function getCode(bool $strict = false): string
+    public function getCode(): string
     {
         return match ($this) {
             self::FINGERPRINT_0, self::FINGERPRINT_1 => 'fp',

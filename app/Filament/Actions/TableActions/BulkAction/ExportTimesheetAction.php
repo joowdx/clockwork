@@ -7,6 +7,7 @@ use App\Models\Employee;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
@@ -34,7 +35,7 @@ class ExportTimesheetAction extends BulkAction
         return $static;
     }
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -53,7 +54,7 @@ class ExportTimesheetAction extends BulkAction
         $this->action(fn (Collection $records, array $data) => $this->exportAction($records, $data));
     }
 
-    protected function exportConfirmation(): Htmlable
+    public function exportConfirmation(): Htmlable
     {
         $html = <<<'HTML'
             <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
@@ -65,7 +66,7 @@ class ExportTimesheetAction extends BulkAction
         return str($html)->toHtmlString();
     }
 
-    protected function exportAction(Collection|Employee $employee, array $data): StreamedResponse|BinaryFileResponse|Notification
+    public function exportAction(Collection|Employee $employee, array $data): StreamedResponse|BinaryFileResponse|Notification
     {
         $actionException = new class extends Exception
         {
@@ -84,6 +85,7 @@ class ExportTimesheetAction extends BulkAction
                 ->employee($employee)
                 ->month($data['month'])
                 ->period($data['period'])
+                ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
                 ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
@@ -111,7 +113,7 @@ class ExportTimesheetAction extends BulkAction
         }
     }
 
-    protected function exportForm(): array
+    public function exportForm(): array
     {
         return [
             // Checkbox::make('individual')
@@ -137,7 +139,8 @@ class ExportTimesheetAction extends BulkAction
                     '2nd' => 'Second half',
                     'regular' => 'Regular days',
                     'overtime' => 'Overtime work',
-                    'custom' => 'Custom range',
+                    'dates' => 'Custom dates',
+                    'range' => 'Custom range',
                 ])
                 ->disableOptionWhen(function (Get $get, ?string $value) {
                     if ($get('format') === 'csc') {
@@ -145,12 +148,12 @@ class ExportTimesheetAction extends BulkAction
                     }
 
                     return match ($value) {
-                        'full', '1st', '2nd', 'custom' => false,
+                        'full', '1st', '2nd', 'range' => false,
                         default => true,
                     };
                 })
                 ->dehydrateStateUsing(function (Get $get, ?string $state) {
-                    if ($state !== 'custom') {
+                    if ($state !== 'range') {
                         return $state;
                     }
 
@@ -159,7 +162,7 @@ class ExportTimesheetAction extends BulkAction
                 ->in(fn (Select $component): array => array_keys($component->getEnabledOptions())),
             DatePicker::make('from')
                 ->label('Start')
-                ->visible(fn (Get $get) => $get('period') === 'custom')
+                ->visible(fn (Get $get) => $get('period') === 'range')
                 ->default(fn ($livewire) => $livewire->filters['from'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d')))
                 ->validationAttribute('start')
                 ->minDate(fn (Get $get) => $get('month').'-01')
@@ -169,7 +172,7 @@ class ExportTimesheetAction extends BulkAction
                 ->beforeOrEqual('to'),
             DatePicker::make('to')
                 ->label('End')
-                ->visible(fn (Get $get) => $get('period') === 'custom')
+                ->visible(fn (Get $get) => $get('period') === 'range')
                 ->default(fn ($livewire) => $livewire->filters['to'] ?? (today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d')))
                 ->validationAttribute('end')
                 ->minDate(fn (Get $get) => $get('month').'-01')
@@ -177,6 +180,18 @@ class ExportTimesheetAction extends BulkAction
                 ->required()
                 ->dehydrated(false)
                 ->afterOrEqual('from'),
+            Repeater::make('dates')
+                ->visible(fn (Get $get) => $get('period') === 'dates')
+                ->dehydratedWhenHidden()
+                ->required()
+                ->reorderable(false)
+                ->simple(
+                    DatePicker::make('date')
+                        ->minDate(fn (Get $get) => $get('../../month').'-01')
+                        ->maxDate(fn (Get $get) => Carbon::parse($get('../../month'))->endOfMonth())
+                        ->markAsRequired()
+                        ->rule('required')
+                ),
             Select::make('format')
                 ->live()
                 ->placeholder('Print format')

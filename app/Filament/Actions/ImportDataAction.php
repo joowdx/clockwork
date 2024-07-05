@@ -24,7 +24,7 @@ class ImportDataAction extends Action
             $html = <<<'HTML'
                 Import data from a CSV file.
 
-                <span class="text-custom-600 dark:text-custom-400 block" style="--c-400:var(--danger-400);--c-600:var(--danger-600);">
+                <span class="block text-custom-600 dark:text-custom-400" style="--c-400:var(--danger-400);--c-600:var(--danger-600);">
                     Overwritten conflicting resources is not reversible.
                 </span>
             HTML;

@@ -28,10 +28,11 @@ class ActivityResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('activitable_type')
                     ->label('Resource')
-                    ->getStateUsing(fn (Activity $record) => class_basename($record->activitable::class))
+                    ->getStateUsing(fn (Activity $record) => $record->activitable ? class_basename($record->activitable::class) : '')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('activitable.name')
                     ->label('Name')
+                    ->getStateUsing(fn (Activity $record) => $record->activitable ? $record->activitable->name : '???')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('data.action')
                     ->label('Action')

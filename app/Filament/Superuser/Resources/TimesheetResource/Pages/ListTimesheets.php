@@ -7,33 +7,37 @@ use App\Enums\EmploymentSubstatus;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
 use App\Filament\Actions\ImportTimelogsAction;
+use App\Filament\Actions\TableActions\BulkAction\ExportOfficeAttendanceAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
+use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
 use App\Filament\Superuser\Resources\TimesheetResource;
 use App\Jobs\ProcessTimesheet;
+use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
 use App\Models\Group;
 use App\Models\Office;
 use App\Models\Timelog;
-use App\Models\Timetable;
 use Filament\Forms;
-use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard\Actions\FilterAction;
 use Filament\Pages\Dashboard\Concerns\HasFiltersAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 
 class ListTimesheets extends ListRecords
 {
     use HasFiltersAction;
+
+    public string $action = 'hide';
+
+    public $timelogs;
 
     protected static string $resource = TimesheetResource::class;
 
@@ -63,7 +67,8 @@ class ListTimesheets extends ListRecords
             ->query(fn () => ($this->filters['model'] ?? Employee::class)::query())
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('offices.code')
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->searchable()
@@ -72,6 +77,7 @@ class ListTimesheets extends ListRecords
                 Tables\Columns\TextColumn::make('status')
                     ->toggleable()
                     ->limit(24)
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->getStateUsing(function (Employee $employee): string {
                         return str($employee->status?->value)
                             ->title()
@@ -165,37 +171,6 @@ class ListTimesheets extends ListRecords
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('view')
-                        ->extraAttributes(['class' => 'hidden'])
-                        ->icon('heroicon-o-clipboard-document-list')
-                        ->modalWidth('2xl')
-                        ->modalSubmitAction(false)
-                        ->modalContent(fn ($record, $arguments) => $this->timesheetView($record, $arguments['data']['month']))
-                        ->modalCancelActionLabel('Close')
-                        ->modalFooterActionsAlignment('end'),
-                    Tables\Actions\Action::make('timelogs')
-                        ->icon('heroicon-o-newspaper'),
-                    Tables\Actions\Action::make('timesheet')
-                        ->icon('heroicon-o-clipboard-document-list')
-                        // ->modalWidth('xl')
-                        // ->modalSubmitAction(false)
-                        // ->modalCancelActionLabel('Close')
-                        // ->modalFooterActionsAlignment('end')
-                        // ->modalContent(fn ($record, $data) => $this->timesheetView($record, Carbon::parse($data['month'])))
-                        ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\TextInput::make('month')
-                                ->markAsRequired()
-                                ->rule('required')
-                                ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m'))
-                                ->type('month'),
-                        ])
-                        ->action(fn ($data, $record) => $this->replaceMountedTableAction('view', $record->id, compact('data'))),
-                ])
-                    ->link()
-                    ->label('View')
-                    ->icon('heroicon-o-eye'),
                 Tables\Actions\Action::make('export')
                     ->label('Export')
                     ->requiresConfirmation()
@@ -203,16 +178,17 @@ class ListTimesheets extends ListRecords
                     ->modalIcon('heroicon-o-document-arrow-down')
                     ->modalDescription(fn (Employee $record) => "Export timesheet of {$record->name}")
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
-                    ->form(fn () => $this->exportForm())
-                    ->action(fn (Employee $record, array $data) => $this->exportAction($record, $data)),
+                    ->form(fn () => app(ExportTimesheetAction::class, ['name' => null])->exportForm())
+                    ->action(fn (Employee $record, array $data) => app(ExportTimesheetAction::class, ['name' => null])->exportAction($record, $data)),
                 Tables\Actions\Action::make('generate')
                     ->icon('heroicon-o-bolt')
                     ->requiresConfirmation()
-                    ->modalDescription($this->generateConfirmation())
+                    ->modalDescription(app(GenerateTimesheetAction::class, ['name' => null])->generateConfirmation())
                     ->successNotificationTitle(fn ($record) => "Timesheet for {$record->name} generated.")
-                    ->form($this->generateForm())
+                    ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
-                        if (! empty($data) && $data['month'] === $data['password']) {
+                        if (auth()->user()->root && auth()->user()->developer && ! empty($data) && $data['month'] === $data['password']) {
                             $this->replaceMountedTableAction('thaumaturge', $record->id, ['month' => $data['month']]);
 
                             return;
@@ -223,26 +199,42 @@ class ListTimesheets extends ListRecords
                         $component->sendSuccessNotification();
                     }),
                 Tables\Actions\Action::make('thaumaturge')
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && auth()->user()->root && auth()->user()->developer)
                     ->extraAttributes(['class' => 'hidden'])
                     ->modalHeading(fn ($record) => $record->name)
                     ->modalAlignment('center')
                     ->icon('heroicon-o-puzzle-piece')
                     ->modalIcon('heroicon-o-puzzle-piece')
                     ->modalDescription(null)
-                    ->modalWidth('2xl')
+                    ->modalWidth('3xl')
                     ->slideOver()
                     ->successNotificationTitle(fn ($record) => "Timesheet for {$record->name} generated.")
-                    ->form(function ($arguments) {
+                    ->form(function ($arguments, $record) {
                         $month = Carbon::parse($arguments['month']);
 
                         $from = $month->clone()->startOfMonth();
 
                         $to = $month->clone()->endOfMonth();
 
+                        $this->timelogs = $record->timelogs()->whereBetween('time', [$from, $to])->withoutGlobalScopes()->get();
+
                         return [
                             Forms\Components\Tabs::make()
-                                ->contained(false)
+                                // ->contained(false)
                                 ->tabs([
+                                    Forms\Components\Tabs\Tab::make('Timelogs')
+                                        ->schema([
+                                            Forms\Components\View::make('print.timelogs')
+                                                ->viewData([
+                                                    'employee' => $record,
+                                                    'timelogs' => $this->timelogs,
+                                                    'preview' => true,
+                                                    'month' => $month,
+                                                    'from' => $from->format('Y-m-d'),
+                                                    'to' => $to->format('Y-m-d'),
+                                                    'action' => $this->action,
+                                                ]),
+                                        ]),
                                     Forms\Components\Tabs\Tab::make('New')
                                         ->schema([
                                             Forms\Components\Repeater::make('timelogs')
@@ -307,11 +299,15 @@ class ListTimesheets extends ListRecords
                         ProcessTimesheet::dispatchSync($record, Carbon::parse($this->filters['month'] ?? today()->startOfMonth()));
 
                         $component->sendSuccessNotification();
+
+                        $component->halt();
                     }),
             ])
             ->bulkActions([
-                ViewTimesheetAction::make(listing: true),
+                ViewTimesheetAction::make(listing: true)
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class),
                 ViewTimesheetAction::make()
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->label('View'),
                 Tables\Actions\BulkActionGroup::make([
                     ExportTimesheetAction::make()
@@ -319,177 +315,53 @@ class ListTimesheets extends ListRecords
                     ExportTransmittalAction::make()
                         ->label('Transmittal'),
                 ])
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->label('Export')
                     ->icon('heroicon-o-document-arrow-down'),
+                Tables\Actions\BulkActionGroup::make([
+                    ExportOfficeAttendanceAction::make()
+                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) !== Employee::class),
+                    ExportOfficeAttendanceAction::make(transmittal: true)
+                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) !== Employee::class),
+                ]),
                 Tables\Actions\BulkAction::make('generate')
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->icon('heroicon-o-bolt')
                     ->color('gray')
                     ->requiresConfirmation()
                     ->modalIconColor('danger')
-                    ->modalDescription($this->generateConfirmation())
-                    ->form($this->generateForm())
-                    ->action(fn (Collection $records, array $data) => $this->generateAction($records, $data)),
+                    ->modalDescription(app(GenerateTimesheetAction::class, ['name' => null])->generateConfirmation())
+                    ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
+                    ->action(fn (Collection $records, array $data) => app(GenerateTimesheetAction::class, ['name' => null])->generateAction($records, $data)),
             ])
             ->deselectAllRecordsWhenFiltered(false)
-            ->recordAction(null);
+            ->recordAction(null)
+            ->defaultSort(fn () => ($this->filters['model'] ?? Employee::class) == Employee::class ? 'full_name' : null, 'asc');
     }
 
-    public function timelogsView(Employee $employee, Carbon|string $month): Htmlable
+    public function thaumaturge(string $id)
     {
+        $timelog = $this->timelogs->first(fn ($timelog) => $timelog->id === $id);
 
-        return str()->toHtmlString();
-    }
-
-    protected function timesheetView(Employee $employee, Carbon|string $month): Htmlable
-    {
-        $month = Carbon::parse($month);
-
-        $body = $employee->timesheets()
-            ->month($month)
-            ->first()
-            ?->timetables()
-            ->get()
-            ->map(function (Timetable $timetable) {
-                $p1 = substr($time = $timetable->punch['p1']['time'] ?? '', 0, strrpos($time, ':'));
-                $p2 = substr($time = $timetable->punch['p2']['time'] ?? '', 0, strrpos($time, ':'));
-                $p3 = substr($time = $timetable->punch['p3']['time'] ?? '', 0, strrpos($time, ':'));
-                $p4 = substr($time = $timetable->punch['p4']['time'] ?? '', 0, strrpos($time, ':'));
-
-                $hf = $timetable->half ? '✔' : '';
-                $ok = $timetable->invalid ? '✖' : '';
-
-                return <<<HTML
-                    <tr class="border-t" style="border-color:#80808080!important;">
-                        <td class="font-mono" style="padding:0 0.75em;">{$timetable->date->format('m-d D')}</td>
-                        <td class="font-mono text-left" style="padding:0 0.75em;">{$ok}</td>
-                        <td class="font-mono text-left" style="padding:0 0.75em;">{$hf}</td>
-                        <td class="font-mono" style="padding:0 0.75em;">{$p1}</td>
-                        <td class="font-mono" style="padding:0 0.75em;">{$p2}</td>
-                        <td class="font-mono" style="padding:0 0.75em;">{$p3}</td>
-                        <td class="font-mono" style="padding:0 0.75em;">{$p4}</td>
-                        <td class="font-mono text-right" style="padding:0 0.75em;">{$timetable->undertime}</td>
-                        <td class="font-mono text-right" style="padding:0 0.75em;">{$timetable->overtime}</td>
-                        <td class="font-mono text-right" style="padding:0 0.75em;">{$timetable->duration}</td>
-                    </tr>
-                HTML;
-            })->join('');
-
-        $html = <<<HTML
-            <div class="font-sans">
-                <div class="py-3">
-                    <h2 class="text-base font-semibold leading-6 fi-modal-heading text-gray-950 dark:text-white">
-                        {$employee->name}
-                    </h2>
-                    <h3 class="text-sm font-semibold leading-6 fi-modal-heading text-gray-950 dark:text-white">
-                        {$month->format('F Y')}
-                    </h3>
-                </div>
-                <hr>
-                <table class="w-full text-sm table-fixed fi-ta-table">
-                    <thead>
-                        <tr>
-                            <th class="text-left" style="padding-left:1em;padding:0 0.75em;"> Date </th>
-                            <th class="text-left" style="width:5%;padding:0 0.75em;"> OK </th>
-                            <th class="text-left" style="width:5%;padding:0 0.75em;"> HF </th>
-                            <th class="text-left" style="width:10%;padding:0 0.75em;"> P1 </th>
-                            <th class="text-left" style="width:10%;padding:0 0.75em;"> P2 </th>
-                            <th class="text-left" style="width:10%;padding:0 0.75em;"> P3 </th>
-                            <th class="text-left" style="width:10%;padding:0 0.75em;"> P4 </th>
-                            <th class="text-right" style="width:10%;padding:0 0.75em;"> UT </th>
-                            <th class="text-right" style="width:10%;padding:0 0.75em;"> OT </th>
-                            <th class="text-right" style="width:10%;padding:0 0.75em;"> ΣT </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {$body}
-                    </tbody>
-                </table>
-            </div>
-        HTML;
-
-        return str($html)
-            ->toHtmlString();
-    }
-
-    protected function generateConfirmation(): string
-    {
-        return 'Timesheets are automatically generated.
-        Only do this when you know what you are doing as this will overwrite the existing timesheet data.
-        To proceed, please enter your password.';
-    }
-
-    protected function generateForm(): array
-    {
-        return [
-            Forms\Components\TextInput::make('month')
-                ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m'))
-                ->type('month')
-                ->required(),
-            Forms\Components\TextInput::make('password')
-                ->label('Password')
-                ->password()
-                ->markAsRequired()
-                ->rules([
-                    'required',
-                    fn (Forms\Get $get) => function ($attribute, $value, $fail) use ($get) {
-                        if ($value === $get('month')) {
-                            return;
-                        }
-
-                        if (! password_verify($value, auth()->user()->password)) {
-                            $fail('The password is incorrect');
-                        }
-                    },
-                ]),
-        ];
-    }
-
-    protected function generateAction(Collection|Employee $employee, array $data): void
-    {
-        if ($employee instanceof Employee || $employee->count() === 1) {
-            $employee = $employee instanceof Collection ? $employee->first() : $employee;
-
-            ProcessTimesheet::dispatchSync($employee, $data['month']);
-
-            Notification::make()
-                ->success()
-                ->title("Timesheet for {$employee->name} generated.")
-                ->send();
-
+        if ($timelog->pseudo === false && $this->action === 'delete') {
             return;
         }
 
-        $jobs = $employee->map(function (Employee $employee) use ($data) {
-            return new ProcessTimesheet($employee, $data['month']);
+        $employee = $timelog->employee;
+
+        $date = $timelog->time->startOfDay();
+
+        DB::transaction(function () use ($employee, $timelog, $date, $id) {
+            match ($this->action) {
+                'delete' => $timelog->delete(),
+                'hide' => $timelog?->forceFill(['shadow' => ! $timelog->shadow])->save(),
+            };
+
+            if ($this->action === 'delete') {
+                $this->timelogs->forget($this->timelogs->search(fn ($timelog) => $timelog->id === $id));
+            }
+
+            ProcessTimetable::dispatchSync($employee, $date);
         });
-
-        $employee->ensure(Employee::class);
-
-        Notification::make()
-            ->info()
-            ->title('Timesheet generation will start shortly')
-            ->send();
-
-        $user = auth()->user();
-
-        Bus::batch($jobs->all())
-            ->then(function () use ($data, $employee, $user) {
-                $names = $employee->pluck('name')->sort();
-
-                Notification::make()
-                    ->info()
-                    ->title('Timesheets are being generated')
-                    ->body("<b>({$data['month']})</b> <br> To be generated for (please wait for a while): <br>{$names->join('<br>')}")
-                    ->sendToDatabase($user);
-            })
-            ->catch(function () use ($user) {
-                Notification::make()
-                    ->error()
-                    ->title('Failed to generate timesheets')
-                    ->body('Please try again')
-                    ->sendToDatabase($user);
-            })
-            ->onQueue('main')
-            ->dispatch();
     }
 }

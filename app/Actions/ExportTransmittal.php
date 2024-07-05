@@ -30,6 +30,8 @@ class ExportTransmittal implements Responsable
 
     private string $period = 'full';
 
+    private array $dates = [];
+
     private string $format = 'csc';
 
     private string $size = 'folio';
@@ -56,6 +58,7 @@ class ExportTransmittal implements Responsable
         Collection|Employee $employee,
         Carbon|string $month,
         string $period = 'full',
+        array $dates = [],
         string $format = 'csc',
         string $size = 'folio',
         ?Signature $signature = null,
@@ -65,6 +68,7 @@ class ExportTransmittal implements Responsable
         return $this->employee($employee)
             ->month($month)
             ->period($period)
+            ->dates($dates)
             ->format($format)
             ->size($size)
             ->signature($signature)
@@ -102,11 +106,20 @@ class ExportTransmittal implements Responsable
 
     public function period(string $period = 'full'): static
     {
-        if (! in_array(explode('|', $period)[0], ['full', '1st', '2nd', 'overtime', 'regular', 'custom'])) {
+        if (! in_array(explode('|', $period)[0], ['full', '1st', '2nd', 'overtime', 'regular', 'dates', 'range'])) {
             throw new InvalidArgumentException('Unknown period: '.$period);
         }
 
         $this->period = $period;
+
+        return $this;
+    }
+
+    public function dates(array $dates): static
+    {
+        $this->dates = collect($dates)
+            ->filter(fn ($date) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $date))
+            ->toArray();
 
         return $this;
     }
@@ -204,8 +217,8 @@ class ExportTransmittal implements Responsable
             'groups' => $this->groups,
         ];
 
-        $export = Pdf::view('print.transmittal', [...$args, 'signed' => (bool) $this->password])
-            ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));;
+        $export = Pdf::view('print.transmittal.csc-default', [...$args, 'signed' => (bool) $this->password, 'dates' => empty($this->dates) ? null : $this->formatted()])
+            ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
             'folio' => $export->paperSize(8.5, 13, 'in'),
@@ -234,6 +247,37 @@ class ExportTransmittal implements Responsable
         }
     }
 
+    protected function formatted(): string
+    {
+        $days = collect($this->dates)->map(fn ($date) => Carbon::parse($date)->format('j'))->sort()->values()->toArray();
+
+        $formatted = [];
+        $start = $days[0];
+        $end = $days[0];
+
+        for ($i = 1; $i < count($days); $i++) {
+            if ($days[$i] == $end + 1) {
+                $end = $days[$i];
+            } else {
+                if ($start == $end) {
+                    $formatted[] = $start;
+                } else {
+                    $formatted[] = "$start-$end";
+                }
+                $start = $days[$i];
+                $end = $days[$i];
+            }
+        }
+
+        if ($start == $end) {
+            $formatted[] = $start;
+        } else {
+            $formatted[] = "$start-$end";
+        }
+
+        return implode(',', $formatted).' '.$this->month->format('F Y');
+    }
+
     protected function filename(): string
     {
         $prefix = 'Transmittal '.$this->month->format('Y-m ').match ($this->period) {
@@ -242,6 +286,7 @@ class ExportTransmittal implements Responsable
             '2nd' => '(Second half)',
             'overtime' => '(Overtime Work)',
             'regular' => '(Regular Days)',
+            'dates' => $this->formatted(),
             default => '('.str($this->period)->replace('custom|', '').')',
         };
 

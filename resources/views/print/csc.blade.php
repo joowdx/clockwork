@@ -93,6 +93,9 @@
                             </td>
                             <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
                                 {{ $timesheet->period }}
+                                @if ($timesheet->getPeriod() === 'overtimeWork')
+                                    (OT)
+                                @endif
                             </td>
                         </tr>
                         <tr>
@@ -123,7 +126,12 @@
                             <td class="border center middle courier" rowspan=2 height=42 width=58>DAY</td>
                             <td class="border center middle courier" colspan=2 width=116>AM</td>
                             <td class="border center middle courier" colspan=2 width=116>PM</td>
-                            <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
+                            @if ($timesheet->getPeriod() === 'overtimeWork')
+                                <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
+                            @else
+                                <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
+                            @endif
+
                             @if ($preview)
                                 <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
                             @endif
@@ -215,7 +223,7 @@
                                         ])
                                         style="padding-right:14pt;"
                                     >
-                                        {{ $timetable?->undertime }}
+                                        {{ $timesheet->getPeriod() === 'overtimeWork' && ! $preview ? $timetable?->overtime : $timetable?->undertime }}
                                     </td>
                                     @if($preview)
                                         <td
@@ -246,7 +254,7 @@
                             <tr style="height:10pt"> </tr>
                             <tr>
                                 <td colspan=2 class="font-md courier right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
-                                <td colspan=4 class="underline courier font-md left bold">
+                                <td colspan=4 @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md bold' ])>
                                     {{ $timesheet->total }}
                                 </td>
                             </tr>

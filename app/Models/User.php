@@ -44,14 +44,14 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
-    public static function booted()
-    {
-
-    }
-
     public function root(): Attribute
     {
         return Attribute::make(fn () => $this->hasRole(UserRole::ROOT));
+    }
+
+    public function developer(): Attribute
+    {
+        return Attribute::make(fn () => $this->hasRole(UserRole::DEVELOPER));
     }
 
     public function superuser(): Attribute

@@ -46,7 +46,8 @@ class Office extends Model
     {
         return $this->belongsToMany(Employee::class, 'deployment')
             ->using(Deployment::class)
-            ->withPivot('active');
+            ->withPivot('active')
+            ->orderBy('full_name');
     }
 
     public function deployments(): HasMany
