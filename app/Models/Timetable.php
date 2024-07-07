@@ -28,6 +28,7 @@ class Timetable extends Model
         'regular',
         'rectified',
         'timesheet_id',
+        'hash',
     ];
 
     protected $casts = [

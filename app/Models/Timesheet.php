@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\NumberRangeCompressor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -19,6 +20,7 @@ class Timesheet extends Model
     protected $fillable = [
         'month',
         'details',
+        'hash',
     ];
 
     protected $casts = [
@@ -120,31 +122,7 @@ class Timesheet extends Model
                 $formatted = (function () {
                     $days = $this->{$this->getPeriod()}->map->date->map(fn ($date) => $date->format('j'))->sort()->values()->toArray();
 
-                    $formatted = [];
-                    $start = $days[0];
-                    $end = $days[0];
-
-                    for ($i = 1; $i < count($days); $i++) {
-                        if ($days[$i] == $end + 1) {
-                            $end = $days[$i];
-                        } else {
-                            if ($start == $end) {
-                                $formatted[] = $start;
-                            } else {
-                                $formatted[] = "$start-$end";
-                            }
-                            $start = $days[$i];
-                            $end = $days[$i];
-                        }
-                    }
-
-                    if ($start == $end) {
-                        $formatted[] = $start;
-                    } else {
-                        $formatted[] = "$start-$end";
-                    }
-
-                    return implode(',', $formatted).' '.$this->overtimeWork->map->date->first()->format('F Y');
+                    return (new NumberRangeCompressor)($days).' '.$this->{$this->getPeriod()}->map->date->first()?->format('F Y');
                 });
 
                 return match ($this->span) {
@@ -205,15 +183,15 @@ class Timesheet extends Model
 
                     $mins = $minutes % 60;
 
-                    return "$hours hrs".($mins > 0 ? " $mins mins" : '');
+                    return "{$hours}hrs".($mins > 0 ? " {$mins}mins" : '');
                 };
 
                 $overtime = function () use ($format) {
-                    $wd = $this->overtimeWork->reject->regular->sum('overtime');
+                    $wd = $this->overtimeWork->filter->regular->sum('overtime');
 
-                    $we = $this->overtimeWork->filter->regular->sum('overtime');
+                    $we = $this->overtimeWork->reject->regular->sum('overtime');
 
-                    return "wkd: {$format($wd)}, wke: {$format($we)}";
+                    return ($wd > 0 ? "wkdy:{$format($wd)}" : '').($wd > 0 ? ', ' : '').($we > 0 ? "wknd:{$format($we)}" : '');
                 };
 
                 return match ($this->span) {
