@@ -25,7 +25,8 @@
         "livewire/volt": "^1.6",
         "lsnepomuceno/laravel-a1-pdf-sign": "^1.1",
         "owenvoke/blade-fontawesome": "^2.6",
-        "spatie/laravel-pdf": "^1.5"
+        "spatie/laravel-pdf": "^1.5",
+        "webklex/laravel-pdfmerger": "*"
     },
     "require-dev": {
         "laravel/pint": "^1.0",

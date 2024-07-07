@@ -159,7 +159,7 @@ return [
         /*
          * Package Service Providers...
          */
-
+        Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
         /*
          * Application Service Providers...
          */
