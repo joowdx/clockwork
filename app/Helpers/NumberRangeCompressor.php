@@ -43,7 +43,7 @@ class NumberRangeCompressor
         $compressed = [];
 
         foreach ($ranges as $range) {
-            $compressed[] = $range[0] === $range[1] ? $range[0] : $range[0] . '-' . $range[1];
+            $compressed[] = $range[0] === $range[1] ? $range[0] : $range[0].'-'.$range[1];
         }
 
         return $implode ? implode(',', $compressed) : $compressed;
