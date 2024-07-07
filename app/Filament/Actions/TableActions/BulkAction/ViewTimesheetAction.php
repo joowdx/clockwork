@@ -2,11 +2,8 @@
 
 namespace App\Filament\Actions\TableActions\BulkAction;
 
-use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
 use App\Models\Timesheet;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\View;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
@@ -79,9 +76,19 @@ class ViewTimesheetAction extends BulkAction
                     ]);
                 }
 
-                $from = Carbon::parse($data['from'])->startOfDay();
+                $from = match ($data['period']) {
+                    '2nd' => $month->clone()->setDay(16)->startOfDay(),
+                    'range' => Carbon::parse($data['from'])->startOfDay(),
+                    'dates' => null,
+                    default => $month->clone()->startOfMonth(),
+                };
 
-                $to = Carbon::parse($data['to'])->endOfDay();
+                $to = match ($data['period']) {
+                    '1st' => $month->clone()->setDay(15)->endOfDay(),
+                    'range' => Carbon::parse($data['to'])->endOfDay(),
+                    'dates' => null,
+                    default => $month->clone()->endOfMonth(),
+                };
 
                 $timelogs = function ($query) use ($data, $from, $to) {
                     if ($data['period'] === 'dates') {
@@ -102,11 +109,7 @@ class ViewTimesheetAction extends BulkAction
                     'from' => $data['period'] !== 'dates' ? $from->day : null,
                     'to' => $data['period'] !== 'dates' ? $to->day : null,
                     'dates' => $data['period'] === 'dates' ? collect($data['dates'])->flatten()->sort()->values()->toArray() : null,
-                    'employees' => $records->load([
-                        'scanners',
-                        'timelogs.scanner',
-                        'timelogs' => $timelogs,
-                    ]),
+                    'employees' => $records->load(['scanners', 'timelogs.scanner', 'timelogs' => $timelogs]),
                 ]);
             });
 
