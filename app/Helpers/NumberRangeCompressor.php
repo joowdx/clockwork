@@ -18,7 +18,7 @@ class NumberRangeCompressor
         $numbers = array_unique($numbers);
 
         if (count($numbers) == 1) {
-            return $numbers[0];
+            return $implode ? $numbers[0] : $numbers;
         }
 
         sort($numbers);

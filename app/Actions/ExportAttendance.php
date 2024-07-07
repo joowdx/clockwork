@@ -285,7 +285,7 @@ class ExportAttendance implements Responsable
 
                     $formatted = (new NumberRangeCompressor)($days);
 
-                    return implode(', ', $formatted).' '.$dates->first()->format('F Y');
+                    return $formatted.' '.$dates->first()->format('F Y');
                 });
 
             return $formatted->join(', ', $formatted->count() > 2 ? ', and ' : ' and ');
