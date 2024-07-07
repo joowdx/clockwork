@@ -2,6 +2,8 @@
 
 namespace App\Filament\Actions\TableActions\BulkAction;
 
+use App\Helpers\NumberRangeCompressor;
+use App\Models\Employee;
 use App\Models\Timesheet;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -47,28 +49,64 @@ class ViewTimesheetAction extends BulkAction
             $this->modalContent(function ($records, $livewire) {
                 $data = $livewire->mountedTableBulkActionData;
 
+                $month = Carbon::parse($data['month']);
+
                 if ($data['format'] === 'csc') {
-                    return View::make('print.csc')->view('print.csc', [
+                    $timesheets = Timesheet::query()
+                        ->whereHas('employee', fn ($query) => $query->whereIn('id', $records->pluck('id')))
+                        ->whereDate('month', $month->startOfMonth())
+                        ->when($data['period'] === '1st', fn ($query) => $query->with('firstHalf'))
+                        ->when($data['period'] === '2nd', fn ($query) => $query->with('secondHalf'))
+                        ->when($data['period'] === 'regular', fn ($query) => $query->with('regularDays'))
+                        ->when($data['period'] === 'overtime', fn ($query) => $query->with('overtimeWork'))
+                        ->with(['employee:id,name,status'])
+                        ->orderBy(Employee::select('full_name')->whereColumn('employees.id', 'timesheets.employee_id')->limit(1))
+                        ->lazy();
+
+                    $timesheets = match ($data['period']) {
+                        '1st' => $timesheets->map->setFirstHalf(),
+                        '2nd' => $timesheets->map->setSecondHalf(),
+                        'overtime' => $timesheets->map->setOvertimeWork(),
+                        'regular' => $timesheets->map->setRegularDays(),
+                        'dates' => $timesheets->map->setCustomDates(collect($data['dates'])->flatten()->toArray()),
+                        'range' => $timesheets->map->setCustomRange(Carbon::parse($data['from'])->day, Carbon::parse($data['to'])->day),
+                        default => $timesheets,
+                    };
+
+                    return View::make('print.csc')->viewData([
                         'preview' => true,
-                        'timesheets' => Timesheet::whereHas('employee', fn ($query) => $query->whereIn('id', $records->pluck('id')))
-                            ->whereDate('month', $data['month'].'-01')->get(),
+                        'timesheets' => $timesheets,
                     ]);
                 }
 
-                $month = $month = Carbon::parse($data['month']);
+                $from = Carbon::parse($data['from'])->startOfDay();
 
-                $from = $month->clone();
+                $to = Carbon::parse($data['to'])->endOfDay();
 
-                $to = $month->clone()->endOfMonth();
+                $timelogs = function ($query) use ($data, $from, $to) {
+                    if ($data['period'] === 'dates') {
+                        $query->where(function ($query) use ($data) {
+                            foreach ($data['dates'] as $date) {
+                                $query->orWhereDate('time', $date);
+                            }
+                        });
+                    } else {
+                        $query->whereBetween('time', [$from, $to]);
+                    }
+                };
 
-                $timelogs = fn ($query) => $query->whereBetween('time', [$from, $to]);
-
-                return View::make('print.default')->view('print.default', [
-                    'month' => $month,
-                    'from' => $from->day,
-                    'to' => $to->day,
-                    'employees' => $records->load(['timelogs' => $timelogs, 'timelogs.scanner', 'scanners']),
+                return View::make('print.default')->viewData([
                     'preview' => true,
+                    'month' => $month,
+                    'period' => $data['period'],
+                    'from' => $data['period'] !== 'dates' ? $from->day : null,
+                    'to' => $data['period'] !== 'dates' ? $to->day : null,
+                    'dates' => $data['period'] === 'dates' ? collect($data['dates'])->flatten()->sort()->values()->toArray() : null,
+                    'employees' => $records->load([
+                        'scanners',
+                        'timelogs.scanner',
+                        'timelogs' => $timelogs,
+                    ]),
                 ]);
             });
 
@@ -94,19 +132,7 @@ class ViewTimesheetAction extends BulkAction
 
             $this->icon('gmdi-document-scanner-o');
 
-            $this->form([
-                TextInput::make('month')
-                    ->markAsRequired()
-                    ->rule('required')
-                    ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m'))
-                    ->type('month'),
-                Select::make('format')
-                    ->live()
-                    ->placeholder('Print format')
-                    ->default('csc')
-                    ->required()
-                    ->options(['default' => 'Default format', 'csc' => 'CSC format']),
-            ]);
+            $this->form(app(ExportTimesheetAction::class, ['name' => 'ex'])->exportForm(preview: true));
 
             $this->action(fn ($records, $livewire) => $livewire->replaceMountedTableBulkAction('bulk-view-timesheet', $records->toArray()));
         }

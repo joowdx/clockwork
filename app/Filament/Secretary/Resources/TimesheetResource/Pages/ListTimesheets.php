@@ -5,6 +5,7 @@ namespace App\Filament\Secretary\Resources\TimesheetResource\Pages;
 use App\Filament\Secretary\Resources\TimesheetResource;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
@@ -30,7 +31,7 @@ class ListTimesheets extends ListRecords
                 ->modalDescription(function () {
                     $html = <<<'HTML'
                         <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                            Note: You can still override these settings when generating the timesheet.
+                            Note: You can still override these settings.
                         </span>
                     HTML;
 
@@ -52,7 +53,8 @@ class ListTimesheets extends ListRecords
                             '2nd' => 'Second half',
                             'regular' => 'Regular days',
                             'overtime' => 'Overtime work',
-                            'custom' => 'Custom range',
+                            'dates' => 'Custom dates',
+                            'range' => 'Custom range',
                         ])
                         ->disableOptionWhen(function (Get $get, ?string $value) {
                             if ($get('format') === 'csc') {
@@ -60,12 +62,12 @@ class ListTimesheets extends ListRecords
                             }
 
                             return match ($value) {
-                                'full', '1st', '2nd', 'custom' => false,
+                                'full', '1st', '2nd', 'dates', 'range' => false,
                                 default => true,
                             };
                         })
                         ->dehydrateStateUsing(function (Get $get, ?string $state) {
-                            if ($state !== 'custom') {
+                            if ($state !== 'range') {
                                 return $state;
                             }
 
@@ -74,7 +76,7 @@ class ListTimesheets extends ListRecords
                         ->in(fn (Select $component): array => array_keys($component->getEnabledOptions())),
                     DatePicker::make('from')
                         ->label('Start')
-                        ->visible(fn (Get $get) => $get('period') === 'custom')
+                        ->visible(fn (Get $get) => $get('period') === 'range')
                         ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d'))
                         ->validationAttribute('start')
                         ->minDate(fn (Get $get) => $get('month').'-01')
@@ -84,7 +86,7 @@ class ListTimesheets extends ListRecords
                         ->beforeOrEqual('to'),
                     DatePicker::make('to')
                         ->label('End')
-                        ->visible(fn (Get $get) => $get('period') === 'custom')
+                        ->visible(fn (Get $get) => $get('period') === 'range')
                         ->default(today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d'))
                         ->validationAttribute('end')
                         ->minDate(fn (Get $get) => $get('month').'-01')
@@ -92,6 +94,19 @@ class ListTimesheets extends ListRecords
                         ->required()
                         ->dehydrated(false)
                         ->afterOrEqual('from'),
+                    Repeater::make('dates')
+                        ->visible(fn (Get $get) => $get('period') === 'dates')
+                        ->dehydratedWhenHidden()
+                        ->required()
+                        ->reorderable(false)
+                        ->addActionLabel('Add a date')
+                        ->simple(
+                            DatePicker::make('date')
+                                ->minDate(fn (Get $get) => $get('../../month').'-01')
+                                ->maxDate(fn (Get $get) => Carbon::parse($get('../../month'))->endOfMonth())
+                                ->markAsRequired()
+                                ->rule('required')
+                        ),
                     Select::make('format')
                         ->live()
                         ->placeholder('Print format')

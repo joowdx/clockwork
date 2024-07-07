@@ -92,7 +92,18 @@ use App\Enums\TimelogMode;
                     <tr>
                         <td class="font-md bold bottom bahnschrift left">DATES</td>
                         <td colspan="4" class="uppercase font-md bottom consolas left">
-                            {{ str_pad($from, 2, 0, STR_PAD_LEFT) . " - " . str_pad($to, 2, 0, STR_PAD_LEFT) }}
+                            {{
+                                $period === 'dates'
+                                    ? (new \App\Helpers\NumberRangeCompressor)
+                                        (
+                                            collect($dates)
+                                                ->map(fn ($date) => \Carbon\Carbon::parse($date)->format('j'))
+                                                ->sort()
+                                                ->values()
+                                                ->toArray()
+                                        )
+                                    : "$from-$to"
+                            }}
                         </td>
                     </tr>
                     @if (in_array($size, ['folio', 'legal']))
@@ -118,6 +129,12 @@ use App\Enums\TimelogMode;
                         </td>
                     </tr>
                     @foreach ($month->range($month->format('Y-m-') . $month->daysInMonth) as $date)
+                        @continue(
+                            $period === 'dates'
+                                ? ! in_array($date->format('Y-m-d'), $dates)
+                                : $date->day < $from || $date->day > $to
+                        )
+
                         <tr @class(['underline', $preview ? 'font-mono' : 'courier']) style="border-color: #8888 !important; text-decoration: none;">
                             <td style="padding:3pt 0;">
                                 <span class="bold">

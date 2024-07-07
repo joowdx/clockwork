@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Helpers\NumberRangeCompressor;
 use App\Models\Group;
 use App\Models\Office;
 use App\Models\Scanner;
@@ -282,29 +283,7 @@ class ExportAttendance implements Responsable
                 ->map(function ($dates) {
                     $days = $dates->map(fn ($date) => $date->format('d'))->sort()->toArray();
 
-                    $formatted = [];
-                    $start = $days[0];
-                    $end = $days[0];
-
-                    for ($i = 1; $i < count($days); $i++) {
-                        if ($days[$i] == $end + 1) {
-                            $end = $days[$i];
-                        } else {
-                            if ($start == $end) {
-                                $formatted[] = $start;
-                            } else {
-                                $formatted[] = "$start-$end";
-                            }
-                            $start = $days[$i];
-                            $end = $days[$i];
-                        }
-                    }
-
-                    if ($start == $end) {
-                        $formatted[] = $start;
-                    } else {
-                        $formatted[] = "$start-$end";
-                    }
+                    $formatted = (new NumberRangeCompressor)($days);
 
                     return implode(', ', $formatted).' '.$dates->first()->format('F Y');
                 });

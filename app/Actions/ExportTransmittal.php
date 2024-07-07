@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
 use App\Models\Signature;
 use Closure;
@@ -215,9 +216,18 @@ class ExportTransmittal implements Responsable
             'from' => str_pad($from, 2, '0', STR_PAD_LEFT),
             'to' => str_pad($to, 2, '0', STR_PAD_LEFT),
             'groups' => $this->groups,
+            'period' => count($this->dates) > 0
+                ? (new NumberRangeCompressor)(
+                    collect($this->dates)
+                        ->map(fn ($date) => Carbon::parse($date)->format('j'))
+                        ->sort()
+                        ->values()
+                        ->toArray()
+                )
+                : null,
         ];
 
-        $export = Pdf::view('print.transmittal.csc-default', [...$args, 'signed' => (bool) $this->password, 'dates' => empty($this->dates) ? null : $this->formatted()])
+        $export = Pdf::view('print.transmittal.csc-default', [...$args, 'signed' => (bool) $this->password])
             ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
@@ -247,37 +257,6 @@ class ExportTransmittal implements Responsable
         }
     }
 
-    protected function formatted(): string
-    {
-        $days = collect($this->dates)->map(fn ($date) => Carbon::parse($date)->format('j'))->sort()->values()->toArray();
-
-        $formatted = [];
-        $start = $days[0];
-        $end = $days[0];
-
-        for ($i = 1; $i < count($days); $i++) {
-            if ($days[$i] == $end + 1) {
-                $end = $days[$i];
-            } else {
-                if ($start == $end) {
-                    $formatted[] = $start;
-                } else {
-                    $formatted[] = "$start-$end";
-                }
-                $start = $days[$i];
-                $end = $days[$i];
-            }
-        }
-
-        if ($start == $end) {
-            $formatted[] = $start;
-        } else {
-            $formatted[] = "$start-$end";
-        }
-
-        return implode(',', $formatted).' '.$this->month->format('F Y');
-    }
-
     protected function filename(): string
     {
         $prefix = 'Transmittal '.$this->month->format('Y-m ').match ($this->period) {
@@ -286,7 +265,7 @@ class ExportTransmittal implements Responsable
             '2nd' => '(Second half)',
             'overtime' => '(Overtime Work)',
             'regular' => '(Regular Days)',
-            'dates' => $this->formatted(),
+            'dates' => (new NumberRangeCompressor)(collect($this->dates)->map(fn ($date) => Carbon::parse($date)->format('j'))->values()->toArray()),
             default => '('.str($this->period)->replace('custom|', '').')',
         };
 

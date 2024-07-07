@@ -113,93 +113,9 @@ class ExportTimesheetAction extends BulkAction
         }
     }
 
-    public function exportForm(): array
+    public function exportForm(bool $preview = false): array
     {
-        return [
-            // Checkbox::make('individual')
-            //     ->hintIcon('heroicon-o-question-mark-circle')
-            //     ->hintIconTooltip('Export employee timesheet separately generating multiple files to be downloaded as an archive. However, this requires more processing time and to prevent server overload or request timeouts, please select no more than 25 records.')
-            //     ->rule(fn (HasTable $livewire) => function ($attribute, $value, $fail) use ($livewire) {
-            //         if ($value && count($livewire->selectedTableRecords) > 25) {
-            //             $fail('Please select less than 25 records when exporting individually.');
-            //         }
-            //     }),
-            TextInput::make('month')
-                ->live()
-                ->default(fn ($livewire) => $livewire->filters['month'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m')))
-                ->type('month')
-                ->required(),
-            Select::make('period')
-                ->default(fn ($livewire) => $livewire->filters['period'] ?? (today()->day > 15 ? '1st' : 'full'))
-                ->required()
-                ->live()
-                ->options([
-                    'full' => 'Full month',
-                    '1st' => 'First half',
-                    '2nd' => 'Second half',
-                    'regular' => 'Regular days',
-                    'overtime' => 'Overtime work',
-                    'dates' => 'Custom dates',
-                    'range' => 'Custom range',
-                ])
-                ->disableOptionWhen(function (Get $get, ?string $value) {
-                    if ($get('format') === 'csc') {
-                        return false;
-                    }
-
-                    return match ($value) {
-                        'full', '1st', '2nd', 'range' => false,
-                        default => true,
-                    };
-                })
-                ->dehydrateStateUsing(function (Get $get, ?string $state) {
-                    if ($state !== 'range') {
-                        return $state;
-                    }
-
-                    return $state.'|'.date('d', strtotime($get('from'))).'-'.date('d', strtotime($get('to')));
-                })
-                ->in(fn (Select $component): array => array_keys($component->getEnabledOptions())),
-            DatePicker::make('from')
-                ->label('Start')
-                ->visible(fn (Get $get) => $get('period') === 'range')
-                ->default(fn ($livewire) => $livewire->filters['from'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d')))
-                ->validationAttribute('start')
-                ->minDate(fn (Get $get) => $get('month').'-01')
-                ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
-                ->required()
-                ->dehydrated(false)
-                ->beforeOrEqual('to'),
-            DatePicker::make('to')
-                ->label('End')
-                ->visible(fn (Get $get) => $get('period') === 'range')
-                ->default(fn ($livewire) => $livewire->filters['to'] ?? (today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d')))
-                ->validationAttribute('end')
-                ->minDate(fn (Get $get) => $get('month').'-01')
-                ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
-                ->required()
-                ->dehydrated(false)
-                ->afterOrEqual('from'),
-            Repeater::make('dates')
-                ->visible(fn (Get $get) => $get('period') === 'dates')
-                ->dehydratedWhenHidden()
-                ->required()
-                ->reorderable(false)
-                ->simple(
-                    DatePicker::make('date')
-                        ->minDate(fn (Get $get) => $get('../../month').'-01')
-                        ->maxDate(fn (Get $get) => Carbon::parse($get('../../month'))->endOfMonth())
-                        ->markAsRequired()
-                        ->rule('required')
-                ),
-            Select::make('format')
-                ->live()
-                ->placeholder('Print format')
-                ->default(fn ($livewire) => $livewire->filters['format'] ?? 'csc')
-                ->required()
-                ->options(['default' => 'Default format', 'csc' => 'CSC format'])
-                ->hintIcon('heroicon-o-question-mark-circle')
-                ->hintIconTooltip('Employees with no timesheet data for the selected period are not included in the timesheet export when using the CSC format.'),
+        $config = [
             Select::make('size')
                 ->live()
                 ->placeholder('Paper Size')
@@ -249,7 +165,99 @@ class ExportTimesheetAction extends BulkAction
                     if (! auth()->user()->signature->verify($value)) {
                         $fail('The password is incorrect');
                     }
-                }),
+                })
         ];
+
+        $forms = [
+            // Checkbox::make('individual')
+            //     ->hintIcon('heroicon-o-question-mark-circle')
+            //     ->hintIconTooltip('Export employee timesheet separately generating multiple files to be downloaded as an archive. However, this requires more processing time and to prevent server overload or request timeouts, please select no more than 25 records.')
+            //     ->rule(fn (HasTable $livewire) => function ($attribute, $value, $fail) use ($livewire) {
+            //         if ($value && count($livewire->selectedTableRecords) > 25) {
+            //             $fail('Please select less than 25 records when exporting individually.');
+            //         }
+            //     }),
+            TextInput::make('month')
+                ->live()
+                ->default(fn ($livewire) => $livewire->filters['month'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m')))
+                ->type('month')
+                ->required(),
+            Select::make('period')
+                ->default(fn ($livewire) => $livewire->filters['period'] ?? (today()->day > 15 ? '1st' : 'full'))
+                ->required()
+                ->live()
+                ->options([
+                    'full' => 'Full month',
+                    '1st' => 'First half',
+                    '2nd' => 'Second half',
+                    'regular' => 'Regular days',
+                    'overtime' => 'Overtime work',
+                    'dates' => 'Custom dates',
+                    'range' => 'Custom range',
+                ])
+                ->disableOptionWhen(function (Get $get, ?string $value) {
+                    if ($get('format') === 'csc') {
+                        return false;
+                    }
+
+                    return match ($value) {
+                        'full', '1st', '2nd', 'dates', 'range' => false,
+                        default => true,
+                    };
+                })
+                ->dehydrateStateUsing(function (Get $get, ?string $state) {
+                    if ($state !== 'range') {
+                        return $state;
+                    }
+
+                    return $state.'|'.date('d', strtotime($get('from'))).'-'.date('d', strtotime($get('to')));
+                })
+                ->in(fn (Select $component): array => array_keys($component->getEnabledOptions())),
+            DatePicker::make('from')
+                ->label('Start')
+                ->visible(fn (Get $get) => $get('period') === 'range')
+                ->default(fn ($livewire) => $livewire->filters['from'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d')))
+                ->validationAttribute('start')
+                ->minDate(fn (Get $get) => $get('month').'-01')
+                ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
+                ->markAsRequired()
+                ->rule('required')
+                ->dehydrated(false)
+                ->beforeOrEqual('to'),
+            DatePicker::make('to')
+                ->label('End')
+                ->visible(fn (Get $get) => $get('period') === 'range')
+                ->default(fn ($livewire) => $livewire->filters['to'] ?? (today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d')))
+                ->validationAttribute('end')
+                ->minDate(fn (Get $get) => $get('month').'-01')
+                ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
+                ->markAsRequired()
+                ->rule('required')
+                ->dehydrated(false)
+                ->afterOrEqual('from'),
+            Repeater::make('dates')
+                ->visible(fn (Get $get) => $get('period') === 'dates')
+                ->default(fn ($livewire) => $livewire->filters['dates'] ?? [])
+                ->required()
+                ->reorderable(false)
+                ->addActionLabel('Add a date')
+                ->simple(
+                    DatePicker::make('date')
+                        ->minDate(fn (Get $get) => $get('../../month').'-01')
+                        ->maxDate(fn (Get $get) => Carbon::parse($get('../../month'))->endOfMonth())
+                        ->markAsRequired()
+                        ->rule('required')
+                ),
+            Select::make('format')
+                ->live()
+                ->placeholder('Print format')
+                ->default(fn ($livewire) => $livewire->filters['format'] ?? 'csc')
+                ->required()
+                ->options(['default' => 'Default format', 'csc' => 'CSC format'])
+                ->hintIcon('heroicon-o-question-mark-circle')
+                ->hintIconTooltip('Employees with no timesheet data for the selected period are not included in the timesheet export when using the CSC format.'),
+        ];
+
+        return $preview ? $forms : [...$forms, ...$config];
     }
 }

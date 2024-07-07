@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
 use App\Models\Signature;
 use App\Models\Timesheet;
@@ -301,7 +302,7 @@ class ExportTimesheet implements Responsable
 
             if ($period === 'range') {
                 [$from, $to] = explode('-', $range, 2);
-            } else {
+            } elseif($period !== 'dates') {
                 $from = match ($period) {
                     '2nd' => 16,
                     default => 1,
@@ -318,8 +319,11 @@ class ExportTimesheet implements Responsable
                 'size' => $this->size,
                 'signature' => $this->signature,
                 'month' => $this->month,
-                'from' => str_pad($from, 2, '0', STR_PAD_LEFT),
-                'to' => str_pad($to, 2, '0', STR_PAD_LEFT),
+                'dates' => $this->dates,
+                'from' => $period !== 'dates' ? $from : null,
+                'to' => $period !== 'dates' ? $to : null,
+                'dates' => $period === 'dates' ? $this->dates : null,
+                'period' => $period,
             ];
         }
 
@@ -361,6 +365,7 @@ class ExportTimesheet implements Responsable
             '2nd' => '(Second half)',
             'overtime' => '(Overtime Work)',
             'regular' => '(Regular Days)',
+            'dates' => (new NumberRangeCompressor)(collect($this->dates)->map(fn ($date) => Carbon::parse($date)->format('j'))->values()->toArray()),
             default => '('.str($this->period)->replace('range|', '').')',
         };
 

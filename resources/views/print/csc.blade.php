@@ -237,7 +237,7 @@
                                         </td>
                                     @endif
                                 </tr>
-                            @else
+                            @elseif(!$preview)
                                 <tr>
                                     <td class="border right courier bold font-sm"
                                         style="padding-right:14pt;padding-top:1pt;"

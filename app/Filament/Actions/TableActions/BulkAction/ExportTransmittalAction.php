@@ -182,9 +182,11 @@ class ExportTransmittalAction extends BulkAction
                 ->afterOrEqual('from'),
             Repeater::make('dates')
                 ->visible(fn (Get $get) => $get('period') === 'dates')
+                ->default(fn ($livewire) => $livewire->filters['dates'] ?? [])
                 ->dehydratedWhenHidden()
                 ->required()
                 ->reorderable(false)
+                ->addActionLabel('Add a date')
                 ->simple(
                     DatePicker::make('date')
                         ->minDate(fn (Get $get) => $get('../../month').'-01')
