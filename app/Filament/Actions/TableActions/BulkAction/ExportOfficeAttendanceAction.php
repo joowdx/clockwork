@@ -94,7 +94,7 @@ class ExportOfficeAttendanceAction extends BulkAction
                 ->size($data['size'])
                 ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
                 ->password($data['digital_signature'] ? $data['password'] : null)
-                ->transmittal($this->transmittal)
+                ->transmittal($this->transmittal ? true : ($data['transmittal'] ?? false))
                 ->download();
         } catch (ProcessFailedException $exception) {
             $message = $office instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$office->name}'s timesheet";
@@ -141,16 +141,28 @@ class ExportOfficeAttendanceAction extends BulkAction
                 ->options(Scanner::whereNotNull('uid')->orderBy('name')->pluck('name', 'uid')->toArray())
                 ->dehydrateStateUsing(fn ($state) => Scanner::whereIn('uid', $state)->orderBy('name')->get())
                 ->preload(),
-            Select::make('size')
-                ->live()
-                ->placeholder('Paper Size')
-                ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
-                ->required()
-                ->options([
-                    'a4' => 'A4 (210mm x 297mm)',
-                    'letter' => 'Letter (216mm x 279mm)',
-                    'folio' => 'Folio (216mm x 330mm)',
-                    'legal' => 'Legal (216mm x 356mm)',
+            Group::make()
+                ->columns($this->transmittal ? 1 : 2)
+                ->schema([
+                    Select::make('transmittal')
+                        ->hidden($this->transmittal)
+                        ->live()
+                        ->default(0)
+                        ->options([0, 1, 2, 3, 5])
+                        ->in([0, 1, 2, 3, 5])
+                        ->hintIcon('heroicon-o-question-mark-circle')
+                        ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
+                    Select::make('size')
+                        ->live()
+                        ->placeholder('Paper Size')
+                        ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
+                        ->required()
+                        ->options([
+                            'a4' => 'A4 (210mm x 297mm)',
+                            'letter' => 'Letter (216mm x 279mm)',
+                            'folio' => 'Folio (216mm x 330mm)',
+                            'legal' => 'Legal (216mm x 356mm)',
+                        ]),
                 ]),
             Group::make()
                 ->columns(2)
@@ -177,7 +189,7 @@ class ExportOfficeAttendanceAction extends BulkAction
             Checkbox::make('strict')
                 ->label('Strict listing')
                 ->hintIcon('heroicon-o-no-symbol')
-                ->hintIconTooltip('When checked, filters out all employees who do not have a record on the selected date.')
+                ->hintIconTooltip('When checked, filters out all employees who do not have a record on the selected date. This might produce a blank page.')
                 ->default(true),
             Checkbox::make('electronic_signature')
                 ->hintIcon('heroicon-o-check-badge')

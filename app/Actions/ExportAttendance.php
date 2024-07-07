@@ -18,9 +18,12 @@ use LSNepomuceno\LaravelA1PdfSign\Sign\SignaturePdf;
 use SensitiveParameter;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
+use Spatie\LaravelPdf\PdfBuilder;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
+use Webklex\PDFMerger\Facades\PDFMergerFacade;
+use Webklex\PDFMerger\PDFMerger;
 
 class ExportAttendance implements Responsable
 {
@@ -48,7 +51,7 @@ class ExportAttendance implements Responsable
 
     private bool $strict = false;
 
-    private bool $transmittal = false;
+    private bool|int|null $transmittal = false;
 
     private string $size = 'folio';
 
@@ -191,7 +194,7 @@ class ExportAttendance implements Responsable
         return $this;
     }
 
-    public function transmittal(bool $transmittal = false): static
+    public function transmittal(bool|int|null $transmittal = false): static
     {
         $this->transmittal = $transmittal;
 
@@ -246,9 +249,9 @@ class ExportAttendance implements Responsable
         }
     }
 
-    protected function pdf(bool $base64 = true)
+    protected function pdf(bool $base64 = true): PdfBuilder|PDFMerger|string
     {
-        $pdf = Pdf::view($this->transmittal ? 'print.transmittal.attendance' : 'print.attendance', [
+        $args = [
             'offices' => $this->office,
             'dates' => $this->dates,
             'from' => $this->from,
@@ -262,16 +265,39 @@ class ExportAttendance implements Responsable
             'signature' => $this->signature,
             'signed' => (bool) $this->password,
             'size' => $this->size,
-        ]);
+        ];
 
-        $pdf->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
+        $attendance = Pdf::view($this->transmittal === true ? 'print.transmittal.attendance' : 'print.attendance', $args)
+            ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
-            'folio' => $pdf->paperSize(8.5, 13, 'in'),
-            default => $pdf->format($this->size),
+            'folio' => $attendance->paperSize(8.5, 13, 'in'),
+            default => $attendance->format($this->size),
         };
 
-        return $base64 ? base64_decode($pdf->base64()) : $pdf;
+        if (is_numeric($this->transmittal) && $this->transmittal > 0) {
+            $transmittal = Pdf::view('print.transmittal.attendance', [...$args, 'copies' => $this->transmittal])
+                ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
+
+            match ($this->size) {
+                'folio' => $transmittal->paperSize(8.5, 13, 'in'),
+                default => $transmittal->format($this->size),
+            };
+
+            $merger = PDFMergerFacade::init();
+
+            if (! is_dir(storage_path('tmp'))) {
+                mkdir(storage_path('tmp'));
+            }
+
+            $merger->addString(base64_decode($transmittal->base64()), 'all')->addString(base64_decode($attendance->base64()), 'all');
+
+            $merger->merge();
+
+            return $base64 ? $merger->output() : $merger;
+        }
+
+        return $base64 ? base64_decode($attendance->base64()) : $attendance;
     }
 
     protected function filename(): string

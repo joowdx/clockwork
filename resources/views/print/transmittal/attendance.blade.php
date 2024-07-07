@@ -10,8 +10,6 @@
 
 @php($pagination = match($size) { 'folio' => 40, 'legal' => 45, default => 30 } * 3)
 
-
-
 @php($dates ??= [])
 
 @php($from ??= null)
@@ -25,9 +23,11 @@
 @php($states ??= [])
 
 @php($filter = function (&$query, $filter = false) use ($dates, $from, $to, $modes, $scanners, $states) {
-    foreach ($dates as $date) {
-        $query->whereDate('time', $date);
-    }
+    $query->where(function ($query) use ($dates) {
+        foreach ($dates as $date) {
+            $query->orWhereDate('timelogs.time', $date);
+        }
+    });
 
     $query->when($from, fn ($q) => $q->whereTime('time', '>=', $from));
 
@@ -60,31 +60,15 @@
         ->map(function ($dates) {
             $days = $dates->map(fn ($date) => $date->format('d'))->sort()->toArray();
 
-            $formatted = [];
-            $start = $days[0];
-            $end = $days[0];
+            $formatted = (new \App\Helpers\NumberRangeCompressor)(
+                collect($dates)
+                    ->map(fn ($date) => \Carbon\Carbon::parse($date)->format('j'))
+                    ->sort()
+                    ->values()
+                    ->toArray()
+            );
 
-            for ($i = 1; $i < count($days); $i++) {
-                if ($days[$i] == $end + 1) {
-                    $end = $days[$i];
-                } else {
-                    if ($start == $end) {
-                        $formatted[] = $start;
-                    } else {
-                        $formatted[] = "$start-$end";
-                    }
-                    $start = $days[$i];
-                    $end = $days[$i];
-                }
-            }
-
-            if ($start == $end) {
-                $formatted[] = $start;
-            } else {
-                $formatted[] = "$start-$end";
-            }
-
-            return implode(', ', $formatted) . ' ' . $dates->first()->format('F Y');
+            return $formatted . ' ' . $dates->first()->format('F Y');
         });
 
     return $formatted->join(', ', $formatted->count() > 2 ? ', and ' : ' and ');
