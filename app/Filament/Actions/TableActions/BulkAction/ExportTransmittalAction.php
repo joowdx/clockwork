@@ -148,7 +148,7 @@ class ExportTransmittalAction extends BulkAction
                     }
 
                     return match ($value) {
-                        'full', '1st', '2nd', 'range' => false,
+                        'full', '1st', '2nd', 'dates', 'range' => false,
                         default => true,
                     };
                 })
@@ -183,7 +183,6 @@ class ExportTransmittalAction extends BulkAction
             Repeater::make('dates')
                 ->visible(fn (Get $get) => $get('period') === 'dates')
                 ->default(fn ($livewire) => $livewire->filters['dates'] ?? [])
-                ->dehydratedWhenHidden()
                 ->required()
                 ->reorderable(false)
                 ->addActionLabel('Add a date')

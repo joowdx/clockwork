@@ -185,7 +185,7 @@ class ExportTransmittal implements Responsable
     {
         @[$period, $range] = explode('|', $this->period, 2);
 
-        if ($period === 'custom') {
+        if ($period === 'range') {
             [$from, $to] = explode('-', $range, 2);
         } else {
             $from = match ($period) {
@@ -213,18 +213,11 @@ class ExportTransmittal implements Responsable
             'size' => $this->size,
             'signature' => $this->signature,
             'month' => $this->month,
-            'from' => str_pad($from, 2, '0', STR_PAD_LEFT),
-            'to' => str_pad($to, 2, '0', STR_PAD_LEFT),
-            'groups' => $this->groups,
-            'period' => count($this->dates) > 0
-                ? (new NumberRangeCompressor)(
-                    collect($this->dates)
-                        ->map(fn ($date) => Carbon::parse($date)->format('j'))
-                        ->sort()
-                        ->values()
-                        ->toArray()
-                )
-                : null,
+            'from' => $period !== 'dates' ? $from : null,
+            'to' => $period !== 'dates' ? $to : null,
+            'dates' => $period === 'dates' ? $this->dates : null,
+            'period' => $period,
+            'format' => $this->format,
         ];
 
         $export = Pdf::view('print.transmittal.csc-default', [...$args, 'signed' => (bool) $this->password])

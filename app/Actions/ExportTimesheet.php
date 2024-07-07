@@ -21,6 +21,8 @@ use Spatie\LaravelPdf\Facades\Pdf;
 use Spatie\LaravelPdf\PdfBuilder;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Webklex\PDFMerger\Facades\PDFMergerFacade;
+use Webklex\PDFMerger\PDFMerger;
 use ZipArchive;
 
 use function Safe\tmpfile;
@@ -42,6 +44,10 @@ class ExportTimesheet implements Responsable
     private string $format = 'csc';
 
     private string $size = 'folio';
+
+    private int $transmittal = 0;
+
+    private false|string|null $grouping = 'offices';
 
     private bool $individual = false;
 
@@ -68,6 +74,8 @@ class ExportTimesheet implements Responsable
         array $dates = [],
         string $format = 'csc',
         string $size = 'folio',
+        int $transmittal = 0,
+        false|string|null $grouping = 'offices',
         ?Signature $signature = null,
         #[SensitiveParameter]
         ?string $password = null,
@@ -78,6 +86,8 @@ class ExportTimesheet implements Responsable
             ->dates($dates)
             ->format($format)
             ->size($size)
+            ->transmittal($transmittal)
+            ->grouping($grouping)
             ->signature($signature)
             ->password($password)
             ->download();
@@ -164,6 +174,20 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
+    public function transmittal(int $transmittal = 0): static
+    {
+        $this->transmittal = $transmittal;
+
+        return $this;
+    }
+
+    public function grouping(false|string|null $grouping = 'offices'): static
+    {
+        $this->grouping = $grouping === '0' ? false : $grouping;
+
+        return $this;
+    }
+
     public function download(): BinaryFileResponse|StreamedResponse
     {
         if (! $this->signature && ! is_null($this->password)) {
@@ -222,6 +246,10 @@ class ExportTimesheet implements Responsable
             default => $timesheets,
         };
 
+        if ($this->transmittal > 0 && $this->grouping !== false) { //grouping only available to office
+            $timesheets = $timesheets->groupBy(fn ($timesheet) => $timesheet->employee->offices->pluck('code')->toArray())->flatten();
+        }
+
         return match ($this->individual) {
             true => $this->exportAsZip($timesheets),
             default => $this->exportAsPdf($timesheets),
@@ -272,14 +300,31 @@ class ExportTimesheet implements Responsable
         $headers = ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 
         $downloadable = match ($this->password) {
-            null => $this->pdf($exportable), default => $this->signed($exportable)
+            null => $this->pdf($exportable),
+            default => $this->signed($exportable),
         };
 
         return response()->streamDownload(fn () => print ($downloadable), $name, $headers);
     }
 
-    protected function pdf(?iterable $exportable, bool $base64 = true): PdfBuilder|string
+    protected function pdf(?iterable $exportable, bool $base64 = true): PdfBuilder|PDFMerger|string
     {
+        @[$period, $range] = explode('|', $this->period, 2);
+
+        if ($period === 'range') {
+            [$from, $to] = explode('-', $range, 2);
+        } elseif ($period !== 'dates') {
+            $from = match ($period) {
+                '2nd' => 16,
+                default => 1,
+            };
+
+            $to = match ($period) {
+                '1st' => 15,
+                default => $this->month->daysInMonth,
+            };
+        }
+
         if ($this->format === 'csc') {
             $args = [
                 'timesheets' => $exportable,
@@ -298,28 +343,11 @@ class ExportTimesheet implements Responsable
                 },
             };
 
-            @[$period, $range] = explode('|', $this->period, 2);
-
-            if ($period === 'range') {
-                [$from, $to] = explode('-', $range, 2);
-            } elseif($period !== 'dates') {
-                $from = match ($period) {
-                    '2nd' => 16,
-                    default => 1,
-                };
-
-                $to = match ($period) {
-                    '1st' => 15,
-                    default => $this->month->daysInMonth,
-                };
-            }
-
             $args = [
                 'employees' => $employees,
                 'size' => $this->size,
                 'signature' => $this->signature,
                 'month' => $this->month,
-                'dates' => $this->dates,
                 'from' => $period !== 'dates' ? $from : null,
                 'to' => $period !== 'dates' ? $to : null,
                 'dates' => $period === 'dates' ? $this->dates : null,
@@ -334,6 +362,41 @@ class ExportTimesheet implements Responsable
             'folio' => $export->paperSize(8.5, 13, 'in'),
             default => $export->format($this->size),
         };
+
+        if ($this->transmittal) {
+            $transmittal = Pdf::view('print.transmittal.csc-default', [
+                ...$args,
+                'format' => $this->format,
+                'copies' => $this->transmittal,
+                'signed' => (bool) $this->password,
+                'month' => $this->month,
+                'from' => $args['from'] ?? $from ?? null,
+                'to' => $args['to'] ?? $to ?? null,
+                'dates' => $args['dates'] ?? $this->dates,
+                'period' => $args['period'] ?? $period,
+                'employees' => $this->format === 'csc'
+                    ? EloquentCollection::make(collect($exportable)->pluck('employee'))
+                    : $args['employees'],
+            ])
+                ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
+
+            match ($this->size) {
+                'folio' => $transmittal->paperSize(8.5, 13, 'in'),
+                default => $transmittal->format($this->size),
+            };
+
+            $merger = PDFMergerFacade::init();
+
+            if (! is_dir(storage_path('tmp'))) {
+                mkdir(storage_path('tmp'));
+            }
+
+            $merger->addString(base64_decode($transmittal->base64()), 'all')->addString(base64_decode($export->base64()), 'all');
+
+            $merger->merge();
+
+            return $base64 ? $merger->output() : $merger;
+        }
 
         return $base64 ? base64_decode($export->base64()) : $export;
     }

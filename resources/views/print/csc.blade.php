@@ -92,7 +92,7 @@
                                 For the month of:
                             </td>
                             <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
-                                {{ $timesheet->period }}
+                                {{ trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y') }}
                                 @if ($timesheet->getPeriod() === 'overtimeWork')
                                     (OT)
                                 @endif
@@ -126,7 +126,7 @@
                             <td class="border center middle courier" rowspan=2 height=42 width=58>DAY</td>
                             <td class="border center middle courier" colspan=2 width=116>AM</td>
                             <td class="border center middle courier" colspan=2 width=116>PM</td>
-                            @if ($timesheet->getPeriod() === 'overtimeWork')
+                            @if (!$preview && $timesheet->getPeriod() === 'overtimeWork')
                                 <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
                             @else
                                 <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>

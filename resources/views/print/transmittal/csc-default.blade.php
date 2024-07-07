@@ -6,16 +6,21 @@
 
 @php($grouping ??= empty($groups) ? 'offices' : 'groups')
 
-@php($grouper = fn ($employee) => $employee->$grouping->pluck($grouping === 'groups' ? 'name' : 'code')->toArray())
+@php($grouper = fn ($employee) => $grouping === false ? $employee : $employee->$grouping->pluck($grouping === 'groups' ? 'name' : 'code')->toArray())
 
 @php($pagination = match($size) { 'folio' => 40, 'legal' => 45, default => 30 } * 3)
 
 @section('content')
-    @foreach ($employees->loadMissing('office')->sortBy('full_name')->groupBy($grouper)->sortKeys() as $group => $employees)
+    @foreach (
+        $grouping === false
+            ? $employees->sortBy('full_name')->chunk($employees->count())->sortKeys()->map->unique()
+            : $employees->loadMissing('office')->sortBy('full_name')->groupBy($grouper)->sortKeys()->map->unique()
+        as $group => $employees
+    )
         @continue($grouping === 'groups' && ! in_array($group, $groups ?? []))
 
         @php(
-            $reciever = (str($grouping)->prepend('App\Models\\')->title()->singular()->toString())::query()
+            $reciever = $grouping === false ? null : (str($grouping)->prepend('App\Models\\')->title()->singular()->toString())::query()
                 ->where($grouping === 'offices' ? 'code' : 'name', $group)
                 ->first()
         )
@@ -96,12 +101,21 @@
                                                 Subject:
                                             </p>
                                             <p class="italic" style="text-decoration:underline;text-underline-offset:2pt;margin:0;">
-                                                Daily time record printouts for
-                                                <span class="bold" style="text-transform: capitalize">{{ $reciever->name }}</span>
+                                                Daily time record printouts {{ $format === 'csc' ? '(CSC Form 48)' : '(default form)' }}
+                                                {{ $reciever ? 'for' : '' }}
+                                                <span class="bold" style="text-transform: capitalize">{{ $reciever?->name }}</span>
                                                 @if (isset($dates))
                                                     for the dates
                                                     <span class="bold nowrap">
-                                                        {{ $dates }}
+                                                        {{
+                                                            (new \App\Helpers\NumberRangeCompressor)(
+                                                                collect($dates)
+                                                                    ->map(fn ($date) => \Carbon\Carbon::parse($date)->format('j'))
+                                                                    ->sort()
+                                                                    ->values()
+                                                                    ->toArray()
+                                                            ) . ' ' .$month->format('F Y')
+                                                        }}
                                                     </span>
                                                 @else
                                                     for the month of
@@ -121,7 +135,7 @@
                                 @endif
                                 <tr>
                                     <td rowspan="2" colspan="10" style="padding:0 1rem;text-indent:2rem;" class="arial">
-                                        Attached herewith are the daily time record printouts of the committed employees of this office, to wit:
+                                        Attached herewith are the daily time record printouts of the committed employees of this {{ $grouping === false ? 'agency' : 'office' }}, to wit:
                                     </td>
                                 </tr>
                                 <tr></tr>

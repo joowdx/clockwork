@@ -7,6 +7,7 @@ use App\Models\Employee;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -48,6 +49,8 @@ class ExportTimesheetAction extends BulkAction
         $this->modalDescription($this->exportConfirmation());
 
         $this->modalIcon('heroicon-o-document-arrow-down');
+
+        $this->closeModalByClickingAway(false);
 
         $this->form($this->exportForm());
 
@@ -91,6 +94,8 @@ class ExportTimesheetAction extends BulkAction
                 ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
                 ->password($data['digital_signature'] ? $data['password'] : null)
                 ->individual($data['individual'] ?? false)
+                ->transmittal($data['transmittal'] ?? 0)
+                ->grouping($data['grouping'] ?? false)
                 ->download();
         } catch (ProcessFailedException $exception) {
             $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";
@@ -117,6 +122,7 @@ class ExportTimesheetAction extends BulkAction
     {
         $config = [
             Select::make('size')
+                ->visible($preview)
                 ->live()
                 ->placeholder('Paper Size')
                 ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
@@ -165,7 +171,7 @@ class ExportTimesheetAction extends BulkAction
                     if (! auth()->user()->signature->verify($value)) {
                         $fail('The password is incorrect');
                     }
-                })
+                }),
         ];
 
         $forms = [
@@ -213,34 +219,38 @@ class ExportTimesheetAction extends BulkAction
                     return $state.'|'.date('d', strtotime($get('from'))).'-'.date('d', strtotime($get('to')));
                 })
                 ->in(fn (Select $component): array => array_keys($component->getEnabledOptions())),
-            DatePicker::make('from')
-                ->label('Start')
+            Group::make()
+                ->columns(2)
                 ->visible(fn (Get $get) => $get('period') === 'range')
-                ->default(fn ($livewire) => $livewire->filters['from'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d')))
-                ->validationAttribute('start')
-                ->minDate(fn (Get $get) => $get('month').'-01')
-                ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
-                ->markAsRequired()
-                ->rule('required')
-                ->dehydrated(false)
-                ->beforeOrEqual('to'),
-            DatePicker::make('to')
-                ->label('End')
-                ->visible(fn (Get $get) => $get('period') === 'range')
-                ->default(fn ($livewire) => $livewire->filters['to'] ?? (today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d')))
-                ->validationAttribute('end')
-                ->minDate(fn (Get $get) => $get('month').'-01')
-                ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
-                ->markAsRequired()
-                ->rule('required')
-                ->dehydrated(false)
-                ->afterOrEqual('from'),
+                ->schema([
+                    DatePicker::make('from')
+                        ->label('Start')
+                        ->default(fn ($livewire) => $livewire->filters['from'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m-d') : today()->subMonth()->startOfMonth()->format('Y-m-d')))
+                        ->validationAttribute('start')
+                        ->minDate(fn (Get $get) => $get('month').'-01')
+                        ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
+                        ->markAsRequired()
+                        ->rule('required')
+                        ->dehydrated(false)
+                        ->beforeOrEqual('to'),
+                    DatePicker::make('to')
+                        ->label('End')
+                        ->default(fn ($livewire) => $livewire->filters['to'] ?? (today()->day > 15 ? today()->endOfMonth()->format('Y-m-d') : today()->subMonth()->setDay(15)->format('Y-m-d')))
+                        ->validationAttribute('end')
+                        ->minDate(fn (Get $get) => $get('month').'-01')
+                        ->maxDate(fn (Get $get) => Carbon::parse($get('month'))->endOfMonth())
+                        ->markAsRequired()
+                        ->rule('required')
+                        ->dehydrated(false)
+                        ->afterOrEqual('from'),
+                ]),
             Repeater::make('dates')
                 ->visible(fn (Get $get) => $get('period') === 'dates')
                 ->default(fn ($livewire) => $livewire->filters['dates'] ?? [])
                 ->required()
                 ->reorderable(false)
                 ->addActionLabel('Add a date')
+                ->grid(2)
                 ->simple(
                     DatePicker::make('date')
                         ->minDate(fn (Get $get) => $get('../../month').'-01')
@@ -248,14 +258,54 @@ class ExportTimesheetAction extends BulkAction
                         ->markAsRequired()
                         ->rule('required')
                 ),
-            Select::make('format')
-                ->live()
-                ->placeholder('Print format')
-                ->default(fn ($livewire) => $livewire->filters['format'] ?? 'csc')
-                ->required()
-                ->options(['default' => 'Default format', 'csc' => 'CSC format'])
-                ->hintIcon('heroicon-o-question-mark-circle')
-                ->hintIconTooltip('Employees with no timesheet data for the selected period are not included in the timesheet export when using the CSC format.'),
+            Group::make()
+                ->columns($preview ? 1 : 2)
+                ->schema([
+                    Select::make('format')
+                        ->live()
+                        ->placeholder('Print format')
+                        ->default(fn ($livewire) => $livewire->filters['format'] ?? 'csc')
+                        ->required()
+                        ->options(['default' => 'Default format', 'csc' => 'CSC format'])
+                        ->hintIcon('heroicon-o-question-mark-circle')
+                        ->hintIconTooltip('Employees with no timesheet data for the selected period are not included in the timesheet export when using the CSC format.'),
+                    Select::make('size')
+                        ->visible(! $preview)
+                        ->live()
+                        ->placeholder('Paper Size')
+                        ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
+                        ->required()
+                        ->options([
+                            'a4' => 'A4',
+                            'letter' => 'Letter',
+                            'folio' => 'Folio',
+                            'legal' => 'Legal',
+                        ]),
+                ]),
+            Group::make()
+                ->columns(2)
+                ->visible(! $preview)
+                ->schema([
+                    Select::make('transmittal')
+                        ->live()
+                        ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
+                        ->options([0, 1, 2, 3, 5])
+                        ->in([0, 1, 2, 3, 5])
+                        ->hintIcon('heroicon-o-question-mark-circle')
+                        ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
+                    Select::make('grouping')
+                        ->disabled(fn (Get $get) => $get('transmittal') <= 0)
+                        ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
+                        ->options([
+                            'offices' => 'Office',
+                            false => 'None',
+                        ])
+                        ->hintIcon('heroicon-o-question-mark-circle')
+                        ->hintIconTooltip('
+                            Grouping by office might generate multiple timesheets for employees with multiple offices.
+                            No grouping will generate a single transmittal for all selected employees.
+                        '),
+                ]),
         ];
 
         return $preview ? $forms : [...$forms, ...$config];
