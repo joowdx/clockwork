@@ -65,6 +65,7 @@ RUN chmod -R o+rx /usr/lib/node_modules/puppeteer/.local-chromium
 COPY NotoSansTagalog.ttf /usr/share/fonts/truetype/NotoSansTagalog.ttf
 RUN fc-cache -vf
 
+COPY openssl.cnf /etc/ssl/openssl.cnf
 COPY start-container /usr/local/bin/start-container
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
