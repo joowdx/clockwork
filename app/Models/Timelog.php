@@ -118,6 +118,15 @@ class Timelog extends Model
         $query->whereDay('time', '>', 15);
     }
 
+    public function scopeCustomDates(Builder $query, array $dates): void
+    {
+        $query->where(function ($query) use ($dates) {
+            foreach ($dates as $date) {
+                $query->orWhereDate('time', $date);
+            }
+        });
+    }
+
     public function scopeCustomRange(Builder $query, int $day, int $to): void
     {
         $query->whereDay('time', '>=', $day)->whereDay('time', '<=', $to);
