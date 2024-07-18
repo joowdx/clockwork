@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Schedule;
 use App\Models\Suspension;
 use App\Models\Timetable;
+use App\Traits\TimelogsHasher;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
@@ -19,6 +20,8 @@ use Illuminate\Support\Carbon;
 class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    use TimelogsHasher;
 
     /**
      * Create a new job instance.
@@ -75,6 +78,8 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'holiday' => $holiday->map->name->join(', ') ?: null,
                 'absent' => $absent = $holiday->isEmpty() && $this->date->isWeekday(),
                 'regular' => $absent,
+                'present' => false,
+                'digest' => $this->generateDigest($timetable),
             ]);
 
             return;
@@ -117,15 +122,12 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ];
         }
 
-        $timetable->update(['punch' => $roster]);
+        $timetable->update(['punch' => $roster, 'digest' => $this->generateDigest($timetable, $timelogs), 'absent' => false]);
     }
 
     protected function standard(Schedule $schedule, Timetable $timetable): void
     {
-        $timelogs = $this->employee->timelogs()
-            ->whereDate('time', $this->date)
-            ->with('scanner')
-            ->get();
+        $timelogs = $timetable->timelogs;
 
         $holiday = Suspension::search($this->date);
 
@@ -134,6 +136,8 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'holiday' => $holiday->map->name->join(', ') ?: null,
                 'absent' => $absent = $holiday->isEmpty() && $this->date->isWeekday(),
                 'regular' => $absent,
+                'present' => false,
+                'digest' => $this->generateDigest($timetable),
             ]);
 
             return;
@@ -223,6 +227,8 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             'duration' => $total,
             'holiday' => $holiday->map->name->join(', ') ?: null,
             'present' => true,
+            'absent' => false,
+            'digest' => $this->generateDigest($timetable, $timelogs),
         ]);
     }
 
@@ -247,6 +253,8 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'holiday' => $holiday->map->name->join(', ') ?: null,
                 'absent' => $absent = $holiday->isEmpty() && $this->date->isWeekday(),
                 'regular' => $absent,
+                'present' => false,
+                'digest' => $this->generateDigest($timetable),
             ]);
 
             return;
@@ -335,6 +343,8 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             'overtime' => max($overtime, 0),
             'holiday' => $holiday->map->name->join(', ') ?: null,
             'present' => true,
+            'absent' => false,
+            'digest' => $this->generateDigest($timetable, $timelogs),
         ]);
     }
 }

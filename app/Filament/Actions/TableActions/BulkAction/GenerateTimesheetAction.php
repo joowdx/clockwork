@@ -4,6 +4,7 @@ namespace App\Filament\Actions\TableActions\BulkAction;
 
 use App\Jobs\ProcessTimesheet;
 use App\Models\Employee;
+use App\Traits\TimelogsHasher;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Bus;
 
 class GenerateTimesheetAction extends BulkAction
 {
+    use TimelogsHasher;
+
     public static function make(?string $name = null): static
     {
         $class = static::class;
@@ -68,11 +71,11 @@ class GenerateTimesheetAction extends BulkAction
             return;
         }
 
-        $jobs = $employee->map(function (Employee $employee) use ($data) {
-            return new ProcessTimesheet($employee, $data['month']);
-        });
+        $employee->ensure(Employee::class)->load(['timesheets' => fn ($q) => $q->whereDate('month', $data['month'] . '-01'), 'timesheets.timelogs']);
 
-        $employee->ensure(Employee::class);
+        $jobs = $employee
+            ->reject(fn ($employee) => $employee->timesheets->first() ? $this->checkDigest($employee->timesheets->first()) : false)
+            ->map(fn (Employee $employee) => new ProcessTimesheet($employee, $data['month']));
 
         Notification::make()
             ->info()

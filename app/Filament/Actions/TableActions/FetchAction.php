@@ -89,7 +89,8 @@ class FetchAction extends Action
                 return;
             }
 
-            FetchTimelogs::dispatch($record->uid, $data['month']);
+            FetchTimelogs::dispatch($record->uid, $data['month'])
+                ->onQueue('main');
 
             Notification::make()
                 ->success()

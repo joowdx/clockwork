@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Support\Facades\DB;
 
 class Timetable extends Model
 {
@@ -28,7 +30,7 @@ class Timetable extends Model
         'regular',
         'rectified',
         'timesheet_id',
-        'hash',
+        'digest',
     ];
 
     protected $casts = [
@@ -104,5 +106,19 @@ class Timetable extends Model
     public function scopeSecondHalf(Builder $query): void
     {
         $query->whereDay('date', '>=', 16);
+    }
+
+    public function timelogs(): HasManyThrough
+    {
+        return $this->hasManyThrough(Timelog::class, Enrollment::class, 'timetables.id', 'uid', secondLocalKey: 'uid')
+            ->join('scanners', fn ($join) => $join->on('scanners.uid', 'timelogs.device')->on('scanners.id', 'enrollment.scanner_id'))
+            ->join('timesheets', 'timesheets.employee_id', 'enrollment.employee_id')
+            ->join('timetables', 'timetables.timesheet_id', 'timesheets.id')
+            ->whereColumn(DB::raw('DATE(timelogs.time)'), 'timetables.date')
+            ->whereColumn('timelogs.uid', 'enrollment.uid')
+            ->whereColumn('timesheets.employee_id', 'enrollment.employee_id')
+            ->where('enrollment.active', true)
+            ->latest('time')
+            ->latest('timelogs.id');
     }
 }

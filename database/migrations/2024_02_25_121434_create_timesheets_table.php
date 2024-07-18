@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('month');
             $table->jsonb('details')->nullable();
             $table->foreignUlid('employee_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->char('hash', 128);
+            $table->char('digest', 128)->nullable();
             $table->timestamps();
             $table->unique(['month', 'employee_id']);
         });

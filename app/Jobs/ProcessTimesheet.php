@@ -4,6 +4,8 @@ namespace App\Jobs;
 
 use App\Models\Employee;
 use App\Models\Schedule;
+use App\Models\Timesheet;
+use App\Traits\TimelogsHasher;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
@@ -19,9 +21,11 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    use TimelogsHasher;
+
     private readonly Carbon $month;
 
-    private readonly bool $ignore;
+    private readonly Timesheet $sheet;
 
     /**
      * Create a new job instance.
@@ -29,12 +33,13 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
     public function __construct(
         private readonly Employee $employee,
         Carbon|string $month,
+        private bool $process = true,
     ) {
         $this->queue = 'main';
 
-        $this->month = is_string($month)
-            ? Carbon::parse($month)->startOfMonth()
-            : $month;
+        $this->month = is_string($month) ? Carbon::parse($month)->startOfMonth() : $month;
+
+        $this->sheet = $this->employee->timesheets()->firstOrCreate(['month' => $this->month->startOfMonth()]);
     }
 
     /**
@@ -56,9 +61,9 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             until: $this->month->clone()->endOfMonth(),
         );
 
-        $sheet = $this->employee->timesheets()->firstOrCreate(['month' => $this->month->startOfMonth()]);
+        $sheet = $this->sheet;
 
-        $sheet->timetables()->delete();
+        $tables = $sheet->timetables->load('timelogs');
 
         $time = function (string $week) use ($schedules) {
             return match (true) {
@@ -74,22 +79,30 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'head' => $this->employee->currentOffice?->head?->id !== $this->employee->id ? $this->employee->currentOffice?->head?->titled_name : '',
                 'schedule' => ['weekdays' => $time('weekdays'), 'weekends' => $time('weekends')],
             ],
+            'digest' => $this->generateDigest($sheet),
         ]);
 
-        $days = $this->month->range($this->month->clone()->endOfMonth());
+        if ($this->process === false) {
+            return;
+        }
+
+        $days = collect($this->month->range($this->month->clone()->endOfMonth()))
+            // TODO
+            // ADD GROUPING LOGIC HERE FOR CUSTOM SCHEDULES (CONTINUOUS MULTIPLE-DAY SPAN SHIFTS)
+            ->reject(function ($day) use ($tables) {
+                $table = $tables->first(fn ($table) => $table->date->isSameDay($day));
+
+                if (is_null($table)) {
+                    return false;
+                }
+
+                return $this->checkDigest($table);
+            });
 
         if ($this->job->getConnectionName() === 'sync') {
-            collect($days)
-                // TODO
-                // ADD GROUPING LOGIC HERE FOR CUSTOM SCHEDULES (CONTINUOUS MULTIPLE-DAY SPAN SHIFTS)
-                ->each(fn ($day) => ProcessTimetable::dispatchSync($this->employee, $day));
+           $days->each(fn ($day) => ProcessTimetable::dispatchSync($this->employee, $day));
         } else {
-            $jobs = collect($days)
-                // TODO
-                // ADD GROUPING LOGIC HERE FOR CUSTOM SCHEDULES (CONTINUOUS MULTIPLE-DAY SPAN SHIFTS)
-                ->map(fn ($day) => new ProcessTimetable($this->employee, $day));
-
-            Bus::batch($jobs->all())
+            Bus::batch($days->map(fn ($day) => new ProcessTimetable($this->employee, $day))->all())
                 ->catch(fn () => $sheet->delete())
                 ->onQueue('main')
                 ->dispatch();

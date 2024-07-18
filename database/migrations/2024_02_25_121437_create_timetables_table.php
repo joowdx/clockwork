@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('invalid')->default(false);
             $table->boolean('rectified')->default(false);
             $table->foreignUlid('timesheet_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->char('hash', 128);
+            $table->char('digest', 128)->nullable();
             $table->timestamps();
             $table->unique(['date', 'timesheet_id']);
         });

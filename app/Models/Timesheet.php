@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class Timesheet extends Model
@@ -20,7 +22,7 @@ class Timesheet extends Model
     protected $fillable = [
         'month',
         'details',
-        'hash',
+        'digest',
     ];
 
     protected $casts = [
@@ -202,12 +204,12 @@ class Timesheet extends Model
         );
     }
 
-    public function scopeMonth(Builder $query, Carbon|string|null $month = null)
+    public function scopeMonth(Builder $query, Carbon|string|null $month = null): void
     {
         $query->whereDate('month', ($month !== null ? ($month instanceof Carbon ? $month : Carbon::parse($month)) : today())->startOfMonth());
     }
 
-    public function scopeRange(Builder $query, Carbon|string|null $from = null, Carbon|string|null $to = null)
+    public function scopeRange(Builder $query, Carbon|string|null $from = null, Carbon|string|null $to = null): void
     {
         $from = ($from ? ($from instanceof Carbon ? $from : Carbon::parse($from)) : today())->startOfMonth();
 
@@ -290,5 +292,19 @@ class Timesheet extends Model
             'customRange' => $this->customRange(),
             default => $this->fullMonth(),
         };
+    }
+
+    public function timelogs(): HasManyThrough
+    {
+        return $this->hasManyThrough(Timelog::class, Enrollment::class, 'timesheets.id', 'uid', secondLocalKey: 'uid')
+            ->join('scanners', fn ($join) => $join->on('scanners.uid', 'timelogs.device')->on('scanners.id', 'enrollment.scanner_id'))
+            ->join('timesheets', fn ($join) => $join->on('timesheets.employee_id', 'enrollment.employee_id'))
+            ->whereColumn(DB::raw('extract(month from timelogs.time)'), DB::raw('extract(month from timesheets.month)'))
+            ->whereColumn(DB::raw('extract(year from timelogs.time)'), DB::raw('extract(year from timesheets.month)'))
+            ->whereColumn('timelogs.uid', 'enrollment.uid')
+            ->whereColumn('timesheets.employee_id', 'enrollment.employee_id')
+            ->where('enrollment.active', true)
+            ->latest('time')
+            ->latest('timelogs.id');
     }
 }

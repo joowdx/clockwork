@@ -23,6 +23,8 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $timeout = 300;
+
     public readonly User $user;
 
     public readonly Scanner $scanner;
