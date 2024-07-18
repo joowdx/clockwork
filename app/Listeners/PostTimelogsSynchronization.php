@@ -61,12 +61,12 @@ class PostTimelogsSynchronization
             }
 
             $timesheets = $timetables->map(function ($job, $key) {
-                    [$date, $employee] = explode('|', $key);
+                [$date, $employee] = explode('|', $key);
 
-                    $date = Carbon::parse($date);
+                $date = Carbon::parse($date);
 
-                    return $date->format('Y-m') . '|' . $employee;
-                })
+                return $date->format('Y-m').'|'.$employee;
+            })
                 ->unique()
                 ->map(function ($employee) {
                     [$date, $employee] = explode('|', $employee);

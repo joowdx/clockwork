@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 
 trait TimelogsHasher
 {
-    public function generateDigest(Timesheet|Timetable $model = null, Collection $timelogs = null, bool $check = true): string
+    public function generateDigest(Timesheet|Timetable|null $model = null, ?Collection $timelogs = null, bool $check = true): string
     {
         $model = $model ?? $this;
 
@@ -22,7 +22,7 @@ trait TimelogsHasher
         return hash('sha512', json_encode(['id' => $model->id, 'timelogs' => $timelogs, 'scanners' => $scanners]));
     }
 
-    public function checkDigest(Timesheet|Timetable $model = null, Collection $timelogs = null): bool
+    public function checkDigest(Timesheet|Timetable|null $model = null, ?Collection $timelogs = null): bool
     {
         $model = $model ?? $this;
 

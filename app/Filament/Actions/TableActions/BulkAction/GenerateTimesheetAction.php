@@ -71,7 +71,7 @@ class GenerateTimesheetAction extends BulkAction
             return;
         }
 
-        $employee->ensure(Employee::class)->load(['timesheets' => fn ($q) => $q->whereDate('month', $data['month'] . '-01'), 'timesheets.timelogs']);
+        $employee->ensure(Employee::class)->load(['timesheets' => fn ($q) => $q->whereDate('month', $data['month'].'-01'), 'timesheets.timelogs']);
 
         $jobs = $employee
             ->reject(fn ($employee) => $employee->timesheets->first() ? $this->checkDigest($employee->timesheets->first()) : false)

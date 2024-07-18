@@ -20,7 +20,6 @@ use Illuminate\Support\Carbon;
 class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
     use TimelogsHasher;
 
     /**

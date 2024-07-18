@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Bus;
 class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
     use TimelogsHasher;
 
     private readonly Carbon $month;
@@ -100,7 +99,7 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             });
 
         if ($this->job->getConnectionName() === 'sync') {
-           $days->each(fn ($day) => ProcessTimetable::dispatchSync($this->employee, $day));
+            $days->each(fn ($day) => ProcessTimetable::dispatchSync($this->employee, $day));
         } else {
             Bus::batch($days->map(fn ($day) => new ProcessTimetable($this->employee, $day))->all())
                 ->catch(fn () => $sheet->delete())

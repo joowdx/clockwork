@@ -79,7 +79,7 @@ class TimesheetController extends Controller
                         'range' => $query->whereBetween('date', [$validated['from'], $validated['to']]),
                         default => $query,
                     };
-                }
+                },
             ])
             ->lazyById()
             ->mapWithKeys(function ($employee) use ($hidden) {
@@ -89,7 +89,7 @@ class TimesheetController extends Controller
 
                 $timetables = $timesheet?->timetables;
 
-                unset ($timesheet->timetables);
+                unset($timesheet->timetables);
 
                 $timesheet->timetables = $timetables?->mapWithKeys(function ($timetable) use ($hidden) {
                     $timetable->punch = collect($timetable->punch)->map(function ($punch) {
