@@ -84,6 +84,16 @@ class GenerateTimesheetAction extends BulkAction
 
         $user = auth()->user();
 
+        if ($jobs->isEmpty()) {
+            Notification::make()
+                ->info()
+                ->title('Timesheets are already generated')
+                ->body("No timesheets to generate for month {$data['month']} <br>"  . $employee->pluck('name')->sort()->join('<br>'))
+                ->sendToDatabase($user);
+
+            return;
+        }
+
         Bus::batch($jobs->all())
             ->then(function () use ($data, $employee, $user) {
                 $names = $employee->pluck('name')->sort();
