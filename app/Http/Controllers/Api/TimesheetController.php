@@ -63,7 +63,20 @@ class TimesheetController extends Controller
 
         $month = Carbon::parse($validated['month']);
 
-        $hidden = ['id', 'created_at', 'updated_at', 'deleted_at', 'laravel_through_key', 'employee_id', 'timesheet_id', 'rectified'];
+        $hidden = [
+            'id',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'laravel_through_key',
+            'employee_id',
+            'timesheet_id',
+            'rectified',
+            'digest',
+            'birthdate',
+            'sex',
+            'office_id',
+        ];
 
         $employees = Employee::query()
             ->{is_array($validated['uid']) ? 'whereIn' : 'where'}('uid', $validated['uid'])
@@ -92,8 +105,8 @@ class TimesheetController extends Controller
                 unset($timesheet->timetables);
 
                 $timesheet->timetables = $timetables?->mapWithKeys(function ($timetable) use ($hidden) {
-                    $timetable->punch = collect($timetable->punch)->map(function ($punch) {
-                        return [
+                    $timetable->punch = empty($timetable->punch) ? null : collect($timetable->punch)->map(function ($punch) {
+                        return ($punch['missed'] ?? false) ? null : [
                             'time' => preg_replace('/:\d+/', '', $punch['time'], 1),
                             'undertime' => $punch['undertime'],
                         ];
