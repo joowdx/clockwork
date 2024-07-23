@@ -94,6 +94,8 @@ networks:
         driver: bridge
 volumes:
     clockwork-pgsql:
+        name: clockwork.pgsql
         driver: local
     clockwork-redis:
+        name: clockwork.redis
         driver: local
