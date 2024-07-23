@@ -240,7 +240,7 @@
                         <tr>
                             <td colspan=1></td>
                             <td class="relative underline font-xs center bottom bold consolas" colspan=4 style="color:#000A;border-color:#000A!important;">
-                                <livewire:print.signature />
+                                {{-- <livewire:print.signature /> --}}
                                 {{ $user->name }}
                             </td>
                             <td colspan=1></td>

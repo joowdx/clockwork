@@ -137,7 +137,7 @@
                             <td></td>
                             <td></td>
                             <td colspan=3 class="relative consolas bold bottom center">
-                                <livewire:print.signature />
+                                {{-- <livewire:print.signature /> --}}
                                 {{ auth()?->user()?->name }}
                             </td>
                             <td></td>

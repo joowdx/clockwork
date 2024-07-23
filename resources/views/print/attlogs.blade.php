@@ -99,7 +99,7 @@
                     <tr height="20">
                         <td colspan="6"></td>
                         <td colspan="4" class="relative underline font-sm bold center bottom nowrap consolas">
-                            <livewire:print.signature />
+                            {{-- <livewire:print.signature /> --}}
                             {{ auth()->user()?->name }}
                         </td>
                     </tr>

@@ -131,7 +131,7 @@
                                 <tr height="20">
                                     <td colspan="6"></td>
                                     <td colspan="4" class="relative underline uppercase bold center bottom nowrap bahnschrift">
-                                        <livewire:print.signature />
+                                        {{-- <livewire:print.signature /> --}}
                                         {{ auth()->user()?->name }}
                                     </td>
                                 </tr>
