@@ -31,7 +31,7 @@ class EmployeeController extends Controller
     {
         if ($request->has('file')) {
 
-            ImportEmployees::dispatch(
+            ImportEmployees::dispatchSync(
                 storage_path('app/' . $request->file->store()),
                 $request->file->getClientOriginalName(),
                 $request->user(),
