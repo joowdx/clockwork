@@ -38,7 +38,7 @@ services:
         networks:
             - 'sail'
         depends_on:
-            - 'clockwork.app'
+            - 'clockwork-v2.app'
         healthcheck:
             test: ["CMD", "wget -O /dev/null http://localhost || exit 1"]
             timeout: 10s
