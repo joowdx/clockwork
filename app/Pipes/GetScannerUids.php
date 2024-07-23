@@ -34,8 +34,8 @@ class GetScannerUids
 
     private function create(string $name): Scanner
     {
-        return app(ScannerRepository::class)->create([
-            'name' => $name,
+        return Scanner::firstOrCreate([
+            'name' => strtoupper($name),
         ]);
     }
 }
