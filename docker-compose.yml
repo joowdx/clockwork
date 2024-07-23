@@ -1,8 +1,8 @@
 # For more information: https://laravel.com/docs/sail
 version: '3'
 services:
-    clockwork.app:
-        container_name: clockwork-app
+    clockwork-v2.app:
+        container_name: clockwork-v2-app
         build:
             context: .
             dockerfile: docker/Dockerfile
@@ -25,7 +25,7 @@ services:
         depends_on:
             - pgsql
     nginx:
-        container_name: clockwork-webserver
+        container_name: clockwork-v2-webserver
         image: 'nginx:alpine'
         restart: unless-stopped
         ports:
@@ -43,7 +43,7 @@ services:
             test: ["CMD", "wget -O /dev/null http://localhost || exit 1"]
             timeout: 10s
     pgsql:
-        container_name: clockwork-database
+        container_name: clockwork-v2-database
         image: 'postgres:15-alpine'
         restart: unless-stopped
         ports:
@@ -63,7 +63,7 @@ services:
             retries: 3
             timeout: 5s
     redis:
-        container_name: clockwork-cache
+        container_name: clockwork-v2-cache
         image: 'redis:alpine'
         restart: unless-stopped
         ports:
@@ -77,7 +77,7 @@ services:
             retries: 3
             timeout: 5s
     soketi:
-        container_name: clockwork-websocket
+        container_name: clockwork-v2-websocket
         image: 'joowdx/soketi'
         restart: unless-stopped
         environment:
@@ -92,12 +92,12 @@ services:
             - sail
 networks:
     sail:
-        name: clockwork
+        name: clockwork-v2
         driver: bridge
 volumes:
     pgsql:
-        name: clockwork-pgsql
+        name: clockwork-v2-pgsql
         driver: local
     redis:
-        name: clockwork-redis
+        name: clockwork-v2-redis
         driver: local
