@@ -9,6 +9,8 @@ use App\Enums\Permissions\SecretaryRolePermission;
 use App\Enums\Permissions\UserPermission;
 use App\Enums\UserRole;
 use App\Filament\Superuser\Resources\UserResource\Pages;
+use App\Filament\Superuser\Resources\UserResource\RelationManagers\OfficesRelationManager;
+use App\Filament\Superuser\Resources\UserResource\RelationManagers\ScannersRelationManager;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -178,7 +180,8 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ScannersRelationManager::class,
+            OfficesRelationManager::class,
         ];
     }
 
