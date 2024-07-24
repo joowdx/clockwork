@@ -88,7 +88,7 @@ class GenerateTimesheetAction extends BulkAction
             Notification::make()
                 ->info()
                 ->title('Timesheets are already generated')
-                ->body("No timesheets to generate for month {$data['month']} <br>"  . $employee->pluck('name')->sort()->join('<br>'))
+                ->body("No timesheets to generate for month {$data['month']} <br>".$employee->pluck('name')->sort()->join('<br>'))
                 ->sendToDatabase($user);
 
             return;

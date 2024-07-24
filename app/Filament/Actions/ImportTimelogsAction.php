@@ -32,7 +32,7 @@ class ImportTimelogsAction extends Action
 
         $this->modalIcon('heroicon-o-arrow-up-tray');
 
-        $this->modalDescription('');
+        $this->modalDescription('Import downloaded timelogs to the system.');
 
         $this->closeModalByClickingAway(false);
 
@@ -137,6 +137,10 @@ class ImportTimelogsAction extends Action
                     },
                 ]),
         ]);
+
+        $this->modalSubmitActionLabel('Import');
+
+        $this->modalCancelActionLabel('Close');
     }
 
     public function onlyAssigned(bool $true = true)

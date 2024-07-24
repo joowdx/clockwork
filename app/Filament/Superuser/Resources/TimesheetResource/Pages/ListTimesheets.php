@@ -6,12 +6,13 @@ use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
-use App\Filament\Actions\ImportTimelogsAction;
+use App\Filament\Actions\PreselectFormAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportOfficeAttendanceAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
+use App\Filament\Actions\TimelogsActionGroup;
 use App\Filament\Superuser\Resources\TimesheetResource;
 use App\Jobs\ProcessTimesheet;
 use App\Jobs\ProcessTimetable;
@@ -44,11 +45,12 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            ImportTimelogsAction::make(),
+            TimelogsActionGroup::make(),
+            PreselectFormAction::make(),
             FilterAction::make()
-                ->label('Option')
-                ->icon('heroicon-o-adjustments-horizontal')
-                ->modalHeading('Option')
+                ->label('Config')
+                ->icon('heroicon-o-cog-6-tooth')
+                ->modalHeading('Config')
                 ->slideOver(false)
                 ->form([
                     Forms\Components\Select::make('model')
