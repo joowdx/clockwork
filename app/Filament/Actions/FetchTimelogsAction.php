@@ -43,13 +43,8 @@ class FetchTimelogsAction extends Action
                 }),
             CheckboxList::make('scanners')
                 ->options(fn () => $this->onlyAssigned
-                        ? auth()->user()->scanners->pluck('name', 'id')->toArray()
-                        : Scanner::query()
-                            ->reorder()
-                            ->orderByDesc('priority')
-                            ->orderBy('name')
-                            ->pluck('name', 'id')
-                            ->toArray()
+                        ? auth()->user()->scanners()->reorder()->orderByDesc('priority')->orderBy('name')->pluck('name', 'scanners.id')->toArray()
+                        : Scanner::query()->reorder()->orderByDesc('priority')->orderBy('name')->pluck('name', 'id')->toArray()
                 )
                 ->rules(['required'])
                 ->live()
