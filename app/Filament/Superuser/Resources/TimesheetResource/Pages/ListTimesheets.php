@@ -46,7 +46,8 @@ class ListTimesheets extends ListRecords
     {
         return [
             TimelogsActionGroup::make(),
-            PreselectFormAction::make(),
+            PreselectFormAction::make()
+                ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class),
             FilterAction::make()
                 ->label('Config')
                 ->icon('heroicon-o-cog-6-tooth')
