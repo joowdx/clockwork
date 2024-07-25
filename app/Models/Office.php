@@ -57,7 +57,7 @@ class Office extends Model
 
     public function users(): MorphToMany
     {
-        return $this->morphToMany(User::class, 'assignable')
+        return $this->morphToMany(User::class, 'assignable', Assignment::class)
             ->using(Assignment::class)
             ->withPivot('active');
     }
