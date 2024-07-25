@@ -191,7 +191,7 @@ class ListTimesheets extends ListRecords
                     ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
-                        if (auth()->user()->root && auth()->user()->developer && ! empty($data) && $data['month'] === $data['password']) {
+                        if (auth()->user()->superuser && auth()->user()->developer && ! empty($data) && $data['month'] === $data['password']) {
                             $this->replaceMountedTableAction('thaumaturge', $record->id, ['month' => $data['month']]);
 
                             return;
@@ -202,7 +202,7 @@ class ListTimesheets extends ListRecords
                         $component->sendSuccessNotification();
                     }),
                 Tables\Actions\Action::make('thaumaturge')
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && auth()->user()->root && auth()->user()->developer)
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && auth()->user()->superuser && auth()->user()->developer)
                     ->extraAttributes(['class' => 'hidden'])
                     ->modalHeading(fn ($record) => $record->name)
                     ->modalAlignment('center')
