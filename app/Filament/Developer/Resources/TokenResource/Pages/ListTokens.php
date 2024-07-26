@@ -28,7 +28,7 @@ class ListTokens extends ListRecords
                         ->dehydrated(false)
                         ->readOnly()
                         ->rule(fn () => function ($a, $v, $f) {
-                            if (Token::where('expires_at', '>=', now()->endOfYear())->exists()) {
+                            if (Token::where('expires_at', now()->endOfYear())->exists()) {
                                 return $f('An active token for this year already exists.');
                             }
                         }),
