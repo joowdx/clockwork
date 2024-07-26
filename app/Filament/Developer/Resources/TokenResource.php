@@ -22,6 +22,10 @@ class TokenResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Year'),
+                Tables\Columns\TextColumn::make('last_used_at')
+                    ->since(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->since(),
             ])
             ->filters([
             ])
