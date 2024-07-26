@@ -4,9 +4,11 @@ namespace App\Filament\Developer\Resources;
 
 use App\Filament\Developer\Resources\TokenResource\Pages;
 use App\Models\Token;
+use App\Models\User;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TokenResource extends Resource
 {
@@ -45,5 +47,15 @@ class TokenResource extends Resource
         return [
             'index' => Pages\ListTokens::route('/'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $query->where('tokenable_type', User::class)
+            ->where('tokenable_id', auth()->id());
+
+        return $query;
     }
 }
