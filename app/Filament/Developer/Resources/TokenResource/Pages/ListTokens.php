@@ -50,6 +50,7 @@ class ListTokens extends ListRecords
                 ->modalDescription('This plain text token will only be shown once. Please copy it to a safe place.')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Close')
+                ->closeModalByClickingAway(false)
                 ->form(fn ($arguments) => [
                     TextInput::make('token')
                         ->default($arguments['token'])
