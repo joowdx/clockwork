@@ -26,7 +26,7 @@ trait TimelogsHasher
         $timelogs = $timelogs->when($check, fn ($timelogs) => $timelogs->ensure(Timelog::class))->map->withoutRelations();
 
         $holidays = $holidays ?? $model instanceof Timesheet
-            ? Suspension::whereMonth('month', $model->month)->whereYear('month', $model->month)->get()
+            ? Suspension::whereMonth('date', explode('-', $model->month)[1])->whereYear('date', explode('-', $model->month)[0])->get()
             : Suspension::search($model->date);
 
         return hash('sha512', json_encode([
