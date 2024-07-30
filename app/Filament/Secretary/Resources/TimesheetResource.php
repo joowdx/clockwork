@@ -113,11 +113,17 @@ class TimesheetResource extends Resource
                             ->multiple(),
                     ])
                     ->query(function(Builder $query, array $data) {
-                        $query->whereHas('offices', function (Builder $query) use ($data) {
-                            $query->whereIn('offices.id', $data['offices']);
+                        $query->when($data['offices'], function ($query) use ($data) {
+                            $query->whereHas('offices', function ($query) use ($data) {
+                                $query->whereIn('offices.id', $data['offices']);
+                            });
                         });
                     })
                     ->indicateUsing(function (array $data) {
+                        if (empty($data['offices'])) {
+                            return null;
+                        }
+
                         $offices = Office::select('code')
                             ->orderBy('code')
                             ->find($data['offices'])
