@@ -2,6 +2,7 @@
 
 namespace App\Filament\Secretary\Resources;
 
+use App\Filament\Actions\TableActions\BulkAction\DeleteTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
@@ -90,6 +91,7 @@ class TimesheetResource extends Resource
                     ->icon('heroicon-o-document-arrow-down'),
                 GenerateTimesheetAction::make()
                     ->label('Generate'),
+                DeleteTimesheetAction::make('delete'),
             ])
             ->recordAction(null)
             ->recordUrl(null)

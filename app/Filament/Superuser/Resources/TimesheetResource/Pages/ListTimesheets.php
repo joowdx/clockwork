@@ -7,6 +7,7 @@ use App\Enums\EmploymentSubstatus;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
 use App\Filament\Actions\PreselectFormAction;
+use App\Filament\Actions\TableActions\BulkAction\DeleteTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportOfficeAttendanceAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
@@ -336,6 +337,8 @@ class ListTimesheets extends ListRecords
                     ->modalDescription(app(GenerateTimesheetAction::class, ['name' => null])->generateConfirmation())
                     ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
                     ->action(fn (Collection $records, array $data) => app(GenerateTimesheetAction::class, ['name' => null])->generateAction($records, $data)),
+                DeleteTimesheetAction::make('delete')
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class),
             ])
             ->deselectAllRecordsWhenFiltered(false)
             ->recordAction(null)
