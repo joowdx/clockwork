@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superuser\Resources\TimelogResource\Pages;
 
+use App\Filament\Actions\FetchTimelogsAction;
 use App\Filament\Actions\ImportTimelogsAction;
 use App\Filament\Superuser\Resources\TimelogResource;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,8 @@ class ListTimelogs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            ImportTimelogsAction::make(),
+            ImportTimelogsAction::make('import'),
+            FetchTimelogsAction::make('fetch'),
         ];
     }
 }
