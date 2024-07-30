@@ -9,7 +9,6 @@ enum EmploymentSubstatus: string implements HasDescription, HasLabel
 {
     case JOB_ORDER = 'job-order';
     case CONTRACT_OF_SERVICE = 'contract-of-service';
-    case MEMORANDUM_OF_AGREEMENT = 'memorandum-of-agreement';
     case NONE = '';
 
     public function getDescription(): string
@@ -17,7 +16,6 @@ enum EmploymentSubstatus: string implements HasDescription, HasLabel
         return match ($this) {
             self::JOB_ORDER => 'Employee is hired on a per-job basis, typically for short-term or temporary work.',
             self::CONTRACT_OF_SERVICE => 'Employee is engaged in a contract of service, typically for short-term or temporary work.',
-            self::MEMORANDUM_OF_AGREEMENT => 'Employee is engaged in a memorandum of agreement, typically for short-term or temporary work.',
             default => null
         };
     }
