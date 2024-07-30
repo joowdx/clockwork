@@ -51,7 +51,7 @@ class ImportTimelogsAction extends Action
 
                 $devices[] = $first[2];
 
-                ImportTimelogs::dispatchSync($first[2], $file->getRealPath(), $file->getClientOriginalName(), $data['month']);
+                ImportTimelogs::dispatch($first[2], $file->getRealPath(), $file->getClientOriginalName(), $data['month']);
             }
 
             $devices = implode(', ', $devices);
