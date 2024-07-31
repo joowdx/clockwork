@@ -50,7 +50,7 @@ class FetchHolidaysAction extends Action
                 })->toArray();
             } catch (\Exception $e) {
                 Notification::make()
-                    ->error()
+                    ->danger()
                     ->title('Failed to fetch holidays')
                     ->body($e->getMessage())
                     ->send();
