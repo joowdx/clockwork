@@ -3,7 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Schedule;
-use App\Models\Suspension;
+use App\Models\Holiday;
 use App\Models\Timelog;
 use App\Models\Timesheet;
 use App\Models\Timetable;
@@ -26,8 +26,8 @@ trait TimelogsHasher
         $timelogs = $timelogs->when($check, fn ($timelogs) => $timelogs->ensure(Timelog::class))->map->withoutRelations();
 
         $holidays = $holidays ?? $model instanceof Timesheet
-            ? Suspension::whereMonth('date', explode('-', $model->month)[1])->whereYear('date', explode('-', $model->month)[0])->get()
-            : Suspension::search($model->date);
+            ? Holiday::whereMonth('date', explode('-', $model->month)[1])->whereYear('date', explode('-', $model->month)[0])->get()
+            : Holiday::search($model->date);
 
         return hash('sha512', json_encode([
             'id' => $model->id,
