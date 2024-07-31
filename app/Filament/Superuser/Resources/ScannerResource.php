@@ -75,7 +75,7 @@ class ScannerResource extends Resource
                 ->columns(3)
                 ->schema([
                     Forms\Components\TextInput::make('host')
-                        ->unique()
+                        ->unique(ignoreRecord: true)
                         ->requiredWith('port')
                         ->helperText('The hostname or IP address of the scanner.'),
                     Forms\Components\TextInput::make('port')
