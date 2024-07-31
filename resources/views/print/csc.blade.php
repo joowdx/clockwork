@@ -206,7 +206,7 @@
                                             </td>
                                         @endforeach
                                     @elseif($timetable?->regular === false || $date->isWeekend())
-                                        <td colspan=4 @class(['border cascadia', $preview ? 'text-left px-4' : 'center'])>
+                                        <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
                                             {{ $timetable?->holiday ?: $date->format('l') }}
                                         </td>
                                     @else
