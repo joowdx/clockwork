@@ -54,6 +54,8 @@ class FetchHolidaysAction extends Action
                     ->title('Failed to fetch holidays')
                     ->body($e->getMessage())
                     ->send();
+
+                return;
             }
 
             Suspension::upsert($holidays, ['name', 'date', 'type'], ['remarks']);
