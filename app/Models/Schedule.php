@@ -69,7 +69,7 @@ class Schedule extends Model
         return cache()->remember(
             $date->format('Y-m-d').$employee?->id, 120,
             function () use ($date, $employee) {
-                $holiday = Suspension::search($date, false);
+                $holiday = Holiday::search($date, false);
 
                 if (is_null($employee)) {
                     return Schedule::global()->active($date)->where('days', $holiday || $date->isWeekend() ? 'weekend' : 'weekday')->first()

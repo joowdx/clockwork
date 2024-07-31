@@ -3,7 +3,7 @@
 namespace App\Filament\Actions;
 
 use App\Actions\FetchHolidays;
-use App\Models\Suspension;
+use App\Models\Holiday;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -58,7 +58,7 @@ class FetchHolidaysAction extends Action
                 return;
             }
 
-            Suspension::upsert($holidays, ['name', 'date', 'type'], ['remarks']);
+            Holiday::upsert($holidays, ['name', 'date', 'type'], ['remarks']);
 
             Notification::make()
                 ->success()

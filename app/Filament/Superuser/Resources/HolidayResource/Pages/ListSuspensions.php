@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Superuser\Resources\SuspensionResource\Pages;
+namespace App\Filament\Superuser\Resources\HolidayResource\Pages;
 
 use App\Filament\Actions\FetchHolidaysAction;
-use App\Filament\Superuser\Resources\SuspensionResource;
+use App\Filament\Superuser\Resources\HolidayResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSuspensions extends ListRecords
 {
-    protected static string $resource = SuspensionResource::class;
+    protected static string $resource = HolidayResource::class;
 
     protected function getHeaderActions(): array
     {

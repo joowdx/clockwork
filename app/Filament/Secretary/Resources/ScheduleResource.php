@@ -41,7 +41,7 @@ class ScheduleResource extends Resource
                                     ->options([
                                         'everyday' => 'Everyday',
                                         'weekday' => 'Weekday',
-                                        // 'holiday' => 'Suspension',
+                                        // 'holiday' => 'Holiday',
                                         'weekend' => 'Weekend',
                                     ])
                                     ->default('everyday')
@@ -325,7 +325,7 @@ class ScheduleResource extends Resource
                         return match ($record->days) {
                             'everyday' => 'Everyday',
                             'weekday' => 'Weekdays',
-                            // 'holiday' => 'Suspension',
+                            // 'holiday' => 'Holiday',
                             'weekend' => 'Weekends',
                         };
                     }),

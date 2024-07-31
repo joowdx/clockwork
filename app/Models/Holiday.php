@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Enums\SuspensionType;
+use App\Enums\HolidayType;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
-class Suspension extends Model
+class Holiday extends Model
 {
     use HasUlids;
 
@@ -23,7 +23,7 @@ class Suspension extends Model
     ];
 
     protected $casts = [
-        'type' => SuspensionType::class,
+        'type' => HolidayType::class,
         'date' => 'datetime:Y-m-d',
         'from' => 'datetime:H:i',
     ];

@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Employee;
 use App\Models\Schedule;
-use App\Models\Suspension;
+use App\Models\Holiday;
 use App\Models\Timetable;
 use App\Traits\TimelogsHasher;
 use Illuminate\Bus\Batchable;
@@ -70,7 +70,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ->with('scanner')
             ->get();
 
-        $holiday = Suspension::search($this->date);
+        $holiday = Holiday::search($this->date);
 
         if ($timelogs->isEmpty()) {
             $timetable->update([
@@ -128,7 +128,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
     {
         $timelogs = $timetable->timelogs;
 
-        $holiday = Suspension::search($this->date);
+        $holiday = Holiday::search($this->date);
 
         if ($timelogs->isEmpty()) {
             $timetable->update([
@@ -245,7 +245,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ->with('scanner')
             ->get();
 
-        $holiday = Suspension::search($this->date);
+        $holiday = Holiday::search($this->date);
 
         if ($timelogs->isEmpty()) {
             $timetable->update([

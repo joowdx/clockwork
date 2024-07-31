@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use Filament\Support\Contracts\HasLabel;
 
-enum SuspensionType: string implements HasLabel
+enum HolidayType: string implements HasLabel
 {
     case REGULAR_HOLIDAY = 'regular-holiday';
     case SPECIAL_HOLIDAY = 'special-holiday';

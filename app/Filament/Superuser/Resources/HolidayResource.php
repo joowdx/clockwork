@@ -2,9 +2,9 @@
 
 namespace App\Filament\Superuser\Resources;
 
-use App\Enums\SuspensionType;
-use App\Filament\Superuser\Resources\SuspensionResource\Pages;
-use App\Models\Suspension;
+use App\Enums\HolidayType;
+use App\Filament\Superuser\Resources\HolidayResource\Pages;
+use App\Models\Holiday;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,9 +12,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 
-class SuspensionResource extends Resource
+class HolidayResource extends Resource
 {
-    protected static ?string $model = Suspension::class;
+    protected static ?string $model = Holiday::class;
 
     protected static ?string $navigationIcon = 'gmdi-free-cancellation-o';
 
@@ -27,8 +27,8 @@ class SuspensionResource extends Resource
                     ->columnSpanFull()
                     ->rule('required')
                     ->markAsRequired()
-                    ->options(SuspensionType::class)
-                    ->default(SuspensionType::REGULAR_HOLIDAY),
+                    ->options(HolidayType::class)
+                    ->default(HolidayType::REGULAR_HOLIDAY),
                 Forms\Components\DatePicker::make('date')
                     ->live()
                     ->columnSpanFull()
@@ -37,7 +37,7 @@ class SuspensionResource extends Resource
                 Forms\Components\TimePicker::make('from')
                     ->columnSpanFull()
                     ->seconds(false)
-                    ->visible(fn (Forms\Get $get) => $get('type') === SuspensionType::WORK_SUSPENSION || $get('type') === SuspensionType::WORK_SUSPENSION->value),
+                    ->visible(fn (Forms\Get $get) => $get('type') === HolidayType::WORK_SUSPENSION || $get('type') === HolidayType::WORK_SUSPENSION->value),
                 Forms\Components\TextInput::make('name')
                     ->columnSpanFull()
                     ->rule('required')
@@ -53,7 +53,7 @@ class SuspensionResource extends Resource
                     ->currentPassword()
                     ->rule('required')
                     ->markAsRequired()
-                    ->visible(function (?Suspension $record, Forms\Get $get) {
+                    ->visible(function (?Holiday $record, Forms\Get $get) {
                         if ($record?->date->lt(now())) {
                             return true;
                         }
@@ -99,10 +99,10 @@ class SuspensionResource extends Resource
                 Tables\Actions\EditAction::make()
                     ->slideOver()
                     ->requiresConfirmation()
-                    ->modalDescription('Modifying past suspensions (from or to) will require you to enter your password as this may have an irreversible side-effect.')
+                    ->modalDescription('Modifying past holidays or suspensions (from or to) will require you to enter your password as this may have an irreversible side-effect.')
                     ->modalWidth('xl'),
                 Tables\Actions\DeleteAction::make()
-                    ->modalDescription(function (?Suspension $record) {
+                    ->modalDescription(function (?Holiday $record) {
                         $needsPassword = now()->isAfter($record->date);
 
                         $confirmation = 'This date has already passed. This action will have an irreversible effect. <br>';
@@ -115,7 +115,7 @@ class SuspensionResource extends Resource
                             ->password()
                             ->currentPassword()
                             ->rules(['required'])
-                            ->visible(fn (Suspension $record) => $record->recurring || now()->isAfter($record->date)),
+                            ->visible(fn (Holiday $record) => $record->recurring || now()->isAfter($record->date)),
                     ]),
             ])
             ->bulkActions([
