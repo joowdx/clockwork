@@ -36,6 +36,17 @@ class Scanner extends Model implements Auditable
         'print' => 'json',
     ];
 
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saved(function (self $scanner) {
+            if($scanner->wasChanged('uid')) {
+                $scanner->enrollments()->update(['device' => $scanner->uid]);
+            };
+        });
+    }
+
     public function foregroundColor(): Attribute
     {
         return Attribute::make(

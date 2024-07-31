@@ -141,9 +141,9 @@ class Timelog extends Model
     {
         return $this->hasOneThrough(Employee::class, Enrollment::class, 'timelogs.id', 'id', secondLocalKey: 'employee_id')
             ->join('timelogs', 'employees.id', 'enrollment.employee_id')
-            ->join('scanners', fn ($join) => $join->on('scanners.uid', 'timelogs.device')->on('scanners.id', 'enrollment.scanner_id'))
             ->whereColumn('timelogs.uid', 'enrollment.uid')
             ->whereColumn('employees.id', 'enrollment.employee_id')
+            ->whereColumn('timelogs.device', 'enrollment.device')
             ->withoutGlobalScope(ActiveScope::class);
     }
 }

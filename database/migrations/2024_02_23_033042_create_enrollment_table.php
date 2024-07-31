@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('uid');
             $table->foreignUlid('employee_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignUlid('scanner_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unsignedSmallInteger('device')->nullable()->index();
             $table->boolean('active')->default(true);
             $table->timestamps();
             $table->unique(['employee_id', 'scanner_id']);

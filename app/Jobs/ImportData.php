@@ -372,6 +372,8 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                         ['employee_id'],
                     );
 
+                    Scanner::find($existingScanners)->lazy()->each(fn ($scanner) => $scanner->enrollments()->update(['device' => $scanner->uid]));
+
                     if (! @$skipGroups) {
                         $employee->groups()->sync(
                             collect(str_getcsv($row['groups']))
