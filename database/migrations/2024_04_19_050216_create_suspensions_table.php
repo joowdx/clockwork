@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('remarks')->nullable();
             $table->foreignUlid('created_by')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
+            $table->unique(['name', 'date', 'type']);
         });
     }
 

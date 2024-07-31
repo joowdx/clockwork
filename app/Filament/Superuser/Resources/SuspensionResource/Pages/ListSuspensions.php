@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superuser\Resources\SuspensionResource\Pages;
 
+use App\Filament\Actions\FetchHolidaysAction;
 use App\Filament\Superuser\Resources\SuspensionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,6 +14,7 @@ class ListSuspensions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            FetchHolidaysAction::make(),
             Actions\CreateAction::make()
                 ->slideOver()
                 ->requiresConfirmation()
