@@ -44,7 +44,7 @@ class HomeController extends Controller
             ->orderBy('name->middle')
             ->orderBy('name->extension')
             ->where($filter)
-            ->when($this->allowed(), fn ($q) => $q->active()->setEagerLoads([]), fn ($q) => $q->active($request->active ?? true))
+            ->when($this->allowed(), fn ($q) => $q->active()->setEagerLoads([]), fn ($q) => $q->active(in_array(strtolower($request->active), ['true', '1'])))
             ->when($request->filled('office'), fn ($q) => $q->whereOffice(strtolower($request->office)))
             ->when($request->filled('regular'), fn ($q) => $q->whereRegular($request->regular))
             ->when($request->filled('group'), fn ($q) => $q->whereJsonContains('groups', strtolower($request->group)));
