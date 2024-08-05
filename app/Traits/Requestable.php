@@ -20,7 +20,7 @@ trait Requestable
     public function application(): MorphOne
     {
         return $this->morphOne(Request::class, 'requestable')
-            ->oldestOfMany();
+            ->ofMany(['id' => 'max'], fn ($query) => $query->where('status', RequestStatus::REQUEST)->where('step', 1));
     }
 
     public function request(): MorphOne

@@ -76,7 +76,7 @@
                         </span>
 
                         @if (in_array($request->status->value, ['approved', 'rejected', 'returned']))
-                            by the {{ $request->to }}
+                            by the {{ $request->to ?? 'system' }}
                             @if ($request->returned)
                                 for revision
                             @endif

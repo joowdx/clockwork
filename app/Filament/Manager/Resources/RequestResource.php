@@ -39,13 +39,16 @@ class RequestResource extends Resource
                     ->searchable()
                     ->getStateUsing(fn (Request $record) => $record->requestable->title),
                 Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('requestable.requestor.name'),
+                Tables\Columns\TextColumn::make('requestable.requestor.name')
+                    ->placeholder('N/A'),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('to')
                     ->label('Target')
-                    ->getStateUsing(fn (Request $record) => ucfirst($record->to)),
+                    ->getStateUsing(fn (Request $record) => ucfirst($record->to))
+                    ->placeholder('N/A'),
                 Tables\Columns\TextColumn::make('requestable.requested_at')
-                    ->label('Time'),
+                    ->label('Time')
+                    ->placeholder(fn ($record) => $record->created_at),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('requestable_type')
@@ -101,12 +104,15 @@ class RequestResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('requestable', function (Builder $query) {
-                if (auth()->user()->root) {
-                    return;
-                }
+            ->where(function ($query) {
+                $query->where(function ($query) {
+                    $query->whereNot('status', RequestStatus::CANCEL);
+
+                    $query->whereIn('id', Request::selectRaw('MAX(requests.id)')->groupBy('requestable_id', 'requestable_type'));
+                });
+
+                $query->orWhere('completed', true);
             })
-            ->whereNot('status', RequestStatus::CANCEL)
-            ->whereIn('id', Request::selectRaw('MAX(requests.id)')->groupBy('requestable_id', 'requestable_type'));
+            ->whereHas('requestable');
     }
 }

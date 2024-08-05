@@ -217,6 +217,7 @@ class Employee extends Model
         return $this->belongsToMany(Schedule::class, 'shift')
             ->using(Shift::class)
             ->withPivot('timetable')
+            ->whereHas('request', fn ($query) => $query->where('completed', true))
             ->whereGlobal(false);
     }
 

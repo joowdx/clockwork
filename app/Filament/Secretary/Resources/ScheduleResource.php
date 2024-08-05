@@ -67,7 +67,7 @@ class ScheduleResource extends Resource
                                     ]),
                             ]),
                         Forms\Components\Select::make('office_id')
-                            ->relationship('office', 'name')
+                            ->relationship('office', 'name', fn ($query) => $query->whereIn('id', auth()->user()->offices->pluck('id')->toArray()))
                             ->searchable()
                             ->preload()
                             ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
@@ -331,6 +331,18 @@ class ScheduleResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('request.status')
                     ->placeholder('Draft'),
+                Tables\Columns\TextColumn::make('deleted_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superuser\Resources;
 
+use App\Enums\RequestStatus;
 use App\Enums\WorkArrangement;
 use App\Filament\Superuser\Resources\ScheduleResource\Pages;
 use App\Filament\Superuser\Resources\ScheduleResource\RelationManagers\EmployeesRelationManager;
@@ -488,6 +489,8 @@ class ScheduleResource extends Resource
                     ->formatStateUsing(function (Schedule $record): HtmlString|string {
                         return $record->office ? $record->office->code : str('Global')->wrap('**')->wrap('(', ')')->inlineMarkdown()->toHtmlString();
                     }),
+                Tables\Columns\TextColumn::make('request.user.name')
+                    ->label('Requestor'),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
@@ -495,13 +498,21 @@ class ScheduleResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\TernaryFilter::make('approved')
+                    ->trueLabel('Yes')
+                    ->falseLabel('No')
+                    ->queries(
+                        fn ($q) => $q->whereHas('request', fn ($q) => $q->where('status', RequestStatus::APPROVE)->where('for', 'approval')),
+                        fn ($q) => $q->whereHas('request', fn ($q) => $q->whereNot('status', RequestStatus::APPROVE)->where('for', 'approval'))
+                            ->orWhereDoesntHave('request'),
+                    ),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

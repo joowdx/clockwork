@@ -64,7 +64,14 @@ class RequestAction extends Action
         $this->form([
             TextInput::make('title')
                 ->markAsRequired()
-                ->rule('required'),
+                ->default($this->record->title)
+                ->rule('required')
+                ->rule(fn () => function ($a, $v, $f) {
+                    if (str($v)->startsWith('@')) {
+                        $f('The title should not start with @.');
+                    }
+                })
+                ,
             RichEditor::make('body')
                 ->required()
                 ->toolbarButtons([
@@ -75,7 +82,8 @@ class RequestAction extends Action
                     'bulletList',
                     'orderedList',
                     'link',
-                ]),
+                ])
+                ->default($this->record->application?->body),
             RichEditor::make('remarks')
                 ->markAsRequired()
                 ->toolbarButtons([

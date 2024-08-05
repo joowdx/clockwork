@@ -5,19 +5,19 @@
         </h2>
 
         <p class="text-gray-600">
-            Requested by {{ $schedule->requestor->name }}
+            {{ $schedule->requestor?->name ? 'Requested by ' . $schedule->requestor->name : ''}}
         </p>
     </div>
 
     <div class="space-y-1">
         <div>
             <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                {{ $schedule->application->title }}
+                {{ $schedule->application?->title }}
             </h5>
 
             <p class="font-normal text-gray-700 dark:text-gray-400">
                 {{
-                    str($schedule->application->body)
+                    str($schedule->application?->body)
                         ->replace('<ul>', '<ul class="list-disc list-inside">')
                         ->replace('<ol>', '<ol class="list-decimal list-inside">')
                         ->toHtmlString()
