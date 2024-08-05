@@ -25,9 +25,11 @@ trait TimelogsHasher
 
         $timelogs = $timelogs->when($check, fn ($timelogs) => $timelogs->ensure(Timelog::class))->map->withoutRelations();
 
-        $holidays = $holidays ?? $model instanceof Timesheet
-            ? Holiday::whereMonth('date', explode('-', $model->month)[1])->whereYear('date', explode('-', $model->month)[0])->get()
-            : Holiday::search($model->date);
+        $holidays = $holidays ?? (
+            $model instanceof Timesheet
+                ? Holiday::whereMonth('date', explode('-', $model->month)[1])->whereYear('date', explode('-', $model->month)[0])->get()
+                : Holiday::search($model->date)
+        );
 
         return hash('sha512', json_encode([
             'id' => $model->id,

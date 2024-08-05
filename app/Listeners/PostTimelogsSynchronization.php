@@ -7,6 +7,7 @@ use App\Events\TimelogsSynchronized;
 use App\Jobs\ProcessTimesheet;
 use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Traits\TimelogsHasher;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Carbon;
@@ -43,6 +44,8 @@ class PostTimelogsSynchronization
                         ->select('uid')
                         ->distinct();
 
+                    $holidays = Holiday::search(Carbon::parse($date));
+
                     return Employee::query()
                         ->whereHas('enrollments', fn ($q) => $q->where('enrollment.scanner_id', $event->scanner->id)->whereIn('enrollment.uid', $uids))
                         ->with([
@@ -51,7 +54,11 @@ class PostTimelogsSynchronization
                             'timetables.timelogs',
                         ])
                         ->lazyById()
-                        ->reject(fn ($employee) => ($timetable = $employee->timetables->first()) ? $this->generateDigest($timetable) : false)
+                        ->reject(fn ($employee) =>
+                            ($timetable = $employee->timetables->first())
+                            ? $this->generateDigest($timetable, $employee->timelogs, $holidays) === $timetable->digest
+                            : false
+                        )
                         ->mapWithKeys(fn ($employee) => ["$date|$employee->id" => new ProcessTimetable($employee, Carbon::parse($date))])
                         ->toArray();
                 });
