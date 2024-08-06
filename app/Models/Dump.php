@@ -19,7 +19,7 @@ class Dump extends Model
 
     public function prunable(): Builder
     {
-        return static::whereRaw('created_at', '<=', now()->subYears(2));
+        return static::where('created_at', '<=', now()->subYears(2));
     }
 
     protected function pruning()
