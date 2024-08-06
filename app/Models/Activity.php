@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Activity extends Model
 {
-    use HasUlids;
+    use HasUlids, Prunable;
 
     protected $fillable = [
         'user_id',
@@ -35,5 +37,10 @@ class Activity extends Model
     public function activitable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function prunable(): Builder
+    {
+        return static::where('created_at', '<=', now()->subYears(2));
     }
 }
