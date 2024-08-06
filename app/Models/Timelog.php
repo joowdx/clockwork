@@ -132,6 +132,11 @@ class Timelog extends Model
         $query->whereDay('time', '>=', $day)->whereDay('time', '<=', $to);
     }
 
+    public function prunable(): Builder
+    {
+        return static::where('created_at', '<=', now()->subYears(2));
+    }
+
     public function scanner(): BelongsTo
     {
         return $this->belongsTo(Scanner::class, 'device', 'uid');

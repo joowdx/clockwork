@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('model:prune')->everyFifteenSeconds();
+        $schedule->command('model:prune')->monthly();
 
         $schedule->command('dump-databse')->monthly();
     }
