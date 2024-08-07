@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('dumps', function (Blueprint $table) {
             $table->ulid('id');
-            $table->string('path')->nullable();
+            $table->string('file')->nullable();
+            $table->unsignedBigInteger('size')->nullable();
             $table->longText('exception')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

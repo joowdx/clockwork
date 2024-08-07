@@ -31,7 +31,11 @@ class DumpDatabase extends Command
         try {
             $dump = new Dump();
 
-            $path = base_path('database/dumps/' . date('Y-m-d-His') . '.dump');
+            $time = now();
+
+            $file = $time->format('Y_m_d_His') . '.dump';
+
+            $path = base_path('database/dumps/' . $file);
 
             $process = Process::forever()->env(['PGPASSWORD' => env('DB_PASSWORD')]);
 
@@ -46,7 +50,11 @@ class DumpDatabase extends Command
                 '-f', $path,
             ])->throw();
 
-            $dump->path = $path;
+            $dump->file = $file;
+
+            $dump->created_at = $time;
+
+            $dump->size = filesize($path);
 
         } catch (Exception $exception) {
             $dump->exception = $exception->getMessage();
