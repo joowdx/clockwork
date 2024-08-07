@@ -37,7 +37,7 @@ class DumpDatabase implements ShouldQueue
      */
     public function uniqueId(): string
     {
-        return date('Y-m-d-His');
+        return date('Y-m-d');
     }
 
     /**
