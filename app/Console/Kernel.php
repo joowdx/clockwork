@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('model:prune')->monthly();
 
-        $schedule->command('dump-databse')->monthly();
+        $schedule->command('dump:databse')->monthly();
     }
 
     /**

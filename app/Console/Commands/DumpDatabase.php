@@ -14,7 +14,7 @@ class DumpDatabase extends Command
      *
      * @var string
      */
-    protected $signature = 'dump-database';
+    protected $signature = 'dump:database';
 
     /**
      * The console command description.
