@@ -31,13 +31,7 @@ class DumpDatabase extends Command
         try {
             $dump = new Dump();
 
-            $date = date('Y-m-d H:i:s');
-
-            if (!is_dir(base_path('database/dumps'))) {
-                mkdir(base_path('database/dumps'));
-            }
-
-            $path = base_path('database/dumps/' . $date . '.dump');
+            $path = base_path('database/dumps/' . date('Y-m-d-His') . '.dump');
 
             $process = Process::forever()->env(['PGPASSWORD' => env('DB_PASSWORD')]);
 
