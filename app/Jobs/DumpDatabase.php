@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Actions\DumpDatabase as DumpDatabaseAction;
 use App\Models\User;
 use Exception;
 use Filament\Notifications\Notification;
@@ -10,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Artisan;
 
 class DumpDatabase implements ShouldQueue
 {
@@ -43,19 +43,19 @@ class DumpDatabase implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(DumpDatabaseAction $dumper): void
     {
         try {
-            Artisan::call('dump-database');
+            $dump = $dumper();
 
             Notification::make()
                 ->title('Database dump successful')
-                ->body('The database has been successfully dumped to disk initiated at ' . $this->time->format('Y-m-d H:i:s.'))
+                ->body('The database has been successfully dumped to disk at ' . $dump->created_at)
                 ->sendToDatabase($this->user);
         } catch (Exception $exception) {
             Notification::make()
                 ->title('Database dump failed')
-                ->body('The database dump failed to complete initiated at ' . $this->time->format('Y-m-d H:i:s.'))
+                ->body($exception->getMessage())
                 ->sendToDatabase($this->user);
         }
     }
