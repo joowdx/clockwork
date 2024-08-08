@@ -8,6 +8,7 @@ use App\Filament\Superuser\Resources\TimelogResource\Pages;
 use App\Models\Employee;
 use App\Models\Timelog;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
@@ -83,18 +84,33 @@ class TimelogResource extends Resource
                     ->searchable()
                     ->multiple()
                     ->preload(),
-                Tables\Filters\SelectFilter::make('employee')
-                    ->relationship('employee', 'full_name', fn ($query) => $query->where('employees.active', 1))
-                    ->searchable()
-                    ->multiple()
-                    ->preload()
-                    ->indicateUsing(function ($data) {
-                        if (empty($data['values'])) {
+                Tables\Filters\Filter::make('employee')
+                    ->form([
+                        Select::make('employee')
+                            ->getSearchResultsUsing(
+                                function (?string $search): array {
+                                    return Employee::query()
+                                        ->when($search, fn ($query, $search) => $query->where('name', 'ilike', "%{$search}%"))
+                                        ->limit(20)
+                                        ->pluck('name', 'id')
+                                        ->toArray();
+                                }
+                            )
+                            ->getOptionLabelUsing(fn ($value): ?string => Employee::find($value)?->name)
+                            ->searchable()
+                            ->multiple()
+                            ->preload(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        $query->when($data['employee'], fn ($query, $id) => $query->whereHas('employee', fn ($q) => $q->whereIn('employees.id', $id)));
+                    })
+                    ->indicateUsing(function (array $data) {
+                        if (empty($data['employee'])) {
                             return;
                         }
 
                         $employees = Employee::select('name')
-                            ->find($data['values'])
+                            ->find($data['employee'])
                             ->pluck('name');
 
                         return Indicator::make('Employee: '.$employees->join(' & '))
