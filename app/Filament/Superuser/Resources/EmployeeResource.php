@@ -119,6 +119,7 @@ class EmployeeResource extends Resource
                         ->columnSpan(2),
                 ]),
             Forms\Components\Section::make('Profile Settings')
+                ->visible($isCalledBySelf)
                 ->columns(3)
                 ->schema([
                     Forms\Components\TextInput::make('uid')
