@@ -379,6 +379,7 @@ class ScheduleResource extends Resource
         return [
             'index' => Pages\ListSchedules::route('/'),
             'create' => Pages\CreateSchedule::route('/create'),
+            // 'create-overtime' => Pages\CreateOvertimeSchedule::route('/create-overtime'),
             'view' => Pages\ViewSchedule::route('/{record}/view'),
             'edit' => Pages\EditSchedule::route('/{record}/edit'),
         ];

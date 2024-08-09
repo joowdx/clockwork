@@ -15,6 +15,9 @@ class ListSchedules extends ListRecords
         return [
             Actions\ActionGroup::make([
                 Actions\CreateAction::make(),
+                // Actions\Action::make('new_overtime_schedule')
+                //     ->icon('heroicon-m-plus')
+                //     ->url(route('filament.secretary.resources.schedules.create-overtime')),
             ]),
         ];
     }
