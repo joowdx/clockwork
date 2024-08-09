@@ -29,6 +29,10 @@ class TimesheetResource extends Resource
 
     protected static ?string $navigationLabel = 'Timesheets';
 
+    protected static ?string $breadcrumb = 'Timesheets';
+
+    protected static ?string $modelLabel = 'Timesheets';
+
     public static function form(Form $form): Form
     {
         return $form
