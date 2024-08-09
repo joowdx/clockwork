@@ -116,7 +116,9 @@ class TimesheetResource extends Resource
                         $query->when($data['offices'], function ($query) use ($data) {
                             $query->whereHas('offices', function ($query) use ($data) {
                                 $query->whereIn('offices.id', $data['offices']);
+                                $query->where('deployment.active', true);
                             });
+
                         });
                     })
                     ->indicateUsing(function (array $data) {

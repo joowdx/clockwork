@@ -165,7 +165,7 @@ class ListTimesheets extends ListRecords
                     }),
                 Tables\Filters\SelectFilter::make('offices')
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
-                    ->relationship('offices', 'code')
+                    ->relationship('offices', 'code', fn ($query) => $query->where('deployment.active', true))
                     ->multiple()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('groups')
