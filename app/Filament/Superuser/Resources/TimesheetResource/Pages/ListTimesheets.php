@@ -223,6 +223,10 @@ class ListTimesheets extends ListRecords
                         $this->timelogs = $record->timelogs()->whereBetween('time', [$from, $to])->withoutGlobalScopes()->get();
 
                         return [
+                            Forms\Components\TextInput::make('month')
+                                ->default($month->format('Y-m'))
+                                ->hidden()
+                                ->dehydratedWhenHidden(),
                             Forms\Components\Tabs::make()
                                 // ->contained(false)
                                 ->tabs([
@@ -300,7 +304,7 @@ class ListTimesheets extends ListRecords
                     ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
                         Timelog::upsert($data['timelogs'], ['time', 'device', 'uid', 'mode', 'state'], ['uid', 'time', 'state', 'mode']);
 
-                        ProcessTimesheet::dispatchSync($record, Carbon::parse($this->filters['month'] ?? today()->startOfMonth()));
+                        ProcessTimesheet::dispatchSync($record, Carbon::parse($data['month'] ?? today()->startOfMonth()));
 
                         $component->sendSuccessNotification();
 
