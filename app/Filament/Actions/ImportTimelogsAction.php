@@ -4,6 +4,7 @@ namespace App\Filament\Actions;
 
 use App\Jobs\ImportTimelogs;
 use App\Models\Scanner;
+use DateTime;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
+use Illuminate\Support\LazyCollection;
 use League\Csv\Reader;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -104,32 +106,51 @@ class ImportTimelogsAction extends Action
                 ->maxSize(8096)
                 ->required()
                 ->rules([
-                    'mimes:csv,txt',
                     fn () => function (string $attribute, TemporaryUploadedFile $value, \Closure $fail) {
-                        $first = Reader::createFromStream(fopen($value->getRealPath(), mode: 'r'))
-                            ->addFormatter(fn ($row) => array_map('trim', $row))
-                            ->setDelimiter("\t")
-                            ->first();
-
                         $file = $value->getCLientOriginalName();
+
+                        if (mime_content_type($value->getRealPath()) !== 'text/plain') {
+                            $fail("File uploaded {$file} is invalid");
+                        }
+
+                        $rows = Reader::createFromStream(fopen($value->getRealPath(), mode: 'r'))
+                            ->addFormatter(fn ($row) => array_map('trim', $row))
+                            ->setDelimiter("\t");
+
+                        if (LazyCollection::make(fn () => yield from $rows->select(2))->unique()->count() > 1) {
+                            $fail('Conflicting device UID in file uploaded');
+                        }
+
+                        if(
+                            LazyCollection::make(fn () => yield from $rows)
+                                ->some(fn ($row) =>
+                                    count($row) !== 6 ||
+                                    DateTime::createFromFormat('Y-m-d H:i:s', $row[1]) === false ||
+                                    DateTime::createFromFormat('Y-m-d H:i:s', $row[1])->format('Y-m-d H:i:s') !== $row[1] ||
+                                    ! is_numeric($row[2]) ||
+                                    ! is_numeric($row[3]) ||
+                                    ! is_numeric($row[4]) ||
+                                    ! is_numeric($row[5])
+                                )
+                        ) {
+                            $fail("File uploaded {$file} is invalid");
+                        }
+
+                        $device = $rows->first()[2];
 
                         $number = substr_replace($file, '', strrpos($file, '_attlog.dat'), strlen('_attlog.dat'));
 
-                        if (is_numeric($number) && $number <= 255 && $number !== $first[2]) {
+                        if (is_numeric($number) && $number <= 255 && $number !== $device) {
                             $fail("File uploaded {$file} is invalid");
                         }
 
-                        if (count($first) !== 6) {
-                            $fail("File uploaded {$file} is invalid");
-                        }
-
-                        if (isset($first[2]) && is_numeric($first[2])) {
+                        if ($device) {
                             if (
-                                Scanner::where('uid', $first[2])
+                                Scanner::where('uid', $device)
                                     ->when($this->onlyAssigned, fn ($query) => $query->whereIn('scanners.uid', auth()->user()->scanners->pluck('uid')))
                                     ->doesntExist()
                             ) {
-                                $fail("No device found for these records from device {$first[2]} with UID in file $file");
+                                $fail("No device found for these records from device {$device} in file $file");
                             }
                         } else {
                             $fail("File uploaded {$file} is invalid");
