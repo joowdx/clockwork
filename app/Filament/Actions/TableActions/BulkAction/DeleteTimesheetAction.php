@@ -42,20 +42,6 @@ class DeleteTimesheetAction extends BulkAction
                 ->currentPassword()
                 ->type('password')
                 ->live(),
-            TextInput::make('confirmation')
-                ->markAsRequired()
-                ->rule('required')
-                ->visible(fn (Get $get) => $get('month') && $get('password'))
-                ->helperText(fn (Get $get) => $get('month') ? 'Please type "DELETE ' . $get('month') . '" to confirm.' : '')
-                ->rule(fn (Get $get) => function ($a, $v, $f) use ($get) {
-                    if ($v !== 'DELETE ' . $get('month')) {
-                        $f('To confirm, please type "DELETE ' . $get('month') . '".');
-                    }
-
-                }),
-            Checkbox::make('acknowledgement')
-                ->helperText('I understand that this action is destructive, irreversible and still want to proceed.')
-                ->rule('accepted'),
         ]);
 
         $this->action(function (Collection $records, array $data) {
