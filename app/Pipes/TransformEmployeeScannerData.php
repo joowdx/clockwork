@@ -17,16 +17,16 @@ class TransformEmployeeScannerData
                 'employee' => [
                     'id' => strtolower(str()->ulid()),
                     'name' => [
-                        'last' => $entry[$headers['last name']],
-                        'first' => $entry[$headers['first name']],
-                        'middle' => @$entry[$headers['middle name']],
-                        'extension' => @$entry[$headers['name extension']],
+                        'last' => mb_convert_encoding($entry[$headers['last name']], 'UTF-8', 'auto'),
+                        'first' => mb_convert_encoding($entry[$headers['first name']], 'UTF-8', 'auto'),
+                        'middle' => mb_convert_encoding(@$entry[$headers['middle name']], 'UTF-8', 'auto'),
+                        'extension' => mb_convert_encoding(@$entry[$headers['name extension']], 'UTF-8', 'auto'),
                     ],
                     'office' => @$entry[$headers['office']],
                     'regular' => (bool) @$entry[$headers['regular']],
                     'csc_format' => @$entry[$headers['csc format']] === null ? true : filter_var(@$entry[$headers['csc format']], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
                     'toJSON' => true,
-                    'groups' => explode(',', @$entry[$headers['groups']] ?? ''),
+                    'groups' => explode(',', mb_convert_encoding(@$entry[$headers['groups']] ?? '', 'UTF-8', 'auto')),
                 ],
                 'scanners' => $this->uids($entry, $this->scanners($headers)),
             ];
