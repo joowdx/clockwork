@@ -13,6 +13,7 @@ use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
+use App\Filament\Actions\TableActions\UpdateEmployeeAction;
 use App\Filament\Actions\TimelogsActionGroup;
 use App\Filament\Superuser\Resources\TimesheetResource;
 use App\Jobs\ProcessTimesheet;
@@ -175,141 +176,145 @@ class ListTimesheets extends ListRecords
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\Action::make('export')
-                    ->label('Export')
-                    ->requiresConfirmation()
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->modalIcon('heroicon-o-document-arrow-down')
-                    ->modalDescription(fn (Employee $record) => "Export timesheet of {$record->name}")
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
-                    ->form(fn () => app(ExportTimesheetAction::class, ['name' => null])->exportForm())
-                    ->action(fn (Employee $record, array $data) => app(ExportTimesheetAction::class, ['name' => null])->exportAction($record, $data)),
-                Tables\Actions\Action::make('generate')
-                    ->icon('heroicon-o-bolt')
-                    ->requiresConfirmation()
-                    ->modalDescription(app(GenerateTimesheetAction::class, ['name' => null])->generateConfirmation())
-                    ->successNotificationTitle(fn ($record) => "Timesheet for {$record->name} generated.")
-                    ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
-                    ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
-                        if (auth()->user()->superuser && auth()->user()->developer && ! empty($data) && $data['month'] === $data['password']) {
-                            $this->replaceMountedTableAction('thaumaturge', $record->id, ['month' => $data['month']]);
+                Tables\Actions\ActionGroup::make([
+                    UpdateEmployeeAction::make(),
+                    Tables\Actions\Action::make('export')
+                        ->label('Export')
+                        ->requiresConfirmation()
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->modalIcon('heroicon-o-document-arrow-down')
+                        ->modalDescription(fn (Employee $record) => "Export timesheet of {$record->name}")
+                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
+                        ->form(fn () => app(ExportTimesheetAction::class, ['name' => null])->exportForm())
+                        ->action(fn (Employee $record, array $data) => app(ExportTimesheetAction::class, ['name' => null])->exportAction($record, $data)),
+                    Tables\Actions\Action::make('generate')
+                        ->icon('heroicon-o-bolt')
+                        ->requiresConfirmation()
+                        ->modalDescription(app(GenerateTimesheetAction::class, ['name' => null])->generateConfirmation())
+                        ->successNotificationTitle(fn ($record) => "Timesheet for {$record->name} generated.")
+                        ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
+                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
+                        ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
+                            if (user()->superuser && user()->developer && ! empty($data) && $data['month'] === $data['password']) {
+                                $this->replaceMountedTableAction('thaumaturge', $record->id, ['month' => $data['month']]);
 
-                            return;
-                        }
+                                return;
+                            }
 
-                        ProcessTimesheet::dispatchSync($record, $data['month']);
+                            ProcessTimesheet::dispatchSync($record, $data['month']);
 
-                        $component->sendSuccessNotification();
-                    }),
-                Tables\Actions\Action::make('thaumaturge')
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && auth()->user()->superuser && auth()->user()->developer)
-                    ->extraAttributes(['class' => 'hidden'])
-                    ->modalHeading(fn ($record) => $record->name)
-                    ->modalAlignment('center')
-                    ->icon('heroicon-o-puzzle-piece')
-                    ->modalIcon('heroicon-o-puzzle-piece')
-                    ->modalDescription(null)
-                    ->modalWidth('3xl')
-                    ->slideOver()
-                    ->successNotificationTitle(fn ($record) => "Timesheet for {$record->name} generated.")
-                    ->form(function ($arguments, $record) {
-                        $month = Carbon::parse($arguments['month']);
+                            $component->sendSuccessNotification();
+                        }),
+                    Tables\Actions\Action::make('thaumaturge')
+                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && user()->superuser && user()->developer)
+                        ->extraAttributes(['class' => 'hidden'])
+                        ->modalHeading(fn ($record) => $record->name)
+                        ->modalAlignment('center')
+                        ->icon('heroicon-o-puzzle-piece')
+                        ->modalIcon('heroicon-o-puzzle-piece')
+                        ->modalDescription(null)
+                        ->modalWidth('3xl')
+                        ->slideOver()
+                        ->successNotificationTitle(fn ($record) => "Timesheet for {$record->name} generated.")
+                        ->form(function ($arguments, $record) {
+                            $month = Carbon::parse($arguments['month']);
 
-                        $from = $month->clone()->startOfMonth();
+                            $from = $month->clone()->startOfMonth();
 
-                        $to = $month->clone()->endOfMonth();
+                            $to = $month->clone()->endOfMonth();
 
-                        $this->timelogs = $record->timelogs()->whereBetween('time', [$from, $to])->withoutGlobalScopes()->get();
+                            $this->timelogs = $record->timelogs()->whereBetween('time', [$from, $to])->withoutGlobalScopes()->get();
 
-                        return [
-                            Forms\Components\TextInput::make('month')
-                                ->default($month->format('Y-m'))
-                                ->hidden()
-                                ->dehydratedWhenHidden(),
-                            Forms\Components\Tabs::make()
-                                // ->contained(false)
-                                ->tabs([
-                                    Forms\Components\Tabs\Tab::make('Timelogs')
-                                        ->schema([
-                                            Forms\Components\View::make('print.timelogs')
-                                                ->viewData([
-                                                    'employee' => $record,
-                                                    'timelogs' => $this->timelogs,
-                                                    'preview' => true,
-                                                    'month' => $month,
-                                                    'from' => $from->format('Y-m-d'),
-                                                    'to' => $to->format('Y-m-d'),
-                                                    'action' => $this->action,
-                                                ]),
-                                        ]),
-                                    Forms\Components\Tabs\Tab::make('New')
-                                        ->schema([
-                                            Forms\Components\Repeater::make('timelogs')
-                                                ->hiddenLabel()
-                                                ->collapsible()
-                                                ->cloneable()
-                                                ->reorderable(false)
-                                                ->columns(2)
-                                                ->defaultItems(0)
-                                                ->addActionLabel('Create')
-                                                ->itemLabel(function (array $state) {
-                                                    if (is_null($state['time'])) {
-                                                        return null;
-                                                    }
+                            return [
+                                Forms\Components\TextInput::make('month')
+                                    ->default($month->format('Y-m'))
+                                    ->hidden()
+                                    ->dehydratedWhenHidden(),
+                                Forms\Components\Tabs::make()
+                                    // ->contained(false)
+                                    ->tabs([
+                                        Forms\Components\Tabs\Tab::make('Timelogs')
+                                            ->schema([
+                                                Forms\Components\View::make('print.timelogs')
+                                                    ->viewData([
+                                                        'employee' => $record,
+                                                        'timelogs' => $this->timelogs,
+                                                        'preview' => true,
+                                                        'month' => $month,
+                                                        'from' => $from->format('Y-m-d'),
+                                                        'to' => $to->format('Y-m-d'),
+                                                        'action' => $this->action,
+                                                    ]),
+                                            ]),
+                                        Forms\Components\Tabs\Tab::make('New')
+                                            ->schema([
+                                                Forms\Components\Repeater::make('timelogs')
+                                                    ->hiddenLabel()
+                                                    ->collapsible()
+                                                    ->cloneable()
+                                                    ->reorderable(false)
+                                                    ->columns(2)
+                                                    ->defaultItems(0)
+                                                    ->addActionLabel('Create')
+                                                    ->itemLabel(function (array $state) {
+                                                        if (is_null($state['time'])) {
+                                                            return null;
+                                                        }
 
-                                                    return Carbon::parse($state['time'])->format('Y-m-d H:i:s').' '.$state['state']->getLabel();
-                                                })
-                                                ->schema(function (Employee $record) use ($from, $to) {
-                                                    $scanners = $record->scanners()->whereNotNull('scanners.uid')->get();
+                                                        return Carbon::parse($state['time'])->format('Y-m-d H:i:s').' '.$state['state']->getLabel();
+                                                    })
+                                                    ->schema(function (Employee $record) use ($from, $to) {
+                                                        $scanners = $record->scanners()->whereNotNull('scanners.uid')->get();
 
-                                                    return [
-                                                        Forms\Components\Select::make('device')
-                                                            ->live()
-                                                            ->options($scanners->pluck('name', 'uid')->toArray())
-                                                            ->required()
-                                                            ->afterStateUpdated(function (int $state, Forms\Set $set) use ($scanners) {
-                                                                $set('uid', $scanners->first(fn ($scanner) => $scanner->uid === $state)?->pivot->uid);
-                                                            }),
-                                                        Forms\Components\DateTimePicker::make('time')
-                                                            ->live()
-                                                            ->distinct()
-                                                            ->required()
-                                                            ->minDate($from->format('Y-m-d H:i:s'))
-                                                            ->maxDate($to->format('Y-m-d H:i:s')),
-                                                        Forms\Components\Select::make('state')
-                                                            ->live()
-                                                            ->options(TimelogState::class)
-                                                            ->default(TimelogState::CHECK_IN)
-                                                            ->required(),
-                                                        Forms\Components\Select::make('mode')
-                                                            ->live()
-                                                            ->options(function () {
-                                                                return collect(TimelogMode::cases())->mapWithKeys(fn ($mode) => [
-                                                                    $mode->value => $mode->getLabel(true),
-                                                                ]);
-                                                            })
-                                                            ->default(TimelogMode::FINGERPRINT_1)
-                                                            ->required(),
-                                                        Forms\Components\Hidden::make('pseudo')
-                                                            ->default(true),
-                                                        Forms\Components\Hidden::make('uid')
-                                                            ->default(null),
-                                                    ];
-                                                }),
-                                        ]),
-                                ]),
-                        ];
-                    })
-                    ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
-                        Timelog::upsert($data['timelogs'], ['time', 'device', 'uid', 'mode', 'state'], ['uid', 'time', 'state', 'mode']);
+                                                        return [
+                                                            Forms\Components\Select::make('device')
+                                                                ->live()
+                                                                ->options($scanners->pluck('name', 'uid')->toArray())
+                                                                ->required()
+                                                                ->afterStateUpdated(function (int $state, Forms\Set $set) use ($scanners) {
+                                                                    $set('uid', $scanners->first(fn ($scanner) => $scanner->uid === $state)?->pivot->uid);
+                                                                }),
+                                                            Forms\Components\DateTimePicker::make('time')
+                                                                ->live()
+                                                                ->distinct()
+                                                                ->required()
+                                                                ->minDate($from->format('Y-m-d H:i:s'))
+                                                                ->maxDate($to->format('Y-m-d H:i:s')),
+                                                            Forms\Components\Select::make('state')
+                                                                ->live()
+                                                                ->options(TimelogState::class)
+                                                                ->default(TimelogState::CHECK_IN)
+                                                                ->required(),
+                                                            Forms\Components\Select::make('mode')
+                                                                ->live()
+                                                                ->options(function () {
+                                                                    return collect(TimelogMode::cases())->mapWithKeys(fn ($mode) => [
+                                                                        $mode->value => $mode->getLabel(true),
+                                                                    ]);
+                                                                })
+                                                                ->default(TimelogMode::FINGERPRINT_1)
+                                                                ->required(),
+                                                            Forms\Components\Hidden::make('pseudo')
+                                                                ->default(true),
+                                                            Forms\Components\Hidden::make('uid')
+                                                                ->default(null),
+                                                        ];
+                                                    }),
+                                            ]),
+                                    ]),
+                            ];
+                        })
+                        ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
+                            Timelog::upsert($data['timelogs'], ['time', 'device', 'uid', 'mode', 'state'], ['uid', 'time', 'state', 'mode']);
 
-                        ProcessTimesheet::dispatchSync($record, Carbon::parse($data['month'] ?? today()->startOfMonth()));
+                            ProcessTimesheet::dispatchSync($record, Carbon::parse($data['month'] ?? today()->startOfMonth()));
 
-                        $component->sendSuccessNotification();
+                            $component->sendSuccessNotification();
 
-                        $component->halt();
-                    }),
+                            $component->halt();
+                        }),
+
+                ]),
             ])
             ->bulkActions([
                 ViewTimesheetAction::make(listing: true)

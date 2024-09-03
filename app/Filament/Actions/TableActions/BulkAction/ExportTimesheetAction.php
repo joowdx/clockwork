@@ -91,7 +91,7 @@ class ExportTimesheetAction extends BulkAction
                 ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
-                ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
+                ->signature($data['electronic_signature'] ? user()?->signature : null)
                 ->password($data['digital_signature'] ? $data['password'] : null)
                 ->individual($data['individual'] ?? false)
                 ->transmittal($data['transmittal'] ?? 0)
@@ -147,7 +147,7 @@ class ExportTimesheetAction extends BulkAction
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                 ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! auth()->user()->signature) {
+                    if ($value && ! user()?->signature) {
                         $fail('Configure your electronic signature first');
                     }
                 }),
@@ -168,7 +168,7 @@ class ExportTimesheetAction extends BulkAction
                 ->markAsRequired(fn (Get $get) => $get('digital_signature'))
                 ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
                 ->rule(fn () => function ($attribute, $value, $fail) {
-                    if (! auth()->user()->signature->verify($value)) {
+                    if (! user()?->signature->verify($value)) {
                         $fail('The password is incorrect');
                     }
                 }),

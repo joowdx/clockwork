@@ -28,12 +28,13 @@ class EmployeeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'full_name';
 
-    public static function formSchema(): array
+    public static function formSchema(bool $compact = false): array
     {
         $isCalledBySelf = @debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1]['class'] === get_called_class();
 
         return [
             Forms\Components\Section::make('Personal Information')
+                ->compact($compact)
                 ->columns(2)
                 ->schema([
                     Forms\Components\TextInput::make('last_name')
@@ -93,6 +94,7 @@ class EmployeeResource extends Resource
                         ->options(['male' => 'Male', 'female' => 'Female']),
                 ]),
             Forms\Components\Section::make('Employment Details')
+                ->compact($compact)
                 ->columns(6)
                 ->schema([
                     Forms\Components\TextInput::make('designation')

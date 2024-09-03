@@ -155,12 +155,14 @@ class Employee extends Model
     {
         return $this->belongsToMany(Office::class, 'deployment')
             ->using(Deployment::class)
-            ->withPivot(['active', 'current']);
+            ->withPivot(['active', 'current'])
+            ->orderByPivot('current', 'desc');
     }
 
     public function deployments(): HasMany
     {
-        return $this->hasMany(Deployment::class);
+        return $this->hasMany(Deployment::class)
+            ->orderBy('deployment.current', 'desc');
     }
 
     public function office(): HasOneThrough
