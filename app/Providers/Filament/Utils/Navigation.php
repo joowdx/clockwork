@@ -12,11 +12,11 @@ class Navigation
         $visibility = fn (string $panel = 'app') => request()->user()->canAccessPanel(Filament::getCurrentPanel(), $panel);
 
         return [
-            MenuItem::make('app')
-                ->label('Home')
-                ->icon('gmdi-home-o')
-                ->visible(fn () => $visibility())
-                ->url(fn () => route('filament.app.pages.dashboard')),
+            // MenuItem::make('app')
+            //     ->label('Home')
+            //     ->icon('gmdi-home-o')
+            //     ->visible(fn () => $visibility())
+            //     ->url(fn () => route('filament.app.pages.dashboard')),
             MenuItem::make('security')
                 ->label(str(settings('security') ?: 'security')->headline())
                 ->icon('gmdi-enhanced-encryption-o')

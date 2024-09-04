@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Http\Responses\LoginResponse;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
 use Filament\Http\Middleware\Authenticate;
@@ -27,7 +28,7 @@ class AppPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\\Filament\\App\\Pages')
-            ->pages([Pages\Dashboard::class])
+            ->pages([Redirect::class])
             ->discoverWidgets(in: app_path('Filament/App/Widgets'), for: 'App\\Filament\\App\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
@@ -35,5 +36,13 @@ class AppPanelProvider extends PanelProvider
             ->userMenuItems(Navigation::menuItems())
             ->spaUrlExceptions(Navigation::spaExceptions())
             ->spa();
+    }
+}
+
+class Redirect extends Pages\Dashboard
+{
+    public function __construct()
+    {
+        (new LoginResponse)->toResponse(request());
     }
 }
