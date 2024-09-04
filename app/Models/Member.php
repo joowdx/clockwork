@@ -19,11 +19,13 @@ class Member extends Pivot
 
     public function group(): BelongsTo
     {
-        return $this->belongsTo(Group::class);
+        return $this->belongsTo(Group::class)
+            ->withoutGlobalScopes();
     }
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class)
+            ->withoutGlobalScopes();
     }
 }

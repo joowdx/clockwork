@@ -44,7 +44,7 @@ class GroupResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('employees_count')
                     ->label('Employees')
-                    ->counts('employees')
+                    ->counts(['employees' => fn (Builder $query) => $query->withoutGlobalScopes()])
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
