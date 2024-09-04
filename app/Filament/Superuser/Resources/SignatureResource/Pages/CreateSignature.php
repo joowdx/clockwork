@@ -46,8 +46,5 @@ class CreateSignature extends CreateRecord
         return $data;
     }
 
-    protected function checkDirectories()
-    {
-
-    }
+    protected function checkDirectories() {}
 }

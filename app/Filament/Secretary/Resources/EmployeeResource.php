@@ -2,12 +2,9 @@
 
 namespace App\Filament\Secretary\Resources;
 
-use App\Enums\EmploymentStatus;
-use App\Enums\EmploymentSubstatus;
 use App\Filament\Filters\ActiveFilter;
 use App\Filament\Filters\StatusFilter;
 use App\Filament\Secretary\Resources\EmployeeResource\Pages;
-use App\Filament\Secretary\Resources\EmployeeResource\RelationManagers;
 use App\Filament\Superuser\Resources\EmployeeResource as SuperuserEmployeeResource;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\OfficesRelationManager;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\ScannersRelationManager;
@@ -89,7 +86,7 @@ class EmployeeResource extends Resource
                             ->preload()
                             ->multiple(),
                     ])
-                    ->query(function(Builder $query, array $data) {
+                    ->query(function (Builder $query, array $data) {
                         $query->when($data['offices'], function ($query) use ($data) {
                             $query->whereHas('offices', function ($query) use ($data) {
                                 $query->whereIn('offices.id', $data['offices']);
@@ -108,7 +105,7 @@ class EmployeeResource extends Resource
                             ->find($data['offices'])
                             ->pluck('code');
 
-                        return 'Offices: ' . $offices->join(', ');
+                        return 'Offices: '.$offices->join(', ');
                     }),
                 TrashedFilter::make(),
             ])

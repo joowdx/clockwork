@@ -16,13 +16,13 @@ class DumpDatabase
     public function dump(bool $throw = true): Dump
     {
         try {
-            $dump = new Dump();
+            $dump = new Dump;
 
             $time = now();
 
-            $file = $time->format('Y_m_d_His') . '.dump';
+            $file = $time->format('Y_m_d_His').'.dump';
 
-            $path = base_path('database/dumps/' . $file);
+            $path = base_path('database/dumps/'.$file);
 
             $process = Process::forever()->env([
                 'PGDATABASE' => env('DB_DATABASE'),

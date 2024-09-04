@@ -42,7 +42,8 @@ class OfficesRelationManager extends RelationManager
                         if (! isset($record)) {
                             $query->whereHas('offices', function ($query) use ($get) {
                                 $query->where('offices.id', $get('office_id'))
-                                    ->where('active', true);
+                                    ->where('deployment.current', true)
+                                    ->where('deployment.active', true);
                             });
 
                             return;

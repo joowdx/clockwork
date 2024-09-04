@@ -3,9 +3,7 @@
 namespace App\Filament\Actions\TableActions\BulkAction;
 
 use App\Models\Timesheet;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
@@ -47,12 +45,12 @@ class DeleteTimesheetAction extends BulkAction
         $this->action(function (Collection $records, array $data) {
             Timesheet::query()
                 ->whereIn('employee_id', $records->pluck('id'))
-                ->whereDate('month', $data['month'] . '-01')
+                ->whereDate('month', $data['month'].'-01')
                 ->delete();
 
             Notification::make()
                 ->danger()
-                ->title('Timesheets for the selected employees of the month ' . $data['month'] . ' have been deleted.')
+                ->title('Timesheets for the selected employees of the month '.$data['month'].' have been deleted.')
                 ->send();
         });
     }

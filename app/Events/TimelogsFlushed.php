@@ -16,7 +16,5 @@ class TimelogsFlushed
         public readonly Scanner $scanner,
         public readonly User $user,
         public readonly int $records = 0,
-    ) {
-
-    }
+    ) {}
 }

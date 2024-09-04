@@ -48,7 +48,7 @@ class DumpResource extends Resource
                     ->visible(fn ($record) => $record->stored)
                     ->action(fn ($record) => response()->download($record->path))
                     ->requiresConfirmation()
-                    ->modalDescription("Are you sure you want to download the dump file?")
+                    ->modalDescription('Are you sure you want to download the dump file?')
                     ->modalIcon('heroicon-o-archive-box-arrow-down')
                     ->modalSubmitActionLabel('Download'),
                 Tables\Actions\DeleteAction::make(),

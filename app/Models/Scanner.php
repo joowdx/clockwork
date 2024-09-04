@@ -41,9 +41,9 @@ class Scanner extends Model implements Auditable
         parent::boot();
 
         static::saved(function (self $scanner) {
-            if($scanner->wasChanged('uid')) {
+            if ($scanner->wasChanged('uid')) {
                 $scanner->enrollments()->update(['device' => $scanner->uid]);
-            };
+            }
         });
     }
 

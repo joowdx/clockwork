@@ -5,12 +5,12 @@ namespace App\Filament\Actions\TableActions;
 use App\Filament\Superuser\Resources\EmployeeResource;
 use App\Models\Employee;
 use App\Models\Enrollment;
+use App\Models\Group;
 use App\Models\Office;
 use App\Models\Scanner;
-use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Group as FormGroup;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
@@ -36,7 +36,7 @@ class UpdateEmployeeAction extends Action
 
         $this->modalIcon('heroicon-o-pencil-square');
 
-        $this->modalHeading('Update employee');
+        $this->modalHeading(fn (Employee $record) => 'Update '.$record->full_name);
 
         $this->modalDescription(null);
 
@@ -48,7 +48,7 @@ class UpdateEmployeeAction extends Action
 
         $this->fillForm(function (Employee $record) {
             return [
-                ...$record->toArray(),
+                ...$record->withoutRelations()->toArray(),
                 'deployments' => $record->deployments()->withoutGlobalScopes()->get()->mapWithKeys(function ($deployment) {
                     return [
                         $deployment->id => [
@@ -72,6 +72,15 @@ class UpdateEmployeeAction extends Action
                         ],
                     ];
                 })->values()->all(),
+                'memberships' => $record->groups()->withoutGlobalScopes()->get()->mapWithKeys(function ($group) {
+                    return [
+                        $group->id => [
+                            'id' => $group->id,
+                            'group_id' => $group->id,
+                            'active' => $group->pivot->active,
+                        ],
+                    ];
+                })->values()->all(),
             ];
         });
 
@@ -83,151 +92,193 @@ class UpdateEmployeeAction extends Action
                         ->schema(EmployeeResource::formSchema(compact: true)),
                     Tab::make('Offices')
                         ->schema([
-                            Section::make('Deployments')
-                                ->compact()
+                            Repeater::make('deployments')
+                                ->hiddenLabel()
+                                ->itemLabel(fn (array $state) => Office::select('code')->find($state['office_id'])?->code)
+                                ->reorderable(false)
+                                ->addActionLabel('Add office')
                                 ->schema([
-                                    Repeater::make('deployments')
-                                        ->hiddenLabel()
-                                        ->itemLabel(fn (array $state) => Office::select('code')->find($state['office_id'])?->code)
-                                        ->reorderable(false)
+                                    FormGroup::make()
+                                        ->columns(2)
                                         ->schema([
-                                            Group::make()
-                                                ->columns(2)
-                                                ->schema([
-                                                    Toggle::make('current')
-                                                        ->default(false)
-                                                        ->required()
-                                                        ->inline(false)
-                                                        ->distinct(),
-                                                    Toggle::make('active')
-                                                        ->default(true)
-                                                        ->required()
-                                                        ->inline(false),
-                                                ]),
-                                            Select::make('office_id')
-                                                ->label('Office')
-                                                ->options(function (?string $state) {
-                                                    $offices = Office::take(10)->orderBy('name')->pluck('name', 'id');
-
-                                                    return $state
-                                                        ? $offices->prepend(Office::withoutGlobalScopes()->find($state)?->name, $state)
-                                                        : $offices;
-                                                })
-                                                ->getSearchResultsUsing(function (string $search) {
-                                                    return Office::orderBy('name')
-                                                        ->where('name', 'ilike', "%$search%")
-                                                        ->orWhere('code', 'ilike', "%$search%")
-                                                        ->pluck('name', 'id');
-                                                })
-                                                ->reactive()
-                                                ->searchable()
+                                            Toggle::make('current')
+                                                ->default(false)
                                                 ->required()
-                                                ->exists('offices', 'id')
+                                                ->inline(false)
                                                 ->distinct()
-                                                ->afterStateUpdated(fn (Set $set) => $set('supervisor_id', null)),
-                                            Select::make('supervisor_id')
-                                                ->label('Supervisor')
-                                                ->options(function (Employee $record, Get $get, ?string $state) {
-                                                    $office = Office::withoutGlobalScopes()->find($get('office_id'));
-
-                                                    $employees = Employee::query()
-                                                        ->whereNotIn('employees.id', [$record->id, $office?->head?->id])
-                                                        ->whereHas('offices', function ($query) use ($office, $get) {
-                                                            $query->where('offices.id', $get('office_id'))
-                                                                ->where('active', true);
-                                                        })
-                                                        ->take(25)
-                                                        ->reorder()
-                                                        ->orderBy('name')
-                                                        ->pluck('name', 'id');
-
-                                                    return $state
-                                                        ? $employees->prepend(Employee::find($state)?->name, $state)
-                                                        : $employees;
-                                                })
-                                                ->getSearchResultsUsing(function (Employee $record, Get $get, ?string $search) {
-                                                    $office = Office::withoutGlobalScopes()->find($get('office_id'));
-
-                                                    return Employee::query()
-                                                        ->where(function ($query) use ($search) {
-                                                            $query->where('name', 'ilike', "%$search%")
-                                                                ->orWhere('full_name', 'ilike', "%$search%");
-                                                        })
-                                                        ->whereNotIn('employees.id', [$record->id, $office->head?->id])
-                                                        ->whereHas('offices', function ($query) use ($office) {
-                                                            $query->where('offices.id', $office->id)
-                                                                ->where('active', true);
-                                                        })
-                                                        ->take(25)
-                                                        ->reorder()
-                                                        ->orderBy('name')
-                                                        ->pluck('name', 'id');
-                                                })
-                                                ->reactive()
-                                                ->searchable()
-                                                ->exists('employees', 'id')
-                                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                                    if (
-                                                        Employee::find($value)
-                                                            ->offices()
-                                                            ->where('offices.id', $get('office_id'))
-                                                            ->doesntExist()
-                                                    ) {
-                                                        $fail('Selected employee is invalid.');
-                                                    }
-                                                }),
-                                        ]),
-                                ]),
-                        ]),
-                    Tab::make('scanners')
-                        ->schema([
-                            Section::make('Enrollments')
-                                ->compact()
-                                ->schema([
-                                    Repeater::make('enrollments')
-                                        ->hiddenLabel()
-                                        ->itemLabel(fn (array $state) => Scanner::select('name')->find($state['scanner_id'])?->name)
-                                        ->reorderable(false)
-                                        ->columns(5)
-                                        ->schema([
-                                            Hidden::make('device'),
-                                            Select::make('scanner_id')
-                                                ->label('Scanner')
-                                                ->options(Scanner::orderBy('priority', 'desc')->orderBy('name')->pluck('name', 'id'))
-                                                ->reactive()
-                                                ->searchable()
-                                                ->required()
-                                                ->exists('scanners', 'id')
-                                                ->distinct()
-                                                ->columnSpan(2)
-                                                ->afterStateUpdated(function (Set $set, string $state) {
-                                                    $scanner = Scanner::find($state);
-
-                                                    $set('device', $scanner->device);
-                                                }),
-                                            TextInput::make('uid')
-                                                ->label('UID')
-                                                ->markAsRequired()
-                                                ->rule('required')
-                                                ->maxLength(16)
-                                                ->columnSpan(2)
-                                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                                    if (
-                                                        Enrollment::query()
-                                                            ->where('uid', $value)
-                                                            ->where('scanner_id', $get('scanner_id'))
-                                                            ->whereNot('id', $get('id'))
-                                                            ->exists()
-                                                    ) {
-                                                        $fail('The UID has already been taken.');
+                                                ->fixIndistinctState()
+                                                ->afterStateUpdated(function (Set $set, bool $state) {
+                                                    if ($state) {
+                                                        $set('active', true);
                                                     }
                                                 }),
                                             Toggle::make('active')
+                                                ->default(true)
                                                 ->required()
-                                                ->inline(false),
+                                                ->inline(false)
+                                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                                    if (! $value && $get('current')) {
+                                                        $fail('The current deployment must be active.');
+                                                    }
+                                                }),
                                         ]),
+                                    Select::make('office_id')
+                                        ->label('Office')
+                                        ->options(function (?string $state) {
+                                            $offices = Office::take(10)->orderBy('name')->pluck('name', 'id');
+
+                                            return $state
+                                                ? $offices->prepend(Office::withoutGlobalScopes()->find($state)?->name, $state)
+                                                : $offices;
+                                        })
+                                        ->getSearchResultsUsing(function (string $search) {
+                                            return Office::orderBy('name')
+                                                ->where('name', 'ilike', "%$search%")
+                                                ->orWhere('code', 'ilike', "%$search%")
+                                                ->pluck('name', 'id');
+                                        })
+                                        ->reactive()
+                                        ->searchable()
+                                        ->required()
+                                        ->exists('offices', 'id')
+                                        ->distinct()
+                                        ->afterStateUpdated(fn (Set $set) => $set('supervisor_id', null)),
+                                    Select::make('supervisor_id')
+                                        ->label('Supervisor')
+                                        ->options(function (Employee $record, Get $get, ?string $state) {
+                                            $office = Office::withoutGlobalScopes()->find($get('office_id'));
+
+                                            $employees = Employee::query()
+                                                ->whereNotIn('employees.id', [$record->id, $office?->head?->id])
+                                                ->whereHas('offices', function ($query) use ($get) {
+                                                    $query->where('offices.id', $get('office_id'))
+                                                        ->where('deployment.active', true)
+                                                        ->where('deployment.current', true);
+                                                })
+                                                ->take(25)
+                                                ->reorder()
+                                                ->orderBy('name')
+                                                ->pluck('name', 'id');
+
+                                            return $state
+                                                ? $employees->prepend(Employee::find($state)?->name, $state)
+                                                : $employees;
+                                        })
+                                        ->getSearchResultsUsing(function (Employee $record, Get $get, ?string $search) {
+                                            $office = Office::withoutGlobalScopes()->find($get('office_id'));
+
+                                            return Employee::query()
+                                                ->where(function ($query) use ($search) {
+                                                    $query->where('name', 'ilike', "%$search%")
+                                                        ->orWhere('full_name', 'ilike', "%$search%");
+                                                })
+                                                ->whereNotIn('employees.id', [$record->id, $office->head?->id])
+                                                ->whereHas('offices', function ($query) use ($office) {
+                                                    $query->where('offices.id', $office->id)
+                                                        ->where('active', true);
+                                                })
+                                                ->take(25)
+                                                ->reorder()
+                                                ->orderBy('name')
+                                                ->pluck('name', 'id');
+                                        })
+                                        ->reactive()
+                                        ->searchable()
+                                        ->exists('employees', 'id')
+                                        ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                            if (
+                                                Employee::find($value)
+                                                    ->offices()
+                                                    ->where('offices.id', $get('office_id'))
+                                                    ->doesntExist()
+                                            ) {
+                                                $fail('Selected employee is invalid.');
+                                            }
+                                        }),
                                 ]),
-                        ])
+                        ]),
+                    Tab::make('Scanners')
+                        ->schema([
+                            Repeater::make('enrollments')
+                                ->hiddenLabel()
+                                ->itemLabel(fn (array $state) => Scanner::select('name')->find($state['scanner_id'])?->name)
+                                ->reorderable(false)
+                                ->columns(5)
+                                ->addActionLabel('Add scanner')
+                                ->schema([
+                                    Hidden::make('device'),
+                                    Select::make('scanner_id')
+                                        ->label('Scanner')
+                                        ->options(Scanner::orderBy('priority', 'desc')->orderBy('name')->pluck('name', 'id'))
+                                        ->reactive()
+                                        ->searchable()
+                                        ->required()
+                                        ->exists('scanners', 'id')
+                                        ->distinct()
+                                        ->columnSpan(2)
+                                        ->afterStateUpdated(function (Set $set, string $state) {
+                                            $scanner = Scanner::find($state);
+
+                                            $set('device', $scanner->device);
+                                        }),
+                                    TextInput::make('uid')
+                                        ->label('UID')
+                                        ->markAsRequired()
+                                        ->rule('required')
+                                        ->maxLength(16)
+                                        ->columnSpan(2)
+                                        ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                            if (
+                                                Enrollment::query()
+                                                    ->where('uid', $value)
+                                                    ->where('scanner_id', $get('scanner_id'))
+                                                    ->whereNot('id', $get('id'))
+                                                    ->exists()
+                                            ) {
+                                                $fail('The UID has already been taken.');
+                                            }
+                                        }),
+                                    Toggle::make('active')
+                                        ->required()
+                                        ->inline(false),
+                                ]),
+                        ]),
+                    Tab::make('Groups')
+                        ->schema([
+                            Repeater::make('memberships')
+                                ->hiddenLabel()
+                                ->itemLabel(fn (array $state) => Group::select('name')->find($state['group_id'])?->name)
+                                ->reorderable(false)
+                                ->columns(5)
+                                ->addActionLabel('Add group')
+                                ->schema([
+                                    Select::make('group_id')
+                                        ->label('Group')
+                                        ->columnSpan(4)
+                                        ->options(function (?string $state) {
+                                            $groups = Group::take(10)->orderBy('name')->pluck('name', 'id');
+
+                                            return $state
+                                                ? $groups->prepend(Group::withoutGlobalScopes()->find($state)?->name, $state)
+                                                : $groups;
+                                        })
+                                        ->getSearchResultsUsing(function (string $search) {
+                                            return Group::orderBy('name')
+                                                ->where('name', 'like', '%'.mb_strtolower($search).'%')
+                                                ->take(25)
+                                                ->pluck('name', 'id');
+                                        })
+                                        ->reactive()
+                                        ->searchable()
+                                        ->required()
+                                        ->exists('groups', 'id')
+                                        ->distinct(),
+                                    Toggle::make('active')
+                                        ->required()
+                                        ->inline(false)
+                                        ->default(true),
+                                ]),
+                        ]),
                 ]),
         ]);
 
@@ -259,6 +310,19 @@ class UpdateEmployeeAction extends Action
                                     'supervisor_id' => $deployment['supervisor_id'],
                                     'active' => $deployment['active'],
                                     'current' => $deployment['current'],
+                                ],
+                            ];
+                        })
+                );
+
+            $record->groups()
+                ->withoutGlobalScopes()
+                ->sync(
+                    collect($data['memberships'])
+                        ->mapWithKeys(function ($membership) {
+                            return [
+                                $membership['group_id'] => [
+                                    'active' => $membership['active'],
                                 ],
                             ];
                         })

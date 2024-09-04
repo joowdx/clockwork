@@ -121,10 +121,9 @@ class ImportTimelogsAction extends Action
                             $fail('Conflicting device UID in file uploaded');
                         }
 
-                        if(
+                        if (
                             LazyCollection::make(fn () => yield from $rows)
-                                ->some(fn ($row) =>
-                                    count($row) !== 6 ||
+                                ->some(fn ($row) => count($row) !== 6 ||
                                     DateTime::createFromFormat('Y-m-d H:i:s', $row[1]) === false ||
                                     DateTime::createFromFormat('Y-m-d H:i:s', $row[1])->format('Y-m-d H:i:s') !== $row[1] ||
                                     ! is_numeric($row[2]) ||

@@ -63,8 +63,5 @@ class CancelAction extends Action
         });
     }
 
-    protected function endPoint()
-    {
-
-    }
+    protected function endPoint() {}
 }

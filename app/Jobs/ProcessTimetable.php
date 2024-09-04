@@ -3,8 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\Employee;
-use App\Models\Schedule;
 use App\Models\Holiday;
+use App\Models\Schedule;
 use App\Models\Timetable;
 use App\Traits\TimelogsHasher;
 use Illuminate\Bus\Batchable;

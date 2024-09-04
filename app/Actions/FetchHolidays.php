@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 class FetchHolidays
 {
-    public function __invoke(int $year, bool $throw = true): array|null
+    public function __invoke(int $year, bool $throw = true): ?array
     {
         $response = Http::get(config('services.calendarific.url'), [
             'type' => 'national',

@@ -22,7 +22,5 @@ class TimelogsSynchronized
         public readonly ?int $records = 0,
         public readonly ?string $file = '',
         public readonly ?array $credentials = [],
-    ) {
-
-    }
+    ) {}
 }

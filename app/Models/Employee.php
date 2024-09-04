@@ -206,6 +206,7 @@ class Employee extends Model
     {
         return $this->belongsToMany(Group::class, 'member')
             ->using(Member::class)
+            ->withPivot('active')
             ->orderBy('name');
     }
 

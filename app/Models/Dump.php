@@ -43,7 +43,7 @@ class Dump extends Model
 
     public function path(): Attribute
     {
-        return Attribute::make(fn () => base_path('database/dumps/' . $this->file));
+        return Attribute::make(fn () => base_path('database/dumps/'.$this->file));
     }
 
     public function stored(): Attribute

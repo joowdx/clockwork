@@ -54,8 +54,7 @@ class PostTimelogsSynchronization
                             'timetables.timelogs',
                         ])
                         ->lazyById()
-                        ->reject(fn ($employee) =>
-                            ($timetable = $employee->timetables->first())
+                        ->reject(fn ($employee) => ($timetable = $employee->timetables->first())
                             ? $this->generateDigest($timetable, $employee->timelogs, $holidays) === $timetable->digest
                             : false
                         )

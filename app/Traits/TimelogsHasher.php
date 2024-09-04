@@ -2,7 +2,6 @@
 
 namespace App\Traits;
 
-use App\Models\Schedule;
 use App\Models\Holiday;
 use App\Models\Timelog;
 use App\Models\Timesheet;

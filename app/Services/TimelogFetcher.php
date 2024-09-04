@@ -87,6 +87,4 @@ namespace App\Services\TimelogsFetcher;
 
 use Exception;
 
-class TimelogsFetcherException extends Exception
-{
-}
+class TimelogsFetcherException extends Exception {}

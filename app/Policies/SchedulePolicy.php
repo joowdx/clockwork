@@ -31,7 +31,7 @@ class SchedulePolicy
         return match (Filament::getCurrentPanel()->getId()) {
             'superuser', 'secretary' => $user->hasPermission(SchedulePermission::CREATE),
             default => false,
-        };;
+        };
     }
 
     public function update(User $user, Schedule $schedule): bool

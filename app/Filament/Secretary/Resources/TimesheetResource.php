@@ -7,6 +7,7 @@ use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
+use App\Filament\Actions\TableActions\UpdateEmployeeAction;
 use App\Filament\Filters\ActiveFilter;
 use App\Filament\Filters\StatusFilter;
 use App\Filament\Secretary\Resources\TimesheetResource\Pages;
@@ -67,15 +68,15 @@ class TimesheetResource extends Resource
                 // SelectFilter::make('offices')
                 //     ->multiple()
                 //     ->preload()
-                    // ->relationship('offices', 'name', function ($query) {
-                    //     $query->whereIn('offices.id', auth()->user()->offices->pluck('id'));
+                // ->relationship('offices', 'name', function ($query) {
+                //     $query->whereIn('offices.id', auth()->user()->offices->pluck('id'));
 
-                    //     $query->orWhereHas('employees', function ($query) {
-                    //         $query->whereHas('scanners', function (Builder $query) {
-                    //             $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
-                    //         });
-                    //     });
-                    // }),
+                //     $query->orWhereHas('employees', function ($query) {
+                //         $query->whereHas('scanners', function (Builder $query) {
+                //             $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                //         });
+                //     });
+                // }),
                 Filter::make('offices')
                     ->form([
                         Select::make('offices')
@@ -116,11 +117,12 @@ class TimesheetResource extends Resource
                             ->preload()
                             ->multiple(),
                     ])
-                    ->query(function(Builder $query, array $data) {
+                    ->query(function (Builder $query, array $data) {
                         $query->when($data['offices'], function ($query) use ($data) {
                             $query->whereHas('offices', function ($query) use ($data) {
-                                $query->whereIn('offices.id', $data['offices']);
-                                $query->where('deployment.active', true);
+                                $query->whereIn('offices.id', $data['offices'])
+                                    ->where('deployment.current', true)
+                                    ->where('deployment.active', true);
                             });
 
                         });
@@ -135,7 +137,7 @@ class TimesheetResource extends Resource
                             ->find($data['offices'])
                             ->pluck('code');
 
-                        return 'Offices: ' . $offices->join(', ');
+                        return 'Offices: '.$offices->join(', ');
                     }),
                 SelectFilter::make('groups')
                     ->relationship(
@@ -152,6 +154,9 @@ class TimesheetResource extends Resource
                     )
                     ->multiple()
                     ->preload(),
+            ])
+            ->actions([
+                UpdateEmployeeAction::make(),
             ])
             ->bulkActions([
                 ViewTimesheetAction::make(listing: true),

@@ -50,7 +50,7 @@ class DumpDatabase implements ShouldQueue
 
             Notification::make()
                 ->title('Database dump successful')
-                ->body('The database has been successfully dumped to disk at ' . $dump->created_at)
+                ->body('The database has been successfully dumped to disk at '.$dump->created_at)
                 ->sendToDatabase($this->user);
         } catch (Exception $exception) {
             Notification::make()

@@ -63,7 +63,7 @@ class FetchHolidaysAction extends Action
             Notification::make()
                 ->success()
                 ->title('Holiday fetch successful')
-                ->body('Successfully fetched holidays from an external API with ' . count($holidays) . ' holidays.')
+                ->body('Successfully fetched holidays from an external API with '.count($holidays).' holidays.')
                 ->send();
         });
     }

@@ -70,8 +70,7 @@ class RequestAction extends Action
                     if (str($v)->startsWith('@')) {
                         $f('The title should not start with @.');
                     }
-                })
-                ,
+                }),
             RichEditor::make('body')
                 ->required()
                 ->toolbarButtons([
