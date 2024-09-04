@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Models\Token;
 use Filament\Forms\Components\Select;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
+use Filament\Http\Responses\Auth\Contracts\LogoutResponse;
 use Filament\Notifications\Livewire\Notifications;
 use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\Facades\FilamentAsset;
@@ -30,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         App::bind(LoginResponse::class, \App\Http\Responses\LoginResponse::class);
+
+        App::bind(LogoutResponse::class, \App\Http\Responses\LogoutResponse::class);
 
         Sanctum::usePersonalAccessTokenModel(Token::class);
 
