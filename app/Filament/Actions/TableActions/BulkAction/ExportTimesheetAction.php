@@ -4,12 +4,16 @@ namespace App\Filament\Actions\TableActions\BulkAction;
 
 use App\Actions\ExportTimesheet;
 use App\Models\Employee;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -17,6 +21,7 @@ use Filament\Tables\Actions\BulkAction;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -50,6 +55,10 @@ class ExportTimesheetAction extends BulkAction
 
         $this->modalIcon('heroicon-o-document-arrow-down');
 
+        $this->modalWidth('lg');
+
+        $this->slideOver();
+
         $this->closeModalByClickingAway(false);
 
         $this->form($this->exportForm());
@@ -60,10 +69,10 @@ class ExportTimesheetAction extends BulkAction
     public function exportConfirmation(): Htmlable
     {
         $html = <<<'HTML'
-            <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
+            <!-- <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
                 Note: Exporting in CSC format does not include employees with no timesheet for the selected period.
                 You may need to generate their timesheets manually otherwise.
-            </span>
+            </span> -->
         HTML;
 
         return str($html)->toHtmlString();
@@ -91,7 +100,8 @@ class ExportTimesheetAction extends BulkAction
                 ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
-                ->signature($data['electronic_signature'] ? user()?->signature : null)
+                ->user($data['user'] ? User::find($data['user']) : user())
+                ->signature($data['electronic_signature'])
                 ->password($data['digital_signature'] ? $data['password'] : null)
                 ->individual($data['individual'] ?? false)
                 ->transmittal($data['transmittal'] ?? 0)
@@ -140,14 +150,23 @@ class ExportTimesheetAction extends BulkAction
             //     ->boolean()
             //     ->required()
             //     ->placeholder('Generate transmittal'),
+            Select::make('user')
+                ->label('Spoof as')
+                ->visible(fn () => ($user = user())->developer && $user->superuser)
+                ->reactive()
+                ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
+                ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
+                ->searchable(),
             Checkbox::make('electronic_signature')
                 ->hintIcon('heroicon-o-check-badge')
                 ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! user()?->signature) {
+                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                    $user = $get('user') ? User::find($get('user')) : user();
+
+                    if ($value && ! $user?->signature) {
                         $fail('Configure your electronic signature first');
                     }
                 }),
@@ -167,14 +186,16 @@ class ExportTimesheetAction extends BulkAction
                 ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
                 ->markAsRequired(fn (Get $get) => $get('digital_signature'))
                 ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if (! user()?->signature->verify($value)) {
+                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                    $user = $get('user') ? User::find($get('user')) : user();
+
+                    if (! $user?->signature->verify($value)) {
                         $fail('The password is incorrect');
                     }
                 }),
         ];
 
-        $forms = [
+        $period = [
             // Checkbox::make('individual')
             //     ->hintIcon('heroicon-o-question-mark-circle')
             //     ->hintIconTooltip('Export employee timesheet separately generating multiple files to be downloaded as an archive. However, this requires more processing time and to prevent server overload or request timeouts, please select no more than 25 records.')
@@ -183,6 +204,21 @@ class ExportTimesheetAction extends BulkAction
             //             $fail('Please select less than 25 records when exporting individually.');
             //         }
             //     }),
+            Radio::make('format')
+                ->live()
+                // ->placeholder('Print format')
+                ->default(fn ($livewire) => $livewire->filters['format'] ?? 'default')
+                ->required()
+                ->options([
+                    'default' => 'Default format',
+                    'csc' => 'CSC format',
+                    'preformatted' => 'CSC format (preformatted)',
+                ])
+                ->descriptions([
+                    'default' => 'Raw attendance data. Displays more detailed information about the employees\' attendance.',
+                    'csc' => 'Export in CSC form with attendance data based off the employees\' set schedules. You may need to generate their timesheets manually if they have no timesheet data for the selected period. Ignores employees with no timesheet data.',
+                    'preformatted' => 'Schedule-agnostic attendance preformatted in CSC form. Attendance data are fetched as is and may not reflect the actual schedule of the employees.',
+                ]),
             TextInput::make('month')
                 ->live()
                 ->default(fn ($livewire) => $livewire->filters['month'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m')))
@@ -206,6 +242,10 @@ class ExportTimesheetAction extends BulkAction
                         return false;
                     }
 
+                    if ($get('format') === 'preformatted') {
+                        return ! in_array($value, ['full', '1st', '2nd', 'dates', 'range']);
+                    }
+
                     return match ($value) {
                         'full', '1st', '2nd', 'dates', 'range' => false,
                         default => true,
@@ -222,6 +262,7 @@ class ExportTimesheetAction extends BulkAction
             Group::make()
                 ->columns(2)
                 ->visible(fn (Get $get) => $get('period') === 'range')
+                ->columnSpanFull()
                 ->schema([
                     DatePicker::make('from')
                         ->label('Start')
@@ -251,6 +292,7 @@ class ExportTimesheetAction extends BulkAction
                 ->reorderable(false)
                 ->addActionLabel('Add a date')
                 ->grid(2)
+                ->columnSpanFull()
                 ->simple(
                     DatePicker::make('date')
                         ->minDate(fn (Get $get) => $get('../../month').'-01')
@@ -258,56 +300,54 @@ class ExportTimesheetAction extends BulkAction
                         ->markAsRequired()
                         ->rule('required')
                 ),
-            Group::make()
-                ->columns($preview ? 1 : 2)
-                ->schema([
-                    Select::make('format')
-                        ->live()
-                        ->placeholder('Print format')
-                        ->default(fn ($livewire) => $livewire->filters['format'] ?? 'csc')
-                        ->required()
-                        ->options(['default' => 'Default format', 'csc' => 'CSC format'])
-                        ->hintIcon('heroicon-o-question-mark-circle')
-                        ->hintIconTooltip('Employees with no timesheet data for the selected period are not included in the timesheet export when using the CSC format.'),
-                    Select::make('size')
-                        ->visible(! $preview)
-                        ->live()
-                        ->placeholder('Paper Size')
-                        ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
-                        ->required()
-                        ->options([
-                            'a4' => 'A4',
-                            'letter' => 'Letter',
-                            'folio' => 'Folio',
-                            'legal' => 'Legal',
-                        ]),
-                ]),
-            Group::make()
-                ->columns(2)
+        ];
+        $export = [
+            Select::make('size')
                 ->visible(! $preview)
-                ->schema([
-                    Select::make('transmittal')
-                        ->live()
-                        ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
-                        ->options([0, 1, 2, 3, 5])
-                        ->in([0, 1, 2, 3, 5])
-                        ->hintIcon('heroicon-o-question-mark-circle')
-                        ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
-                    Select::make('grouping')
-                        ->disabled(fn (Get $get) => $get('transmittal') <= 0)
-                        ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
-                        ->options([
-                            'offices' => 'Office',
-                            false => 'None',
-                        ])
-                        ->hintIcon('heroicon-o-question-mark-circle')
-                        ->hintIconTooltip('
-                            Grouping by office might generate multiple timesheets for employees with multiple offices.
-                            No grouping will generate a single transmittal for all selected employees.
-                        '),
+                ->live()
+                ->placeholder('Paper Size')
+                ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
+                ->required()
+                ->options([
+                    'a4' => 'A4',
+                    'letter' => 'Letter',
+                    'folio' => 'Folio',
+                    'legal' => 'Legal',
                 ]),
+            Select::make('transmittal')
+                ->live()
+                ->visible(! $preview)
+                ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
+                ->options([0, 1, 2, 3, 5])
+                ->in([0, 1, 2, 3, 5])
+                ->hintIcon('heroicon-o-question-mark-circle')
+                ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
+            Select::make('grouping')
+                ->visible(! $preview)
+                ->disabled(fn (Get $get) => $get('transmittal') <= 0)
+                ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
+                ->options([
+                    'offices' => 'Office',
+                    false => 'None',
+                ])
+                ->hintIcon('heroicon-o-question-mark-circle')
+                ->hintIconTooltip('
+                    Grouping by office might generate multiple timesheets for employees with multiple offices.
+                    No grouping will generate a single transmittal for all selected employees.
+                '),
         ];
 
-        return $preview ? $forms : [...$forms, ...$config];
+        return $preview
+            ? [...$period, ...$export]
+            : [
+                Tabs::make()->contained(false)->tabs([
+                    Tab::make('Timesheet')
+                        ->schema($period),
+                    Tab::make('Options')
+                        ->schema($export),
+                    Tab::make('Params')
+                        ->schema($config),
+                ]),
+            ];
     }
 }

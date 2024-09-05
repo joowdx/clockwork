@@ -102,7 +102,7 @@ class ViewTimesheetAction extends BulkAction
                     }
                 };
 
-                return View::make('print.default')->viewData([
+                return View::make($data['format'] === 'preformatted' ? 'print.preformatted' : 'print.default')->viewData([
                     'preview' => true,
                     'month' => $month,
                     'period' => $data['period'],

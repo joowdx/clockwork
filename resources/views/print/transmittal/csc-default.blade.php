@@ -57,7 +57,7 @@
                                             >
                                         @endif
 
-                                        @if (($logo = auth()->user()?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
+                                        @if (($logo = $user?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
                                             <img
                                                 src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$logo))) }}"
                                                 alt="davao-del-sur"
@@ -87,7 +87,7 @@
                                 @endif
                                 <tr>
                                     <td colspan="10" class="underline uppercase courier center nowrap font-lg">
-                                        {{ auth()->user()?->employee?->currentDeployment?->office->name }}
+                                        {{ $user?->employee?->currentDeployment?->office->name }}
                                     </td>
                                 </tr>
                                 <tr></tr>
@@ -114,13 +114,13 @@
                                                                     ->sort()
                                                                     ->values()
                                                                     ->toArray()
-                                                            ) . ' ' .$month->format('F Y')
+                                                            ) . $month->format(' F Y')
                                                         }}
                                                     </span>
                                                 @else
                                                     for the month of
                                                     <span class="bold nowrap">
-                                                        {{ (isset($from, $to) ? $from . '-' . $to : '') . ' '. $month->format('F Y') }}
+                                                        {{ (isset($from, $to) ? $from . '-' . $to : '') . $month->format(' F Y') }}
                                                     </span>
                                                 @endif
                                             </p>
@@ -178,8 +178,8 @@
 
                                     </td>
                                     <td colspan="4" class="uppercase center consolas font-lg" style="padding-right:1rem;">
-                                        @includeWhen($signature ??= null, 'print.signature', ['signature' => $signature, 'signed' => $signed ?? false])
-                                        {{ auth()->user()?->name }}
+                                        @includeWhen($signature ??= null, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
+                                        {{ $user?->name }}
                                     </td>
                                 </tr>
                                 <tr>

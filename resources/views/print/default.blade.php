@@ -243,8 +243,8 @@ use App\Enums\TimelogMode;
                         <tr>
                             <td colspan="6"></td>
                             <td colspan="4" class="relative underline font-sm center bottom nowrap consolas">
-                                @includeWhen($signature ??= null, 'print.signature', ['signature' => $signature, 'signed' => $signed ?? false])
-                                {{ auth()->user()?->name }}
+                                @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
+                                {{ $user?->name }}
                             </td>
                         </tr>
                         <tr>
@@ -253,7 +253,7 @@ use App\Enums\TimelogMode;
                             </td>
                             <td colspan="3"></td>
                             <td colspan="4" class="center nowrap font-xs arial top">
-                                Information System Developer
+                                {{ $user?->employee?->designation ?? '' }}
                             </td>
                         </tr>
                     @endif

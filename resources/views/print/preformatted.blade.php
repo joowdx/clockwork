@@ -1,11 +1,19 @@
 @extends('print.layout')
 
+@use(App\Models\Holiday)
+
+@use(Illuminate\Support\Carbon)
+
+@inject('compressor', App\Helpers\NumberRangeCompressor::class)
+
+@inject('raw', \App\Helpers\GetRawAttendancePunch::class)
+
 @php($size = isset($size)  ? mb_strtolower($size) : 'folio')
 
 @php($preview ??= false)
 
 @section('content')
-    @foreach ($timesheets as $timesheet)
+    @foreach ($employees as $employee)
         <div
             @class([
                 'pagebreak',
@@ -42,7 +50,7 @@
                         ])
                     >
                         @if($preview)
-                            <col width=65 span=7>
+                            <col width=65 span=6>
                         @else
                             <col width=57 span=6>
                             <tr>
@@ -78,35 +86,38 @@
                             </tr>
                         @endif
                         <tr>
-                            <td class="underline uppercase courier font-lg center bold" colspan={{ $preview ? 7 : 6 }} style="text-decoration: none;">
-                                {{ $timesheet->employee->name }}
+                            <td class="underline uppercase courier font-lg center bold" colspan=6 style="text-decoration: none;">
+                                {{ $employee->name }}
                             </td>
                         </tr>
                         <tr>
-                            <td class="courier top center font-xs" colspan={{ $preview ? 7 : 6 }}>
+                            <td class="courier top center font-xs" colspan=6>
                                 Employee
                             </td>
                         </tr>
                         <tr>
-                            <td class="arial font-xs bottom right" colspan={{ $preview ? 3 : 2 }} style="padding-bottom:2.5pt;padding-right:10pt;">
+                            <td class="arial font-xs bottom right" colspan=2 style="padding-bottom:2.5pt;padding-right:10pt;">
                                 For the month of:
                             </td>
                             <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
-                                {{ trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y') }}
-                                @if ($timesheet->getPeriod() === 'overtimeWork')
-                                    (OT)
-                                @endif
+                                {{
+                                    (
+                                        $period === 'dates'
+                                            ? $compressor(collect($dates)->map(fn($date) => Carbon::parse($date)->day)->toArray())
+                                            : "$from-$to"
+                                    ) . Carbon::parse($month)->format(' F Y')
+                                }}
                             </td>
                         </tr>
                         <tr>
-                            <td class="font-xs left middle arial" colspan={{ $preview ? 3 : 2 }} rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
+                            <td class="font-xs left middle arial" colspan=2 rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
                             <td class="relative arial font-xs bottom left nowrap" colspan=1>
                                 <span class="absolute" style="bottom:1pt;left:-11pt;">
                                     Weekdays
                                 </span>
                             </td>
                             <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
-                                {{ $timesheet->details['schedule']['weekdays'] ?? 'as required' }}
+                                as required
                             </td>
                         </tr>
                         <tr>
@@ -116,7 +127,7 @@
                                 </span>
                             </td>
                             <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
-                                {{ $timesheet->details['schedule']['weekends'] ?? 'as required' }}
+                                as required
                             </td>
                         </tr>
                         <tr>
@@ -126,15 +137,7 @@
                             <td class="border center middle courier" rowspan=2 height=42 width=58>DAY</td>
                             <td class="border center middle courier" colspan=2 width=116>AM</td>
                             <td class="border center middle courier" colspan=2 width=116>PM</td>
-                            @if (!$preview && $timesheet->getPeriod() === 'overtimeWork')
-                                <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
-                            @else
-                                <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
-                            @endif
-
-                            @if ($preview)
-                                <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
-                            @endif
+                            <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
                         </tr>
                         <tr class="font-sm bold">
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Arrival</td>
@@ -143,17 +146,23 @@
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Departure</td>
                         </tr>
                         @for ($day = 1; $day <= 31; $day++)
-                            @php($date = Carbon\Carbon::parse($timesheet->month)->setDay($day))
+                            @php($date = Carbon::parse($month)->setDay($day))
 
-                            @php($timetable = $timesheet->{$timesheet->getPeriod()}->first(fn($timetable) => $timetable->date->isSameDay($date)))
+                            @php($timelogs = $raw($employee->timelogs, $date))
 
-                            @if ($timesheet->from <= $day && $day <= $timesheet->to)
+                            @php($holiday = Holiday::search($date, false))
+
+                            @if (
+                                $from <= $day && $day <= $to ||
+                                $period === 'dates' && in_array($date->format('Y-m-d'), $dates) ||
+                                $date->isWeekend() ||
+                                $holiday
+                            )
                                 <tr
                                     @class([
-                                        'weekend' => $date->isWeekend() && ! $timetable?->holiday,
-                                        'holiday' => $timetable?->holiday,
-                                        'absent' => $timetable?->absent,
-                                        // 'invalid' => $timetable?->invalid,
+                                        'weekend' => $date->isWeekend(),
+                                        'holiday' => $holiday,
+                                        'absent' => array_filter($timelogs) == false,
                                         'font-sm' => true
                                     ])
                                 >
@@ -166,8 +175,9 @@
                                     >
                                         {{ $day }}
                                     </td>
-                                    @if ($timetable?->present)
-                                        @foreach(['p1', 'p2', 'p3', 'p4'] as $punch)
+
+                                    @if (array_filter($timelogs))
+                                        @foreach (['p1', 'p2', 'p3', 'p4'] as $punch)
                                             <td
                                                 width=58
                                                 @class([
@@ -178,64 +188,25 @@
                                                 @style([
                                                     'padding-top:1pt',
                                                     $preview ? 'padding-right:5pt' : 'padding-left:5pt',
-                                                    'background-color:' . ($timetable?->punch[$punch]['background'] ?? 'transparent'),
-                                                    'text-color:' . ($timetable?->punch[$punch]['foreground'] ?? 'black'),
-                                                    'background-color: #FF9D2834' => $timetable?->punch[$punch]['missed'] ?? false,
+                                                    'background-color:' . (@$timelogs[$punch]['background'] ?? 'transparent'),
+                                                    'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
+                                                    'background-color: #FF9D2834' => @$timelogs[$punch] === null,
                                                 ])
                                             >
-                                                {{ substr($timetable->punch[$punch]['time'] ?? '', 0, strrpos($timetable?->punch[$punch]['time'] ?? '', ":")) }}
-                                                @if (isset($timetable->punch[$punch]['undertime']) && ($ut = $timetable?->punch[$punch]['undertime']) > 0)
-                                                    <span class="undertime-badge">
-                                                        {{ $ut }}
-                                                    </span>
-                                                @endif
-                                                <sub @style([
-                                                    'font-size:6pt',
-                                                    'position:absolute',
-                                                    'bottom:0',
-                                                ])>
-                                                    @switch(true)
-                                                        @case($timetable->punch[$punch]['next'] ?? false)
-                                                            N
-                                                            @break
-                                                        @case($timetable->punch[$punch]['previous'] ?? false)
-                                                            P
-                                                            @break
-                                                    @endswitch
-                                                </sub>
+                                                {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
                                             </td>
                                         @endforeach
-                                    @elseif($timetable?->regular === false || $date->isWeekend())
+                                    @elseif($date->isWeekend() || $holiday)
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
-                                            {{ $timetable?->holiday ?: $date->format('l') }}
+                                            {{ $holiday?->name ?? $date->format('l') }}
                                         </td>
                                     @else
-                                        @for ($cell = 0; $cell < 4; $cell++)
-                                            <td class="border">
-
-                                            </td>
-                                        @endfor
+                                        <td class="border"></td>
+                                        <td class="border"></td>
+                                        <td class="border"></td>
+                                        <td class="border"></td>
                                     @endif
-                                    <td
-                                        @class([
-                                            'border right bold',
-                                            $preview ? 'font-mono' : 'courier',
-                                        ])
-                                        style="padding-right:14pt;"
-                                    >
-                                        {{ $timesheet->getPeriod() === 'overtimeWork' && ! $preview ? $timetable?->overtime : $timetable?->undertime }}
-                                    </td>
-                                    @if($preview)
-                                        <td
-                                            @class([
-                                                'border right bold',
-                                                $preview ? 'font-mono' : 'courier',
-                                            ])
-                                            style="padding-right:14pt;"
-                                        >
-                                            {{ $timetable?->overtime }}
-                                        </td>
-                                    @endif
+                                    <td class="border"> </td>
                                 </tr>
                             @elseif(!$preview)
                                 <tr>
@@ -254,8 +225,8 @@
                             <tr style="height:10pt"> </tr>
                             <tr>
                                 <td colspan=2 class="font-md courier right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
-                                <td colspan=4 @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md bold' ])>
-                                    {{ $timesheet->total }}
+                                <td colspan=4 @class(["underline courier left", 'font-md bold' ])>
+
                                 </td>
                             </tr>
                             @if ($size === 'legal')
@@ -299,7 +270,11 @@
                             @endif
                             <tr>
                                 <td colspan=6 class="underline center font-sm">
-                                    {{ $timesheet->details['supervisor'] ?? '' }}
+                                    {{
+                                        ($supervisor = $employee->currentDeployment?->supervisor?->name) === $employee->name
+                                            ? null
+                                            : $supervisor
+                                    }}
                                 </td>
                             </tr>
                             <tr>
@@ -315,7 +290,11 @@
                             @endif
                             <tr>
                                 <td colspan=6 class="underline center font-sm">
-                                    {{ $timesheet->details['head'] ?? '' }}
+                                    {{
+                                        ($head = $employee->currentDeployment?->office?->head?->name) === $employee->name
+                                            ? null
+                                            : $head
+                                    }}
                                 </td>
                             </tr>
                             <tr>
@@ -331,12 +310,6 @@
                             @endif
                             <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
                                 <td colspan=1 class="relative">
-                                    @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['next']) || isset($punches['previous']))))
-                                        <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
-                                            N = Next day <br>
-                                            P = Previous day
-                                        </div>
-                                    @endif
                                     <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
 
                                     </div>

@@ -90,7 +90,7 @@
                                     >
                                 @endif
 
-                                @if (($logo = auth()->user()?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
+                                @if (($logo = $user?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
                                     <img
                                         src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$logo))) }}"
                                         alt="davao-del-sur"
@@ -120,7 +120,7 @@
                         @endif
                         <tr>
                             <td colspan="10" class="underline uppercase courier center nowrap font-lg">
-                                {{ auth()->user()?->employee?->currentDeployment?->office->name }}
+                                {{ $user?->employee?->currentDeployment?->office->name }}
                             </td>
                         </tr>
                         <tr></tr>
@@ -251,8 +251,8 @@
                             <tr>
                                 <td colspan="6"></td>
                                 <td colspan="4" class="relative underline font-sm center bottom nowrap consolas">
-                                    @includeWhen($signature ??= null, 'print.signature', ['signature' => $signature, 'signed' => $signed ?? false])
-                                    {{ auth()->user()?->name }}
+                                    @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
+                                    {{ $user?->name }}
                                 </td>
                             </tr>
                             <tr>
@@ -261,7 +261,7 @@
                                 </td>
                                 <td colspan="3"></td>
                                 <td colspan="4" class="center nowrap font-xs arial top">
-                                    Information System Developer
+                                    {{ $user?->employee?->designation ?? '' }}
                                 </td>
                             </tr>
                         @endif

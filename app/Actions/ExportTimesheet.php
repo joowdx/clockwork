@@ -4,13 +4,14 @@ namespace App\Actions;
 
 use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
-use App\Models\Signature;
 use App\Models\Timesheet;
+use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
@@ -33,7 +34,9 @@ class ExportTimesheet implements Responsable
 
     private Carbon $month;
 
-    private ?Signature $signature = null;
+    private ?User $user = null;
+
+    private bool $signature = false;
 
     private ?Closure $password = null;
 
@@ -76,7 +79,7 @@ class ExportTimesheet implements Responsable
         string $size = 'folio',
         int $transmittal = 0,
         false|string|null $grouping = 'offices',
-        ?Signature $signature = null,
+        bool $signature = false,
         #[SensitiveParameter]
         ?string $password = null,
     ): StreamedResponse {
@@ -100,7 +103,14 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
-    public function signature(?Signature $signature = null): static
+    public function user(?User $user = null): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function signature(bool $signature = false): static
     {
         $this->signature = $signature;
 
@@ -147,7 +157,7 @@ class ExportTimesheet implements Responsable
 
     public function format(string $format = 'csc'): static
     {
-        if (! in_array($format, ['csc', 'default'])) {
+        if (! in_array($format, ['default', 'csc', 'preformatted'])) {
             throw new InvalidArgumentException('Unknown format: '.$format);
         }
 
@@ -216,6 +226,49 @@ class ExportTimesheet implements Responsable
             };
 
             $this->employee->load(['timelogs' => $timelogs, 'timelogs.scanner', 'scanners'])->sortBy('full_name');
+
+            return match ($this->individual) {
+                true => $this->exportAsZip(),
+                default => $this->exportAsPdf(),
+            };
+        }
+
+        if ($this->format === 'preformatted') {
+            [$from, $to] = match ($period) {
+                'dates' => null,
+                'range' => [$from, $to],
+                default => [
+                    match ($period) {
+                        '2nd' => 16,
+                        default => 1,
+                    },
+                    match ($period) {
+                        '1st' => 15,
+                        default => $this->month->daysInMonth,
+                    },
+                ],
+            };
+
+            $this->employee->load([
+                'currentDeployment.supervisor',
+                'currentDeployment.office.head',
+                'timelogs.scanner',
+                'timelogs' => function ($query) use ($period, $from, $to) {
+                    [$year, $month] = explode('-', $this->month);
+
+                    $query->whereYear('time', $year)->whereMonth('time', $month);
+
+                    match ($period) {
+                        '1st' => $query->firstHalf(),
+                        '2nd' => $query->secondHalf(),
+                        'dates' => $query->customDates($this->dates),
+                        'range' => $query->customRange($from, $to),
+                        default => $query,
+                    };
+
+                    $query->reorder()->orderBy('time');
+                },
+            ]);
 
             return match ($this->individual) {
                 true => $this->exportAsZip(),
@@ -331,6 +384,17 @@ class ExportTimesheet implements Responsable
                 'size' => $this->size,
                 'signature' => $this->signature,
             ];
+        } elseif ($this->format === 'preformatted') {
+            $args = [
+                'employees' => $this->employee,
+                'size' => $this->size,
+                'signature' => $this->signature,
+                'month' => $this->month,
+                'from' => $period !== 'dates' ? $from : null,
+                'to' => $period !== 'dates' ? $to : null,
+                'dates' => $period === 'dates' ? $this->dates : null,
+                'period' => $period,
+            ];
         } else {
             $employees = match ($exportable) {
                 null => match (get_class($this->employee)) {
@@ -355,7 +419,13 @@ class ExportTimesheet implements Responsable
             ];
         }
 
-        $export = Pdf::view($this->format === 'csc' ? 'print.csc' : 'print.default', [...$args, 'signed' => (bool) $this->password])
+        $view = match ($this->format) {
+            'csc' => 'print.csc',
+            'preformatted' => 'print.preformatted',
+            default => 'print.default',
+        };
+
+        $export = Pdf::view($view, [...$args, 'user' => $this->user ?? Auth::user(), 'signed' => (bool) $this->password])
             ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
@@ -368,6 +438,7 @@ class ExportTimesheet implements Responsable
                 ...$args,
                 'format' => $this->format,
                 'copies' => $this->transmittal,
+                'user' => $this->user ?? Auth::user(),
                 'signed' => (bool) $this->password,
                 'month' => $this->month,
                 'from' => $args['from'] ?? $from ?? null,
@@ -409,7 +480,9 @@ class ExportTimesheet implements Responsable
 
         $export->save(sys_get_temp_dir()."/$name");
 
-        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$this->signature->certificate), ($this->password)());
+        $signature = $this->user->signature;
+
+        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$signature->certificate), ($this->password)());
 
         try {
             return (new SignaturePdf(sys_get_temp_dir()."/$name", $certificate))->signature();
