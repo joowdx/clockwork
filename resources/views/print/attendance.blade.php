@@ -1,5 +1,7 @@
 @extends('print.layout')
 
+@use('App\Models\Office')
+
 @php($size ??= 'a4')
 
 @php($preview ??= false)
@@ -29,7 +31,7 @@
 
     $query->when($states, fn ($q) => $q->whereIn('state', $states));
 
-    $query->when(is_array($scanners) ? count($scanners) : $scanners->isNotEmpty(), fn ($q) => $q->whereIn('device', $scanners->pluck('uid')->toArray()));
+    $query->when(is_array($scanners) ? count($scanners) : $scanners->isNotEmpty(), fn ($q) => $q->whereIn('timelogs.device', $scanners->pluck('uid')->toArray()));
 
     $query->when($filter, fn ($q) => $q->limit(1));
 
@@ -56,6 +58,7 @@
                     ->with(['timelogs' => fn ($query) => $filter($query, $date)])
                     ->when($status ??= null, fn ($q) => is_array($status) ? $q->whereIn('status', $status) : $q->where('status', $status))
                     ->when(($substatus ??= null) && $status, fn ($q) => is_array($substatus) ? $q->whereIn('substatus', $substatus) : $q->where('substatus', $substatus))
+                    ->when(($current ??= false) && (get_class($office) === Office::class), fn ($q) => $q->wherePivot('current', true))
                     ->get()
                     ->when($strict, fn ($employees) => $employees->reject(fn ($employee) => $employee->timelogs->isEmpty())) // bugged - don't remove
                     ->values()
@@ -131,10 +134,11 @@
                                 </div>
                                 <div class="center font-sm" style="margin-bottom:3pt;">
                                     Office Attendance for <span class="bold">{{ \Carbon\Carbon::parse($date)->format('j F Y') }}</span>
+
                                     @if (is_array($scanners) ? count($scanners) :$scanners->isNotEmpty())
                                         from scanners
                                         <span class="italic bold">
-                                            {{ $scanners->map(fn ($scanner) => ucfirst($scanner->name))->sort()->join(', ') }}
+                                            {{ $scanners->map(fn ($scanner) => mb_strtolower($scanner->name))->sort()->join(', ') }}
                                         </span>
                                     @endif
 

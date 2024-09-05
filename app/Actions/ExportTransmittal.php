@@ -4,7 +4,7 @@ namespace App\Actions;
 
 use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
-use App\Models\Signature;
+use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Support\Carbon;
@@ -18,6 +18,7 @@ use Spatie\LaravelPdf\Facades\Pdf;
 use Spatie\LaravelPdf\PdfBuilder;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use UnitEnum;
 
 class ExportTransmittal implements Responsable
 {
@@ -25,7 +26,9 @@ class ExportTransmittal implements Responsable
 
     private Carbon $month;
 
-    private ?Signature $signature = null;
+    private ?User $user = null;
+
+    private bool $signature = false;
 
     private ?Closure $password = null;
 
@@ -37,7 +40,15 @@ class ExportTransmittal implements Responsable
 
     private string $size = 'folio';
 
+    private ?array $states = [];
+
+    private ?array $modes = [];
+
     private array $groups = [];
+
+    private bool $current = false;
+
+    private bool $strict = false;
 
     public function __construct(
         Collection|Employee|null $employee = null,
@@ -62,7 +73,10 @@ class ExportTransmittal implements Responsable
         array $dates = [],
         string $format = 'csc',
         string $size = 'folio',
-        ?Signature $signature = null,
+        bool $current = false,
+        bool $strict = false,
+        ?User $user = null,
+        bool $signature = false,
         #[SensitiveParameter]
         ?string $password = null,
     ): StreamedResponse {
@@ -71,7 +85,10 @@ class ExportTransmittal implements Responsable
             ->period($period)
             ->dates($dates)
             ->format($format)
+            ->strict($strict)
+            ->current($current)
             ->size($size)
+            ->user($user)
             ->signature($signature)
             ->password($password)
             ->download();
@@ -84,9 +101,30 @@ class ExportTransmittal implements Responsable
         return $this;
     }
 
-    public function signature(?Signature $signature = null): static
+    public function user(?User $user = null): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function signature(bool $signature = true): static
     {
         $this->signature = $signature;
+
+        return $this;
+    }
+
+    public function current(bool $current = false): static
+    {
+        $this->current = $current;
+
+        return $this;
+    }
+
+    public function strict(bool $strict = false): static
+    {
+        $this->strict = $strict;
 
         return $this;
     }
@@ -112,6 +150,24 @@ class ExportTransmittal implements Responsable
         }
 
         $this->period = $period;
+
+        return $this;
+    }
+
+    public function states(Collection|array|null $states): static
+    {
+        $this->states = collect($states)
+            ->map(fn ($state) => $state instanceof UnitEnum ? $state->value : $state)
+            ->toArray();
+
+        return $this;
+    }
+
+    public function modes(Collection|array|null $modes): static
+    {
+        $this->modes = collect($modes)
+            ->map(fn ($mode) => $mode instanceof UnitEnum ? $mode->value : $mode)
+            ->toArray();
 
         return $this;
     }
@@ -211,7 +267,13 @@ class ExportTransmittal implements Responsable
         $args = [
             'employees' => $employees->get(),
             'size' => $this->size,
+            'user' => $this->user,
             'signature' => $this->signature,
+            'signed' => (bool) $this->password,
+            'strict' => $this->strict,
+            'current' => $this->current,
+            'states' => $this->states,
+            'modes' => $this->modes,
             'month' => $this->month,
             'from' => $period !== 'dates' ? $from : null,
             'to' => $period !== 'dates' ? $to : null,
@@ -239,7 +301,9 @@ class ExportTransmittal implements Responsable
 
         $export->save(sys_get_temp_dir()."/$name");
 
-        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$this->signature->certificate), ($this->password)());
+        $signature = $this->user->signature;
+
+        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$signature->certificate), ($this->password)());
 
         try {
             return (new SignaturePdf(sys_get_temp_dir()."/$name", $certificate))->signature();

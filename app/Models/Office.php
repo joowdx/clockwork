@@ -46,7 +46,7 @@ class Office extends Model
     {
         return $this->belongsToMany(Employee::class, 'deployment')
             ->using(Deployment::class)
-            ->withPivot('active')
+            ->withPivot(['current', 'active'])
             ->orderBy('full_name');
     }
 

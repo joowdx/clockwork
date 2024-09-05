@@ -5,6 +5,7 @@ namespace App\Filament\Actions\TableActions\BulkAction;
 use App\Actions\ExportTransmittal;
 use App\Models\Employee;
 use App\Models\Group;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
@@ -88,7 +89,10 @@ class ExportTransmittalAction extends BulkAction
                 ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
-                ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
+                ->strict($data['strict'])
+                ->current($data['current'])
+                ->user($data['user'] ? User::find($data['user']) : user())
+                ->signature($data['electronic_signature'])
                 ->password($data['digital_signature'] ? $data['password'] : null)
                 ->groups($data['groups'] ?? [])
                 ->download();
@@ -230,8 +234,10 @@ class ExportTransmittalAction extends BulkAction
                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! auth()->user()->signature) {
+                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                    $user = $get('user') ? User::find($get('user')) : user();
+
+                    if (! $user?->signature->verify($value)) {
                         $fail('Configure your electronic signature first');
                     }
                 }),
@@ -251,8 +257,10 @@ class ExportTransmittalAction extends BulkAction
                 ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
                 ->markAsRequired(fn (Get $get) => $get('digital_signature'))
                 ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if (! auth()->user()->signature->verify($value)) {
+                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                    $user = $get('user') ? User::find($get('user')) : user();
+
+                    if (! $user?->signature->verify($value)) {
                         $fail('The password is incorrect');
                     }
                 }),

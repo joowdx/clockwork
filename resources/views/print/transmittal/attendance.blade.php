@@ -1,5 +1,7 @@
 @extends('print.layout')
 
+@use('App\Models\Office')
+
 @php($size ??= 'a4')
 
 @php($preview ??= false)
@@ -37,7 +39,7 @@
 
     $query->when($states, fn ($q) => $q->whereIn('state', $states));
 
-    $query->when(is_array($scanners) ? count($scanners) : $scanners->isNotEmpty(), fn ($q) => $q->whereIn('device', $scanners->pluck('uid')->toArray()));
+    $query->when(is_array($scanners) ? count($scanners) : $scanners->isNotEmpty(), fn ($q) => $q->whereIn('timelogs.device', $scanners->pluck('uid')->toArray()));
 
     $query->when($filter, fn ($q) => $q->limit(1));
 
@@ -77,12 +79,15 @@
 
 @section('content')
     @foreach ($offices as $office)
+        @dd($office instanceof Office::class)
+
         @php(
             $employees = $office->employees()
                 ->when($strict ??= false, fn ($query) => $query->whereHas('timelogs', fn ($query) => $filter($query, true)))
                 ->with(['timelogs' => fn ($query) => $filter($query)])
                 ->when($status ??= null, fn ($q) => is_array($status) ? $q->whereIn('status', $status) : $q->where('status', $status))
                 ->when(($substatus ??= null) && $status, fn ($q) => is_array($substatus) ? $q->whereIn('substatus', $substatus) : $q->where('substatus', $substatus))
+                ->when(($current ??= false) && (get_class($office) === Office::class), fn ($q) => $q->wherePivot('current', true))
                 ->get()
                 ->when($strict, fn ($employees) => $employees->reject(fn ($employee) => $employee->timelogs->isEmpty())) // bugged - don't remove
                 ->values()
@@ -120,7 +125,7 @@
                                             >
                                         @endif
 
-                                        @if (($logo = auth()->user()?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
+                                        @if (($logo = $user?->employee?->currentDeployment?->office->logo) && file_exists(storage_path('app/public/'.$logo)))
                                             <img
                                                 src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$logo))) }}"
                                                 alt="davao-del-sur"
@@ -150,7 +155,7 @@
                                 @endif
                                 <tr>
                                     <td colspan="10" class="underline uppercase courier center nowrap font-lg">
-                                        {{ auth()->user()?->employee?->currentDeployment?->office->name }}
+                                        {{ $user?->employee?->currentDeployment?->office->name }}
                                     </td>
                                 </tr>
                                 <tr></tr>
@@ -166,6 +171,37 @@
                                             <p class="italic" style="text-decoration:underline;text-underline-offset:2pt;margin:0;">
                                                 Office attendance printouts for
                                                 <span class="bold" style="text-transform: capitalize">{{ $office->name }}</span>
+
+                                                @if (is_array($scanners) ? count($scanners) :$scanners->isNotEmpty())
+                                                    from scanners
+                                                    <span class="italic bold">
+                                                        {{ $scanners->map(fn ($scanner) => mb_strtolower($scanner->name))->sort()->join(', ') }}
+                                                    </span>
+                                                @endif
+
+                                                @if ($states)
+                                                    via states
+                                                    <span class="italic bold">
+                                                        {{
+                                                            collect($states)
+                                                                ->map(fn ($state) => is_string($state) ? \App\Enums\TimelogState::tryFrom($state)?->getLabel() : $state->getLabel())
+                                                                ->join(', ')
+                                                        }}
+                                                    </span>
+                                                @endif
+
+                                                @if ($modes)
+                                                    via modes
+                                                    <span class="italic bold">
+                                                        {{
+                                                            collect($modes)
+                                                                ->map(fn ($mode) => is_string($mode) ? \App\Enums\TimelogMode::tryFrom($mode)?->getLabel() : $mode->getLabel())
+                                                                ->unique()
+                                                                ->join(', ')
+                                                        }}
+                                                    </span>
+                                                @endif
+
                                                 for the dates
                                                 <span class="bold nowrap"> {{ $range }} </span>
                                             </p>
@@ -224,7 +260,7 @@
                                     </td>
                                     <td colspan="4" class="uppercase center consolas font-lg" style="padding-right:1rem;">
                                         @includeWhen($signature ??= null, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
-                                        {{ auth()->user()?->name }}
+                                        {{ $user?->name }}
                                     </td>
                                 </tr>
                                 <tr>

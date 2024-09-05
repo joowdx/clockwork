@@ -8,17 +8,21 @@ use App\Enums\EmploymentSubstatus;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
 use App\Models\Scanner;
+use App\Models\User;
 use Exception;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -58,7 +62,7 @@ class ExportOfficeAttendanceAction extends BulkAction
 
         $this->modalIcon('heroicon-o-document-arrow-down');
 
-        $this->modalWidth('2xl');
+        $this->modalWidth('lg');
 
         $this->form($this->exportForm());
 
@@ -91,8 +95,10 @@ class ExportOfficeAttendanceAction extends BulkAction
                 ->status($data['status'])
                 ->substatus($data['substatus'])
                 ->strict($data['strict'])
+                ->current($data['current'])
                 ->size($data['size'])
-                ->signature($data['electronic_signature'] ? auth()->user()->signature : null)
+                ->user($data['user'] ? User::find($data['user']) : user())
+                ->signature($data['electronic_signature'])
                 ->password($data['digital_signature'] ? $data['password'] : null)
                 ->transmittal($this->transmittal ? true : ($data['transmittal'] ?? false))
                 ->download();
@@ -120,109 +126,132 @@ class ExportOfficeAttendanceAction extends BulkAction
     public function exportForm(): array
     {
         return [
-            Group::make()
-                ->columns(2)
+            Tabs::make()
+                ->contained(false)
                 ->schema([
-                    Select::make('status')
-                        ->multiple()
-                        ->options(collect(EmploymentStatus::cases())->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])),
-                    Select::make('substatus')
-                        ->multiple()
-                        ->options(collect(EmploymentSubstatus::cases())->mapWithKeys(fn ($substatus) => [$substatus->value => $substatus->getLabel()])),
-                    Select::make('states')
-                        ->multiple()
-                        ->options(collect(TimelogState::cases())->mapWithKeys(fn ($state) => [$state->value => $state->getLabel()])),
-                    Select::make('modes')
-                        ->multiple()
-                        ->options(collect(TimelogMode::cases())->mapWithKeys(fn ($mode) => [$mode->value => $mode->getLabel(1)])),
-                ]),
-            Select::make('scanners')
-                ->multiple()
-                ->options(Scanner::whereNotNull('uid')->orderBy('name')->pluck('name', 'uid')->toArray())
-                ->dehydrateStateUsing(fn ($state) => Scanner::whereIn('uid', $state)->orderBy('name')->get())
-                ->preload(),
-            Group::make()
-                ->columns($this->transmittal ? 1 : 2)
-                ->schema([
-                    Select::make('transmittal')
-                        ->hidden($this->transmittal)
-                        ->live()
-                        ->default(0)
-                        ->options([0, 1, 2, 3, 5])
-                        ->in([0, 1, 2, 3, 5])
-                        ->hintIcon('heroicon-o-question-mark-circle')
-                        ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
-                    Select::make('size')
-                        ->live()
-                        ->placeholder('Paper Size')
-                        ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
-                        ->required()
-                        ->options([
-                            'a4' => 'A4 (210mm x 297mm)',
-                            'letter' => 'Letter (216mm x 279mm)',
-                            'folio' => 'Folio (216mm x 330mm)',
-                            'legal' => 'Legal (216mm x 356mm)',
+                    Tab::make('Scanners')
+                        ->schema([
+                            Select::make('scanners')
+                                ->multiple()
+                                ->options(Scanner::whereNotNull('uid')->orderBy('name')->pluck('name', 'uid')->toArray())
+                                ->dehydrateStateUsing(fn ($state) => Scanner::whereIn('uid', $state)->orderBy('name')->get())
+                                ->preload(),
+                            Group::make()
+                                ->columns(2)
+                                ->schema([
+                                    TextInput::make('from')
+                                        ->type('time')
+                                        ->rule('date_format:H:i'),
+                                    TextInput::make('to')
+                                        ->type('time')
+                                        ->rule('date_format:H:i'),
+                                    Select::make('states')
+                                        ->multiple()
+                                        ->options(collect(TimelogState::cases())->mapWithKeys(fn ($state) => [$state->value => $state->getLabel()])),
+                                    Select::make('modes')
+                                        ->multiple()
+                                        ->options(collect(TimelogMode::cases())->mapWithKeys(fn ($mode) => [$mode->value => $mode->getLabel(1)])),
+                                ]),
+                            Repeater::make('dates')
+                                ->addActionLabel('Add new')
+                                ->reorderable(false)
+                                ->grid(2)
+                                ->required()
+                                ->cloneable()
+                                ->simple(
+                                    TextInput::make('date')
+                                        ->type('date')
+                                        ->markAsRequired()
+                                        ->rule('required')
+                                ),
+                        ]),
+                    Tab::make('Employee')
+                        ->schema([
+                            Select::make('status')
+                                ->multiple()
+                                ->options(collect(EmploymentStatus::cases())->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])),
+                            Select::make('substatus')
+                                ->multiple()
+                                ->options(collect(EmploymentSubstatus::cases())->mapWithKeys(fn ($substatus) => [$substatus->value => $substatus->getLabel()])),
+                        ]),
+                    Tab::make('Options')
+                        ->schema([
+                            Select::make('size')
+                                ->live()
+                                ->placeholder('Paper Size')
+                                ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
+                                ->required()
+                                ->options([
+                                    'a4' => 'A4 (210mm x 297mm)',
+                                    'letter' => 'Letter (216mm x 279mm)',
+                                    'folio' => 'Folio (216mm x 330mm)',
+                                    'legal' => 'Legal (216mm x 356mm)',
+                                ]),
+                            Select::make('transmittal')
+                                ->hidden($this->transmittal)
+                                ->live()
+                                ->default(0)
+                                ->options([0, 1, 2, 3, 5])
+                                ->in([0, 1, 2, 3, 5])
+                                ->hintIcon('heroicon-o-question-mark-circle')
+                                ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
+                        ]),
+                    Tab::make('Miscellaneous')
+                        ->schema([
+                            Select::make('user')
+                                ->label('Spoof as')
+                                ->visible(fn () => ($user = user())->developer && $user->superuser)
+                                ->reactive()
+                                ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
+                                ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
+                                ->searchable(),
+                            Checkbox::make('current')
+                                ->label('Currently Deployed')
+                                ->hintIcon('heroicon-o-check-circle')
+                                ->hintIconTooltip('When checked, only employees with currently deployed for the selected offices will be included.'),
+                            Checkbox::make('strict')
+                                ->label('Strict listing')
+                                ->hintIcon('heroicon-o-no-symbol')
+                                ->hintIconTooltip('When checked, filters out all employees who do not have a record on the selected date. This might produce a blank page.'),
+                            Checkbox::make('electronic_signature')
+                                ->hintIcon('heroicon-o-check-badge')
+                                ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
+                                ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
+                                ->live()
+                                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
+                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                    $user = $get('user') ? User::find($get('user')) : user();
+
+                                    if ($value && ! $user?->signature->verify($value)) {
+                                        $fail('Configure your electronic signature first');
+                                    }
+                                }),
+                            Checkbox::make('digital_signature')
+                                ->hintIcon('heroicon-o-shield-check')
+                                ->hintIconTooltip('Digitally sign the document to prevent tampering.')
+                                ->dehydrated(true)
+                                ->live()
+                                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
+                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                    if ($value && ! $get('electronic_signature')) {
+                                        $fail('Digital signature requires electronic signature');
+                                    }
+                                }),
+                            TextInput::make('password')
+                                ->password()
+                                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
+                                ->markAsRequired(fn (Get $get) => $get('digital_signature'))
+                                ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
+                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                    $user = $get('user') ? User::find($get('user')) : user();
+
+                                    if (! $user?->signature->verify($value)) {
+                                        $fail('The password is incorrect');
+                                    }
+                                }),
+
                         ]),
                 ]),
-            Group::make()
-                ->columns(2)
-                ->schema([
-                    TextInput::make('from')
-                        ->type('time')
-                        ->rule('date_format:H:i'),
-                    TextInput::make('to')
-                        ->type('time')
-                        ->rule('date_format:H:i'),
-                ]),
-            Repeater::make('dates')
-                ->addActionLabel('Add new')
-                ->reorderable(false)
-                ->grid(3)
-                ->required()
-                ->cloneable()
-                ->simple(
-                    TextInput::make('date')
-                        ->type('date')
-                        ->markAsRequired()
-                        ->rule('required')
-                ),
-            Checkbox::make('strict')
-                ->label('Strict listing')
-                ->hintIcon('heroicon-o-no-symbol')
-                ->hintIconTooltip('When checked, filters out all employees who do not have a record on the selected date. This might produce a blank page.')
-                ->default(true),
-            Checkbox::make('electronic_signature')
-                ->hintIcon('heroicon-o-check-badge')
-                ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
-                ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! auth()->user()->signature) {
-                        $fail('Configure your electronic signature first');
-                    }
-                }),
-            Checkbox::make('digital_signature')
-                ->hintIcon('heroicon-o-shield-check')
-                ->hintIconTooltip('Digitally sign the document to prevent tampering.')
-                ->dehydrated(true)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
-                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    if ($value && ! $get('electronic_signature')) {
-                        $fail('Digital signature requires electronic signature');
-                    }
-                }),
-            TextInput::make('password')
-                ->password()
-                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
-                ->markAsRequired(fn (Get $get) => $get('digital_signature'))
-                ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if (! auth()->user()->signature->verify($value)) {
-                        $fail('The password is incorrect');
-                    }
-                }),
         ];
     }
 }

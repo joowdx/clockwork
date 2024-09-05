@@ -6,7 +6,7 @@ use App\Helpers\NumberRangeCompressor;
 use App\Models\Group;
 use App\Models\Office;
 use App\Models\Scanner;
-use App\Models\Signature;
+use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
@@ -45,9 +45,13 @@ class ExportAttendance implements Responsable
 
     private ?array $substatus = [];
 
-    private ?Signature $signature = null;
+    private ?User $user = null;
+
+    private bool $signature = false;
 
     private ?Closure $password = null;
+
+    private bool $current = false;
 
     private bool $strict = false;
 
@@ -76,9 +80,11 @@ class ExportAttendance implements Responsable
         Collection|array|null $modes = [],
         Collection|array|null $status = [],
         Collection|array|null $substatus = [],
+        bool $current = false,
         bool $strict = false,
         string $size = 'folio',
-        ?Signature $signature = null,
+        ?User $user = null,
+        bool $signature = false,
         #[SensitiveParameter]
         ?string $password = null,
     ): StreamedResponse {
@@ -90,22 +96,31 @@ class ExportAttendance implements Responsable
             ->status($status)
             ->substatus($substatus)
             ->strict($strict)
+            ->current($current)
             ->size($size)
+            ->user($user)
             ->signature($signature)
             ->password($password)
             ->download();
     }
 
-    public function password(#[SensitiveParameter] ?string $password): static
+    public function user(?User $user = null): static
     {
-        $this->password = is_string($password) ? fn (): string => $password : $password;
+        $this->user = $user;
 
         return $this;
     }
 
-    public function signature(?Signature $signature = null): static
+    public function signature(bool $signature = false): static
     {
         $this->signature = $signature;
+
+        return $this;
+    }
+
+    public function password(#[SensitiveParameter] ?string $password): static
+    {
+        $this->password = is_string($password) ? fn (): string => $password : $password;
 
         return $this;
     }
@@ -187,6 +202,13 @@ class ExportAttendance implements Responsable
         return $this;
     }
 
+    public function current(bool $current = false): static
+    {
+        $this->current = $current;
+
+        return $this;
+    }
+
     public function strict(bool $strict = false): static
     {
         $this->strict = $strict;
@@ -238,7 +260,9 @@ class ExportAttendance implements Responsable
 
         $export->save(sys_get_temp_dir()."/$name");
 
-        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$this->signature->certificate), ($this->password)());
+        $signature = $this->user->signature;
+
+        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$signature->certificate), ($this->password)());
 
         try {
             return (new SignaturePdf(sys_get_temp_dir()."/$name", $certificate))->signature();
@@ -262,6 +286,8 @@ class ExportAttendance implements Responsable
             'status' => $this->status,
             'substatus' => $this->substatus,
             'strict' => $this->strict,
+            'current' => $this->current,
+            'user' => $this->user,
             'signature' => $this->signature,
             'signed' => (bool) $this->password,
             'size' => $this->size,
@@ -319,7 +345,7 @@ class ExportAttendance implements Responsable
 
         $prefix = 'Attendance'.($this->transmittal ? ' - Transmittal ' : ' ')."($range)";
 
-        $title = $prefix.'('.collect($this->office)->map(fn ($o) => $o instanceof Office ? $o->code : $o->name)->join(',').')';
+        $title = $prefix.'('.collect($this->office)->map(fn (Office|Group $o) => $o instanceof Office ? $o->code : $o->name)->join(',').')';
 
         return str($title)->limit(255)->toString();
     }
