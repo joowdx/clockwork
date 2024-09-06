@@ -58,7 +58,7 @@
                     ->with(['timelogs' => fn ($query) => $filter($query, $date)])
                     ->when($status ??= null, fn ($q) => is_array($status) ? $q->whereIn('status', $status) : $q->where('status', $status))
                     ->when(($substatus ??= null) && $status, fn ($q) => is_array($substatus) ? $q->whereIn('substatus', $substatus) : $q->where('substatus', $substatus))
-                    ->when(($current ??= false) && (get_class($office) === Office::class), fn ($q) => $q->wherePivot('current', true))
+                    ->when(($current ??= false) && (get_class($office) === Office::class), fn ($q) => $q->where('deployment.current', true))
                     ->get()
                     ->when($strict, fn ($employees) => $employees->reject(fn ($employee) => $employee->timelogs->isEmpty())) // bugged - don't remove
                     ->values()

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Actions\TableActions\BulkAction;
+namespace App\Filament\Actions;
 
 use App\Actions\ExportAttendance;
 use App\Enums\EmploymentStatus;
@@ -10,8 +10,11 @@ use App\Enums\TimelogState;
 use App\Models\Scanner;
 use App\Models\User;
 use Exception;
+use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -19,15 +22,12 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\BulkAction;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 
-class ExportOfficeAttendanceAction extends BulkAction
+class ExportAttendanceAction extends Action
 {
     public bool $transmittal = false;
 
@@ -56,7 +56,7 @@ class ExportOfficeAttendanceAction extends BulkAction
 
         $this->modalHeading(fn () => $this->transmittal ? 'Export Transmittal' : 'Export Attendance');
 
-        $this->label(fn () => $this->transmittal ? 'Export Transmittal' : 'Export Attendance');
+        $this->label(fn () => $this->transmittal ? 'Transmittal' : 'Attendance');
 
         $this->modalDescription('');
 
@@ -64,12 +64,14 @@ class ExportOfficeAttendanceAction extends BulkAction
 
         $this->modalWidth('lg');
 
+        $this->closeModalByClickingAway(false);
+
         $this->form($this->exportForm());
 
-        $this->action(fn (Collection $records, array $data) => $this->exportAction($records, $data));
+        $this->action(fn (array $data) => $this->exportAction($data));
     }
 
-    public function exportAction(Collection|Model $office, array $data): StreamedResponse|BinaryFileResponse|Notification
+    public function exportAction(array $data): StreamedResponse|BinaryFileResponse|Notification
     {
         $actionException = new class extends Exception
         {
@@ -80,12 +82,12 @@ class ExportOfficeAttendanceAction extends BulkAction
         };
 
         try {
-            if ($office instanceof Collection && $office->count() > 100) {
+            if (count($data['offices']) > 100) {
                 throw new $actionException('Too many records', 'To prevent server overload, please select less than 100 records');
             }
 
             return (new ExportAttendance)
-                ->office($office)
+                ->office($data['offices'])
                 ->dates($data['dates'])
                 ->from($data['from'])
                 ->to($data['to'])
@@ -103,7 +105,7 @@ class ExportOfficeAttendanceAction extends BulkAction
                 ->transmittal($this->transmittal ? true : ($data['transmittal'] ?? false))
                 ->download();
         } catch (ProcessFailedException $exception) {
-            $message = $office instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$office->name}'s timesheet";
+            $message = 'Failed to export timesheets';
 
             return Notification::make()
                 ->danger()
@@ -133,24 +135,24 @@ class ExportOfficeAttendanceAction extends BulkAction
                         ->schema([
                             Select::make('scanners')
                                 ->multiple()
-                                ->options(Scanner::whereNotNull('uid')->orderBy('name')->pluck('name', 'uid')->toArray())
+                                ->options(Scanner::whereNotNull('uid')->orderBy('priority', 'desc')->orderBy('name')->pluck('name', 'uid')->toArray())
                                 ->dehydrateStateUsing(fn ($state) => Scanner::whereIn('uid', $state)->orderBy('name')->get())
                                 ->preload(),
                             Group::make()
                                 ->columns(2)
                                 ->schema([
-                                    TextInput::make('from')
-                                        ->type('time')
-                                        ->rule('date_format:H:i'),
-                                    TextInput::make('to')
-                                        ->type('time')
-                                        ->rule('date_format:H:i'),
                                     Select::make('states')
                                         ->multiple()
                                         ->options(collect(TimelogState::cases())->mapWithKeys(fn ($state) => [$state->value => $state->getLabel()])),
                                     Select::make('modes')
                                         ->multiple()
                                         ->options(collect(TimelogMode::cases())->mapWithKeys(fn ($mode) => [$mode->value => $mode->getLabel(1)])),
+                                    TextInput::make('from')
+                                        ->type('time')
+                                        ->rule('date_format:H:i'),
+                                    TextInput::make('to')
+                                        ->type('time')
+                                        ->rule('date_format:H:i'),
                                 ]),
                             Repeater::make('dates')
                                 ->addActionLabel('Add new')
@@ -165,14 +167,71 @@ class ExportOfficeAttendanceAction extends BulkAction
                                         ->rule('required')
                                 ),
                         ]),
-                    Tab::make('Employee')
+                    Tab::make('Employees')
+                        ->columns(2)
                         ->schema([
+                            Radio::make('by')
+                                ->hiddenLabel()
+                                ->dehydrated(false)
+                                ->inline()
+                                ->reactive()
+                                ->default('office')
+                                ->required()
+                                ->columnSpanFull()
+                                ->options([
+                                    'office' => 'Office',
+                                    'group' => 'Group',
+                                ])
+                                ->afterStateUpdated(fn ($set) => $set('offices', null)),
+                            Select::make('offices')
+                                ->label(fn (Get $get) => $get('by') === 'office' ? 'Offices' : 'Groups')
+                                ->multiple()
+                                ->required()
+                                ->columnSpanFull()
+                                ->dehydrateStateUsing(fn (Get $get, array $state) => ('App\Models\\'.ucfirst($get('by')))::find($state))
+                                ->validationAttribute(fn (Get $get) => $get('by') === 'office' ? 'offices' : 'groups')
+                                ->options(function (Get $get) {
+                                    $admin = Filament::getCurrentPanel()->getId() === 'admin';
+
+                                    $model = 'App\Models\\'.ucfirst($get('by'));
+
+                                    return $model::query()
+                                        ->when(! $admin, function ($query) {
+                                            $user = user();
+                                        })
+                                        ->take(25)
+                                        ->orderBy($get('by') === 'office' ? 'code' : 'name')
+                                        ->pluck($get('by') === 'office' ? 'code' : 'name', 'id');
+                                })
+                                ->getSearchResultsUsing(function (Get $get, string $search) {
+                                    $admin = Filament::getCurrentPanel()->getId() === 'admin';
+
+                                    $model = 'App\Models\\'.ucfirst($get('by'));
+
+                                    return $model::query()
+                                        ->when(! $admin, function ($query) {
+                                            $user = user();
+                                        })
+                                        ->where('name', 'ilike', "%{$search}%")
+                                        ->when($get('by') === 'office', fn ($query) => $query->orWhere('code', 'ilike', "%{$search}%"))
+                                        ->take(25)
+                                        ->orderBy($get('by') === 'office' ? 'code' : 'name')
+                                        ->pluck($get('by') === 'office' ? 'code' : 'name', 'id');
+                                }),
                             Select::make('status')
                                 ->multiple()
                                 ->options(collect(EmploymentStatus::cases())->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])),
                             Select::make('substatus')
                                 ->multiple()
                                 ->options(collect(EmploymentSubstatus::cases())->mapWithKeys(fn ($substatus) => [$substatus->value => $substatus->getLabel()])),
+                            Checkbox::make('strict')
+                                ->columnSpanFull()
+                                ->label('Strict listing')
+                                ->helperText('When checked, filters out all employees who do not have a record on the selected date.'),
+                            Checkbox::make('current')
+                                ->columnSpanFull()
+                                ->label('Currently deployed')
+                                ->helperText('When checked, only employees currently deployed for the selected offices will be included.'),
                         ]),
                     Tab::make('Options')
                         ->schema([
@@ -195,9 +254,6 @@ class ExportOfficeAttendanceAction extends BulkAction
                                 ->in([0, 1, 2, 3, 5])
                                 ->hintIcon('heroicon-o-question-mark-circle')
                                 ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
-                        ]),
-                    Tab::make('Miscellaneous')
-                        ->schema([
                             Select::make('user')
                                 ->label('Spoof as')
                                 ->visible(fn () => ($user = user())->developer && $user->superuser)
@@ -205,30 +261,20 @@ class ExportOfficeAttendanceAction extends BulkAction
                                 ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
                                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                                 ->searchable(),
-                            Checkbox::make('current')
-                                ->label('Currently Deployed')
-                                ->hintIcon('heroicon-o-check-circle')
-                                ->hintIconTooltip('When checked, only employees with currently deployed for the selected offices will be included.'),
-                            Checkbox::make('strict')
-                                ->label('Strict listing')
-                                ->hintIcon('heroicon-o-no-symbol')
-                                ->hintIconTooltip('When checked, filters out all employees who do not have a record on the selected date. This might produce a blank page.'),
                             Checkbox::make('electronic_signature')
-                                ->hintIcon('heroicon-o-check-badge')
-                                ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
+                                ->helperText('Electronically sign the document. This does not provide security against tampering.')
                                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
                                 ->live()
                                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                                     $user = $get('user') ? User::find($get('user')) : user();
 
-                                    if ($value && ! $user?->signature->verify($value)) {
+                                    if ($value && ! $user->signature) {
                                         $fail('Configure your electronic signature first');
                                     }
                                 }),
                             Checkbox::make('digital_signature')
-                                ->hintIcon('heroicon-o-shield-check')
-                                ->hintIconTooltip('Digitally sign the document to prevent tampering.')
+                                ->helperText('Digitally sign the document to prevent tampering.')
                                 ->dehydrated(true)
                                 ->live()
                                 ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
@@ -236,20 +282,29 @@ class ExportOfficeAttendanceAction extends BulkAction
                                     if ($value && ! $get('electronic_signature')) {
                                         $fail('Digital signature requires electronic signature');
                                     }
+
+                                    $user = $get('user') ? User::find($get('user')) : user();
+
+                                    if ($user->signature?->certificate === null) {
+                                        $name = $get('user')
+                                            ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+                                            : 'your';
+
+                                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+                                    }
                                 }),
                             TextInput::make('password')
                                 ->password()
-                                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
+                                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature') && ($get('user') ? User::find($get('user')) : user())->signature->certificate)
                                 ->markAsRequired(fn (Get $get) => $get('digital_signature'))
                                 ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
                                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                                     $user = $get('user') ? User::find($get('user')) : user();
 
-                                    if (! $user?->signature->verify($value)) {
+                                    if ($user->signature->certificate !== null && ! $user?->signature->verify($value)) {
                                         $fail('The password is incorrect');
                                     }
                                 }),
-
                         ]),
                 ]),
         ];

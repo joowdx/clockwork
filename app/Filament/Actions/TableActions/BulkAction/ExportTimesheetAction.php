@@ -158,21 +158,19 @@ class ExportTimesheetAction extends BulkAction
                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                 ->searchable(),
             Checkbox::make('electronic_signature')
-                ->hintIcon('heroicon-o-check-badge')
-                ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
+                ->helperText('Electronically sign the document. This does not provide security against tampering.')
                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     $user = $get('user') ? User::find($get('user')) : user();
 
-                    if ($value && ! $user?->signature) {
+                    if ($value && ! $user->signature) {
                         $fail('Configure your electronic signature first');
                     }
                 }),
             Checkbox::make('digital_signature')
-                ->hintIcon('heroicon-o-shield-check')
-                ->hintIconTooltip('Digitally sign the document to prevent tampering.')
+                ->helperText('Digitally sign the document to prevent tampering.')
                 ->dehydrated(true)
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
@@ -180,16 +178,26 @@ class ExportTimesheetAction extends BulkAction
                     if ($value && ! $get('electronic_signature')) {
                         $fail('Digital signature requires electronic signature');
                     }
+
+                    $user = $get('user') ? User::find($get('user')) : user();
+
+                    if ($user->signature?->certificate === null) {
+                        $name = $get('user')
+                            ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+                            : 'your';
+
+                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+                    }
                 }),
             TextInput::make('password')
                 ->password()
-                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
+                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature') && ($get('user') ? User::find($get('user')) : user())->signature->certificate)
                 ->markAsRequired(fn (Get $get) => $get('digital_signature'))
                 ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     $user = $get('user') ? User::find($get('user')) : user();
 
-                    if (! $user?->signature->verify($value)) {
+                    if ($user->signature->certificate !== null && ! $user?->signature->verify($value)) {
                         $fail('The password is incorrect');
                     }
                 }),
@@ -314,27 +322,31 @@ class ExportTimesheetAction extends BulkAction
                     'folio' => 'Folio',
                     'legal' => 'Legal',
                 ]),
-            Select::make('transmittal')
-                ->live()
-                ->visible(! $preview)
-                ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
-                ->options([0, 1, 2, 3, 5])
-                ->in([0, 1, 2, 3, 5])
-                ->hintIcon('heroicon-o-question-mark-circle')
-                ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
-            Select::make('grouping')
-                ->visible(! $preview)
-                ->disabled(fn (Get $get) => $get('transmittal') <= 0)
-                ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
-                ->options([
-                    'offices' => 'Office',
-                    false => 'None',
-                ])
-                ->hintIcon('heroicon-o-question-mark-circle')
-                ->hintIconTooltip('
-                    Grouping by office might generate multiple timesheets for employees with multiple offices.
-                    No grouping will generate a single transmittal for all selected employees.
-                '),
+            Group::make()
+                ->columns(2)
+                ->schema([
+                    Select::make('transmittal')
+                        ->live()
+                        ->visible(! $preview)
+                        ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
+                        ->options([0, 1, 2, 3, 5])
+                        ->in([0, 1, 2, 3, 5])
+                        ->hintIcon('heroicon-o-question-mark-circle')
+                        ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
+                    Select::make('grouping')
+                        ->visible(! $preview)
+                        ->disabled(fn (Get $get) => $get('transmittal') <= 0)
+                        ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
+                        ->options([
+                            'offices' => 'Office',
+                            false => 'None',
+                        ])
+                        ->hintIcon('heroicon-o-question-mark-circle')
+                        ->hintIconTooltip('
+                            Grouping by office might generate multiple timesheets for employees with multiple offices.
+                            No grouping will generate a single transmittal for all selected employees.
+                        '),
+                ]),
         ];
 
         return $preview
@@ -344,9 +356,7 @@ class ExportTimesheetAction extends BulkAction
                     Tab::make('Timesheet')
                         ->schema($period),
                     Tab::make('Options')
-                        ->schema($export),
-                    Tab::make('Params')
-                        ->schema($config),
+                        ->schema([...$export, ...$config]),
                 ]),
             ];
     }

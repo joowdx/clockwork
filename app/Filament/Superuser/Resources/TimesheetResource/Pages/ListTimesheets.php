@@ -6,9 +6,9 @@ use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
+use App\Filament\Actions\ExportAttendanceAction;
 use App\Filament\Actions\PreselectFormAction;
 use App\Filament\Actions\TableActions\BulkAction\DeleteTimesheetAction;
-use App\Filament\Actions\TableActions\BulkAction\ExportOfficeAttendanceAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ExportTransmittalAction;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
@@ -47,22 +47,23 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            ExportAttendanceAction::make(),
             TimelogsActionGroup::make(),
             PreselectFormAction::make()
                 ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class),
-            FilterAction::make()
-                ->label('Config')
-                ->icon('heroicon-o-cog-6-tooth')
-                ->modalHeading('Config')
-                ->slideOver(false)
-                ->form([
-                    Forms\Components\Select::make('model')
-                        ->live()
-                        ->placeholder('List to show')
-                        ->default(Employee::class)
-                        ->required()
-                        ->options([Employee::class => 'Employee', Office::class => 'Office', Group::class => 'Group']),
-                ]),
+            // FilterAction::make()
+            //     ->label('Config')
+            //     ->icon('heroicon-o-cog-6-tooth')
+            //     ->modalHeading('Config')
+            //     ->slideOver(false)
+            //     ->form([
+            //         Forms\Components\Select::make('model')
+            //             ->live()
+            //             ->placeholder('List to show')
+            //             ->default(Employee::class)
+            //             ->required()
+            //             ->options([Employee::class => 'Employee', Office::class => 'Office', Group::class => 'Group']),
+            //     ]),
         ];
     }
 
@@ -332,10 +333,6 @@ class ListTimesheets extends ListRecords
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->label('Export')
                     ->icon('heroicon-o-document-arrow-down'),
-                ExportOfficeAttendanceAction::make()
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) !== Employee::class),
-                ExportOfficeAttendanceAction::make(transmittal: true)
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) !== Employee::class),
                 Tables\Actions\BulkAction::make('generate')
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->icon('heroicon-o-bolt')

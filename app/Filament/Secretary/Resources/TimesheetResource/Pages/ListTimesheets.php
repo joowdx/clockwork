@@ -2,6 +2,7 @@
 
 namespace App\Filament\Secretary\Resources\TimesheetResource\Pages;
 
+use App\Filament\Actions\ExportAttendanceAction;
 use App\Filament\Secretary\Resources\TimesheetResource;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
@@ -14,6 +15,7 @@ use Filament\Pages\Dashboard\Actions\FilterAction;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ListTimesheets extends ListRecords
 {
@@ -24,6 +26,7 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            ExportAttendanceAction::make(),
             FilterAction::make()
                 ->label('Options')
                 ->icon('heroicon-o-adjustments-horizontal')
@@ -162,7 +165,7 @@ class ListTimesheets extends ListRecords
                         ->live()
                         ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                         ->rule(fn () => function ($attribute, $value, $fail) {
-                            if ($value && ! auth()->user()->signature) {
+                            if ($value && ! Auth::user()->signature) {
                                 $fail('Configure your electronic signature first');
                             }
                         }),

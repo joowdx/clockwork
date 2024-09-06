@@ -83,11 +83,13 @@ class TimesheetResource extends Resource
                             ->options(
                                 Office::query()
                                     ->where(function ($query) {
-                                        $query->whereIn('id', auth()->user()->offices->pluck('id'));
+                                        $user = user();
 
-                                        $query->orWhereHas('employees', function ($query) {
-                                            $query->whereHas('scanners', function (Builder $query) {
-                                                $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                                        $query->whereIn('id', $user->offices->pluck('id'));
+
+                                        $query->orWhereHas('employees', function ($query) use ($user) {
+                                            $query->whereHas('scanners', function (Builder $query) use ($user) {
+                                                $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
                                             });
                                         });
                                     })
@@ -95,14 +97,16 @@ class TimesheetResource extends Resource
                             )
                             ->searchable()
                             ->getSearchResultsUsing(function (string $search) {
+                                $user = user();
+
                                 $query = Office::query();
 
-                                $query->where(function ($query) {
-                                    $query->whereIn('id', auth()->user()->offices->pluck('id'));
+                                $query->where(function ($query) use ($user) {
+                                    $query->whereIn('id', $user->offices->pluck('id'));
 
-                                    $query->orWhereHas('employees', function ($query) {
-                                        $query->whereHas('scanners', function (Builder $query) {
-                                            $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                        $query->whereHas('scanners', function (Builder $query) use ($user) {
+                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
                                         });
                                     });
                                 });
@@ -144,11 +148,13 @@ class TimesheetResource extends Resource
                         'groups',
                         'name',
                         fn ($query) => $query->whereHas('employees', function ($query) {
-                            $query->whereHas('offices', function ($query) {
-                                $query->whereIn('offices.id', auth()->user()->offices->pluck('id'));
+                            $user = user();
+
+                            $query->whereHas('offices', function ($query) use ($user) {
+                                $query->whereIn('offices.id', $user->offices->pluck('id'));
                             })
-                                ->orWhereHas('scanners', function (Builder $query) {
-                                    $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                                ->orWhereHas('scanners', function (Builder $query) use ($user) {
+                                    $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
                                 });
                         })
                     )
@@ -198,11 +204,13 @@ class TimesheetResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where(function ($query) {
-                $query->whereHas('offices', function (Builder $query) {
-                    $query->whereIn('offices.id', auth()->user()->offices->pluck('id')->toArray());
+                $user = user();
+
+                $query->whereHas('offices', function (Builder $query) use ($user) {
+                    $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
                 })
-                    ->orWhereHas('scanners', function (Builder $query) {
-                        $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                    ->orWhereHas('scanners', function (Builder $query) use ($user) {
+                        $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
                     });
             });
     }
