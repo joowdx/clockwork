@@ -50,7 +50,21 @@ class TimesheetResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('offices.code')
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function (Employee $record) {
+                        $offices = $record->offices->map(function ($office) {
+                            return str($office->code)
+                                ->when($office->pivot->current, function ($code) {
+                                    return <<<HTML
+                                        <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--primary-400);--c-600:var(--primary-600);">
+                                            $code
+                                        </span>
+                                    HTML;
+                                });
+                        })->join(', ');
+
+                        return str($offices)->toHtmlString();
+                    }),
                 Tables\Columns\TextColumn::make('status')
                     ->toggleable()
                     ->limit(24)
@@ -88,9 +102,13 @@ class TimesheetResource extends Resource
                                         $query->whereIn('id', $user->offices->pluck('id'));
 
                                         $query->orWhereHas('employees', function ($query) use ($user) {
-                                            $query->whereHas('scanners', function (Builder $query) use ($user) {
+                                            $query->whereHas('scanners', function ($query) use ($user) {
                                                 $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+
+                                                $query->where('enrollment.active', true);
                                             });
+
+                                            $query->where('deployment.active', true);
                                         });
                                     })
                                     ->pluck('code', 'id')
@@ -125,10 +143,8 @@ class TimesheetResource extends Resource
                         $query->when($data['offices'], function ($query) use ($data) {
                             $query->whereHas('offices', function ($query) use ($data) {
                                 $query->whereIn('offices.id', $data['offices'])
-                                    ->where('deployment.current', true)
                                     ->where('deployment.active', true);
                             });
-
                         });
                     })
                     ->indicateUsing(function (array $data) {
@@ -208,10 +224,11 @@ class TimesheetResource extends Resource
 
                 $query->whereHas('offices', function (Builder $query) use ($user) {
                     $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
-                })
-                    ->orWhereHas('scanners', function (Builder $query) use ($user) {
-                        $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
-                    });
+                });
+
+                $query->orWhereHas('scanners', function (Builder $query) use ($user) {
+                    $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                });
             });
     }
 }

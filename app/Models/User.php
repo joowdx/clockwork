@@ -66,12 +66,16 @@ class User extends Authenticatable implements FilamentUser
 
     public function scanners(): MorphToMany
     {
-        return $this->morphedByMany(Scanner::class, 'assignable', Assignment::class);
+        return $this->morphedByMany(Scanner::class, 'assignable', Assignment::class)
+            ->withPivot('active')
+            ->wherePivot('active', true);
     }
 
     public function offices(): MorphToMany
     {
-        return $this->morphedByMany(Office::class, 'assignable', Assignment::class);
+        return $this->morphedByMany(Office::class, 'assignable', Assignment::class)
+            ->withPivot('active')
+            ->wherePivot('active', true);
     }
 
     public function canAccessPanel(Panel $panel, ?string $id = null): bool

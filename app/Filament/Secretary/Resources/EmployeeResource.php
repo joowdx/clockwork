@@ -6,6 +6,7 @@ use App\Filament\Filters\ActiveFilter;
 use App\Filament\Filters\StatusFilter;
 use App\Filament\Secretary\Resources\EmployeeResource\Pages;
 use App\Filament\Superuser\Resources\EmployeeResource as SuperuserEmployeeResource;
+use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\GroupsRelationManager;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\OfficesRelationManager;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\ScannersRelationManager;
 use App\Models\Employee;
@@ -18,6 +19,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeResource extends Resource
 {
@@ -40,7 +42,18 @@ class EmployeeResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('offices.code')
-                    ->formatStateUsing(fn (Employee $record) => $record->offices->filter(fn ($office) => $office->pivot->active)->pluck('code')->join(', ')),
+                    ->formatStateUsing(function (Employee $record) {
+                        $offices = $record->offices->map(function ($office) {
+                            return str($office->code)
+                                ->when($office->pivot->current, function ($code) {
+                                    return <<<HTML
+                                        <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--primary-400);--c-600:var(--primary-600);">$code</span>
+                                    HTML;
+                                });
+                        })->join(', ');
+
+                        return str($offices)->toHtmlString();
+                    }),
                 Tables\Columns\TextColumn::make('status'),
             ])
             ->filters([
@@ -52,11 +65,11 @@ class EmployeeResource extends Resource
                             ->options(
                                 Office::query()
                                     ->where(function ($query) {
-                                        $query->whereIn('id', auth()->user()->offices->pluck('id'));
+                                        $query->whereIn('id', Auth::user()->offices->pluck('id'));
 
                                         $query->orWhereHas('employees', function ($query) {
                                             $query->whereHas('scanners', function (Builder $query) {
-                                                $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                                                $query->whereIn('scanners.id', Auth::user()->scanners->pluck('id')->toArray());
                                             });
                                         });
                                     })
@@ -67,11 +80,11 @@ class EmployeeResource extends Resource
                                 $query = Office::query();
 
                                 $query->where(function ($query) {
-                                    $query->whereIn('id', auth()->user()->offices->pluck('id'));
+                                    $query->whereIn('id', Auth::user()->offices->pluck('id'));
 
                                     $query->orWhereHas('employees', function ($query) {
                                         $query->whereHas('scanners', function (Builder $query) {
-                                            $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id')->toArray());
+                                            $query->whereIn('scanners.id', Auth::user()->scanners->pluck('id')->toArray());
                                         });
                                     });
                                 });
@@ -124,6 +137,7 @@ class EmployeeResource extends Resource
         return [
             OfficesRelationManager::class,
             ScannersRelationManager::class,
+            GroupsRelationManager::class,
         ];
     }
 
@@ -143,11 +157,11 @@ class EmployeeResource extends Resource
             ])
             ->where(function (Builder $query) {
                 $query->whereHas('offices', function (Builder $query) {
-                    $query->whereIn('offices.id', auth()->user()->offices->pluck('id'));
+                    $query->whereIn('offices.id', Auth::user()->offices->pluck('id'));
                 });
 
                 $query->whereHas('scanners', function (Builder $query) {
-                    $query->whereIn('scanners.id', auth()->user()->scanners->pluck('id'));
+                    $query->whereIn('scanners.id', Auth::user()->scanners->pluck('id'));
                 });
             });
     }

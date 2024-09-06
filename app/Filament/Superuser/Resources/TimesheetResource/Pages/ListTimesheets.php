@@ -78,7 +78,18 @@ class ListTimesheets extends ListRecords
                 Tables\Columns\TextColumn::make('offices.code')
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->searchable()
-                    ->limit(20)
+                    ->formatStateUsing(function (Employee $record) {
+                        $offices = $record->offices->map(function ($office) {
+                            return str($office->code)
+                                ->when($office->pivot->current, function ($code) {
+                                    return <<<HTML
+                                        <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--primary-400);--c-600:var(--primary-600);">$code</span>
+                                    HTML;
+                                });
+                        })->join(', ');
+
+                        return str($offices)->toHtmlString();
+                    })
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->toggleable()

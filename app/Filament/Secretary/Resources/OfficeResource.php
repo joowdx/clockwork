@@ -4,8 +4,8 @@ namespace App\Filament\Secretary\Resources;
 
 use App\Filament\Secretary\Resources\OfficeResource\Pages;
 use App\Filament\Secretary\Resources\OfficeResource\RelationManagers\EmployeesRelationManager;
+use App\Filament\Superuser\Resources\OfficeResource as SuperuserOfficeResource;
 use App\Models\Office;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -22,21 +22,7 @@ class OfficeResource extends Resource
 
     public static function formSchema(): array
     {
-        $isCalledBySelf = @debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1]['class'] === get_called_class();
-
-        return [
-            Forms\Components\Section::make('General information')
-                ->columns(2)
-                ->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->helperText('The full expanded name of the office.'),
-                    Forms\Components\TextInput::make('code')
-                        ->required()
-                        ->unique(ignoreRecord: true)
-                        ->helperText('The shorthand name of the office.'),
-                ]),
-        ];
+        return SuperuserOfficeResource::formSchema(head: true);
     }
 
     public static function form(Form $form): Form
@@ -98,6 +84,6 @@ class OfficeResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereIn('offices.id', auth()->user()->offices?->pluck('id')->toArray());
+            ->whereIn('offices.id', user()->offices?->pluck('id')->toArray());
     }
 }

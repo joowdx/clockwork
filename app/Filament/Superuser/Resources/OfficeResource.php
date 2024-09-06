@@ -24,7 +24,7 @@ class OfficeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function formSchema(): array
+    public static function formSchema(bool $head = false): array
     {
         $isCalledBySelf = @debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1]['class'] === get_called_class();
 
@@ -62,7 +62,7 @@ class OfficeResource extends Resource
                         ->hiddenLabel()
                         ->editOptionForm($isCalledBySelf ? EmployeeResource::formSchema() : null)
                         ->createOptionForm($isCalledBySelf ? EmployeeResource::formSchema() : null)
-                        ->visible(fn () => $isCalledBySelf),
+                        ->visible(fn () => $isCalledBySelf || $head),
                 ]),
         ];
     }

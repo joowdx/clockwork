@@ -135,8 +135,40 @@ class ExportAttendanceAction extends Action
                         ->schema([
                             Select::make('scanners')
                                 ->multiple()
-                                ->options(Scanner::whereNotNull('uid')->orderBy('priority', 'desc')->orderBy('name')->pluck('name', 'uid')->toArray())
                                 ->dehydrateStateUsing(fn ($state) => Scanner::whereIn('uid', $state)->orderBy('name')->get())
+                                ->options(function () {
+                                    $user = user();
+
+                                    return Scanner::query()
+                                        ->where(function ($query) use ($user) {
+                                            $query->orWhereIn('uid', $user->scanners()->pluck('uid')->toArray());
+
+                                            $query->orWhereHas('employees', function ($query) use ($user) {
+                                                $query->whereHas('offices', function ($query) use ($user) {
+                                                    $query->whereIn('offices.id', $user->offices()->pluck('offices.id')->toArray());
+                                                });
+                                            });
+                                        })
+                                        ->orderBy('name')
+                                        ->pluck('name', 'uid');
+                                })
+                                ->getSearchResultsUsing(function ($search) {
+                                    $user = user();
+
+                                    return Scanner::query()
+                                        ->where('name', 'ilike', "%{$search}%")
+                                        ->where(function ($query) use ($user) {
+                                            $query->orWhereIn('uid', $user->scanners()->pluck('uid')->toArray());
+
+                                            $query->orWhereHas('employees', function ($query) use ($user) {
+                                                $query->whereHas('offices', function ($query) use ($user) {
+                                                    $query->whereIn('offices.id', $user->offices()->pluck('offices.id')->toArray());
+                                                });
+                                            });
+                                        })
+                                        ->orderBy('name')
+                                        ->pluck('name', 'uid');
+                                })
                                 ->preload(),
                             Group::make()
                                 ->columns(2)
@@ -193,11 +225,34 @@ class ExportAttendanceAction extends Action
                                 ->options(function (Get $get) {
                                     $admin = Filament::getCurrentPanel()->getId() === 'admin';
 
-                                    $model = 'App\Models\\'.ucfirst($get('by'));
-
-                                    return $model::query()
-                                        ->when(! $admin, function ($query) {
+                                    return ('App\Models\\'.ucfirst($get('by')))::query()
+                                        ->when(! $admin, function ($query) use ($get) {
                                             $user = user();
+
+                                            match ($get) {
+                                                'group' => $query->where(function ($query) use ($user) {
+                                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                                        $query->whereHas('offices', function ($query) use ($user) {
+                                                            $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
+                                                        });
+                                                    });
+
+                                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                                        $query->whereHas('scanners', function ($query) use ($user) {
+                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                        });
+                                                    });
+                                                }),
+                                                default => $query->where(function ($query) use ($user) {
+                                                    $query->whereIn('id', $user->offices->pluck('id'));
+
+                                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                                        $query->whereHas('scanners', function ($query) use ($user) {
+                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                        });
+                                                    });
+                                                })
+                                            };
                                         })
                                         ->take(25)
                                         ->orderBy($get('by') === 'office' ? 'code' : 'name')
@@ -206,14 +261,40 @@ class ExportAttendanceAction extends Action
                                 ->getSearchResultsUsing(function (Get $get, string $search) {
                                     $admin = Filament::getCurrentPanel()->getId() === 'admin';
 
-                                    $model = 'App\Models\\'.ucfirst($get('by'));
-
-                                    return $model::query()
-                                        ->when(! $admin, function ($query) {
+                                    return ('App\Models\\'.ucfirst($get('by')))::query()
+                                        ->when(! $admin, function ($query) use ($get) {
                                             $user = user();
+
+                                            match ($get) {
+                                                'group' => $query->where(function ($query) use ($user) {
+                                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                                        $query->whereHas('offices', function ($query) use ($user) {
+                                                            $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
+                                                        });
+                                                    });
+
+                                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                                        $query->whereHas('scanners', function ($query) use ($user) {
+                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                        });
+                                                    });
+                                                }),
+                                                default => $query->where(function ($query) use ($user) {
+                                                    $query->whereIn('id', $user->offices->pluck('id'));
+
+                                                    $query->orWhereHas('employees', function ($query) use ($user) {
+                                                        $query->whereHas('scanners', function ($query) use ($user) {
+                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                        });
+                                                    });
+                                                })
+                                            };
                                         })
-                                        ->where('name', 'ilike', "%{$search}%")
-                                        ->when($get('by') === 'office', fn ($query) => $query->orWhere('code', 'ilike', "%{$search}%"))
+                                        ->where(function ($query) use ($get, $search) {
+                                            $query->where('name', 'ilike', "%{$search}%");
+
+                                            $query->when($get('by') === 'office', fn ($query) => $query->orWhere('code', 'ilike', "%{$search}%"));
+                                        })
                                         ->take(25)
                                         ->orderBy($get('by') === 'office' ? 'code' : 'name')
                                         ->pluck($get('by') === 'office' ? 'code' : 'name', 'id');
