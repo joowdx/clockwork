@@ -340,7 +340,7 @@
                             <tr>
                                 <td colspan=1> </td>
                                 <td class="font-xxs center courier top" colspan=4 style="color:#000A;">
-                                    {{ $user?->employee?->designation ?? '' }}
+                                    {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
                                 </td>
                                 <td class="relative" colspan=1>
                                     <div class="absolute consolas" style="opacity:0.5;bottom:8pt;right:0;font-size:4.0pt;">
