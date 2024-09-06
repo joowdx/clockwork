@@ -359,7 +359,7 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     $enrollments = collect(array_intersect_key($row, $existingScanners));
 
                     // DELETE EMPLOYEE ENROLLMENTS
-                    $employee->scanners()->detach($enrollments->filter()->map(fn ($uid, $scanner) => $existingScanners[$scanner])->toArray());
+                    // $employee->scanners()->detach($enrollments->filter()->map(fn ($uid, $scanner) => $existingScanners[$scanner])->toArray());
 
                     // INSERTS AND OVERWRITES CONFLICTING ENROLLMENTS
                     Enrollment::upsert(
