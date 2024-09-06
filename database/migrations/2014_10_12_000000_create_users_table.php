@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->jsonb('roles')->nullable();
             $table->jsonb('permissions')->nullable();
-            $table->foreignUlid('employee_id')->nullable()->constrained()->noActionOnDelete()->cascadeOnUpdate();
+            $table->foreignUlid('employee_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

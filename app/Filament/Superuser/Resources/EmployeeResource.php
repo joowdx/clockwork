@@ -12,6 +12,7 @@ use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\ScannersR
 use App\Models\Employee;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -41,12 +42,64 @@ class EmployeeResource extends Resource
                         ->helperText('Family name or surname of the employee.')
                         ->minLength(2)
                         ->markAsRequired()
-                        ->rules(['required']),
+                        ->rules('required')
+                        ->rule(fn (?Employee $record, Get $get) => function ($attribute, $value, $fail) use ($get, $record) {
+                            $employee = Employee::withoutGlobalScopes()
+                                ->whereNot('id', $record?->id)
+                                ->where([
+                                    'last_name' => $get('last_name'),
+                                    'first_name' => $get('first_name'),
+                                ])->when($get('middle_name') === 'N/A', function ($query) use ($get) {
+                                    return $query->where(function ($query) use ($get) {
+                                        $query->where('middle_name', '')
+                                            ->orWhereNull('middle_name');
+                                    });
+                                }, function ($query) use ($get) {
+                                    return $query->where('middle_name', $get('middle_name'));
+                                })->when($get('qualifier_name') === 'N/A', function ($query) use ($get) {
+                                    return $query->where(function ($query) use ($get) {
+                                        $query->where('qualifier_name', '')
+                                            ->orWhereNull('qualifier_name');
+                                    });
+                                }, function ($query) use ($get) {
+                                    return $query->where('qualifier_name', $get('qualifier_name'));
+                                });
+
+                            if ($employee->exists()) {
+                                $fail('This exact employee already exists.');
+                            }
+                        }),
                     Forms\Components\TextInput::make('first_name')
                         ->helperText('Given name or forename of the employee.')
                         ->minLength(2)
                         ->markAsRequired()
-                        ->rules(['required']),
+                        ->rules('required')
+                        ->rule(fn (?Employee $record, Get $get) => function ($attribute, $value, $fail) use ($get, $record) {
+                            $employee = Employee::withoutGlobalScopes()
+                                ->whereNot('id', $record?->id)
+                                ->where([
+                                    'last_name' => $get('last_name'),
+                                    'first_name' => $get('first_name'),
+                                ])->when($get('middle_name') === 'N/A', function ($query) use ($get) {
+                                    return $query->where(function ($query) use ($get) {
+                                        $query->where('middle_name', '')
+                                            ->orWhereNull('middle_name');
+                                    });
+                                }, function ($query) use ($get) {
+                                    return $query->where('middle_name', $get('middle_name'));
+                                })->when($get('qualifier_name') === 'N/A', function ($query) use ($get) {
+                                    return $query->where(function ($query) use ($get) {
+                                        $query->where('qualifier_name', '')
+                                            ->orWhereNull('qualifier_name');
+                                    });
+                                }, function ($query) use ($get) {
+                                    return $query->where('qualifier_name', $get('qualifier_name'));
+                                });
+
+                            if ($employee->exists()) {
+                                $fail('This exact employee already exists.');
+                            }
+                        }),
                     Forms\Components\TextInput::make('middle_name')
                         ->helperText('Middle name or additional name of the employee usually derived from the mother\'s maiden name.')
                         ->visibleOn('view'),
@@ -60,7 +113,8 @@ class EmployeeResource extends Resource
                                 ->action(fn (Forms\Set $set) => $set('middle_name', 'N/A'))
                         )
                         ->dehydrateStateUsing(fn ($state) => $state === 'N/A' ? '' : $state)
-                        ->required()
+                        ->markAsRequired()
+                        ->rules('required')
                         ->hiddenOn('view')
                         ->minLength(2),
                     Forms\Components\Select::make('qualifier_name')
@@ -88,7 +142,8 @@ class EmployeeResource extends Resource
                                 ->action(fn (Forms\Set $set) => $set('qualifier_name', 'N/A'))
                         )
                         ->dehydrateStateUsing(fn ($state) => $state === 'N/A' ? '' : $state)
-                        ->required(),
+                        ->markAsRequired()
+                        ->rules('required'),
                     Forms\Components\DatePicker::make('birthdate'),
                     Forms\Components\Select::make('sex')
                         ->options(['male' => 'Male', 'female' => 'Female']),
