@@ -160,9 +160,9 @@
                             )
                                 <tr
                                     @class([
-                                        'weekend' => $date->isWeekend(),
-                                        'holiday' => $holiday,
-                                        'absent' => array_filter($timelogs) == false,
+                                        'weekend' => $date->isWeekend() && @$misc['weekends'] ?? true,
+                                        'holiday' => $holiday && @$misc['holidays'] ?? true,
+                                        'absent' => array_filter($timelogs) == false && @$misc['highlights'] ?? true,
                                         'font-sm' => true
                                     ])
                                 >
@@ -190,13 +190,13 @@
                                                     $preview ? 'padding-right:5pt' : 'padding-left:5pt',
                                                     'background-color:' . (@$timelogs[$punch]['background'] ?? 'transparent'),
                                                     'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
-                                                    'background-color: #FF9D2834' => @$timelogs[$punch] === null,
+                                                    'background-color: #FF9D2834' => @$timelogs[$punch] === null && @$misc['highlights'] ?? true,
                                                 ])
                                             >
                                                 {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
                                             </td>
                                         @endforeach
-                                    @elseif($date->isWeekend() || $holiday)
+                                    @elseif(($date->isWeekend() && @$misc['weekends'] ?? true) || ($holiday && @$misc['holidays'] ?? true))
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
                                             {{ $holiday?->name ?? $date->format('l') }}
                                         </td>

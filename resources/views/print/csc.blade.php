@@ -150,9 +150,9 @@
                             @if ($timesheet->from <= $day && $day <= $timesheet->to)
                                 <tr
                                     @class([
-                                        'weekend' => $date->isWeekend() && ! $timetable?->holiday,
-                                        'holiday' => $timetable?->holiday,
-                                        'absent' => $timetable?->absent,
+                                        'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
+                                        'holiday' => $timetable?->holiday && @$misc['holidays'] ?? true,
+                                        'absent' => $timetable?->absent && @$misc['highlights'] ?? true,
                                         // 'invalid' => $timetable?->invalid,
                                         'font-sm' => true
                                     ])
@@ -180,7 +180,7 @@
                                                     $preview ? 'padding-right:5pt' : 'padding-left:5pt',
                                                     'background-color:' . ($timetable?->punch[$punch]['background'] ?? 'transparent'),
                                                     'text-color:' . ($timetable?->punch[$punch]['foreground'] ?? 'black'),
-                                                    'background-color: #FF9D2834' => $timetable?->punch[$punch]['missed'] ?? false,
+                                                    'background-color: #FF9D2834' => ($timetable?->punch[$punch]['missed'] ?? false) && (@$misc['highlights'] ?? true),
                                                 ])
                                             >
                                                 {{ substr($timetable->punch[$punch]['time'] ?? '', 0, strrpos($timetable?->punch[$punch]['time'] ?? '', ":")) }}
@@ -205,7 +205,7 @@
                                                 </sub>
                                             </td>
                                         @endforeach
-                                    @elseif($timetable?->regular === false || $date->isWeekend())
+                                    @elseif(($timetable?->regular === false && @$misc['holidays'] ?? true) || ($date->isWeekend() && @$misc['weekends'] ?? true))
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
                                             {{ $timetable?->holiday ?: $date->format('l') }}
                                         </td>

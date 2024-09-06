@@ -106,6 +106,11 @@ class ExportTimesheetAction extends BulkAction
                 ->individual($data['individual'] ?? false)
                 ->transmittal($data['transmittal'] ?? 0)
                 ->grouping($data['grouping'] ?? false)
+                ->misc([
+                    'weekends' => $data['weekends'],
+                    'holidays' => $data['holidays'],
+                    'highlights' => $data['highlights'],
+                ])
                 ->download();
         } catch (ProcessFailedException $exception) {
             $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";
@@ -361,6 +366,19 @@ class ExportTimesheetAction extends BulkAction
                         ->schema($period),
                     Tab::make('Options')
                         ->schema([...$export, ...$config]),
+                    Tab::make('Miscellaneous')
+                        ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
+                        ->schema([
+                            Checkbox::make('weekends')
+                                ->default(true)
+                                ->helperText('Label weekends in the timesheet if no attendance data is present.'),
+                            Checkbox::make('holidays')
+                                ->default(true)
+                                ->helperText('Label holidays in the timesheet if no attendance data is present.'),
+                            Checkbox::make('highlights')
+                                ->default(true)
+                                ->helperText('Highlight blank or empty entries in the timesheet.'),
+                        ]),
                 ]),
             ];
     }

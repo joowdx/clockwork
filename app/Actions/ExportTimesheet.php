@@ -54,6 +54,8 @@ class ExportTimesheet implements Responsable
 
     private bool $individual = false;
 
+    private array $misc = [];
+
     public function __construct(
         Collection|Employee|null $employee = null,
         Carbon|string|null $month = null,
@@ -82,6 +84,7 @@ class ExportTimesheet implements Responsable
         bool $signature = false,
         #[SensitiveParameter]
         ?string $password = null,
+        array $misc = [],
     ): StreamedResponse {
         return $this->employee($employee)
             ->month($month)
@@ -93,6 +96,7 @@ class ExportTimesheet implements Responsable
             ->grouping($grouping)
             ->signature($signature)
             ->password($password)
+            ->misc($misc)
             ->download();
     }
 
@@ -194,6 +198,13 @@ class ExportTimesheet implements Responsable
     public function grouping(false|string|null $grouping = 'offices'): static
     {
         $this->grouping = $grouping === '0' ? false : $grouping;
+
+        return $this;
+    }
+
+    public function misc (array $misc): static
+    {
+        $this->misc = $misc;
 
         return $this;
     }
@@ -425,7 +436,7 @@ class ExportTimesheet implements Responsable
             default => 'print.default',
         };
 
-        $export = Pdf::view($view, [...$args, 'user' => $this->user ?? Auth::user(), 'signed' => (bool) $this->password])
+        $export = Pdf::view($view, [...$args, 'misc' => $this->misc, 'user' => $this->user ?? Auth::user(), 'signed' => (bool) $this->password])
             ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
@@ -448,6 +459,7 @@ class ExportTimesheet implements Responsable
                 'employees' => $this->format === 'csc'
                     ? EloquentCollection::make(collect($exportable)->pluck('employee'))
                     : $args['employees'],
+                'misc' => $this->misc,
             ])
                 ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
