@@ -265,7 +265,7 @@
                                 </td>
                                 <td colspan="3"></td>
                                 <td colspan="4" class="center nowrap font-xs arial top">
-                                    {{ $user?->employee?->designation ?? '' }}
+                                    {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
                                 </td>
                             </tr>
                         @endif

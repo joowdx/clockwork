@@ -37,16 +37,22 @@ class UserResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->columnSpan(2)
                             ->rule('required')
-                            ->markAsRequired(),
+                            ->markAsRequired()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('position')
+                            ->columnSpan(2)
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('username')
                             ->columnSpan(2)
                             ->rule('required')
-                            ->markAsRequired(),
+                            ->markAsRequired()
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('email')
                             ->columnSpan(2)
                             ->rule('required')
                             ->rule('email')
-                            ->markAsRequired(),
+                            ->markAsRequired()
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('password')
                             ->columnSpan(2)
                             ->password()
