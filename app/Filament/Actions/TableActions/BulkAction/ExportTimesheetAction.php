@@ -107,9 +107,9 @@ class ExportTimesheetAction extends BulkAction
                 ->transmittal($data['transmittal'] ?? 0)
                 ->grouping($data['grouping'] ?? false)
                 ->misc([
-                    'weekends' => $data['weekends'],
-                    'holidays' => $data['holidays'],
-                    'highlights' => $data['highlights'],
+                    'weekends' => @$data['weekends'],
+                    'holidays' => @$data['holidays'],
+                    'highlights' => @$data['highlights'],
                 ])
                 ->download();
         } catch (ProcessFailedException $exception) {
