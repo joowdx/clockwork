@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\DumpDatabase as DumpDatabaseAction;
+use App\Actions\BackupDatabase as DumpDatabaseAction;
 use Illuminate\Console\Command;
 
-class DumpDatabase extends Command
+class BackupDatabase extends Command
 {
     /**
      * The name and signature of the console command.
@@ -23,9 +23,10 @@ class DumpDatabase extends Command
 
     /**
      * Execute the console command.
+     * @throws \Exception
      */
-    public function handle(DumpDatabaseAction $dumper)
+    public function handle(DumpDatabaseAction $dumper): void
     {
-        $dumper->dump(throw: false);
+        $dumper->backup(throw: false);
     }
 }

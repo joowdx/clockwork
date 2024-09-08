@@ -2,27 +2,33 @@
 
 namespace App\Actions;
 
-use App\Models\Dump;
+use App\Models\Backup;
 use Exception;
 use Illuminate\Support\Facades\Process;
 
-class DumpDatabase
+class BackupDatabase
 {
-    public function __invoke(bool $throw = true): Dump
+    /**
+     * @throws Exception
+     */
+    public function __invoke(bool $throw = true): Backup
     {
-        return $this->dump($throw);
+        return $this->backup($throw);
     }
 
-    public function dump(bool $throw = true): Dump
+    /**
+     * @throws Exception
+     */
+    public function backup(bool $throw = true): Backup
     {
-        try {
-            $dump = new Dump;
+        $dump = new Backup;
 
+        try {
             $time = now();
 
             $file = $time->format('Y_m_d_His').'.dump';
 
-            $path = base_path('database/dumps/'.$file);
+            $path = base_path('database/backups/'.$file);
 
             $process = Process::forever()->env([
                 'PGDATABASE' => env('DB_DATABASE'),

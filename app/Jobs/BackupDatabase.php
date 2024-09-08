@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Actions\DumpDatabase as DumpDatabaseAction;
+use App\Actions\BackupDatabase as DumpDatabaseAction;
 use App\Models\User;
 use Exception;
 use Filament\Notifications\Notification;
@@ -11,14 +11,15 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
-class DumpDatabase implements ShouldQueue
+class BackupDatabase implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private ?User $user;
 
-    private $time;
+    private Carbon $time;
 
     /**
      * Create a new job instance.
@@ -49,12 +50,12 @@ class DumpDatabase implements ShouldQueue
             $dump = $dumper();
 
             Notification::make()
-                ->title('Database dump successful')
-                ->body('The database has been successfully dumped to disk at '.$dump->created_at)
+                ->title('Database backup successful')
+                ->body('The database has been successfully backed up at '.$dump->created_at)
                 ->sendToDatabase($this->user);
         } catch (Exception $exception) {
             Notification::make()
-                ->title('Database dump failed')
+                ->title('Database backup failed')
                 ->body($exception->getMessage())
                 ->sendToDatabase($this->user);
         }

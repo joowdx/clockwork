@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Dump extends Model
+class Backup extends Model
 {
     use HasFactory, HasUlids, Prunable, SoftDeletes;
 
@@ -43,7 +43,7 @@ class Dump extends Model
 
     public function path(): Attribute
     {
-        return Attribute::make(fn () => base_path('database/dumps/'.$this->file));
+        return Attribute::make(fn () => base_path('database/backups/'.$this->file));
     }
 
     public function stored(): Attribute

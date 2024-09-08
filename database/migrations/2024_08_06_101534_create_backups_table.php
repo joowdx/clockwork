@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dumps', function (Blueprint $table) {
-            $table->ulid('id');
+        Schema::create('backups', function (Blueprint $table) {
+            $table->ulid('id')->primary();
             $table->string('file')->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->longText('exception')->nullable();
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dumps');
+        Schema::dropIfExists('backups');
     }
 };

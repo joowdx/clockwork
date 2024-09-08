@@ -2,8 +2,8 @@
 
 namespace App\Filament\Superuser\Resources;
 
-use App\Filament\Superuser\Resources\DumpResource\Pages;
-use App\Models\Dump;
+use App\Filament\Superuser\Resources\BackupResource\Pages;
+use App\Models\Backup;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Number;
 
-class DumpResource extends Resource
+class BackupResource extends Resource
 {
-    protected static ?string $model = Dump::class;
+    protected static ?string $model = Backup::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
 
@@ -48,7 +48,7 @@ class DumpResource extends Resource
                     ->visible(fn ($record) => $record->stored)
                     ->action(fn ($record) => response()->download($record->path))
                     ->requiresConfirmation()
-                    ->modalDescription('Are you sure you want to download the dump file?')
+                    ->modalDescription('Are you sure you want to download the backup file?')
                     ->modalIcon('heroicon-o-archive-box-arrow-down')
                     ->modalSubmitActionLabel('Download'),
                 Tables\Actions\DeleteAction::make(),
@@ -75,7 +75,7 @@ class DumpResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDumps::route('/'),
+            'index' => Pages\ListBackups::route('/'),
         ];
     }
 }
