@@ -89,7 +89,7 @@ tr, td {
 }
 
 .invalid {
-    background-color: #FF6D2844 !important;
+    background-color: #FF9D2834 !important;
 }
 
 .scanner {
@@ -182,7 +182,7 @@ tr, td {
 }
 
 .font-xl {
-    font-size: 20.0pt;
+    font-size: 18.0pt;
 }
 
 .nowrap {

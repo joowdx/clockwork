@@ -236,7 +236,11 @@ class ExportTimesheet implements Responsable
                 };
             };
 
-            $this->employee->load(['timelogs' => $timelogs, 'timelogs.scanner', 'scanners'])->sortBy('full_name');
+            $this->employee->load([
+                'timelogs' => $timelogs,
+                'scanners' => fn ($query) => $query->reorder()->orderBy('priority', 'desc')->orderBy('name'),
+                'timelogs.scanner',
+            ])->sortBy('full_name');
 
             return match ($this->individual) {
                 true => $this->exportAsZip(),

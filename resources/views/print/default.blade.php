@@ -1,12 +1,16 @@
-<?php
-use App\Enums\TimelogMode;
-?>
-
 @extends('print.layout')
+
+@use(App\Enums\TimelogMode)
 
 @php($size ??= 'folio')
 
 @php($preview ??= false)
+
+@php($chunk = PHP_INT_MAX)
+
+@php($seal = file_exists(storage_path('app/public/'.settings('seal'))) ? base64_encode(file_get_contents(storage_path('app/public/'.settings('seal')))) : null)
+
+@php($modes = collect(TimelogMode::cases())->unique->getCode())
 
 @section('content')
     @foreach ($employees as $employee)
@@ -36,9 +40,9 @@ use App\Enums\TimelogMode;
                         <tr>
                             <td colspan="10" class="relative right">
                                 <span style="font-size:4.65pt;opacity:0.05;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
-                                @if (file_exists(storage_path('app/public/'.settings('seal'))))
+                                @if ($seal)
                                     <img
-                                        src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.settings('seal')))) }}"
+                                        src="data:image/png;base64,{{ $seal }}"
                                         alt="davao-del-sur"
                                         class="absolute"
                                         style="width:36pt;opacity:0.2;top:15pt;right:0;"
@@ -75,7 +79,7 @@ use App\Enums\TimelogMode;
                                 <div @class(['lowercase', $preview ? 'font-sm' : 'font-xs']) style="width:50%;">
                                     &nbsp;
                                 </div>
-                                @foreach (collect(TimelogMode::cases())->unique->getCode() as $mode)
+                                @foreach ($modes as $mode)
                                     <div @class(['lowercase whitespace-nowrap', $preview ? 'font-sm' : 'font-xs']) style="width:50%;">
                                         {{ $mode->getLabel() }} = <sub>{{ $mode->getCode() }}</sub>
                                     </div>
@@ -135,42 +139,47 @@ use App\Enums\TimelogMode;
                                 : $date->day < $from || $date->day > $to
                         )
 
-                        <tr @class(['underline', $preview ? 'font-mono' : 'courier']) style="border-color: #8888 !important; text-decoration: none;">
-                            <td style="padding:3pt 0;">
-                                <span class="bold">
-                                    {{ $date->format('d') }}
-                                </span>
-                                {{ $date->format('D') }}
-                            </td>
-                            @foreach ($employee->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->take(9) as $timelog)
-                                <td class="relative text-sm" style="padding:1pt 0 ;">
-                                    <span class="font-sm nowrap bold"
-                                        @style([
-                                            "text-color:{$timelog->scanner->foregroundColor}!important;",
-                                            "background-color:{$timelog->scanner->backgroundColor}!important;",
-                                            'padding:3pt' => !$preview,
-                                            'border-radius:2pt',
-                                        ])
-                                    >
-                                        {{ $timelog->time->format('H:i') }}
+                        @forelse ($employee->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->sortBy('time')->chunk($chunk) as $timelogs)
+                            <tr @class(['underline', $preview ? 'font-mono' : 'courier']) style="border-color: #8888 !important; text-decoration: none;">
+                                <td style="padding:3pt 0;">
+                                    <span class="bold">
+                                        {{ $date->format('d') }}
                                     </span>
+                                    {{ $date->format('D') }}
+                                </td>
+                                @foreach ($timelogs->take(9) as $timelog)
+                                    <td class="relative text-sm" style="padding:1pt 0 ;">
+                                        <span class="font-sm nowrap bold"
+                                            @style([
+                                                "text-color:{$timelog->scanner->foregroundColor}!important;",
+                                                "background-color:{$timelog->scanner->backgroundColor}!important;",
+                                                'padding:3pt' => !$preview,
+                                                'border-radius:2pt',
+                                            ])
+                                        >
+                                            {{ $timelog->time->format('H:i') }}
+                                        </span>
 
-                                    <span class="absolute" @style([$preview ?: 'top:-0.75pt;right:7pt;'])>
-                                        <sup>{{ match(true) { $timelog->in => 'i', $timelog->out => 'o', default => 'u' } }}</sup><sub>{{ $timelog->mode->getCode() }}</sub>
+                                        <span class="absolute" @style([$preview ?: 'top:-0.75pt;right:7pt;'])>
+                                            <sup>{{ match(true) { $timelog->in => 'i', $timelog->out => 'o', default => 'u' } }}</sup><sub>{{ $timelog->mode->getCode() }}</sub>
+                                        </span>
+                                    </td>
+                                @endforeach
+                                @if ($timelogs->count() < 9)
+                                    <td colspan="{{ 9 - $timelogs->count() }}"></td>
+                                @endif
+                            </tr>
+                        @empty
+                            <tr @class(['underline', $preview ? 'font-mono' : 'courier']) style="border-color: #8888 !important; text-decoration: none;">
+                                <td style="padding:3pt 0;">
+                                    <span class="bold">
+                                        {{ $date->format('d') }}
                                     </span>
+                                    {{ $date->format('D') }}
                                 </td>
-                            @endforeach
-                            @for ($placeholder = 0; $placeholder < 9 - $employee->timelogs->filter(fn ($t) => $t->time->isSameDay($date))->count(); $placeholder++)
-                                <td class="relative text-sm" style="padding:1pt 0 ;">
-                                    <span class="font-sm nowrap bold">
-                                        &nbsp;
-                                    </span>
-                                    <span class="absolute" style="top:-0.75pt;right:7pt;">
-                                        <sup>&nbsp;</sup><sub>&nbsp;</sub>
-                                    </span>
-                                </td>
-                            @endfor
-                        </tr>
+                                <td colspan="9"></td>
+                            </tr>
+                        @endforelse
                     @endforeach
                     @if (!$preview)
                         @for ($placeholder = 0; $placeholder < 31 - $month->daysInMonth; $placeholder++)
@@ -217,7 +226,7 @@ use App\Enums\TimelogMode;
                                     "height:auto!important;" => $preview,
                                 ])
                             >
-                                @foreach ($employee->scanners->sortBy('name') as $scanner)
+                                @foreach ($employee->scanners as $scanner)
                                     <div class="lowercase font-xs" style="padding:1pt;">
                                         <div
                                             @style([

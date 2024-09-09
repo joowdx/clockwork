@@ -109,7 +109,11 @@ class ViewTimesheetAction extends BulkAction
                     'from' => $data['period'] !== 'dates' ? $from->day : null,
                     'to' => $data['period'] !== 'dates' ? $to->day : null,
                     'dates' => $data['period'] === 'dates' ? collect($data['dates'])->flatten()->sort()->values()->toArray() : null,
-                    'employees' => $records->load(['scanners', 'timelogs.scanner', 'timelogs' => $timelogs]),
+                    'employees' => $records->load([
+                        'timelogs' => $timelogs,
+                        'scanners' => fn ($query) => $query->reorder()->orderBy('priority', 'desc')->orderBy('name'),
+                        'timelogs.scanner',
+                    ]),
                 ]);
             });
 

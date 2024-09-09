@@ -1,8 +1,24 @@
+<?php
+$size = isset($size)  ? mb_strtolower($size) : 'folio';
+
+$preview ??= false;
+
+$single ??= false;
+
+$seal = file_exists(storage_path('app/public/'.settings('seal')))
+    ? base64_encode(file_get_contents(storage_path('app/public/'.settings('seal'))))
+    : null;
+
+$office = $user?->employee?->currentDeployment?->office;
+
+$logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
+    ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
+    : null;
+
+$time = now();
+?>
+
 @extends('print.layout')
-
-@php($size = isset($size)  ? mb_strtolower($size) : 'folio')
-
-@php($preview ??= false)
 
 @section('content')
     @foreach ($timesheets as $timesheet)
@@ -17,7 +33,7 @@
                 'justify-content:center',
             ])
         >
-            @for($side = 0; $side < ($preview ? 1 : 2); $side++)
+            @for($side = 0; $side < ($preview || $single ? 1 : 2); $side++)
                 <div
                     @style([
                         'width:100%',
@@ -48,12 +64,20 @@
                             <tr>
                                 <td colspan=6 class="relative">
                                     <span class="absolute" style="font-size:4.65pt;opacity:0.05;right:0.65pt;">ᜑᜊᜄᜆᜅ᜔ ᜇᜊᜏ᜔</span>
-                                    @if (file_exists(storage_path('app/public/'.settings('seal'))))
+                                    @if (($deployed = $timesheet->employee->currentDeployment?->office)?->logo && file_exists(storage_path('app/public/'.$deployed->logo)))
                                         <img
-                                            src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.settings('seal')))) }}"
-                                            alt="davao-del-sur"
+                                            src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$deployed->logo))) }}"
+                                            alt="{{ $deployed->code }}"
                                             class="absolute"
-                                            style="width:36pt;opacity:0.2;top:15pt;right:0;"
+                                            style="width:36pt;opacity:0.2;top:30pt;left:0;"
+                                        >
+                                    @endif
+                                    @if ($seal)
+                                        <img
+                                            src="data:image/png;base64,{{ $seal }}"
+                                            alt="{{ settings('name') }}"
+                                            class="absolute"
+                                            style="width:36pt;opacity:0.2;top:30pt;right:0;"
                                         >
                                     @endif
                                 </td>
@@ -64,11 +88,15 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="center bahnschrift font-xl bold" colspan=6>DAILY TIME RECORD</td>
+                                <td class="relative center bahnschrift font-xl bold" colspan=6>
+                                    <span class="absolute nowrap" style="top:8pt;left:0;right:0;margin:auto;">
+                                        DAILY TIME RECORD
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="center font-xs bold" colspan=6>
-                                    <span style='font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;widows: 2;-webkit-text-stroke-width: 0px;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial'>
+                                <td class="relative center font-xs bold" colspan=6>
+                                    <span class="absolute" style='font-variant-ligatures:normal;font-variant-caps:normal;orphans:2;widows:2;-webkit-text-stroke-width:0px;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;top:15pt;left:0;right:0;margin:auto;'>
                                         -----o0o-----
                                     </span>
                                 </td>
@@ -174,13 +202,13 @@
                                                     'relative border nowrap',
                                                     'courier' => !$preview,
                                                     'font-mono' => $preview,
+                                                    'invalid' => ($timetable?->punch[$punch]['missed'] ?? false) && (@$misc['highlights'] ?? true),
                                                 ])
                                                 @style([
                                                     'padding-top:1pt',
                                                     $preview ? 'padding-right:5pt' : 'padding-left:5pt',
                                                     'background-color:' . ($timetable?->punch[$punch]['background'] ?? 'transparent'),
                                                     'text-color:' . ($timetable?->punch[$punch]['foreground'] ?? 'black'),
-                                                    'background-color: #FF9D2834' => ($timetable?->punch[$punch]['missed'] ?? false) && (@$misc['highlights'] ?? true),
                                                 ])
                                             >
                                                 {{ substr($timetable->punch[$punch]['time'] ?? '', 0, strrpos($timetable?->punch[$punch]['time'] ?? '', ":")) }}
@@ -280,6 +308,11 @@
                             <tr>
                                 <td colspan=6 style="height:22.5pt;"></td>
                             </tr>
+                            @if (!($supervisor ??= true))
+                                <tr>
+                                    <td colspan=6 style="height:22.5pt;"></td>
+                                </tr>
+                            @endif
                             <tr>
                                 <td class="underline" colspan=6></td>
                             </tr>
@@ -297,14 +330,18 @@
                                     <td colspan=6></td>
                                 </tr>
                             @endif
-                            <tr>
-                                <td colspan=6 class="underline center font-sm">
-                                    {{ $timesheet->details['supervisor'] ?? '' }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="bahnschrift-light top center font-xs" colspan=6>Supervisor</td>
-                            </tr>
+                            @if($supervisor)
+                                <tr>
+                                    <td colspan=6 @class(['center font-sm', 'underline' => $supervisor])>
+                                        {{ $timesheet->details['supervisor'] ?? '' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="bahnschrift-light top center font-xs" colspan=6>
+                                        Supervisor
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <td colspan=6 style="height:22.5pt;"></td>
                             </tr>
@@ -313,6 +350,9 @@
                                     <td colspan=6></td>
                                 </tr>
                             @endif
+                            <tr>
+                                <td colspan=6></td>
+                            </tr>
                             <tr>
                                 <td colspan=6 class="underline center font-sm">
                                     {{ $timesheet->details['head'] ?? '' }}
@@ -329,7 +369,7 @@
                                     <td colspan=6></td>
                                 </tr>
                             @endif
-                            <tr style="width:100%;border-width:0;border-top-width:0.5pt;border-style:dashed;border-color:#0007!important;">
+                            <tr>
                                 <td colspan=1 class="relative">
                                     @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['next']) || isset($punches['previous']))))
                                         <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
@@ -345,12 +385,12 @@
                                     </div>
                                 </td>
                                 <td colspan=4 class="relative">
-                                    @if(($office = $user?->employee?->currentDeployment?->office)?->logo && file_exists(storage_path('app/public/'.$office->logo)))
+                                    @if($logo)
                                         <img
-                                            src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$office->logo))) }}"
+                                            src="data:image/png;base64,{{ $logo }}"
                                             alt="{{ $office->code }}"
                                             class="absolute"
-                                            style="width:36pt;height:auto;opacity:0.15;margin:auto;top:-1pt;left:0;right:0;"
+                                            style="width:36pt;height:auto;opacity:0.1;margin:auto;top:5pt;left:0;right:0;"
                                         >
                                     @endif
                                 </td>
@@ -358,7 +398,7 @@
                             </tr>
                             <tr>
                                 <td colspan=1></td>
-                                <td class="relative underline font-xs center bottom bold courier" colspan=4 style="color:#000A;border-color:#0007!important;">
+                                <td class="relative underline font-xs center bottom bold courier" colspan=4 style="color:#0004;border-color:#0004!important;">
                                     @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
                                     {{ $user?->name }}
                                 </td>
@@ -366,12 +406,12 @@
                             </tr>
                             <tr>
                                 <td colspan=1> </td>
-                                <td class="font-xxs center courier top" colspan=4 style="color:#000A;">
+                                <td class="font-xxs center courier top" colspan=4 style="color:#0004;">
                                     {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
                                 </td>
                                 <td class="relative" colspan=1>
-                                    <div class="absolute consolas" style="opacity:0.5;bottom:8pt;right:0;font-size:4.0pt;">
-                                        {{ now()->format('Y-m-d|H:i') }}
+                                    <div class="absolute consolas" style="opacity:0.3;bottom:8pt;right:0;font-size:4.0pt;">
+                                        {{ $time->format('Y-m-d|H:i') }}
                                     </div>
                                 </td>
                             </tr>
