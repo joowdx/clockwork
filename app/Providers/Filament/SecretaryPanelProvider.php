@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Profile;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
@@ -18,6 +19,7 @@ class SecretaryPanelProvider extends PanelProvider
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
             ->id('secretary')
+            ->profile(Profile::class, false)
             ->path(str(settings('secretary') ?: 'secretary')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Secretary/Resources'), for: 'App\\Filament\\Secretary\\Resources')

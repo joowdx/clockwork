@@ -202,7 +202,7 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
-    public function misc (array $misc): static
+    public function misc(array $misc): static
     {
         $this->misc = $misc;
 

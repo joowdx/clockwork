@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Profile;
 use App\Filament\Superuser\Pages\Dashboard;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
@@ -18,6 +19,7 @@ class SuperuserPanelProvider extends PanelProvider
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
             ->id('superuser')
+            ->profile(Profile::class, false)
             ->path(str(settings('superuser') ?: 'superuser')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Superuser/Resources'), for: 'App\\Filament\\Superuser\\Resources')

@@ -49,15 +49,15 @@ class EmployeeResource extends Resource
                                 ->where([
                                     'last_name' => $get('last_name'),
                                     'first_name' => $get('first_name'),
-                                ])->when($get('middle_name') === 'N/A', function ($query) use ($get) {
-                                    return $query->where(function ($query) use ($get) {
+                                ])->when($get('middle_name') === 'N/A', function ($query) {
+                                    return $query->where(function ($query) {
                                         $query->where('middle_name', '')
                                             ->orWhereNull('middle_name');
                                     });
                                 }, function ($query) use ($get) {
                                     return $query->where('middle_name', $get('middle_name'));
-                                })->when($get('qualifier_name') === 'N/A', function ($query) use ($get) {
-                                    return $query->where(function ($query) use ($get) {
+                                })->when($get('qualifier_name') === 'N/A', function ($query) {
+                                    return $query->where(function ($query) {
                                         $query->where('qualifier_name', '')
                                             ->orWhereNull('qualifier_name');
                                     });
@@ -80,15 +80,15 @@ class EmployeeResource extends Resource
                                 ->where([
                                     'last_name' => $get('last_name'),
                                     'first_name' => $get('first_name'),
-                                ])->when($get('middle_name') === 'N/A', function ($query) use ($get) {
-                                    return $query->where(function ($query) use ($get) {
+                                ])->when($get('middle_name') === 'N/A', function ($query) {
+                                    return $query->where(function ($query) {
                                         $query->where('middle_name', '')
                                             ->orWhereNull('middle_name');
                                     });
                                 }, function ($query) use ($get) {
                                     return $query->where('middle_name', $get('middle_name'));
-                                })->when($get('qualifier_name') === 'N/A', function ($query) use ($get) {
-                                    return $query->where(function ($query) use ($get) {
+                                })->when($get('qualifier_name') === 'N/A', function ($query) {
+                                    return $query->where(function ($query) {
                                         $query->where('qualifier_name', '')
                                             ->orWhereNull('qualifier_name');
                                     });
