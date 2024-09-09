@@ -227,7 +227,7 @@ class SignatureResource extends Resource
                     ->label('Owner'),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                // Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -235,8 +235,8 @@ class SignatureResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    // Tables\Actions\ForceDeleteBulkAction::make(),
+                    // Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
             ->recordUrl(null);
@@ -262,11 +262,11 @@ class SignatureResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
-                SoftDeletingScope::class,
+                // SoftDeletingScope::class,
             ]);
     }
 
-    protected static function signatureView(Signature $signature): Htmlable
+    public static function signatureView(Signature $signature): Htmlable
     {
         $html = <<<HTML
             <div style="display:flex;justify-content:center;background:white;border-radius:0.5em;padding:1em;">

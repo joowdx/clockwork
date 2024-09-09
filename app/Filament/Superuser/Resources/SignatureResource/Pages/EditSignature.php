@@ -47,7 +47,7 @@ class EditSignature extends EditRecord
                     mkdir(storage_path('app/signatures/certificates'), recursive: true);
                 }
 
-                if (file_exists(storage_path('app/'.$this->record->certificate))) {
+                if ($this->record->certificate && file_exists(storage_path('app/'.$this->record->certificate))) {
                     unlink(storage_path('app/'.$this->record->certificate));
                 }
 

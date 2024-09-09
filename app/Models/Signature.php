@@ -14,7 +14,7 @@ use SensitiveParameter;
 
 class Signature extends Model
 {
-    use HasFactory, HasUlids, SoftDeletes;
+    use HasFactory, HasUlids; //SoftDeletes;
 
     protected $fillable = [
         'specimen',
@@ -35,13 +35,13 @@ class Signature extends Model
     protected static function booted(): void
     {
         static::deleting(function (self $signature) {
-            // if (file_exists($file = storage_path('app/'.$signature->specimen))) {
-            //     unlink($file);
-            // }
+            if (file_exists($file = storage_path('app/'.$signature->specimen))) {
+                unlink($file);
+            }
 
-            // if (file_exists($file = storage_path('app/'.$signature->certificate))) {
-            //     unlink($file);
-            // }
+            if ($signature->certificate && file_exists($file = storage_path('app/'.$signature->certificate))) {
+                unlink($file);
+            }
         });
     }
 
