@@ -26,6 +26,7 @@ class Member extends Pivot
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class)
-            ->withoutGlobalScopes();
+            ->withoutGlobalScopes()
+            ->where('active', true);
     }
 }

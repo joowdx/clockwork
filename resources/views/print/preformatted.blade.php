@@ -15,17 +15,19 @@ $preview ??= false;
 
 $single ??= false;
 
-$seal = file_exists(storage_path('app/public/'.settings('seal')))
-    ? base64_encode(file_get_contents(storage_path('app/public/'.settings('seal'))))
-    : null;
+if (! $preview) {
+    $seal = file_exists(storage_path('app/public/'.settings('seal')))
+        ? base64_encode(file_get_contents(storage_path('app/public/'.settings('seal'))))
+        : null;
 
-$office = $user?->employee?->currentDeployment?->office;
+    $office = $user?->employee?->currentDeployment?->office;
 
-$logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
-    ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
-    : null;
+    $logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
+        ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
+        : null;
 
-$time = now();
+    $time = now();
+}
 ?>
 
 @extends('print.layout')
@@ -190,9 +192,9 @@ $time = now();
                             )
                                 <tr
                                     @class([
-                                        'weekend' => $date->isWeekend() && @$misc['weekends'] ?? true,
-                                        'holiday' => $holiday && @$misc['holidays'] ?? true,
-                                        'absent' => array_filter($timelogs) == false && @$misc['highlights'] ?? true,
+                                        'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true),
+                                        'holiday' => $holiday && (@$misc['holidays'] ?? true),
+                                        'absent' => array_filter($timelogs) == false && (@$misc['highlights'] ?? true),
                                         'font-sm' => true
                                     ])
                                 >
@@ -214,7 +216,7 @@ $time = now();
                                                     'relative border nowrap',
                                                     'courier' => !$preview,
                                                     'font-mono' => $preview,
-                                                    'invalid' => @$timelogs[$punch] === null && @$misc['highlights'] ?? true,
+                                                    'invalid' => @$timelogs[$punch] === null && (@$misc['highlights'] ?? true),
                                                 ])
                                                 @style([
                                                     'padding-top:1pt',
@@ -226,7 +228,7 @@ $time = now();
                                                 {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
                                             </td>
                                         @endforeach
-                                    @elseif(($date->isWeekend() && @$misc['weekends'] ?? true) || ($holiday && @$misc['holidays'] ?? true))
+                                    @elseif($date->isWeekend() && @($misc['weekends'] ?? true) || $holiday && (@$misc['holidays'] ?? true))
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
                                             {{ $holiday?->name ?? $date->format('l') }}
                                         </td>
@@ -281,7 +283,7 @@ $time = now();
                             <tr>
                                 <td colspan=6 style="height:22.5pt;"></td>
                             </tr>
-                            @if (!($supervisor ??= true))
+                            @if (! ($supervisor ??= @$misc['supervisor'] ?? true))
                                 <tr>
                                     <td colspan=6 style="height:22.5pt;"></td>
                                 </tr>

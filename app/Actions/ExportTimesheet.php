@@ -54,6 +54,8 @@ class ExportTimesheet implements Responsable
 
     private bool $individual = false;
 
+    private bool $single = false;
+
     private array $misc = [];
 
     public function __construct(
@@ -198,6 +200,13 @@ class ExportTimesheet implements Responsable
     public function grouping(false|string|null $grouping = 'offices'): static
     {
         $this->grouping = $grouping === '0' ? false : $grouping;
+
+        return $this;
+    }
+
+    public function single(bool $single): static
+    {
+        $this->single = $single;
 
         return $this;
     }
@@ -440,7 +449,7 @@ class ExportTimesheet implements Responsable
             default => 'print.default',
         };
 
-        $export = Pdf::view($view, [...$args, 'misc' => $this->misc, 'user' => $this->user ?? Auth::user(), 'signed' => (bool) $this->password])
+        $export = Pdf::view($view, [...$args, 'misc' => $this->misc, 'single' => $this->single, 'user' => $this->user ?? Auth::user(), 'signed' => (bool) $this->password])
             ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\HolidayType;
+use Carbon\Carbon as CarbonCarbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ class Holiday extends Model
         'from' => 'datetime:H:i',
     ];
 
-    public static function search(Carbon $date, bool $all = true): Collection|self|null
+    public static function search(Carbon|CarbonCarbon $date, bool $all = true): Collection|self|null
     {
         return cache()->remember(
             'holiday-'.$date->format('Y-m-d').($all ? 'all' : 'one'), 60,

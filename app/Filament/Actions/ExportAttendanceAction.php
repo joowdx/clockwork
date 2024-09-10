@@ -217,6 +217,16 @@ class ExportAttendanceAction extends Action
                                 ->afterStateUpdated(fn ($set) => $set('offices', null)),
                             Select::make('offices')
                                 ->label(fn (Get $get) => $get('by') === 'office' ? 'Offices' : 'Groups')
+                                ->helperText(function (Get $get) {
+                                    if ($get('by') === 'group') {
+                                        $help = <<<'HTML'
+                                            This will include <i><b>all</b></i> employees of the selected group regardless
+                                            of their deployed office or enrolled scanners.
+                                        HTML;
+
+                                        return str($help)->toHtmlString();
+                                    }
+                                })
                                 ->multiple()
                                 ->required()
                                 ->columnSpanFull()

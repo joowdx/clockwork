@@ -106,7 +106,9 @@ class ExportTimesheetAction extends BulkAction
                 ->individual($data['individual'] ?? false)
                 ->transmittal($data['transmittal'] ?? 0)
                 ->grouping($data['grouping'] ?? false)
+                ->single($data['single'] ?? false)
                 ->misc([
+                    'supervisor' => @$data['supervisor'],
                     'weekends' => @$data['weekends'],
                     'holidays' => @$data['holidays'],
                     'highlights' => @$data['highlights'],
@@ -369,6 +371,12 @@ class ExportTimesheetAction extends BulkAction
                     Tab::make('Miscellaneous')
                         ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
                         ->schema([
+                            Checkbox::make('single')
+                                ->default(false)
+                                ->helperText('Generate single timesheet per page.'),
+                            Checkbox::make('supervisor')
+                                ->default(true)
+                                ->helperText('Include supervisor signatory field in the timesheet.'),
                             Checkbox::make('weekends')
                                 ->default(true)
                                 ->helperText('Label weekends in the timesheet if no attendance data is present.'),

@@ -1,21 +1,26 @@
 <?php
+
+use App\Models\Holiday;
+
 $size = isset($size)  ? mb_strtolower($size) : 'folio';
 
 $preview ??= false;
 
 $single ??= false;
 
-$seal = file_exists(storage_path('app/public/'.settings('seal')))
-    ? base64_encode(file_get_contents(storage_path('app/public/'.settings('seal'))))
-    : null;
+if (! $preview) {
+    $seal = file_exists(storage_path('app/public/'.settings('seal')))
+        ? base64_encode(file_get_contents(storage_path('app/public/'.settings('seal'))))
+        : null;
 
-$office = $user?->employee?->currentDeployment?->office;
+    $office = $user?->employee?->currentDeployment?->office;
 
-$logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
-    ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
-    : null;
+    $logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
+        ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
+        : null;
 
-$time = now();
+    $time = now();
+}
 ?>
 
 @extends('print.layout')
@@ -179,8 +184,8 @@ $time = now();
                                 <tr
                                     @class([
                                         'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
-                                        'holiday' => $timetable?->holiday && @$misc['holidays'] ?? true,
-                                        'absent' => $timetable?->absent && @$misc['highlights'] ?? true,
+                                        'holiday' => $timetable?->holiday && (@$misc['holidays'] ?? true),
+                                        'absent' => $timetable?->absent && (@$misc['highlights'] ?? true),
                                         // 'invalid' => $timetable?->invalid,
                                         'font-sm' => true
                                     ])
@@ -233,7 +238,7 @@ $time = now();
                                                 </sub>
                                             </td>
                                         @endforeach
-                                    @elseif(($timetable?->regular === false && @$misc['holidays'] ?? true) || ($date->isWeekend() && @$misc['weekends'] ?? true))
+                                    @elseif($timetable?->regular === false && (@$misc['holidays'] ?? true) || $date->isWeekend() && (@$misc['weekends'] ?? true))
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
                                             {{ $timetable?->holiday ?: $date->format('l') }}
                                         </td>
@@ -308,7 +313,7 @@ $time = now();
                             <tr>
                                 <td colspan=6 style="height:22.5pt;"></td>
                             </tr>
-                            @if (!($supervisor ??= true))
+                            @if (! ($supervisor ??= @$misc['supervisor'] ?? true))
                                 <tr>
                                     <td colspan=6 style="height:22.5pt;"></td>
                                 </tr>
