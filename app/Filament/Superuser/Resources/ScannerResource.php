@@ -108,12 +108,12 @@ class ScannerResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('employees_count')
                     ->label('Employees')
-                    ->counts('employees')
-                    ->toggleable(),
+                    ->counts(['employees' => fn ($query) => $query->where('enrollment.active', true)])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('timelogs_count')
                     ->label('Timelogs')
                     ->counts('timelogs')
-                    ->toggleable(),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()

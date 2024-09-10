@@ -41,11 +41,12 @@ class GroupResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('employees_count')
                     ->label('Employees')
-                    ->counts(['employees' => fn (Builder $query) => $query->withoutGlobalScopes()])
-                    ->toggleable(),
+                    ->counts(['employees' => fn ($query) => $query->where('member.active', true)])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()

@@ -42,7 +42,6 @@ class EmployeesRelationManager extends RelationManager
                             });
                         });
                     })
-                    // ->getSearchResultsUsing(fun)
                     ->searchable()
                     ->preload()
                     ->disabledOn('edit')

@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class ScannerResource extends Resource
 {
@@ -94,12 +95,12 @@ class ScannerResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('employees_count')
                     ->label('Employees')
-                    ->counts('employees')
-                    ->toggleable(),
+                    ->counts(['employees' => fn ($query) => $query->where('enrollment.active', true)])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('timelogs_count')
                     ->label('Timelogs')
                     ->counts('timelogs')
-                    ->toggleable(),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
@@ -153,6 +154,6 @@ class ScannerResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereIn('scanners.id', auth()->user()->scanners?->pluck('id')->toArray());
+            ->whereIn('scanners.id', Auth::user()->scanners?->pluck('id')->toArray());
     }
 }
