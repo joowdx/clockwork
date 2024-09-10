@@ -48,9 +48,10 @@ class ScannerResource extends Resource
                     Forms\Components\TextInput::make('uid')
                         ->hint('Device ID')
                         ->label('UID')
+                        ->validationAttribute('uid')
                         ->numeric()
                         ->type('text')
-                        ->unique()
+                        ->unique(ignoreRecord: true)
                         ->rules(['required', 'min:2', 'max:255'])
                         ->markAsRequired()
                         ->dehydrateStateUsing(fn (?string $state): ?int => (int) $state),
