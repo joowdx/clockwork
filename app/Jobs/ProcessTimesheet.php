@@ -74,7 +74,7 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $sheet->update([
             'details' => [
-                'supervisor' => $this->employee->currentDeployment?->supervisor?->titled_name,
+                'supervisor' => $this->employee->supervisor?->titled_name,
                 'head' => $this->employee->currentOffice?->head?->id !== $this->employee->id ? $this->employee->currentOffice?->head?->titled_name : '',
                 'schedule' => ['weekdays' => $time('weekdays'), 'weekends' => $time('weekends')],
             ],

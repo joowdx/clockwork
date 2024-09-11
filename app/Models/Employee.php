@@ -156,7 +156,8 @@ class Employee extends Model
         return $this->belongsToMany(Office::class, 'deployment')
             ->using(Deployment::class)
             ->withPivot(['active', 'current'])
-            ->orderByPivot('current', 'desc');
+            ->orderByPivot('current', 'desc')
+            ->wherePivot('active', true);
     }
 
     public function deployments(): HasMany
@@ -184,7 +185,7 @@ class Employee extends Model
             ->where('current', true);
     }
 
-    public function currentSupervisor(): HasOneThrough
+    public function supervisor(): HasOneThrough
     {
         return $this->hasOneThrough(Employee::class, Deployment::class, 'employee_id', 'id', 'office_id', 'supervisor_id')
             ->where('current', true);
@@ -194,7 +195,8 @@ class Employee extends Model
     {
         return $this->belongsToMany(Scanner::class, 'enrollment')
             ->using(Enrollment::class)
-            ->withPivot('uid', 'active');
+            ->withPivot(['uid', 'active'])
+            ->wherePivot('active', true);
     }
 
     public function enrollments(): HasMany
@@ -207,7 +209,8 @@ class Employee extends Model
         return $this->belongsToMany(Group::class, 'member')
             ->using(Member::class)
             ->withPivot('active')
-            ->orderBy('name');
+            ->orderBy('name')
+            ->wherePivot('active', true);
     }
 
     public function members(): HasMany

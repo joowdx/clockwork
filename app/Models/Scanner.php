@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Scanner extends Model implements Auditable
@@ -79,12 +81,27 @@ class Scanner extends Model implements Auditable
     {
         return $this->belongsToMany(Employee::class, 'enrollment')
             ->using(Enrollment::class)
-            ->withPivot('uid', 'active');
+            ->withPivot('uid', 'active')
+            ->wherePivot('active', true);
     }
 
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    public function users(): MorphToMany
+    {
+        return $this->morphToMany(User::class, 'assignable', Assignment::class)
+            ->using(Assignment::class)
+            ->withPivot('active')
+            ->wherePivot('active', true);
+    }
+
+    public function assignees(): MorphMany
+    {
+        return $this->morphMany(Assignment::class, 'assignable')
+            ->where('active', true);
     }
 
     public function timelogs(): HasMany

@@ -30,7 +30,10 @@ class Group extends Model
     public function employees(): BelongsToMany
     {
         return $this->belongsToMany(Employee::class, 'member')
-            ->using(Member::class);
+            ->using(Member::class)
+            ->withPivot('active')
+            ->orderBy('name')
+            ->wherePivot('active', true);
     }
 
     public function members(): HasMany

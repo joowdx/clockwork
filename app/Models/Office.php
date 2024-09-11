@@ -47,7 +47,8 @@ class Office extends Model
         return $this->belongsToMany(Employee::class, 'deployment')
             ->using(Deployment::class)
             ->withPivot(['current', 'active'])
-            ->orderBy('full_name');
+            ->orderBy('full_name')
+            ->wherePivot('active', true);
     }
 
     public function deployments(): HasMany
@@ -59,11 +60,13 @@ class Office extends Model
     {
         return $this->morphToMany(User::class, 'assignable', Assignment::class)
             ->using(Assignment::class)
-            ->withPivot('active');
+            ->withPivot('active')
+            ->wherePivot('active', true);
     }
 
     public function assignees(): MorphMany
     {
-        return $this->morphMany(Assignment::class, 'assignable');
+        return $this->morphMany(Assignment::class, 'assignable')
+            ->where('active', true);
     }
 }
