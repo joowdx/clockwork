@@ -318,11 +318,11 @@ class ExportAttendanceAction extends Action
                             Checkbox::make('strict')
                                 ->columnSpanFull()
                                 ->label('Strict listing')
-                                ->helperText('When checked, filters out all employees who do not have a record on the selected date.'),
+                                ->helperText('Filter out all employees who do not have a record on the selected date.'),
                             Checkbox::make('current')
                                 ->columnSpanFull()
                                 ->label('Currently deployed')
-                                ->helperText('When checked, only employees currently deployed for the selected offices will be included.'),
+                                ->helperText('Only include employees currently deployed for the selected offices.'),
                         ]),
                     Tab::make('Options')
                         ->schema([
