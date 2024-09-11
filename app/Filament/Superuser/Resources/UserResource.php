@@ -2,11 +2,7 @@
 
 namespace App\Filament\Superuser\Resources;
 
-use App\Enums\Permissions\DeveloperRolePermission;
-use App\Enums\Permissions\EmployeePermission;
-use App\Enums\Permissions\SchedulePermission;
-use App\Enums\Permissions\SecretaryRolePermission;
-use App\Enums\Permissions\UserPermission;
+use App\Enums\UserPermission;
 use App\Enums\UserRole;
 use App\Filament\Superuser\Resources\UserResource\Pages;
 use App\Filament\Superuser\Resources\UserResource\RelationManagers\OfficesRelationManager;
@@ -14,11 +10,13 @@ use App\Filament\Superuser\Resources\UserResource\RelationManagers\ScannersRelat
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
@@ -90,62 +88,20 @@ class UserResource extends Resource
                                 ->bulkToggleable()
                                 ->options(function () {
                                     return collect(array_combine(array_column(UserRole::cases(), 'name'), array_column(UserRole::cases(), 'value')))
-                                        ->filter(fn ($value) => auth()->user()->root ? true : ! in_array($value, [UserRole::ROOT->value, UserRole::DEVELOPER->value]))
+                                        ->filter(fn ($value) => Auth::user()->root ? true : ! in_array($value, [UserRole::ROOT->value, UserRole::DEVELOPER->value]))
                                         ->mapWithKeys(fn ($value, $name) => [$value => UserRole::tryFrom($value)->getLabel()])
                                         ->toArray();
                                 }),
                         ])->columnSpan(1),
                         Forms\Components\Group::make([
-                            Forms\Components\Tabs::make('permissions')
-                                ->contained(false)
-                                ->columnSpanFull()
-                                ->schema([
-                                    Forms\Components\Tabs\Tab::make('User')
-                                        ->visible(fn (Forms\Get $get) => in_array('superuser', $get('roles')))
-                                        ->schema([
-                                            Forms\Components\CheckboxList::make('permissions')
-                                                ->bulkToggleable()
-                                                ->columns(2)
-                                                ->options(UserPermission::class),
-                                        ]),
-                                    Forms\Components\Tabs\Tab::make('Employee')
-                                        ->visible(fn (Forms\Get $get) => in_array('superuser', $get('roles')))
-                                        ->schema([
-                                            Forms\Components\CheckboxList::make('permissions')
-                                                ->bulkToggleable()
-                                                ->columns(2)
-                                                ->options(EmployeePermission::class),
-                                        ]),
-                                    Forms\Components\Tabs\Tab::make('Schedule')
-                                        ->visible(fn (Forms\Get $get) => in_array('superuser', $get('roles')))
-                                        ->schema([
-                                            Forms\Components\CheckboxList::make('permissions')
-                                                ->bulkToggleable()
-                                                ->columns(2)
-                                                ->options(SchedulePermission::class),
-                                        ]),
-                                    // Forms\Components\Tabs\Tab::make('Scanner')
-                                    //     ->schema([
-                                    //         Forms\Components\CheckboxList::make('permissions')
-                                    //             ->bulkToggleable()
-                                    //             ->columns(2)
-                                    //             ->options(EmployeePermission::class),
-                                    //     ]),
-                                    Forms\Components\Tabs\Tab::make('Developer')
-                                        ->visible(fn (Forms\Get $get) => in_array('developer', $get('roles')))
-                                        ->schema([
-                                            Forms\Components\CheckboxList::make('permissions')
-                                                ->bulkToggleable()
-                                                ->options(DeveloperRolePermission::class),
-                                        ]),
-                                    Forms\Components\Tabs\Tab::make('Secretary')
-                                        ->visible(fn (Forms\Get $get) => in_array('secretary', $get('roles')))
-                                        ->schema([
-                                            Forms\Components\CheckboxList::make('permissions')
-                                                ->bulkToggleable()
-                                                ->options(SecretaryRolePermission::class),
-                                        ]),
-                                ]),
+                            Forms\Components\CheckboxList::make('permissions')
+                                ->visible(fn (Get $get) => in_array(UserRole::SUPERUSER->value, $get('roles')))
+                                ->dehydratedWhenHidden()
+                                ->dehydrateStateUsing(fn (Get $get, array $state) => in_array(UserRole::SUPERUSER->value, $get('roles')) ? $state : [])
+                                ->hint('Select resources that the superuser can access.')
+                                ->bulkToggleable()
+                                ->columns(2)
+                                ->options(UserPermission::class),
                         ])->columnSpan(2),
                     ]),
             ]);

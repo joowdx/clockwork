@@ -9,7 +9,10 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\Page;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+
+use function Filament\authorize;
 
 class Settings extends Page
 {
@@ -25,6 +28,15 @@ class Settings extends Page
     protected ?string $subheading = 'This is global settings for the application.';
 
     public ?array $data = [];
+
+    public static function canAccess(): bool
+    {
+        try {
+            return authorize('viewAny', Setting::class)->allowed();
+        } catch (AuthorizationException $exception) {
+            return $exception->toResponse()->allowed();
+        }
+    }
 
     public function mount(): void
     {
