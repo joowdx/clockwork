@@ -14,6 +14,8 @@ class Backup extends Model
 {
     use HasFactory, HasUlids, Prunable, SoftDeletes;
 
+    protected $connection = 'sqlite';
+
     protected $fillable = [
         'file',
         'exception',

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('backups', function (Blueprint $table) {
+        Schema::connection('sqlite')->create('backups', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('file')->nullable();
             $table->unsignedBigInteger('size')->nullable();
