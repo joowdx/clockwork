@@ -180,11 +180,13 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
 
                             @php($timetable = $timesheet->{$timesheet->getPeriod()}->first(fn($timetable) => $timetable->date->isSameDay($date)))
 
+                            @php($holiday = $timetable?->holiday ?: Holiday::search($date, false)?->name)
+
                             @if ($timesheet->from <= $day && $day <= $timesheet->to)
                                 <tr
                                     @class([
                                         'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
-                                        'holiday' => $timetable?->holiday && (@$misc['holidays'] ?? true),
+                                        'holiday' => ($holiday && (@$misc['holidays'] ?? true)),
                                         'absent' => $timetable?->absent && (@$misc['highlights'] ?? true),
                                         // 'invalid' => $timetable?->invalid,
                                         'font-sm' => true
@@ -248,9 +250,9 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                                                 </sub>
                                             </td>
                                         @endforeach
-                                    @elseif($timetable?->regular === false && (@$misc['holidays'] ?? true) || $date->isWeekend() && (@$misc['weekends'] ?? true))
+                                    @elseif($holiday && (@$misc['holidays'] ?? true) || $date->isWeekend() && (@$misc['weekends'] ?? true))
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
-                                            {{ $timetable?->holiday ?: $date->format('l') }}
+                                            {{ $holiday ?: $date->format('l') }}
                                         </td>
                                     @else
                                         @for ($cell = 0; $cell < 4; $cell++)
