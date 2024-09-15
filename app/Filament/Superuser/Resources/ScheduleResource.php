@@ -9,6 +9,7 @@ use App\Filament\Superuser\Resources\ScheduleResource\RelationManagers\Employees
 use App\Models\Schedule;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -85,7 +86,7 @@ class ScheduleResource extends Resource
                             ->relationship('office', 'name')
                             ->searchable()
                             ->preload()
-                            ->hidden(fn (Forms\Get $get) => $get('global') || $get('arrangement') == WorkArrangement::UNSET->value)
+                            ->hidden(fn (Forms\Get $get) => $get('global')) # || $get('arrangement') == WorkArrangement::UNSET->value)
                             ->required(fn (Forms\Get $get) => ! $get('global'))
                             ->columnSpan(2)
                             ->dehydratedWhenHidden(),
@@ -129,9 +130,9 @@ class ScheduleResource extends Resource
                             ->validationMessages(['not_in' => 'This feature is not yet supported or deprecated and might be removed in the future.'])
                             ->disableOptionWhen(function (string $value, Forms\Get $get) {
                                 return match ($value) {
-                                    WorkArrangement::UNSET->value,
+                                    // WorkArrangement::UNSET->value,
                                     WorkArrangement::WORK_SHIFTING->value,
-                                    WorkArrangement::COMPRESSED_WORK_WEEK->value,
+                                    // WorkArrangement::COMPRESSED_WORK_WEEK->value,
                                     WorkArrangement::ROUND_THE_CLOCK->value => $get('global'),
                                     default => false,
                                 };
@@ -152,7 +153,7 @@ class ScheduleResource extends Resource
                             ]),
                     ]),
                 Forms\Components\Section::make('Timetable')
-                    ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
+                    // ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
                     ->columnSpan(1)
                     ->columns(2)
                     ->schema([
@@ -167,6 +168,7 @@ class ScheduleResource extends Resource
                                     ->markAsRequired()
                                     ->rules(['numeric', 'required', 'min:6', 'max:12']),
                                 Forms\Components\TextInput::make('timetable.break')
+                                    ->reactive()
                                     ->visible(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::STANDARD_WORK_HOUR->value)
                                     ->label('Break')
                                     ->hint('mins')
@@ -201,6 +203,10 @@ class ScheduleResource extends Resource
                                             ->rules([
                                                 'date_format:H:i',
                                                 fn (Forms\Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                                    if ($get('timetable.break') > 0 && (empty($get('timetable.p2')) || empty($get('timetable.p3')))) {
+                                                        return;
+                                                    }
+
                                                     $min = '04:00';
 
                                                     if ($value < $min) {
@@ -211,18 +217,28 @@ class ScheduleResource extends Resource
                                                         return;
                                                     }
 
-                                                    $p1p2 = today()->setTime(...explode(':', $get('timetable.p1')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p2'))));
+                                                    if ($get('timetable.break') > 0) {
+                                                        $p1p2 = today()->setTime(...explode(':', $get('timetable.p1')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p2'))));
 
-                                                    $p3p4 = today()->setTime(...explode(':', $get('timetable.p3')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p4'))));
+                                                        $p3p4 = today()->setTime(...explode(':', $get('timetable.p3')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p4'))));
 
-                                                    if (($total = (int) $p1p2 + $p3p4) != (int) $get('timetable.duration')) {
-                                                        $fail("The total number of work hours ({$total}) must be equal to the work hour duration (".$get('timetable.duration').').');
+                                                        if (($total = (int) $p1p2 + $p3p4) != (int) $get('timetable.duration')) {
+                                                            $fail("The total number of work hours ({$total}) must be equal to the work hour duration (".$get('timetable.duration').').');
+                                                        }
+                                                    } else {
+                                                        $total = today()->setTime(...explode(':', $get('timetable.p1')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p4'))));
+
+                                                        if ($total != (int) $get('timetable.duration')) {
+                                                            $fail("The total number of work hours ({$total}) must be equal to the work hour duration (".$get('timetable.duration').').');
+                                                        }
                                                     }
                                                 },
                                             ]),
                                         Forms\Components\TimePicker::make('timetable.p2')
-                                            ->rules(['required'])
-                                            ->markAsRequired()
+                                            ->rule(fn (Get $get) => $get('timetable.break') > 0 ? 'required' : null)
+                                            ->markAsRequired(fn (Get $get) => $get('timetable.break') > 0 ? 'required' : null)
+                                            ->disabled(fn (Get $get) => (int) $get('timetable.break') === 0)
+                                            ->dehydrated(fn (Get $get) => (int) $get('timetable.break') > 0)
                                             ->seconds(false)
                                             ->default('12:00')
                                             ->label('Punch 2')
@@ -233,6 +249,10 @@ class ScheduleResource extends Resource
                                             ->rules([
                                                 'date_format:H:i',
                                                 fn (Forms\Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                                    if ($get('timetable.break') > 0 && (empty($get('timetable.p2')) || empty($get('timetable.p3')))) {
+                                                        return;
+                                                    }
+
                                                     if ($value <= $get('timetable.p1')) {
                                                         $fail('The punch 2 field must be a time after the punch 1 field.');
                                                     }
@@ -241,7 +261,7 @@ class ScheduleResource extends Resource
                                                         $fail('The punch 2 field must be at least an hour after the punch 1 field.');
                                                     }
 
-                                                    if (empty($get('timetable.duration'))) {
+                                                    if (empty($get('timetable.duration')) || $get('timetable.break') == 0) {
                                                         return;
                                                     }
 
@@ -258,8 +278,10 @@ class ScheduleResource extends Resource
                                 Forms\Components\Fieldset::make('PM')
                                     ->schema([
                                         Forms\Components\TimePicker::make('timetable.p3')
-                                            ->rules(['required'])
-                                            ->markAsRequired()
+                                            ->rule(fn (Get $get) => $get('timetable.break') > 0 ? 'required' : null)
+                                            ->markAsRequired(fn (Get $get) => $get('timetable.break') > 0 ? 'required' : null)
+                                            ->disabled(fn (Get $get) => (int) $get('timetable.break') === 0)
+                                            ->dehydrated(fn (Get $get) => (int) $get('timetable.break') > 0)
                                             ->seconds(false)
                                             ->default('13:00')
                                             ->label('Punch 3')
@@ -270,7 +292,11 @@ class ScheduleResource extends Resource
                                             ->rules([
                                                 'date_format:H:i',
                                                 fn (Forms\Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                                    if ($value <= $get('timetable.p2')) {
+                                                    if ($get('timetable.break') > 0 && (empty($get('timetable.p2')) || empty($get('timetable.p3')))) {
+                                                        return;
+                                                    }
+
+                                                    if ($value <= $get('timetable.p2') && $get('timetable.break') > 0) {
                                                         $fail('The punch 3 field must be a time after the punch 2 field.');
                                                     }
 
@@ -282,7 +308,7 @@ class ScheduleResource extends Resource
                                                         $fail("The punch 3 field must be $break minutes after the punch 2 field.");
                                                     }
 
-                                                    if (empty($get('timetable.duration'))) {
+                                                    if (empty($get('timetable.duration')) || $get('timetable.break') == 0) {
                                                         return;
                                                     }
 
@@ -308,6 +334,10 @@ class ScheduleResource extends Resource
                                             ->rules([
                                                 'date_format:H:i',
                                                 fn (Forms\Get $get) => function ($attribute, $value, $fail) use ($get) {
+                                                    if ($get('timetable.break') > 0 && (empty($get('timetable.p2')) || empty($get('timetable.p3')))) {
+                                                        return;
+                                                    }
+
                                                     $max = '22:00';
 
                                                     if ($value > $max) {
@@ -318,7 +348,11 @@ class ScheduleResource extends Resource
                                                         $fail('The punch 4 field must be a time after the punch 3 field.');
                                                     }
 
-                                                    if (today()->setTime(...explode(':', $get('timetable.p3')))->diffInMinutes(today()->setTime(...explode(':', $value))) < 60) {
+                                                    if (
+                                                        $get('timetable.break') > 0 &&
+                                                        today()->setTime(...explode(':', $get('timetable.p3')))
+                                                            ->diffInMinutes(today()->setTime(...explode(':', $value))
+                                                    ) < 60) {
                                                         $fail('The punch 4 field must be at least an hour after the punch 3 field.');
                                                     }
 
@@ -326,12 +360,20 @@ class ScheduleResource extends Resource
                                                         return;
                                                     }
 
-                                                    $p1p2 = today()->setTime(...explode(':', $get('timetable.p1')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p2'))));
+                                                    if ($get('timetable.break') > 0) {
+                                                        $p1p2 = today()->setTime(...explode(':', $get('timetable.p1')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p2'))));
 
-                                                    $p3p4 = today()->setTime(...explode(':', $get('timetable.p3')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p4'))));
+                                                        $p3p4 = today()->setTime(...explode(':', $get('timetable.p3')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p4'))));
 
-                                                    if (($total = (int) $p1p2 + $p3p4) != (int) $get('timetable.duration')) {
-                                                        $fail("The total number of work hours ({$total}) must be equal to the work hour duration (".$get('timetable.duration').').');
+                                                        if (($total = (int) $p1p2 + $p3p4) != (int) $get('timetable.duration')) {
+                                                            $fail("The total number of work hours ({$total}) must be equal to the work hour duration (".$get('timetable.duration').').');
+                                                        }
+                                                    } else {
+                                                        $total = today()->setTime(...explode(':', $get('timetable.p1')))->diffInHours(today()->setTime(...explode(':', $get('timetable.p4'))));
+
+                                                        if ($total != (int) $get('timetable.duration')) {
+                                                            $fail("The total number of work hours ({$total}) must be equal to the work hour duration (".$get('timetable.duration').').');
+                                                        }
                                                     }
                                                 },
                                             ]),
@@ -340,7 +382,7 @@ class ScheduleResource extends Resource
                             ]),
                     ]),
                 Forms\Components\Section::make('Threshold')
-                    ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
+                    // ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
                     ->columnSpan(1)
                     ->columns(2)
                     ->schema([

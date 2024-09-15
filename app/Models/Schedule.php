@@ -109,7 +109,9 @@ class Schedule extends Model
         return Attribute::make(
             function () {
                 if ($this->arrangement === 'standard-work-hour') {
-                    return $this->timetable['p1'].'–'.$this->timetable['p2'].' & '.$this->timetable['p3'].'–'.$this->timetable['p4'];
+                    return $this->timetable['break'] > 0
+                        ? $this->timetable['p1'].'–'.$this->timetable['p2'].' & '.$this->timetable['p3'].'–'.$this->timetable['p4']
+                        : $this->timetable['p1'].'–'.$this->timetable['p4'];
                 }
             }
         )->shouldCache();

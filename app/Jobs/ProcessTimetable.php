@@ -110,7 +110,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $roster = [];
 
-        foreach ($punches = ['p1', 'p2', 'p3', 'p4'] as $state) {
+        foreach ($punches = $schedule->timetable['break'] > 0 ? ['p1', 'p2', 'p3', 'p4'] : ['p1', 'p4'] as $state) {
             $punchTime = $this->date->clone()->setTime(...explode(':', $schedule->timetable[$state]));
 
             $timelists = $timelogs->reject(fn ($punch) => in_array($punch->id, array_column($roster, 'id')))
@@ -152,17 +152,29 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             };
         }
 
-        $shift1 = match (isset($roster['p1']['time']) && isset($roster['p2']['time'])) {
-            true => $this->date->clone()->setTime(...explode(':', $schedule->timetable['p1']))
-                ->diffInMinutes($this->date->clone()->setTime(...explode(':', $schedule->timetable['p2'])), false),
-            false => 0,
-        };
+        if ($schedule->timetable['break'] > 0) {
+            $shift1 = match (isset($roster['p1']['time']) && isset($roster['p2']['time'])) {
+                true => $this->date->clone()->setTime(...explode(':', $schedule->timetable['p1']))
+                    ->diffInMinutes($this->date->clone()->setTime(...explode(':', $schedule->timetable['p2'])), false),
+                false => 0,
+            };
 
-        $shift2 = match (isset($roster['p3']['time']) && isset($roster['p4']['time'])) {
-            true => $this->date->clone()->setTime(...explode(':', $schedule->timetable['p3']))
-                ->diffInMinutes($this->date->clone()->setTime(...explode(':', $schedule->timetable['p4']))),
-            false => 0,
-        };
+            $shift2 = match (isset($roster['p3']['time']) && isset($roster['p4']['time'])) {
+                true => $this->date->clone()->setTime(...explode(':', $schedule->timetable['p3']))
+                    ->diffInMinutes($this->date->clone()->setTime(...explode(':', $schedule->timetable['p4']))),
+                false => 0,
+            };
+
+            $total = ($shift1 ? $shift1 - $roster['p1']['undertime'] - $roster['p2']['undertime'] : 0) +
+                ($shift2 ? $shift2 - $roster['p3']['undertime'] - $roster['p4']['undertime'] : 0);
+        } else {
+            $total = match (isset($roster['p1']['time']) && isset($roster['p4']['time'])) {
+                true => $this->date->clone()->setTime(...explode(':', $schedule->timetable['p1']))
+                    ->diffInMinutes($this->date->clone()->setTime(...explode(':', $schedule->timetable['p4'])))
+                    - $roster['p1']['undertime'] - $roster['p4']['undertime'],
+                false => 0,
+            };
+        }
 
         $out = $this->date->clone()->setTime(...explode(':', $schedule->timetable['p4']));
 
@@ -173,9 +185,6 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         $undertime = array_sum(array_column($roster, 'undertime'));
 
         $excess = isset($roster['p4']['time']) ? (int) $out->diffInMinutes($out->clone()->setTime(...explode(':', $roster['p4']['time']))) : 0;
-
-        $total = ($shift1 ? $shift1 - $roster['p1']['undertime'] - $roster['p2']['undertime'] : 0) +
-            ($shift2 ? $shift2 - $roster['p3']['undertime'] - $roster['p4']['undertime'] : 0);
 
         if ($regular) {
             $overtime = $excess >= ($schedule->threshold['overtime'] ?? 0) ? (int) ($excess / 60) * 60 : 0;
