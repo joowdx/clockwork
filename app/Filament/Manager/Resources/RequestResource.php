@@ -62,10 +62,10 @@ class RequestResource extends Resource
                     ->default([RequestStatus::REQUEST->value, RequestStatus::DEFLECT->value])
                     ->multiple()
                     ->native(false),
-                Tables\Filters\SelectFilter::make('for')
-                    ->options(['approval' => 'Approval', 'revokation' => 'Revokation', 'termination' => 'Termination'])
-                    ->multiple()
-                    ->native(false),
+                // Tables\Filters\SelectFilter::make('for')
+                //     ->options(['approval' => 'Approval', 'revokation' => 'Revokation', 'termination' => 'Termination'])
+                //     ->multiple()
+                //     ->native(false),
                 Tables\Filters\SelectFilter::make('completed')
                     ->options([true => 'Completed', false => 'Pending'])
                     ->native(false),
