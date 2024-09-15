@@ -20,7 +20,7 @@ use LSNepomuceno\LaravelA1PdfSign\Exceptions\ProcessRunTimeException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
 use SensitiveParameter;
 
-class Profile extends EditProfile
+class Account extends EditProfile
 {
     protected function getForms(): array
     {
@@ -36,9 +36,14 @@ class Profile extends EditProfile
                             ->schema([
                                 Tab::make('Information')
                                     ->schema([
-                                        $this->getEmailFormComponent()
-                                            ->label('Email'),
-                                        TextInput::make('number'),
+                                        TextInput::make('username')
+                                            ->dehydrated(false)
+                                            ->disabled()
+                                            ->markAsRequired(),
+                                        $this->getNameFormComponent(),
+                                        $this->getEmailFormComponent(),
+                                        TextInput::make('position')
+                                            ->maxLength(255),
                                     ]),
                                 Tab::make('Password')
                                     ->schema([

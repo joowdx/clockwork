@@ -2,14 +2,30 @@
 
 namespace App\Filament\Auth;
 
+use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class Login extends \Filament\Pages\Auth\Login
 {
     protected static string $view = 'filament.auth.login';
+
+    public function mount(): void
+    {
+        if (Filament::auth()->check()) {
+            redirect()->intended(Filament::getUrl());
+        }
+
+        if (Auth::guard('employee')->check()) {
+            redirect()->route('filament.employee.resources.timesheets.index');
+        }
+
+        $this->form->fill();
+    }
 
     public function getSubheading(): string|Htmlable|null
     {
@@ -39,5 +55,14 @@ class Login extends \Filament\Pages\Auth\Login
             'username' => $data['username'],
             'password' => $data['password'],
         ];
+    }
+
+    public function employeeAction(): Action
+    {
+        return Action::make('register')
+            ->link()
+            ->label(__('here...'))
+            ->extraAttributes(['class' => 'italic'])
+            ->url(route('filament.employee.auth.login'));
     }
 }

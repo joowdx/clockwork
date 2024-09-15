@@ -28,8 +28,11 @@ return new class extends Migration
             $table->string('middle_name', 60)->default('');
             $table->string('last_name', 60);
             $table->string('qualifier_name', 60)->default('');
-            $table->string('name', 240)->storedAs("TRIM(BOTH ' ' FROM $nameExpression)");
-            $table->string('full_name', 240)->storedAs("TRIM(BOTH ' ' FROM $fullNameExpression)");
+            $table->string('name', 240)->storedAs("TRIM(BOTH ' ' FROM {$nameExpression})");
+            $table->string('full_name', 240)->storedAs("TRIM(BOTH ' ' FROM {$fullNameExpression})");
+            $table->string('email')->unique()->nullable();
+            $table->string('number')->unique()->nullable();
+            $table->string('password')->nullable();
             $table->date('birthdate')->nullable();
             $table->string('sex')->nullable();
             $table->string('designation')->nullable();
@@ -38,6 +41,7 @@ return new class extends Migration
             $table->foreignUlid('office_id')->nullable();
             $table->char('uid', 8)->unique()->nullable();
             $table->boolean('active')->default(true);
+            $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
             $table->unique(['first_name', 'middle_name', 'last_name', 'qualifier_name'], 'unique_employee');

@@ -7,11 +7,23 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
+     * Get the migration connection name.
+     */
+    public function getConnection(): ?string
+    {
+        return config('backup.connection');
+    }
+
+    /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::connection('sqlite')->create('backups', function (Blueprint $table) {
+        if ($this->getConnection() === 'sqlite') {
+            return;
+        }
+
+        Schema::connection($this->getConnection())->create('backups', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('file')->nullable();
             $table->unsignedBigInteger('size')->nullable();
@@ -26,6 +38,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('sqlite')->dropIfExists('backups');
+        if ($this->getConnection() === 'sqlite') {
+            return;
+        }
+
+        Schema::connection($this->getConnection())->dropIfExists('backups');
     }
 };

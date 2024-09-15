@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Carbon;
 
@@ -23,6 +24,10 @@ class Timelog extends Model
 
     protected $casts = [
         'time' => 'datetime:Y-m-d H:i:s',
+        'shadow' => 'boolean',
+        'pseudo' => 'boolean',
+        'masked' => 'boolean',
+        'recast' => 'boolean',
     ];
 
     protected $temp = [];
@@ -30,6 +35,20 @@ class Timelog extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('excludeShadow', fn (Builder $builder) => $builder->where('shadow', false));
+
+        static::addGlobalScope('excludeMasked', fn (Builder $builder) => $builder->where('masked', false));
+
+        static::addGlobalScope('excludeRecasted', function (Builder $builder) {
+            $builder->whereNot(function (Builder $builder) {
+                $builder->orWhereExists(function ($builder) {
+                    $builder->from('timelogs as sub')->whereColumn('sub.timelog_id', 'timelogs.id')->where('sub.recast', true);
+                });
+
+                $builder->orWhere(function ($builder) {
+                    $builder->where('recast', true)->whereNull('timelog_id');
+                });
+            });
+        });
     }
 
     public function state(): Attribute
@@ -91,6 +110,33 @@ class Timelog extends Model
         return Attribute::make(fn ($uid): int|string => is_numeric($uid) ? (int) $uid : $uid);
     }
 
+    public function employee(): HasOneThrough
+    {
+        return $this->hasOneThrough(Employee::class, Enrollment::class, 'timelogs.id', 'id', secondLocalKey: 'employee_id')
+            ->join('timelogs', 'employees.id', 'enrollment.employee_id')
+            ->whereColumn('timelogs.uid', 'enrollment.uid')
+            ->whereColumn('employees.id', 'enrollment.employee_id')
+            ->whereColumn('timelogs.device', 'enrollment.device')
+            ->withoutGlobalScope(ActiveScope::class);
+    }
+
+    public function scanner(): BelongsTo
+    {
+        return $this->belongsTo(Scanner::class, 'device', 'uid');
+    }
+
+    public function original(): BelongsTo
+    {
+        return $this->belongsTo(Timelog::class, 'timelog_id', 'id')
+            ->withoutGlobalScopes();
+    }
+
+    public function revision(): HasOne
+    {
+        return $this->hasOne(Timelog::class, 'timelog_id', 'id')
+            ->withoutGlobalScopes();
+    }
+
     public function scopeDay(Builder $query, Carbon|string $date, string $take = 'normal'): void
     {
         $date = $date ? ($date instanceof Carbon ? $date : Carbon::parse($date))->startOfDay() : today();
@@ -136,20 +182,5 @@ class Timelog extends Model
     public function prunable(): Builder
     {
         return static::where('created_at', '<=', now()->subYears(2));
-    }
-
-    public function scanner(): BelongsTo
-    {
-        return $this->belongsTo(Scanner::class, 'device', 'uid');
-    }
-
-    public function employee(): HasOneThrough
-    {
-        return $this->hasOneThrough(Employee::class, Enrollment::class, 'timelogs.id', 'id', secondLocalKey: 'employee_id')
-            ->join('timelogs', 'employees.id', 'enrollment.employee_id')
-            ->whereColumn('timelogs.uid', 'enrollment.uid')
-            ->whereColumn('employees.id', 'enrollment.employee_id')
-            ->whereColumn('timelogs.device', 'enrollment.device')
-            ->withoutGlobalScope(ActiveScope::class);
     }
 }

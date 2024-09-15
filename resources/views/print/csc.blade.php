@@ -21,6 +21,9 @@ if (! $preview) {
 
     $time = now();
 }
+
+$label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y')) .
+    ($timesheet->getPeriod() === 'overtimeWork' ? ' (OT)' : '');
 ?>
 
 @extends('print.layout')
@@ -125,10 +128,7 @@ if (! $preview) {
                                 For the month of:
                             </td>
                             <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
-                                {{ trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y') }}
-                                @if ($timesheet->getPeriod() === 'overtimeWork')
-                                    (OT)
-                                @endif
+                                {{ $label($timesheet) }}
                             </td>
                         </tr>
                         <tr>
@@ -222,6 +222,16 @@ if (! $preview) {
                                                         {{ $ut }}
                                                     </span>
                                                 @endif
+                                                @if ($timetable->punch[$punch]['recast'] ?? false)
+                                                    <sup @style([
+                                                        'font-size:6pt',
+                                                        'position:absolute',
+                                                        'top:2pt',
+                                                        'left:2pt',
+                                                    ])>
+                                                        ‽
+                                                    </sup>
+                                                @endif
                                                 <sub @style([
                                                     'font-size:6pt',
                                                     'position:absolute',
@@ -283,14 +293,16 @@ if (! $preview) {
                                 </tr>
                             @endif
                         @endfor
-                        @if (! $preview)
-                            <tr style="height:10pt"> </tr>
-                            <tr>
-                                <td colspan=2 class="font-md courier right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
-                                <td colspan=4 @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md bold' ])>
+                        <tr style="height:10pt"> </tr>
+                        <tr>
+                            <td colspan=2 class="font-md courier right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
+                            <td colspan=4 @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md' ])>
+                                @if ($misc['calculate'] ?? $preview)
                                     {{ $timesheet->total }}
-                                </td>
-                            </tr>
+                                @endif
+                            </td>
+                        </tr>
+                        @if (! $preview)
                             @if ($size === 'legal')
                                 <tr>
                                     <td colspan=6></td>
@@ -376,12 +388,17 @@ if (! $preview) {
                             @endif
                             <tr>
                                 <td colspan=1 class="relative">
-                                    @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['next']) || isset($punches['previous']))))
-                                        <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
-                                            N = Next day <br>
-                                            P = Previous day
-                                        </div>
-                                    @endif
+                                    <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
+                                        @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['next']))))
+                                            N = Next <br>
+                                        @endif
+                                        @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['previous']))))
+                                            P = Previous <br>
+                                        @endif
+                                        @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['recast']))))
+                                            ‽ = Rectified
+                                        @endif
+                                    </div>
                                     <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
 
                                     </div>
@@ -389,7 +406,8 @@ if (! $preview) {
 
                                     </div>
                                 </td>
-                                <td colspan=4 class="relative">
+                                <td colspan=2></td>
+                                <td colspan=3 class="relative">
                                     @if($logo)
                                         <img
                                             src="data:image/png;base64,{{ $logo }}"
@@ -399,28 +417,25 @@ if (! $preview) {
                                         >
                                     @endif
                                 </td>
-                                <td colspan=1></td>
                             </tr>
                             <tr>
-                                <td colspan=1></td>
-                                <td class="relative underline font-xs center bottom bold courier" colspan=4 style="color:#0004;border-color:#0004!important;">
+                                <td colspan=3></td>
+                                <td class="relative underline font-xs center bottom bold courier nowrap" colspan=3 style="color:#0007;border-color:#0007!important;">
                                     @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
                                     {{ $user?->name }}
                                 </td>
-                                <td colspan=1></td>
                             </tr>
                             <tr>
-                                <td colspan=1> </td>
-                                <td class="font-xxs center courier top" colspan=4 style="color:#0004;">
+                                <td colspan=3> </td>
+                                <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
                                     {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
-                                </td>
-                                <td class="relative" colspan=1>
-                                    <div class="absolute consolas" style="opacity:0.3;bottom:8pt;right:0;font-size:4.0pt;">
+
+                                    <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">
                                         {{ $time->format('Y-m-d|H:i') }}
                                     </div>
                                 </td>
                             </tr>
-                            @if ($size === 'folio')
+                            @if (strlen($label($timesheet)) <= 27)
                                 <tr>
                                     <td colspan=6></td>
                                 </tr>

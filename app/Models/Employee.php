@@ -6,6 +6,10 @@ use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
 use App\Traits\FormatsName;
 use App\Traits\HasActiveState;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -16,11 +20,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Employee extends Model
+class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatable, FilamentUser, HasName
 {
-    use FormatsName, HasActiveState, HasFactory, HasUlids, SoftDeletes;
+    use Authenticatable, FormatsName, HasActiveState, HasFactory, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'prefix_name',
@@ -29,13 +34,16 @@ class Employee extends Model
         'middle_name',
         'last_name',
         'qualifier_name',
+        'email',
+        'number',
+        'password',
         'sex',
         'birthdate',
         'designation',
         'status',
         'substatus',
-        'active',
         'uid',
+        'active',
     ];
 
     protected $casts = [
@@ -43,6 +51,12 @@ class Employee extends Model
         'active' => 'boolean',
         'status' => EmploymentStatus::class,
         'substatus' => EmploymentSubstatus::class,
+        'password' => 'hashed',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     protected static function booted(): void
@@ -253,5 +267,20 @@ class Employee extends Model
     {
         return $this->hasManyThrough(Timetable::class, Timesheet::class, 'employee_id', 'timesheet_id')
             ->latest('date');
+    }
+
+    public function signature(): MorphOne
+    {
+        return $this->morphOne(Signature::class, 'signaturable');
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
+
+    public function getFilamentName(): string
+    {
+        return "{$this->first_name} {$this->middle_initial} {$this->last_name}";
     }
 }

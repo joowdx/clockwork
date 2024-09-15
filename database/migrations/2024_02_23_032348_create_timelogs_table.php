@@ -20,8 +20,16 @@ return new class extends Migration
             $table->unsignedTinyInteger('state');
             $table->boolean('shadow')->default(false);
             $table->boolean('pseudo')->default(false);
-            $table->foreign('device')->references('uid')->on('scanners')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->boolean('masked')->default(false);
+            $table->boolean('recast')->default(false);
+            $table->ulid('timelog_id')->nullable();
+
             $table->unique(['device', 'uid', 'time', 'state', 'mode']);
+        });
+
+        Schema::table('timelogs', function (Blueprint $table) {
+            $table->foreign('device')->references('uid')->on('scanners')->cascadeOnUpdate()->cascadeOnDelete()->change();
+            $table->foreign('timelog_id')->index()->nullable()->references('id')->on('timelogs')->cascadeOnUpdate()->cascadeOnDelete()->change();
         });
     }
 

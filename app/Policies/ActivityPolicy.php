@@ -10,8 +10,12 @@ class ActivityPolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::ACTIVITY),
+            'superuser' => $user?->hasPermission(UserPermission::ACTIVITY) ?? false,
             'secretary' => true,
             default => false,
         };

@@ -370,7 +370,11 @@ class ExportAttendanceAction extends Action
                                 ->live()
                                 ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
                                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                    if ($value && ! $get('electronic_signature')) {
+                                    if (! $value) {
+                                        return;
+                                    }
+
+                                    if (! $get('electronic_signature')) {
                                         $fail('Digital signature requires electronic signature');
                                     }
 

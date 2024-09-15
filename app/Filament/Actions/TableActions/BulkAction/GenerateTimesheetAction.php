@@ -10,6 +10,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
 
 class GenerateTimesheetAction extends BulkAction
@@ -82,7 +83,7 @@ class GenerateTimesheetAction extends BulkAction
             ->title('Timesheet generation will start shortly')
             ->send();
 
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($jobs->isEmpty()) {
             Notification::make()
@@ -133,7 +134,7 @@ class GenerateTimesheetAction extends BulkAction
                             return;
                         }
 
-                        if (! password_verify($value, auth()->user()->password)) {
+                        if (! password_verify($value, Auth::user()->password)) {
                             $fail('The password is incorrect');
                         }
                     },

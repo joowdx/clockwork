@@ -28,6 +28,9 @@ if (! $preview) {
 
     $time = now();
 }
+
+$label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Carbon::parse($date)->day)->toArray()) : "$from-$to") .
+    Carbon::parse($month)->format(' F Y');
 ?>
 
 @extends('print.layout')
@@ -70,7 +73,7 @@ if (! $preview) {
                         ])
                     >
                         @if($preview)
-                            <col width=65 span=6>
+                            <col width=65 span={{ $preview ? 5 : 6 }}>
                         @else
                             <col width=57 span=6>
                             <tr>
@@ -118,12 +121,12 @@ if (! $preview) {
                             </tr>
                         @endif
                         <tr>
-                            <td class="underline uppercase courier font-lg center bold" colspan=6 style="text-decoration: none;">
+                            <td class="underline uppercase courier font-lg center bold" colspan={{ $preview ? 5 : 6 }} style="text-decoration: none;">
                                 {{ $employee->name }}
                             </td>
                         </tr>
                         <tr>
-                            <td class="courier top center font-xs" colspan=6>
+                            <td class="courier top center font-xs" colspan={{ $preview ? 5 : 6 }}>
                                 Employee
                             </td>
                         </tr>
@@ -131,14 +134,8 @@ if (! $preview) {
                             <td class="arial font-xs bottom right" colspan=2 style="padding-bottom:2.5pt;padding-right:10pt;">
                                 For the month of:
                             </td>
-                            <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
-                                {{
-                                    (
-                                        $period === 'dates'
-                                            ? $compressor(collect($dates)->map(fn($date) => Carbon::parse($date)->day)->toArray())
-                                            : "$from-$to"
-                                    ) . Carbon::parse($month)->format(' F Y')
-                                }}
+                            <td class="underline font-md courier bold center" colspan={{ $preview ? 3 : 4 }} style="text-decoration: none;">
+                                {{ $label }}
                             </td>
                         </tr>
                         <tr>
@@ -148,7 +145,7 @@ if (! $preview) {
                                     Weekdays
                                 </span>
                             </td>
-                            <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
+                            <td colspan={{ $preview ? 2 : 3 }} class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
                                 as required
                             </td>
                         </tr>
@@ -158,18 +155,20 @@ if (! $preview) {
                                     Weekends
                                 </span>
                             </td>
-                            <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
+                            <td colspan={{ $preview ? 2 : 3 }} class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
                                 as required
                             </td>
                         </tr>
                         <tr>
-                            <td colspan=6></td>
+                            <td colspan={{ $preview ? 5 : 6 }}></td>
                         </tr>
                         <tr class="font-sm bold">
                             <td class="border center middle courier" rowspan=2 height=42 width=58>DAY</td>
                             <td class="border center middle courier" colspan=2 width=116>AM</td>
                             <td class="border center middle courier" colspan=2 width=116>PM</td>
-                            <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
+                            @if (! $preview)
+                                <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
+                            @endif
                         </tr>
                         <tr class="font-sm bold">
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Arrival</td>
@@ -225,6 +224,16 @@ if (! $preview) {
                                                     'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
                                                 ])
                                             >
+                                                @if (@$timelogs[$punch]['recast'])
+                                                    <sup @style([
+                                                        'font-size:6pt',
+                                                        'position:absolute',
+                                                        'top:2pt',
+                                                        'left:2pt',
+                                                    ])>
+                                                        ‽
+                                                    </sup>
+                                                @endif
                                                 {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
                                             </td>
                                         @endforeach
@@ -356,6 +365,9 @@ if (! $preview) {
                             @endif
                             <tr>
                                 <td colspan=1 class="relative">
+                                    <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
+                                        ‽ = Rectified
+                                    </div>
                                     <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
 
                                     </div>
@@ -363,7 +375,8 @@ if (! $preview) {
 
                                     </div>
                                 </td>
-                                <td colspan=4 class="relative">
+                                <td colspan=2></td>
+                                <td colspan=3 class="relative">
                                     @if($logo)
                                         <img
                                             src="data:image/png;base64,{{ $logo }}"
@@ -373,28 +386,25 @@ if (! $preview) {
                                         >
                                     @endif
                                 </td>
-                                <td colspan=1></td>
                             </tr>
                             <tr>
-                                <td colspan=1></td>
-                                <td class="relative underline font-xs center bottom bold courier" colspan=4 style="color:#0004;border-color:#0004!important;">
+                                <td colspan=3></td>
+                                <td class="relative underline font-xs center bottom bold courier nowrap" colspan=3 style="color:#0007;border-color:#0007!important;">
                                     @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
                                     {{ $user?->name }}
                                 </td>
-                                <td colspan=1></td>
                             </tr>
                             <tr>
-                                <td colspan=1> </td>
-                                <td class="font-xxs center courier top" colspan=4 style="color:#0004;">
+                                <td colspan=3> </td>
+                                <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
                                     {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
-                                </td>
-                                <td class="relative" colspan=1>
-                                    <div class="absolute consolas" style="opacity:0.3;bottom:8pt;right:0;font-size:4.0pt;">
+
+                                    <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">
                                         {{ $time->format('Y-m-d|H:i') }}
                                     </div>
                                 </td>
                             </tr>
-                            @if ($size === 'folio')
+                            @if (strlen($label) <= 27)
                                 <tr>
                                     <td colspan=6></td>
                                 </tr>

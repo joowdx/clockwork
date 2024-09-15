@@ -249,7 +249,11 @@ class ExportTimesheet implements Responsable
                 'timelogs' => $timelogs,
                 'scanners' => fn ($query) => $query->reorder()->orderBy('priority', 'desc')->orderBy('name'),
                 'timelogs.scanner',
-            ])->sortBy('full_name');
+            ]);
+
+            if ($this->employee instanceof Collection) {
+                $this->employee = $this->employee->sortBy('full_name');
+            }
 
             return match ($this->individual) {
                 true => $this->exportAsZip(),

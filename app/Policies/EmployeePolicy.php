@@ -10,8 +10,12 @@ class EmployeePolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::EMPLOYEE),
+            'superuser' => $user?->hasPermission(UserPermission::EMPLOYEE) ?? false,
             'secretary' => true,
             default => false,
         };

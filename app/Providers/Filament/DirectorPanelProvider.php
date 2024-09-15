@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Auth\Profile;
+use App\Filament\Auth\Account;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
@@ -19,7 +19,7 @@ class DirectorPanelProvider extends PanelProvider
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
             ->id('director')
-            ->profile(Profile::class, false)
+            ->profile(Account::class)
             ->path(str(settings('director') ?: 'director')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Director/Resources'), for: 'App\\Filament\\Director\\Resources')

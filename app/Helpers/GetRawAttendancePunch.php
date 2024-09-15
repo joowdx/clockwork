@@ -48,6 +48,7 @@ class GetRawAttendancePunch
                 'time' => $punched->time->format('H:i:s'),
                 'foreground' => $punched->scanner?->foreground_color,
                 'background' => $punched->scanner?->background_color,
+                'recast' => $punched->recast,
             ];
         }
 

@@ -10,8 +10,12 @@ class ScannerPolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::SCANNER),
+            'superuser' => $user?->hasPermission(UserPermission::SCANNER) ?? false,
             'secretary' => true,
             default => false,
         };

@@ -175,7 +175,7 @@ class EmployeeResource extends Resource
                         ->searchable()
                         ->columnSpan(2),
                 ]),
-            Forms\Components\Section::make('Profile Settings')
+            Forms\Components\Section::make('Account Settings')
                 ->visible($isCalledBySelf)
                 ->columns(3)
                 ->schema([

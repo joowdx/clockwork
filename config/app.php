@@ -176,6 +176,7 @@ return [
         App\Providers\Filament\BureaucratPanelProvider::class,
         App\Providers\Filament\ExecutivePanelProvider::class,
         App\Providers\Filament\DeveloperPanelProvider::class,
+        App\Providers\Filament\EmployeePanelProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),
 

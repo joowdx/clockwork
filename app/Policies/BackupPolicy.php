@@ -10,8 +10,12 @@ class BackupPolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::BACKUP),
+            'superuser' => $user?->hasPermission(UserPermission::BACKUP) ?? false,
             'secretary' => true,
             default => false,
         };

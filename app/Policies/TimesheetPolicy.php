@@ -10,8 +10,12 @@ class TimesheetPolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::TIMESHEET),
+            'superuser' => $user?->hasPermission(UserPermission::TIMESHEET) ?? false,
             'secretary' => true,
             default => false,
         };

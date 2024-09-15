@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +18,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use UnitEnum;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser //, MustVerifyEmail
 {
     use HasApiTokens, HasFactory, HasUlids, Notifiable, SoftDeletes;
 
@@ -77,6 +76,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->morphedByMany(Office::class, 'assignable', Assignment::class)
             ->withPivot('active')
             ->wherePivot('active', true);
+    }
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     public function canAccessPanel(Panel $panel, ?string $id = null): bool
@@ -138,10 +142,5 @@ class User extends Authenticatable implements FilamentUser
         $permissions = array_map(fn ($permission) => $permission instanceof UnitEnum ? $permission->value : $permission, $permissions);
 
         return count(array_diff($permissions, $this->permissions ?? [])) === 0;
-    }
-
-    public function employee(): BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
     }
 }

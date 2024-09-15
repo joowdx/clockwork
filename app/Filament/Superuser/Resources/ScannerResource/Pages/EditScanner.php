@@ -52,15 +52,19 @@ class EditScanner extends EditRecord
                     ->requiresConfirmation()
                     ->modalDescription('Are you sure you want to flush all the scanner\'s timelogs? This cannot be undone.')
                     ->form([
+                        TextInput::make('month')
+                            ->type('month'),
                         TextInput::make('password')
                             ->label('Password')
                             ->password()
-                            ->currentPassword()
+                            // ->currentPassword()
                             ->markAsRequired()
                             ->rules(['required']),
                     ])
-                    ->action(function (Scanner $record, FlushScannerTimelogs $flusher) {
-                        $flusher($record);
+                    ->action(function (array $data, Scanner $record, FlushScannerTimelogs $flusher) {
+                        @[$year, $month] = @explode('-', $data['month']);
+
+                        $flusher($record, year: $year ?: null, month: $month ?: null);
 
                         Notification::make()
                             ->warning()

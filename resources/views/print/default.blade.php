@@ -114,8 +114,10 @@
                         <tr></tr>
                     @endif
                     <tr height="22" style="height:16.5pt">
-                        <td colspan="1" height="22" @class(['underline bold bottom nowrap font-md', $preview ? 'font-mono left' : 'cascadia']) style="height:16.5pt">DAY</td>
-                        <td class="underline" colspan="5"></td>
+                        <td colspan="1" height="22" @class(['underline bold bottom nowrap font-md', $preview ? 'font-mono left' : 'cascadia']) style="height:16.5pt">
+                            DAY
+                        </td>
+                        <td class="underline" colspan="3"></td>
                         <td class="underline font-md top courier right" colspan="4">
                             <span class="uppercase bold">State</span>
 
@@ -130,6 +132,13 @@
                                     out = <sup> o </sup>
                                 </div>
                             </div>
+                        </td>
+                        <td class="underline font-md top courier right" colspan="2">
+                            {{-- <span class="uppercase bold">Misc</span>
+
+                            <div @class(['lowercase', $preview ? 'font-sm' : 'font-xs'])>
+                                rectified = <sup>‽</sup>
+                            </div> --}}
                         </td>
                     </tr>
                     @foreach ($month->range($month->format('Y-m-') . $month->daysInMonth) as $date)
@@ -149,7 +158,10 @@
                                 </td>
                                 @foreach ($timelogs->take(9) as $timelog)
                                     <td class="relative text-sm" style="padding:1pt 0 ;">
-                                        <span class="font-sm nowrap bold"
+                                        <span
+                                            @class([
+                                                "font-sm nowrap",
+                                            ])
                                             @style([
                                                 "text-color:{$timelog->scanner->foregroundColor}!important;",
                                                 "background-color:{$timelog->scanner->backgroundColor}!important;",
@@ -159,6 +171,12 @@
                                         >
                                             {{ $timelog->time->format('H:i') }}
                                         </span>
+
+                                        @if ($timelog->recast)
+                                            <span class="absolute" style="left:6pt;">
+                                                <sup>‽</sup>
+                                            </span>
+                                        @endif
 
                                         <span class="absolute" @style([$preview ?: 'top:-0.75pt;right:7pt;'])>
                                             <sup>{{ match(true) { $timelog->in => 'i', $timelog->out => 'o', default => 'u' } }}</sup><sub>{{ $timelog->mode->getCode() }}</sub>

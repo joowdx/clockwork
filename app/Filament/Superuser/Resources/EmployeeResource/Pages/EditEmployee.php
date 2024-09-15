@@ -12,7 +12,7 @@ class EditEmployee extends EditRecord
 
     public function getContentTabLabel(): ?string
     {
-        return 'Employee Profile';
+        return 'Employee Account';
     }
 
     public function hasCombinedRelationManagerTabsWithContent(): bool

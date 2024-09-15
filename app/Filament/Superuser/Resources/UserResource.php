@@ -70,7 +70,7 @@ class UserResource extends Resource
                             ->dehydrated(false)
                             ->hiddenOn(['view']),
                     ]),
-                Forms\Components\Section::make('Employee Profile Link')
+                Forms\Components\Section::make('Employee Account Link')
                     ->columns(3)
                     ->schema([
                         Forms\Components\Select::make('employee_id')

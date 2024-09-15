@@ -108,6 +108,7 @@ class ExportTimesheetAction extends BulkAction
                 ->grouping($data['grouping'] ?? false)
                 ->single($data['single'] ?? false)
                 ->misc([
+                    'calculate' => @$data['calculate'],
                     'supervisor' => @$data['supervisor'],
                     'weekends' => @$data['weekends'],
                     'holidays' => @$data['holidays'],
@@ -135,7 +136,7 @@ class ExportTimesheetAction extends BulkAction
         }
     }
 
-    public function exportForm(bool $preview = false): array
+    public function exportForm(bool $preview = false, bool $employee = false): array
     {
         $config = [
             Select::make('size')
@@ -235,10 +236,11 @@ class ExportTimesheetAction extends BulkAction
                 ])
                 ->descriptions([
                     'default' => 'Raw attendance data. Displays more detailed information about the employees\' attendance.',
-                    'csc' => 'Export in CSC form with attendance data based off the employees\' set schedules. You may need to generate their timesheets manually if they have no timesheet data for the selected period. Ignores employees with no timesheet data.',
+                    'csc' => ($preview ? 'Preview' : 'Export').' in CSC form with attendance data based off the employees\' set schedules. You may need to generate their timesheets manually if they have no timesheet data for the selected period. Ignores employees with no timesheet data.',
                     'preformatted' => 'Schedule-agnostic attendance preformatted in CSC form. Attendance data are fetched as is and may not reflect the actual schedule of the employees.',
                 ]),
             TextInput::make('month')
+                ->hidden($employee)
                 ->live()
                 ->default(fn ($livewire) => $livewire->filters['month'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m')))
                 ->type('month')
@@ -371,6 +373,10 @@ class ExportTimesheetAction extends BulkAction
                     Tab::make('Miscellaneous')
                         ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
                         ->schema([
+                            Checkbox::make('calculate')
+                                ->visible(fn (Get $get) => $get('format') === 'csc')
+                                ->default(false)
+                                ->helperText('Calculate days worked and minutes of undertime.'),
                             Checkbox::make('single')
                                 ->default(false)
                                 ->helperText('Generate single timesheet per page.'),

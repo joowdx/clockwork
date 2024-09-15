@@ -116,6 +116,37 @@ class Timesheet extends Model
         };
     }
 
+    public function days(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->{$this->getPeriod()}->filter->present->reject->half->count()
+                + $this->{$this->getPeriod()}->filter->present->filter->half->count() / 2
+        );
+    }
+
+    public function absences(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->{$this->getPeriod()}->filter->absent->count()
+        );
+    }
+
+    public function invalids(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->{$this->getPeriod()}->filter->invalid->count()
+        );
+    }
+
+    public function misses(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->{$this->getPeriod()}->map->punch->filter()->map(function ($timetable) {
+                return @collect($timetable)->filter->missed->count();
+            })->sum()
+        );
+    }
+
     public function period(): Attribute
     {
         return Attribute::make(
@@ -186,7 +217,7 @@ class Timesheet extends Model
 
                     $mins = $minutes % 60;
 
-                    return "{$hours}hrs".($mins > 0 ? " {$mins}mins" : '');
+                    return ($hours > 0 ? "{$hours}hrs" : '').($mins > 0 ? " {$mins}mins" : '');
                 };
 
                 $overtime = function () use ($format) {
@@ -197,8 +228,18 @@ class Timesheet extends Model
                     return ($wd > 0 ? "wkdy:{$format($wd)}" : '').($wd > 0 ? ', ' : '').($we > 0 ? "wknd:{$format($we)}" : '');
                 };
 
+                $standard = function () use ($format) {
+                    $days = $this->{$this->getPeriod()}->filter->present->reject->half->count()
+                        + $this->{$this->getPeriod()}->filter->present->filter->half->count() / 2;
+
+                    $undertime = $format($this->{$this->getPeriod()}->filter->present->sum('undertime'));
+
+                    return "$days days; ".($undertime ? "$undertime UT" : '');
+                };
+
                 return match ($this->span) {
                     'overtime' => $overtime(),
+                    'full', '1st', '2nd', 'regular' => $standard(),
                     default => null,
                 };
             }

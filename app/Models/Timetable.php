@@ -43,6 +43,8 @@ class Timetable extends Model
         'punch' => 'json',
     ];
 
+    protected $touches = ['timesheet'];
+
     public function undertime(): Attribute
     {
         return Attribute::make(

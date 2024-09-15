@@ -9,6 +9,10 @@ class UserPolicy
 {
     public function viewAny(?User $user): bool
     {
-        return $user?->hasPermission(UserPermission::USER);
+        if ($user === null) {
+            return false;
+        }
+
+        return $user?->hasPermission(UserPermission::USER) ?? false;
     }
 }

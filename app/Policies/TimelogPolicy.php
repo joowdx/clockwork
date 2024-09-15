@@ -10,8 +10,12 @@ class TimelogPolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::TIMELOG),
+            'superuser' => $user?->hasPermission(UserPermission::TIMELOG) ?? false,
             'secretary' => true,
             default => false,
         };

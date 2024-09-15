@@ -10,8 +10,12 @@ class SchedulePolicy
 {
     public function viewAny(?User $user): bool
     {
+        if ($user === null) {
+            return false;
+        }
+
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::SCHEDULE),
+            'superuser' => $user?->hasPermission(UserPermission::SCHEDULE) ?? false,
             'secretary' => true,
             default => false,
         };

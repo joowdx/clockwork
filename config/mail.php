@@ -58,6 +58,10 @@ return [
             // ],
         ],
 
+        'mailersend' => [
+            'transport' => 'mailersend',
+        ],
+
         'mailgun' => [
             'transport' => 'mailgun',
             // 'client' => [
@@ -108,8 +112,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', 'no-reply@davaodelsur.gov.ph'),
+        'name' => env('MAIL_FROM_NAME', 'do-not-reply'),
     ],
 
     /*

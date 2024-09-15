@@ -3,10 +3,10 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Http\Middleware\Authenticate;
 use App\Http\Responses\LoginResponse;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
-use Filament\Http\Middleware\Authenticate;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -23,7 +23,8 @@ class AppPanelProvider extends PanelProvider
             ->path('')
             ->default()
             ->login(Login::class)
-            ->registration()
+            // ->passwordReset()
+            // ->registration()
             ->revealablePasswords(false)
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
