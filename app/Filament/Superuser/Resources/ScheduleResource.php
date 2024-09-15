@@ -86,7 +86,7 @@ class ScheduleResource extends Resource
                             ->relationship('office', 'name')
                             ->searchable()
                             ->preload()
-                            ->hidden(fn (Forms\Get $get) => $get('global')) # || $get('arrangement') == WorkArrangement::UNSET->value)
+                            ->hidden(fn (Forms\Get $get) => $get('global')) // || $get('arrangement') == WorkArrangement::UNSET->value)
                             ->required(fn (Forms\Get $get) => ! $get('global'))
                             ->columnSpan(2)
                             ->dehydratedWhenHidden(),
@@ -352,7 +352,7 @@ class ScheduleResource extends Resource
                                                         $get('timetable.break') > 0 &&
                                                         today()->setTime(...explode(':', $get('timetable.p3')))
                                                             ->diffInMinutes(today()->setTime(...explode(':', $value))
-                                                    ) < 60) {
+                                                            ) < 60) {
                                                         $fail('The punch 4 field must be at least an hour after the punch 3 field.');
                                                     }
 

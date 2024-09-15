@@ -52,8 +52,7 @@ class GenerateTimesheetAction extends BulkAction
     public function generateConfirmation(): string
     {
         return 'Timesheets are automatically generated.
-        Only do this when you know what you are doing as this will overwrite the existing timesheet data.
-        To proceed, please enter your password.';
+        Only do this when you know what you are doing as this will overwrite the existing timesheet data.';
     }
 
     public function generateAction(Collection|Employee $employee, array $data): void

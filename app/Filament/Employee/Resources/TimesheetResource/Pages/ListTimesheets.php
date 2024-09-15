@@ -2,22 +2,16 @@
 
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
-use App\Enums\TimelogState;
+use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Employee\Resources\TimesheetResource;
-use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
-use App\Models\Timelog;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ListTimesheets extends ListRecords
 {
@@ -31,145 +25,64 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            $this->rectify(),
+            $this->generate(),
         ];
     }
 
-    protected function rectify(): Action
+    protected function generate(): Action
     {
-        return Action::make('rectify')
-            ->icon('gmdi-border-color-o')
+        $generate = app(GenerateTimesheetAction::class, ['name' => 'generate-timesheet']);
+
+        return Action::make('generate')
+            ->icon('heroicon-o-bolt')
             ->requiresConfirmation()
-            ->modalIcon('gmdi-border-color-o')
-            ->modalDescription('This will allow you to correct your timesheet by adjusting erroneous punch states.')
-            ->modalSubmitActionLabel('Save')
-            ->modalWidth('lg')
-            ->slideOver()
-            ->successNotificationTitle('Timesheet successfully rectified.')
-            ->failureNotificationTitle('Something went wrong while rectifying your timesheet.')
+            ->modalIconColor('danger')
+            ->modalDescription($generate->generateConfirmation())
             ->form([
-                DatePicker::make('date')
-                    ->reactive()
-                    ->dehydrated(false)
-                    ->markAsRequired()
-                    ->rule('required')
-                    ->rule(fn () => function ($attribute, $value, $fail) {
-                        if ($value === null) {
+                TextInput::make('month')
+                    ->default(today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m'))
+                    ->type('month')
+                    ->required()
+                    ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                        if (empty($get('password')) || empty($get('confirm'))) {
                             return;
                         }
 
-                        $employee = Employee::find(Filament::auth()->id());
+                        /** @var Employee */
+                        $employee = Filament::auth()->user();
 
-                        if ($employee->timelogs()->whereDate('time', $value)->doesntExist()) {
-                            $fail('No data found for the selected date.');
+                        @[$year, $month] = explode('-', $value);
+
+                        if ($employee->timelogs()->whereMonth('time', $month)->whereYear('time', $year)->doesntExist()) {
+                            return $fail('No data found for the selected month.');
                         }
-                    })
-                    ->afterStateUpdated(function ($component, $livewire, $set, $state) {
-                        $livewire->validateOnly($component->getStatePath());
 
-                        $timelogs = Employee::find(Filament::auth()->id())
-                            ->timelogs()
-                            ->with('scanner')
-                            ->whereDate('time', $state)
-                            ->reorder()
-                            ->orderBy('time')
-                            ->get();
-
-                        $set('timelogs', $timelogs->map(function ($timelog) {
-                            return [
-                                'id' => $timelog->id,
-                                'scanner' => $timelog->scanner->name,
-                                'time' => Carbon::parse($timelog->time)->format('H:i'),
-                                'state' => $timelog->state,
-                                'recast' => $timelog->recast,
-                            ];
-                        })->toArray());
+                        if ($employee->timesheets()->whereMonth('month', $month)->whereYear('month', $year)->exists()) {
+                            return $fail('Timesheet already exists for the selected month.');
+                        }
                     }),
-                Repeater::make('timelogs')
-                    ->visible(fn (Get $get) => Employee::find(Filament::auth()->id())->timelogs()->whereDate('time', $get('date'))->exists())
-                    ->label('Records')
-                    ->defaultItems(0)
-                    ->addable(false)
-                    ->deletable(false)
-                    ->reorderable(false)
-                    ->itemLabel(function (array $state) {
-                        $current = Timelog::find($state['id']);
-
-                        $scanner = $state['scanner'];
-
-                        if ($state['recast']) {
-                            $rectified = <<<HTML
-                                <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                                    {$scanner} ({$current->original->state->getLabel()})
-                                </span>
-                            HTML;
-
-                            return str($rectified)->append($current->state !== $state['state'] ? '*' : '')->toHtmlString();
-                        }
-
-                        return $current->state === $state['state'] ? $scanner : "$scanner*";
-                    })
-                    ->columns(5)
-                    ->required()
-                    ->schema([
-                        TextInput::make('time')
-                            ->extraInputAttributes(['readonly' => true])
-                            ->dehydrated(false),
-                        Select::make('state')
-                            ->reactive()
-                            ->options(TimelogState::class)
-                            ->columnSpan(4)
-                            ->required()
-                            ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                if ($value === TimelogState::UNKNOWN) {
-                                    $fail('Invalid state.');
-                                }
-
-                                if (in_array($value, [TimelogState::CHECK_IN_PM, TimelogState::CHECK_OUT_PM]) && $get('time') < '12:00') {
-                                    $fail('Invalid state.');
-                                }
-                            }),
-                    ]),
-            ])
-            ->action(function (Action $action, array $data) {
-                try {
-                    DB::transaction(function () use ($data) {
-                        $timelogs = collect($data['timelogs'])->mapWithKeys(fn ($timelog) => [$timelog['id'] => @$timelog['state']]);
-
-                        $existing = Timelog::find(collect($data['timelogs'])->pluck('id'));
-
-                        $existing->filter(fn ($timelog) => $timelog->state !== $timelogs[$timelog->id])->each(function ($timelog) use ($timelogs) {
-                            if ($timelog->recast) {
-                                if ($timelog->original->state !== $timelogs[$timelog->id]) {
-                                    $timelog->forceFill(['state' => $timelogs[$timelog->id]])->save();
-                                } else {
-                                    $timelog->original->forceFill(['masked' => false])->save();
-
-                                    $timelog->delete();
-                                }
-                            } else {
-                                $data = [
-                                    'time' => $timelog->time,
-                                    'state' => $timelogs[$timelog->id],
-                                    'mode' => $timelog->mode,
-                                    'uid' => $timelog->uid,
-                                    'device' => $timelog->device,
-                                    'recast' => true,
-                                ];
-
-                                $timelog->forceFill(['masked' => true])->save();
-
-                                $timelog->revision()->make()->forceFill($data)->save();
+                TextInput::make('password')
+                    ->label('Password')
+                    ->password()
+                    ->markAsRequired()
+                    ->rules([
+                        'required',
+                        fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                            if ($value === $get('month')) {
+                                return;
                             }
 
-                            ProcessTimetable::dispatchSync(Filament::auth()->user(), $timelog->time->clone());
-                        });
-                    });
-
-                    $action->sendSuccessNotification();
-                } catch (Exception) {
-                    $action->sendFailureNotification();
-                }
-            });
+                            if (! password_verify($value, Auth::user()->password)) {
+                                $fail('The password is incorrect');
+                            }
+                        },
+                    ]),
+                Checkbox::make('confirm')
+                    ->label('I understand what I am doing')
+                    ->markAsRequired()
+                    ->accepted()
+                    ->validationMessages(['accepted' => 'You must confirm that you understand what you are doing.']),
+            ])
+            ->action(fn (array $data) => $generate->generateAction(Auth::user(), $data));
     }
 }
