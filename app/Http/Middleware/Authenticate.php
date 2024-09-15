@@ -27,6 +27,8 @@ class Authenticate extends Middleware
         }
 
         if ($current->check() || $auth->check()) {
+            $this->auth->shouldUse(Filament::getAuthGuard());
+
             return;
         }
 
