@@ -44,6 +44,7 @@ class Profile extends EditProfile
                                     ->schema([
                                         TextInput::make('current_password')
                                             ->dehydrated(false)
+                                            ->password()
                                             ->currentPassword()
                                             ->requiredWith('password'),
                                         $this->getPasswordFormComponent(),
