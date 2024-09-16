@@ -100,7 +100,7 @@ class ExportTimesheetAction extends BulkAction
                 ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
-                ->user($data['user'] ? User::find($data['user']) : user())
+                ->user(@$data['user'] ? User::find(@$data['user']) : user())
                 ->signature($data['electronic_signature'])
                 ->password($data['digital_signature'] ? $data['password'] : null)
                 ->individual($data['individual'] ?? false)

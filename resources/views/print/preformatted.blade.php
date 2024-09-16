@@ -346,9 +346,9 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                             <tr>
                                 <td colspan=6 class="underline center font-sm">
                                     {{
-                                        ($head = $employee->currentDeployment?->office?->head)->is($employee)
+                                        ($head = $employee->currentDeployment?->office?->head)?->is($employee)
                                             ? null
-                                            : $head->titled_name
+                                            : $head?->titled_name
                                     }}
                                 </td>
                             </tr>
