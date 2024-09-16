@@ -7,6 +7,7 @@ use App\Filament\Superuser\Resources\ScannerResource\Pages;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\UsersRelationManager;
 use App\Models\Scanner;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;

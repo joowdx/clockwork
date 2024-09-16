@@ -5,12 +5,14 @@ namespace App\Filament\Superuser\Resources;
 use App\Enums\HolidayType;
 use App\Filament\Superuser\Resources\HolidayResource\Pages;
 use App\Models\Holiday;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class HolidayResource extends Resource
 {
@@ -65,7 +67,7 @@ class HolidayResource extends Resource
                         return Carbon::parse($get('date'))->lt(now());
                     }),
                 Forms\Components\Hidden::make('created_by')
-                    ->default(auth()->id()),
+                    ->default(Auth::id()),
             ]);
     }
 
