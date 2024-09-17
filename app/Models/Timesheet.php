@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -28,6 +29,7 @@ class Timesheet extends Model
 
     protected $casts = [
         'details' => 'json',
+        'certification' => 'object',
     ];
 
     protected string $span = 'full';
@@ -116,6 +118,90 @@ class Timesheet extends Model
         };
     }
 
+    public function certifyPeriod(string $period, ?User $user = null, string $level = null): void
+    {
+        $period = match($period) {
+            '1st' => 'first',
+            '2nd' => 'second',
+            'full' => 'full',
+            default => $period,
+        };
+
+        if (! in_array($period, ['first', 'second', 'full'])) {
+            throw new InvalidArgumentException("Argument \$period invalid.");
+        }
+
+        if (! in_array($level, ['supervisor', 'head'])) {
+            throw new InvalidArgumentException("Argument \$level invalid.");
+        }
+
+        if ($level && ! $user) {
+            throw new InvalidArgumentException("Argument \$user required for \$level.");
+        }
+
+        match($level) {
+            'supervisor', 'head' => $this->forceFill([
+                "certification->{$period}->{$level}->at" => now(),
+                "certification->{$period}->{$level}->name" => $user?->employee?->titled_name,
+                "certification->{$period}->{$level}->certificate" => $user?->signature?->certificateBase64,
+                "certification->{$period}->{$level}->password" => $user?->signature?->password ? encrypt($user?->signature?->password) : null,
+            ])->save(),
+
+            default => $this->forceFill([
+                "certification->{$period}->at" => now(),
+                "certification->{$period}->by" => $this->employee->titled_name,
+                "certification->{$period}->certificate" => $this->employee->signature?->certificateBase64,
+                "certification->{$period}->password" => $this->employee->signature?->password ? encrypt($this->employee->signature?->password) : null,
+            ])->save(),
+        };
+    }
+
+    public function certificationDetails(string $period = 'full', string|false|null $level = false): mixed
+    {
+        $period = match($period) {
+            '1st' => 'first',
+            '2nd' => 'second',
+            'full' => 'full',
+            default => $period,
+        };
+
+        if (! in_array($period, ['first', 'second', 'full'])) {
+            throw new InvalidArgumentException('Argument $period invalid.');
+        }
+
+        $details = $this->certification->{$period};
+
+        if ($level) {
+            if (! in_array($level, ['supervisor', 'head'])) {
+                throw new InvalidArgumentException('Argument $level invalid.');
+            }
+
+            return (object) [
+                'at' => Carbon::parse($details->{$level}->at),
+                'by' => $details->{$level}->name,
+                'certificate' => $details->{$level}->certificate,
+                'password' => $details->{$level}->key,
+            ];
+        }
+
+        return (object) [
+            'at' => Carbon::parse($details->at),
+            'by' => $details->by,
+            'supervisor' => [
+                'at' => Carbon::parse($details->supervisor?->at),
+                'name' => $details->supervisor?->name,
+                'certificate' => $details->supervisor?->certificate,
+                'password' => $details->supervisor?->key,
+            ],
+            'head' => [
+                'at' => Carbon::parse($details->head?->at),
+                'name' => $details->head?->name,
+                'certificate' => $details->head?->certificate,
+                'password' => $details->head?->key,
+            ],
+        ];
+    }
+
     public function days(): Attribute
     {
         return Attribute::make(
@@ -144,6 +230,42 @@ class Timesheet extends Model
             fn () => $this->{$this->getPeriod()}->map->punch->filter()->map(function ($timetable) {
                 return @collect($timetable)->filter->missed->count();
             })->sum()
+        );
+    }
+
+    public function certified(): Attribute
+    {
+        return Attribute::make(
+            function () {
+                return match(true) {
+                    $this->certified_first && $this->certified_second => '1st, 2nd',
+                    $this->certified_full => 'full',
+                    $this->certified_first => '1st',
+                    $this->certified_second => '2nd',
+                    default => null,
+                };
+            }
+        );
+    }
+
+    public function certifiedFirst(): Attribute
+    {
+        return Attribute::make(
+            fn () => @$this->certification?->first?->at && @$this->certification?->first?->by
+        );
+    }
+
+    public function certifiedSecond(): Attribute
+    {
+        return Attribute::make(
+            fn () => @$this->certification?->second?->at && @$this->certification?->second?->by
+        );
+    }
+
+    public function certifiedFull(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->certified_first && $this->certified_second || @$this->certification?->full?->at && @$this->certification?->full?->by
         );
     }
 
@@ -258,6 +380,62 @@ class Timesheet extends Model
         $to = ($to ? ($to instanceof Carbon ? $to : Carbon::parse($to)) : today())->endOfMonth();
 
         $query->whereBetween('month', [$from, $to]);
+    }
+
+    public function scopeCertified(Builder $builder, ?string $period = null, ?string $level = null): Builder
+    {
+        $period = match($period) {
+            '1st' => 'first',
+            '2nd' => 'second',
+            'full' => 'full',
+            default => $period,
+        };
+
+        if ($period && ! in_array($period, ['first', 'second', 'full'])) {
+            throw new InvalidArgumentException('Argument $period invalid.');
+        }
+
+        if ($level && ! in_array($level, ['supervisor', 'head'])) {
+            throw new InvalidArgumentException('Argument $level invalid.');
+        }
+
+        $certified = function (&$query, $period) use ($level) {
+            if ($level === null) {
+                return $query->orWhereNot("certification->{$period}->at", null)->orWhereNot("certification->{$period}->at", '');
+            }
+
+            return $query->orWhereNot("certification->{$period}->{$level}->at", null)->orWhereNot("certification->{$period}->{$level}->at", '');
+        };
+
+        $filter = function (&$query, $period) use ($certified) {
+            if ($period === null) {
+                $certified($query, 'first');
+
+                $certified($query, 'second');
+
+                $certified($query, 'full');
+
+                return $query;
+            }
+
+            if ($period === 'full') {
+                $query->orWhere(function ($query) use ($certified) {
+                    $certified($query, 'full');
+                });
+
+                $query->orWhere(function ($query) use ($certified) {
+                    $certified($query, 'first');
+
+                    $certified($query, 'second');
+                });
+
+                return $query;
+            }
+
+            return $certified($query, $period);
+        };
+
+        return $builder->where(fn ($query) => $filter($query, $period));
     }
 
     public function prunable(): Builder

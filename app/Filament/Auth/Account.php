@@ -148,7 +148,8 @@ class Account extends EditProfile
                                                                     }),
                                                                 TextInput::make('password')
                                                                     ->label('Password')
-                                                                    ->hint('Optional')
+                                                                    ->markAsRequired()
+                                                                    ->rule('required')
                                                                     ->password()
                                                                     ->rule(fn (Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
                                                                         if (empty($value) || empty($get('tmp'))) {
@@ -169,16 +170,11 @@ class Account extends EditProfile
 
                                                                 $set('password', $data['password']);
                                                             }),
-                                                        Action::make('password')
-                                                            ->hidden(fn (Signature $signature, mixed $state) => empty($state) || isset($signature->password))
-                                                            ->requiresConfirmation()
-                                                            ->modalIcon('heroicon-o-arrow-up-tray')
-                                                            ->modalDescription('You can optionally provide your password here.'),
                                                         Action::make('Download')
                                                             ->hidden(fn (string $operation, mixed $state) => $operation === 'create' || empty($state))
                                                             ->action(fn (Signature $signature) => Storage::download($signature->certificate, $signature->signaturable->name)),
                                                     ]),
-                                                Hidden::make('certificate_password'),
+                                                Hidden::make('password'),
                                             ])
                                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data) {
                                                 if (str($data['specimen'])->startsWith('livewire-tmp/')) {

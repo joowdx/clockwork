@@ -47,6 +47,18 @@ class Settings extends Page
         return $form
             ->statePath('data')
             ->schema([
+                Forms\Components\Section::make('Application')
+                    ->columns(5)
+                    ->schema([
+                        Forms\Components\TextInput::make('timesheet_verification')
+                            ->columnSpan(2)
+                            ->dehydrateStateUsing(fn (?string $state) => $state ?: null)
+                            ->hint('minutes')
+                            ->hintIcon('heroicon-o-question-mark-circle')
+                            ->hintIconTooltip('Number of minutes before the timesheet is locked and finalized after submission.')
+                            ->default(15)
+                            ->required(),
+                    ]),
                 Forms\Components\Section::make('Role Aliases')
                     ->columns(5)
                     ->schema(
