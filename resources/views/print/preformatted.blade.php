@@ -22,7 +22,7 @@ if (! $preview) {
 
     $office = $user?->employee?->currentDeployment?->office;
 
-    $logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
+    $logo = (@$misc['officer']) && $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
         ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
         : null;
 
@@ -31,6 +31,28 @@ if (! $preview) {
 
 $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Carbon::parse($date)->day)->toArray()) : "$from-$to") .
     Carbon::parse($month)->format(' F Y');
+
+function hasNextDay(array $timelogs, array $current) {
+    $cf = in_array(array_key_first($current), ['p2', 'p4']);
+    $pe = in_array(array_key_last($timelogs), ['p1', 'p3']);
+
+    return (@$timelogs['p1'] || @$timelogs['p3']) &&
+        !(@$timelogs['p2'] || @$timelogs['p4']) &&
+        (@$current['p2'] || @$current['p4']) &&
+        !(@$current['p1'] || @$current['p3']) ||
+        ($cf || $pe);
+}
+
+function hasPreviousDay(array $timelogs, array $current) {
+    $cl = in_array(array_key_last($current), ['p1', 'p3']);
+    $nf = in_array(array_key_first($timelogs), ['p2', 'p4']);
+
+    return (@$timelogs['p2'] || @$timelogs['p4']) &&
+        !(@$timelogs['p1'] || @$timelogs['p3']) &&
+        (@$current['p1'] || @$current['p3']) &&
+        !(@$current['p2'] || @$current['p4']) ||
+        ($cl || $nf);
+}
 ?>
 
 @extends('print.layout')
@@ -52,7 +74,7 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                 <div
                     @style([
                         'width:100%',
-                        'border-width:1pt' => ! $preview,
+                        'border-width:1pt' => ! ($preview || $single),
                         'border-style:none dashed none none' => $side === 0,
                         'border-style:none none none dashed' => $side === 1,
                     ])
@@ -84,7 +106,7 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                                             src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/'.$deployed->logo))) }}"
                                             alt="{{ $deployed->code }}"
                                             class="absolute"
-                                            style="width:36pt;opacity:0.2;top:30pt;left:0;"
+                                            style="width:36pt;opacity:0.2;top:28pt;left:0;"
                                         >
                                     @endif
                                     @if ($seal)
@@ -92,7 +114,7 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                                             src="data:image/png;base64,{{ $seal }}"
                                             alt="davao-del-sur"
                                             class="absolute"
-                                            style="width:36pt;opacity:0.2;top:30pt;right:0;"
+                                            style="width:36pt;opacity:0.2;top:28pt;right:0;"
                                         >
                                     @endif
                                 </td>
@@ -104,20 +126,17 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                             </tr>
                             <tr>
                                 <td class="relative center bahnschrift font-xl bold" colspan=6>
-                                    <span class="absolute nowrap" style="top:8pt;left:0;right:0;margin:auto;">
+                                    <span class="absolute nowrap" style="top:6pt;left:0;right:0;margin:auto;">
                                         DAILY TIME RECORD
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td class="relative center font-xs bold" colspan=6>
-                                    <span class="absolute" style='font-variant-ligatures:normal;font-variant-caps:normal;orphans:2;widows:2;-webkit-text-stroke-width:0px;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;top:15pt;left:0;right:0;margin:auto;'>
-                                        -----o0o-----
+                                    <span class="absolute" style='font-variant-ligatures:normal;font-variant-caps:normal;orphans:2;widows:2;-webkit-text-stroke-width:0px;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;top:8pt;left:0;right:0;margin:auto;'>
+                                        {{-- -----o0o----- --}}
                                     </span>
                                 </td>
-                            </tr>
-                            <tr>
-                                <td colspan=6></td>
                             </tr>
                         @endif
                         <tr>
@@ -176,6 +195,63 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Arrival</td>
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Departure</td>
                         </tr>
+                        <tr class="font-sm">
+                            @php($date = Carbon::parse($month)->subDay())
+
+                            @php($timelogs = $raw($employee->timelogs, $date))
+
+                            @php($p = hasPreviousDay($raw($employee->timelogs, $date->clone()->addDay()), $timelogs))
+
+                            <td class="border courier right bold" style="padding-right:14pt;padding-top:1pt;opacity:0.5;">
+                                @if ($from === 1 && $period !== 'dates' && $p)
+                                    <small style="font-size:6pt;">
+                                        {{ $date->format('M') }}
+                                    </small>
+                                    {{ $date->day }}
+                                @else
+                                    --
+                                @endif
+                            </td>
+
+                            @if ($from === 1 && $period !== 'dates')
+                                @if ($p)
+                                    @foreach (['p1', 'p2', 'p3', 'p4'] as $punch)
+                                        <td
+                                            width=58
+                                            @class([
+                                                'relative border nowrap',
+                                                'courier' => !$preview,
+                                                'font-mono' => $preview,
+                                                'invalid' => @$timelogs[$punch] === null && (@$misc['highlights'] ?? false),
+                                            ])
+                                            @style([
+                                                'padding-top:1pt;opacity:0.5;',
+                                                $preview ? 'padding-right:5pt' : 'padding-left:5pt',
+                                                'background-color:' . (@$timelogs[$punch]['background'] ?? 'transparent'),
+                                                'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
+                                            ])
+                                        >
+                                            @if (@$timelogs[$punch]['recast'])
+                                                <sup @style([
+                                                    'font-size:6pt',
+                                                    'position:absolute',
+                                                    'top:2pt',
+                                                    'left:2pt',
+                                                ])>
+                                                    ‽
+                                                </sup>
+                                            @endif
+                                            {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
+                                        </td>
+                                    @endforeach
+                                    <td class="border"></td>
+                                @else
+                                    <td class="border" colspan="5"></td>
+                                @endif
+                            @else
+                                <td class="border" colspan="5"></td>
+                            @endif
+                        </tr>
                         @for ($day = 1; $day <= 31; $day++)
                             @php($date = Carbon::parse($month)->setDay($day))
 
@@ -183,17 +259,21 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
 
                             @php($holiday = Holiday::search($date, false))
 
+                            @php($p = ($day === $from - 1) && hasPreviousDay($raw($employee->timelogs, $date->clone()->addDay()), $timelogs))
+
+                            @php($n = ($day === $to + 1 && $date->day === $day) && hasNextDay($raw($employee->timelogs, $date->clone()->subDay()), $timelogs))
+
                             @if (
-                                $from <= $day && $day <= $to ||
-                                $period === 'dates' && in_array($date->format('Y-m-d'), $dates) ||
-                                $date->isWeekend() ||
-                                $holiday
+                                ($from <= $day && $day <= $to) ||
+                                ($p && $day === $from - 1 || $n && $day === $to + 1 && $date->day === $day) ||
+                                ($period === 'dates' && in_array($date->format('Y-m-d'), $dates)) ||
+                                (($date->isWeekend() || $holiday) && $from <= $day && $day <= $to)
                             )
                                 <tr
                                     @class([
-                                        'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true),
-                                        'holiday' => $holiday && (@$misc['holidays'] ?? true),
-                                        'absent' => array_filter($timelogs) == false && (@$misc['highlights'] ?? true),
+                                        'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ($from <= $day && $day <= $to),
+                                        'holiday' => $holiday && (@$misc['holidays'] ?? true) && ($from <= $day && $day <= $to),
+                                        'absent' => array_filter($timelogs) == false && (@$misc['highlights'] ?? false) && ($from <= $day && $day <= $to),
                                         'font-sm' => true
                                     ])
                                 >
@@ -202,57 +282,86 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                                             'border right bold',
                                             $preview ? 'font-mono' : 'courier',
                                         ])
-                                        style="padding-right:14pt;padding-top:1pt;"
+                                        @style([
+                                            'padding-right:14pt;padding-top:1pt;',
+                                            'opacity:0.5' => ! ($from <= $day && $day <= $to),
+                                        ])
                                     >
                                         {{ $day }}
                                     </td>
 
                                     @if (array_filter($timelogs))
-                                        @foreach (['p1', 'p2', 'p3', 'p4'] as $punch)
-                                            <td
-                                                width=58
-                                                @class([
-                                                    'relative border nowrap',
-                                                    'courier' => !$preview,
-                                                    'font-mono' => $preview,
-                                                    'invalid' => @$timelogs[$punch] === null && (@$misc['highlights'] ?? true),
-                                                ])
-                                                @style([
-                                                    'padding-top:1pt',
-                                                    $preview ? 'padding-right:5pt' : 'padding-left:5pt',
-                                                    'background-color:' . (@$timelogs[$punch]['background'] ?? 'transparent'),
-                                                    'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
-                                                ])
-                                            >
-                                                @if (@$timelogs[$punch]['recast'])
-                                                    <sup @style([
-                                                        'font-size:6pt',
-                                                        'position:absolute',
-                                                        'top:2pt',
-                                                        'left:2pt',
-                                                    ])>
-                                                        ‽
-                                                    </sup>
-                                                @endif
-                                                {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
-                                            </td>
-                                        @endforeach
-                                    @elseif($date->isWeekend() && @($misc['weekends'] ?? true) || $holiday && (@$misc['holidays'] ?? true))
-                                        <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
+                                        @if (($from <= $day && $day <= $to) || $p || $n)
+                                            @foreach (['p1', 'p2', 'p3', 'p4'] as $punch)
+                                                <td
+                                                    width=58
+                                                    @class([
+                                                        'relative border nowrap',
+                                                        'courier' => !$preview,
+                                                        'font-mono' => $preview,
+                                                        'invalid' => @$timelogs[$punch] === null && (@$misc['highlights'] ?? false),
+                                                    ])
+                                                    @style([
+                                                        'padding-top:1pt',
+                                                        $preview ? 'padding-right:5pt' : 'padding-left:5pt',
+                                                        'background-color:' . (@$timelogs[$punch]['background'] ?? 'transparent'),
+                                                        'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
+                                                        'opacity:0.5' => ! ($from <= $day && $day <= $to),
+                                                    ])
+                                                >
+                                                    @if (@$timelogs[$punch]['recast'])
+                                                        <sup @style([
+                                                            'font-size:6pt',
+                                                            'position:absolute',
+                                                            'top:2pt',
+                                                            'left:2pt',
+                                                        ])>
+                                                            ‽
+                                                        </sup>
+                                                    @endif
+                                                    {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
+                                                </td>
+                                            @endforeach
+                                            <td class="border"></td>
+                                        @elseif($day === $from -1 || $day === $to + 1)
+                                            <td class="border" colspan="5"></td>
+                                        @else
+                                            <td class="border"></td>
+                                            <td class="border"></td>
+                                            <td class="border"></td>
+                                            <td class="border"></td>
+                                            <td class="border"></td>
+                                        @endif
+                                    @elseif($from <= $day && $day <= $to && ($date->isWeekend() && @($misc['weekends'] ?? true) || $holiday && (@$misc['holidays'] ?? true)))
+                                        <td
+                                            colspan=4
+                                            @class([
+                                                'border cascadia nowrap',
+                                                 $preview ? 'text-left px-4' : 'center'
+                                            ])
+                                            @style([
+                                                'overflow:hidden;text-overflow:ellipsis;',
+                                                'opacity:0.5' => ! ($from <= $day && $day <= $to),
+                                            ])
+                                        >
                                             {{ $holiday?->name ?? $date->format('l') }}
                                         </td>
+                                        <td class="border"></td>
+                                    @elseif(!($from <= $day && $day <= $to))
+                                        <td class="border" colspan="4"></td>
+                                        <td class="border"></td>
                                     @else
                                         <td class="border"></td>
                                         <td class="border"></td>
                                         <td class="border"></td>
                                         <td class="border"></td>
+                                        <td class="border"></td>
                                     @endif
-                                    <td class="border"> </td>
                                 </tr>
                             @elseif(!$preview)
                                 <tr>
                                     <td class="border right courier bold font-sm"
-                                        style="padding-right:14pt;padding-top:1pt;"
+                                        style="padding-right:14pt;padding-top:1pt;opacity:0.5;"
                                     >
                                         &nbsp; {{  $day === $date->day ? $day : '--' }}
                                     </td>
@@ -262,6 +371,63 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                                 </tr>
                             @endif
                         @endfor
+                        <tr class="font-sm">
+                            @php($date = Carbon::parse($month)->addMonth()->startOfMonth())
+
+                            @php($timelogs = $raw($employee->timelogs, $date))
+
+                            @php($n = $date->clone()->subDay()->day === 31 && hasNextDay($raw($employee->timelogs, $date->clone()->subDay()), $timelogs))
+
+                            <td class="border courier right bold" style="padding-right:14pt;padding-top:1pt;opacity:0.5;">
+                                @if ($to === 31 && $period !== 'dates' && $n)
+                                    <small style="font-size:6pt;">
+                                        {{ $date->format('M') }}
+                                    </small>
+                                    {{ $date->day }}
+                                @else
+                                    --
+                                @endif
+                            </td>
+
+                            @if ($n && $to === 31 && $period !== 'dates')
+                                @if ($n)
+                                    @foreach (['p1', 'p2', 'p3', 'p4'] as $punch)
+                                        <td
+                                            width=58
+                                            @class([
+                                                'relative border nowrap',
+                                                'courier' => !$preview,
+                                                'font-mono' => $preview,
+                                                'invalid' => @$timelogs[$punch] === null && (@$misc['highlights'] ?? false),
+                                            ])
+                                            @style([
+                                                'padding-top:1pt;opacity:0.5;',
+                                                $preview ? 'padding-right:5pt' : 'padding-left:5pt',
+                                                'background-color:' . (@$timelogs[$punch]['background'] ?? 'transparent'),
+                                                'text-color:' . (@$timelogs[$punch]['foreground'] ?? 'black'),
+                                            ])
+                                        >
+                                            @if (@$timelogs[$punch]['recast'])
+                                                <sup @style([
+                                                    'font-size:6pt',
+                                                    'position:absolute',
+                                                    'top:2pt',
+                                                    'left:2pt',
+                                                ])>
+                                                    ‽
+                                                </sup>
+                                            @endif
+                                            {{ substr($timelogs[$punch]['time'] ?? '', 0, strrpos($timelogs[$punch]['time'] ?? '', ":")) }}
+                                        </td>
+                                    @endforeach
+                                    <td class="border"></td>
+                                @else
+                                    <td class="border" colspan="5"></td>
+                                @endif
+                            @else
+                                <td class="border" colspan="5"></td>
+                            @endif
+                        </tr>
                         @if (! $preview)
                             <tr style="height:10pt"> </tr>
                             <tr>
@@ -355,9 +521,6 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                             <tr>
                                 <td class="bahnschrift-light top center font-xs" colspan=6>Department Head</td>
                             </tr>
-                            <tr>
-                                <td colspan=6></td>
-                            </tr>
                             @if ($size === 'legal')
                                 <tr>
                                     <td colspan=6></td>
@@ -389,15 +552,28 @@ $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Ca
                             </tr>
                             <tr>
                                 <td colspan=3></td>
-                                <td class="relative underline font-xs center bottom bold courier nowrap" colspan=3 style="color:#0007;border-color:#0007!important;">
-                                    @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
-                                    {{ $user?->name }}
+                                <td
+                                    colspan=3
+                                    @class([
+                                        'relative font-xs center bottom bold courier nowrap',
+                                        'underline' => @$misc['officer'] ?? true
+                                    ])
+                                    @style([
+                                        'color:#0007;border-color:#0007!important;' => @$misc['officer'] ?? true
+                                    ])
+                                >
+                                    @if (@$misc['officer'] ?? true)
+                                        @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
+                                        {{ $user?->name }}
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan=3> </td>
                                 <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
-                                    {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
+                                    @if (@$misc['officer'] ?? true)
+                                        {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
+                                    @endif
 
                                     <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">
                                         {{ $time->format('Y-m-d|H:i') }}

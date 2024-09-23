@@ -15,7 +15,7 @@ if (! $preview) {
 
     $office = $user?->employee?->currentDeployment?->office;
 
-    $logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
+    $logo = (@$misc['officer'] ?? true) && $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
         ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
         : null;
 
@@ -45,7 +45,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                 <div
                     @style([
                         'width:100%',
-                        'border-width:1pt' => ! $preview,
+                        'border-width:1pt' => ! ($preview || $single),
                         'border-style:none dashed none none' => $side === 0,
                         'border-style:none none none dashed' => $side === 1,
                     ])
@@ -187,7 +187,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                                     @class([
                                         'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
                                         'holiday' => ($holiday && (@$misc['holidays'] ?? true)),
-                                        'absent' => $timetable?->absent && (@$misc['highlights'] ?? true),
+                                        'absent' => $timetable?->absent && (@$misc['highlights'] ?? true) && (@$misc['absences'] ?? true),
                                         // 'invalid' => $timetable?->invalid,
                                         'font-sm' => true
                                     ])
@@ -422,15 +422,28 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                             </tr>
                             <tr>
                                 <td colspan=3></td>
-                                <td class="relative underline font-xs center bottom bold courier nowrap" colspan=3 style="color:#0007;border-color:#0007!important;">
-                                    @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
-                                    {{ $user?->name }}
+                                <td
+                                    colspan=3
+                                    @class([
+                                        'relative font-xs center bottom bold courier nowrap',
+                                        'underline' => @$misc['officer'] ?? true
+                                    ])
+                                    @style([
+                                        'color:#0007;border-color:#0007!important;' => @$misc['officer'] ?? true
+                                    ])
+                                >
+                                    @if (@$misc['officer'] ?? true)
+                                        @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
+                                        {{ $user?->name }}
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan=3> </td>
                                 <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
-                                    {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
+                                    @if (@$misc['officer'] ?? true)
+                                        {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
+                                    @endif
 
                                     <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">
                                         {{ $time->format('Y-m-d|H:i') }}

@@ -47,9 +47,7 @@ class ExportAttendance implements Responsable
 
     private ?User $user = null;
 
-    private bool $signature = false;
-
-    private ?Closure $password = null;
+    private array|bool|null $signature = null;
 
     private bool $current = false;
 
@@ -84,9 +82,7 @@ class ExportAttendance implements Responsable
         bool $strict = false,
         string $size = 'folio',
         ?User $user = null,
-        bool $signature = false,
-        #[SensitiveParameter]
-        ?string $password = null,
+        array|bool|null $signature = false,
     ): StreamedResponse {
         return $this->office($office)
             ->dates($dates)
@@ -100,7 +96,6 @@ class ExportAttendance implements Responsable
             ->size($size)
             ->user($user)
             ->signature($signature)
-            ->password($password)
             ->download();
     }
 
@@ -111,16 +106,9 @@ class ExportAttendance implements Responsable
         return $this;
     }
 
-    public function signature(bool $signature = false): static
+    public function signature(array|bool|null $signature = false): static
     {
         $this->signature = $signature;
-
-        return $this;
-    }
-
-    public function password(#[SensitiveParameter] ?string $password): static
-    {
-        $this->password = is_string($password) ? fn (): string => $password : $password;
 
         return $this;
     }
@@ -236,15 +224,11 @@ class ExportAttendance implements Responsable
 
     public function download(): StreamedResponse|BinaryFileResponse
     {
-        if (! $this->signature && ! is_null($this->password)) {
-            throw new InvalidArgumentException('Signature is required when password is provided');
-        }
-
         $name = $this->filename().'.pdf';
 
         $headers = ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 
-        $downloadable = match ($this->password) {
+        $downloadable = match ($this->signature === true ?: @$this->signature['digital']) {
             null => $this->pdf(),
             default => $this->signed()
         };
@@ -262,7 +246,9 @@ class ExportAttendance implements Responsable
 
         $signature = $this->user->signature;
 
-        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$signature->certificate), ($this->password)());
+        $certificate = (new ManageCert)
+            ->setPreservePfx()
+            ->fromPfx(storage_path('app/'.$signature->certificate), $this->user->signature->password);
 
         try {
             return (new SignaturePdf(sys_get_temp_dir()."/$name", $certificate))->signature();
@@ -288,9 +274,9 @@ class ExportAttendance implements Responsable
             'strict' => $this->strict,
             'current' => $this->current,
             'user' => $this->user,
-            'signature' => $this->signature,
-            'signed' => (bool) $this->password,
             'size' => $this->size,
+            'signature' => $this->signature === true ?: @$this->signature['electronic'],
+            'signed' => $this->signature === true ?: @$this->signature['digital'],
         ];
 
         $attendance = Pdf::view($this->transmittal === true ? 'print.transmittal.attendance' : 'print.attendance', $args)

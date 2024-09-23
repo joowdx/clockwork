@@ -120,7 +120,7 @@ class Profile extends EditProfile
                                                         Action::make('upload')
                                                             ->requiresConfirmation()
                                                             ->modalIcon('heroicon-o-arrow-up-tray')
-                                                            ->modalDescription('Upload a valid certificate file. You will be asked to enter your certificate\'s password every time you sign a document.')
+                                                            ->modalDescription('Upload a valid certificate file.')
                                                             ->form([
                                                                 FileUpload::make('tmp')
                                                                     ->disk('local')
@@ -143,7 +143,8 @@ class Profile extends EditProfile
                                                                     }),
                                                                 TextInput::make('password')
                                                                     ->label('Password')
-                                                                    ->hint('Optional')
+                                                                    ->markAsRequired()
+                                                                    ->rule('required')
                                                                     ->password()
                                                                     ->rule(fn (Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
                                                                         if (empty($value) || empty($get('tmp'))) {
@@ -173,7 +174,7 @@ class Profile extends EditProfile
                                                             ->hidden(fn (string $operation, mixed $state) => $operation === 'create' || empty($state))
                                                             ->action(fn (Signature $signature) => Storage::download($signature->certificate, $signature->signaturable->name)),
                                                     ]),
-                                                Hidden::make('certificate_password'),
+                                                Hidden::make('password'),
                                             ])
                                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data) {
                                                 if (str($data['specimen'])->startsWith('livewire-tmp/')) {

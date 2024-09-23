@@ -71,7 +71,6 @@ class Employee extends \Filament\Pages\Auth\Login
             ->required()
             ->reactive()
             ->autofocus()
-            ->extraInputAttributes(['tabindex' => 1])
             ->hintAction(fn (?string $state) => $this->getPasswordSetupAction($state))
             ->afterStateUpdated(fn (Set $set) => $set('password', null))
             ->getSearchResultsUsing(function (string $search) {
@@ -89,7 +88,12 @@ class Employee extends \Filament\Pages\Auth\Login
             ->required(false)
             ->markAsRequired()
             ->rule('required')
-            ->extraInputAttributes(['tabindex' => 2])
+            ->visible(fn (Get $get) => ($employee = \App\Models\Employee::find($get('id'))) && ! empty($employee->password));
+    }
+
+    protected function getRememberFormComponent(): Component
+    {
+        return parent::getRememberFormComponent()
             ->visible(fn (Get $get) => ($employee = \App\Models\Employee::find($get('id'))) && ! empty($employee->password));
     }
 
@@ -213,13 +217,6 @@ class Employee extends \Filament\Pages\Auth\Login
             'data.id' => $setup ? __('You may need to setup your password first.') : __('filament-panels::pages/auth/login.messages.failed'),
             'data.username' => __('filament-panels::pages/auth/login.messages.failed'),
         ]);
-    }
-
-    protected function getRememberFormComponent(): Component
-    {
-        return parent::getRememberFormComponent()
-            ->visible(fn (Get $get) => ($employee = \App\Models\Employee::find($get('id'))) && ! empty($employee->password))
-            ->extraInputAttributes(['tabindex' => 3]);
     }
 
     protected function getCredentialsFromFormData(array $data): array

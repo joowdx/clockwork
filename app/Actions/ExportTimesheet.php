@@ -36,9 +36,7 @@ class ExportTimesheet implements Responsable
 
     private ?User $user = null;
 
-    private bool $signature = false;
-
-    private ?Closure $password = null;
+    private array|bool|null $signature = null;
 
     private string $period = 'full';
 
@@ -83,9 +81,7 @@ class ExportTimesheet implements Responsable
         string $size = 'folio',
         int $transmittal = 0,
         false|string|null $grouping = 'offices',
-        bool $signature = false,
-        #[SensitiveParameter]
-        ?string $password = null,
+        array|bool|null $signature = null,
         array $misc = [],
     ): StreamedResponse {
         return $this->employee($employee)
@@ -97,16 +93,8 @@ class ExportTimesheet implements Responsable
             ->transmittal($transmittal)
             ->grouping($grouping)
             ->signature($signature)
-            ->password($password)
             ->misc($misc)
             ->download();
-    }
-
-    public function password(#[SensitiveParameter] ?string $password): static
-    {
-        $this->password = is_string($password) ? fn (): string => $password : $password;
-
-        return $this;
     }
 
     public function user(?User $user = null): static
@@ -116,7 +104,7 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
-    public function signature(bool $signature = false): static
+    public function signature(array|bool|null $signature = null): static
     {
         $this->signature = $signature;
 
@@ -218,12 +206,8 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
-    public function download(): BinaryFileResponse|StreamedResponse
+    public function download(bool $stream = false): BinaryFileResponse|StreamedResponse
     {
-        if (! $this->signature && ! is_null($this->password)) {
-            throw new InvalidArgumentException('Signature is required when password is provided');
-        }
-
         if ($this->format === 'default' && in_array($this->period, ['regular', 'overtime'])) {
             throw new InvalidArgumentException('Default format is not supported for regular and overtime period');
         }
@@ -284,15 +268,23 @@ class ExportTimesheet implements Responsable
                 'timelogs' => function ($query) use ($period, $from, $to) {
                     [$year, $month] = explode('-', $this->month);
 
-                    $query->whereYear('time', $year)->whereMonth('time', $month);
+                    $query->where(function ($query) use ($year, $month, $period, $from, $to) {
+                        $query->whereYear('time', $year)->whereMonth('time', $month);
 
-                    match ($period) {
-                        '1st' => $query->firstHalf(),
-                        '2nd' => $query->secondHalf(),
-                        'dates' => $query->customDates($this->dates),
-                        'range' => $query->customRange($from, $to),
-                        default => $query,
-                    };
+                        match ($period) {
+                            '1st' => $query->firstHalf(),
+                            '2nd' => $query->secondHalf(),
+                            'dates' => $query->customDates($this->dates),
+                            'range' => $query->customRange($from, $to),
+                            default => $query,
+                        };
+                    });
+
+                    $query->orWhere(function ($query) use ($year, $month, $from, $to) {
+                        $query->whereDate('time', Carbon::create($year, $month, $from)->subDay());
+
+                        $query->orWhereDate('time', Carbon::create($year, $month, $to)->addDay());
+                    });
 
                     $query->reorder()->orderBy('time');
                 },
@@ -353,16 +345,18 @@ class ExportTimesheet implements Responsable
 
         match ($exportable) {
             null => $this->employee->each(function ($employee) use ($zip) {
-                $content = match ($this->password) {
-                    null => $this->pdf([$employee]), default => $this->signed([$employee])
+                $content = match ($this->signature === true ?: @$this->signature['digital']) {
+                    true => $this->signed([$employee]),
+                    default => $this->pdf([$employee]),
                 };
 
                 $zip->addFromString($employee->name.'.pdf', $content);
             }),
 
             default => $exportable->each(function ($timesheet) use ($zip) {
-                $content = match ($this->password) {
-                    null => $this->pdf([$timesheet]), default => $this->signed([$timesheet])
+                $content = match ($this->signature === true ?: @$this->signature['digital']) {
+                    true => $this->signed([$timesheet]),
+                    default => $this->pdf([$timesheet]),
                 };
 
                 $zip->addFromString($timesheet->employee->name.'.pdf', $content);
@@ -380,9 +374,9 @@ class ExportTimesheet implements Responsable
 
         $headers = ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 
-        $downloadable = match ($this->password) {
-            null => $this->pdf($exportable),
-            default => $this->signed($exportable),
+        $downloadable = match ($this->signature === true ?: @$this->signature['digital']) {
+            true => $this->signed($exportable),
+            default => $this->pdf($exportable),
         };
 
         return response()->streamDownload(fn () => print ($downloadable), $name, $headers);
@@ -410,13 +404,11 @@ class ExportTimesheet implements Responsable
             $args = [
                 'timesheets' => $exportable,
                 'size' => $this->size,
-                'signature' => $this->signature,
             ];
         } elseif ($this->format === 'preformatted') {
             $args = [
                 'employees' => $this->employee,
                 'size' => $this->size,
-                'signature' => $this->signature,
                 'month' => $this->month,
                 'from' => $period !== 'dates' ? $from : null,
                 'to' => $period !== 'dates' ? $to : null,
@@ -453,7 +445,14 @@ class ExportTimesheet implements Responsable
             default => 'print.default',
         };
 
-        $export = Pdf::view($view, [...$args, 'misc' => $this->misc, 'single' => $this->single, 'user' => $this->user ?? Auth::user(), 'signed' => (bool) $this->password])
+        $export = Pdf::view($view, [
+                ...$args,
+                'user' => $this->user ?? Auth::user(),
+                'misc' => $this->misc,
+                'single' => $this->single,
+                'signature' => $this->signature === true ?: @$this->signature['electronic'],
+                'signed' => $this->signature === true ?: @$this->signature['digital'],
+            ])
             ->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
         match ($this->size) {
@@ -467,12 +466,14 @@ class ExportTimesheet implements Responsable
                 'format' => $this->format,
                 'copies' => $this->transmittal,
                 'user' => $this->user ?? Auth::user(),
-                'signed' => (bool) $this->password,
+                'signed' => $this->signature === true ?: @$this->signature['digital'],
                 'month' => $this->month,
                 'from' => $args['from'] ?? $from ?? null,
                 'to' => $args['to'] ?? $to ?? null,
                 'dates' => $args['dates'] ?? $this->dates,
                 'period' => $args['period'] ?? $period,
+                'signature' => $this->signature === true ?: @$this->signature['electronic'],
+                'signed' => $this->signature === true ?: @$this->signature['digital'],
                 'employees' => $this->format === 'csc'
                     ? EloquentCollection::make(collect($exportable)->pluck('employee'))
                     : $args['employees'],
@@ -511,7 +512,9 @@ class ExportTimesheet implements Responsable
 
         $signature = $this->user->signature;
 
-        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$signature->certificate), ($this->password)());
+        $certificate = (new ManageCert)
+            ->setPreservePfx()
+            ->fromPfx(storage_path('app/'.$signature->certificate), $this->user->signature->password);
 
         try {
             return (new SignaturePdf(sys_get_temp_dir()."/$name", $certificate))->signature();

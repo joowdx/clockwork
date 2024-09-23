@@ -100,8 +100,10 @@ class ExportAttendanceAction extends Action
                 ->current($data['current'])
                 ->size($data['size'])
                 ->user($data['user'] ? User::find($data['user']) : user())
-                ->signature($data['electronic_signature'])
-                ->password($data['digital_signature'] ? $data['password'] : null)
+                ->signature([
+                    'electronic' => @$data['electronic_signature'],
+                    'digital' => @$data['digital_signature'],
+                ])
                 ->transmittal($this->transmittal ? true : ($data['transmittal'] ?? false))
                 ->download();
         } catch (ProcessFailedException $exception) {
@@ -386,18 +388,6 @@ class ExportAttendanceAction extends Action
                                             : 'your';
 
                                         return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
-                                    }
-                                }),
-                            TextInput::make('password')
-                                ->password()
-                                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature') && ($get('user') ? User::find($get('user')) : user())->signature->certificate)
-                                ->markAsRequired(fn (Get $get) => $get('digital_signature'))
-                                ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
-                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                    $user = $get('user') ? User::find($get('user')) : user();
-
-                                    if ($user->signature->certificate !== null && ! $user?->signature->verify($value)) {
-                                        $fail('The password is incorrect');
                                     }
                                 }),
                         ]),

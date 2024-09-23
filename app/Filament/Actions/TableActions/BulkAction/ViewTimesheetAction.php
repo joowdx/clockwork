@@ -98,7 +98,7 @@ class ViewTimesheetAction extends BulkAction
                             }
                         });
                     } else {
-                        $query->whereBetween('time', [$from, $to]);
+                        $query->whereBetween('time', [$from->subDay(), $to->addDay()]);
                     }
                 };
 

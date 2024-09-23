@@ -2,12 +2,15 @@
 
 namespace App\Filament\Manager\Resources;
 
+use App\Filament\Actions\TableActions\CertifyTimesheetAction;
+use App\Filament\Actions\TableActions\ViewTimesheetAction;
 use App\Filament\Filters\OfficeFilter;
 use App\Filament\Filters\StatusFilter;
 use App\Filament\Manager\Resources\TimesheetResource\Pages;
 use App\Filament\Manager\Resources\TimesheetResource\RelationManagers;
 use App\Models\Employee;
 use App\Models\Timesheet;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,6 +19,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class TimesheetResource extends Resource
 {
@@ -34,13 +38,27 @@ class TimesheetResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->whereHas('employee'))
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->with(['employee', 'timetables'])->whereHas('employee');
+
+                $query->when(Filament::getCurrentPanel()->getId() === 'director', function ($query) {
+                    $query->whereHas('employee.offices', function (Builder $query) {
+                        $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
+
+                        $query->where('deployment.current', true);
+                    });
+                });
+
+                $query->certified();
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('employee.name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employee.status')
+                    ->label('Status')
                     ->limit(24)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->getStateUsing(function (Timesheet $record): string {
                         return str($record->employee->status?->value)
                             ->title()
@@ -50,6 +68,7 @@ class TimesheetResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('employee.offices.code')
                     ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->formatStateUsing(function (Timesheet $record) {
                         $offices = $record->employee->offices->map(function ($office) {
                             return str($office->code)
@@ -62,11 +81,50 @@ class TimesheetResource extends Resource
 
                         return str($offices)->toHtmlString();
                     }),
-                Tables\Columns\TextColumn::make('month'),
+                Tables\Columns\TextColumn::make('month')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('employee.uid')
                     ->label('UID')
                     ->searchable()
+                    ->toggleable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('days'),
+                Tables\Columns\TextColumn::make('timetables_count')
+                    ->toggleable()
+                    ->label('Absences')
+                    ->counts(['timetables' => fn ($query) => $query->where('absent', true)]),
+                Tables\Columns\TextColumn::make('timetables_sum_undertime')
+                    ->toggleable()
+                    ->label('Undertime')
+                    ->sum('timetables', 'undertime'),
+                Tables\Columns\TextColumn::make('timetables_sum_overtime')
+                    ->toggleable()
+                    ->label('Overtime')
+                    ->sum('timetables', 'overtime'),
+                Tables\Columns\TextColumn::make('missed')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('certified')
+                    ->toggleable()
+                    ->state(fn (Timesheet $record) => ucfirst($record->certified))
+                    ->placeholder(str('<i>(none)</i>')->toHtmlString())
+                    ->tooltip(function (Timesheet $record) {
+                        if ($record->certified_first && $record->certified_second) {
+                            $user = $record->certification?->first->by;
+
+                            if ($user !== $record->certification?->second->by) {
+                                $user .= " and {$record->certification?->second->by} respectively";
+                            }
+
+                            return "1st and 2nd half of the month is certified by $user.";
+                        }
+
+                        return match(true) {
+                            $record->certified_first => "1st half of the month is certified by {$record->certification?->first->by}.",
+                            $record->certified_second => "2nd half of the month is certified by {$record->certification?->second->by}.",
+                            $record->certified_full => "Full month is certified by {$record->certification?->full->by}.",
+                            default => null,
+                        };
+                    }),
             ])
             ->filters([
                 Tables\Filters\Filter::make('month')
@@ -90,15 +148,18 @@ class TimesheetResource extends Resource
                     ->relationship('employee'),
             ])
             ->actions([
-
+                ViewTimesheetAction::make(listing: true),
+                ViewTimesheetAction::make()
+                    ->label('View')
+                    ->slideOver(),
+                CertifyTimesheetAction::make(),
             ])
             ->bulkActions([
 
             ])
             ->defaultSort(fn (Builder $query) => $query->orderBy('month', 'desc')->orderBy(Employee::select('name')->whereColumn('employee_id', 'employees.id')))
             ->recordAction(null)
-            ->recordUrl(null)
-            ;
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
@@ -112,8 +173,6 @@ class TimesheetResource extends Resource
     {
         return [
             'index' => Pages\ListTimesheets::route('/'),
-            'create' => Pages\CreateTimesheet::route('/create'),
-            'edit' => Pages\EditTimesheet::route('/{record}/edit'),
         ];
     }
 }
