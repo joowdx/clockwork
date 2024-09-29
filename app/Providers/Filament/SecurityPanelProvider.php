@@ -24,7 +24,6 @@ class SecurityPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Security/Resources'), for: 'App\\Filament\\Security\\Resources')
             ->discoverPages(in: app_path('Filament/Security/Pages'), for: 'App\\Filament\\Security\\Pages')
-            ->pages([Pages\Dashboard::class])
             ->discoverWidgets(in: app_path('Filament/Security/Widgets'), for: 'App\\Filament\\Security\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])

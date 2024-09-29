@@ -30,7 +30,6 @@ class ManagerPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Manager/Resources'), for: 'App\\Filament\\Manager\\Resources')
             ->discoverPages(in: app_path('Filament/Manager/Pages'), for: 'App\\Filament\\Manager\\Pages')
-            ->pages([Pages\Dashboard::class])
             ->resources([
                 EmployeeResource::class,
                 OfficeResource::class,

@@ -24,7 +24,6 @@ class BureaucratPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Bureaucrat/Resources'), for: 'App\\Filament\\Bureaucrat\\Resources')
             ->discoverPages(in: app_path('Filament/Bureaucrat/Pages'), for: 'App\\Filament\\Bureaucrat\\Pages')
-            ->pages([Pages\Dashboard::class])
             ->discoverWidgets(in: app_path('Filament/Bureaucrat/Widgets'), for: 'App\\Filament\\Bureaucrat\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
