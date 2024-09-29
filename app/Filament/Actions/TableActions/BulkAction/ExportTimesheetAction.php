@@ -185,7 +185,6 @@ class ExportTimesheetAction extends BulkAction
                     }
                 }),
             Checkbox::make('digital_signature')
-                ->hidden()
                 ->live()
                 ->helperText('Digitally sign the document to prevent tampering.')
                 ->dehydrated(true)
@@ -207,18 +206,6 @@ class ExportTimesheetAction extends BulkAction
                             : 'your';
 
                         return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
-                    }
-                }),
-            TextInput::make('password')
-                ->password()
-                ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature') && ($get('user') ? User::find($get('user')) : user())->signature->certificate)
-                ->markAsRequired(fn (Get $get) => $get('digital_signature'))
-                ->rule(fn (Get $get) => $get('digital_signature') ? 'required' : '')
-                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    $user = $get('user') ? User::find($get('user')) : user();
-
-                    if ($user->signature->certificate !== null && ! $user?->signature->verify($value)) {
-                        $fail('The password is incorrect');
                     }
                 }),
         ];
@@ -405,7 +392,7 @@ class ExportTimesheetAction extends BulkAction
                                 ->helperText('Calculate days worked and minutes of undertime.'),
                             Toggle::make('single')
                                 ->default(false)
-                                ->helperText('Generate single timesheet per page.'),
+                                ->helperText('Force single timesheet per page.'),
                             Toggle::make('supervisor')
                                 ->default(true)
                                 ->helperText('Include supervisor field in the timesheet.'),
@@ -420,7 +407,7 @@ class ExportTimesheetAction extends BulkAction
                                 ->default(true)
                                 ->helperText('Label holidays in the timesheet if no attendance data is present.'),
                             Toggle::make('highlights')
-                                ->default(fn (Get $get) => $get('format') === 'csc')
+                                ->default(true)
                                 ->reactive()
                                 ->afterStateUpdated(fn ($get, $set, $state) => $set('absences', $state ? $get('absences') : false))
                                 ->helperText('Highlight blank or missing entries in the timesheet.'),

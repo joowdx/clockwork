@@ -13,7 +13,7 @@ $certify ??= false;
 
 $officer = $certify ? false : @$misc['officer'] ?? true;
 
-$single ??= ($preview ?: $certify);
+$single = $preview ?: $certify ?: $signature === true ?: @$signature['digital'] ?: $single;
 
 if (! $preview) {
     $seal = file_exists(storage_path('app/public/'.settings('seal')))
@@ -351,7 +351,13 @@ $generator = fn () => (new GenerateQrCode)->generate("https://".config('app.url'
                                 </tr>
                             @endif
                             <tr>
-                                <td class="underline" colspan=6></td>
+                                <td class="underline" colspan=6>
+                                    @if ($certify)
+                                        <div style="display:flex;justify-content:center">
+                                            @includeWhen(is_null($user->signature?->certificate), 'print.signature', ['signature' => $user->signature])
+                                        </div>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <td class="bahnschrift-light top center font-xs" colspan=6>Employee's Signature</td>
@@ -451,7 +457,7 @@ $generator = fn () => (new GenerateQrCode)->generate("https://".config('app.url'
                                     ])
                                 >
                                     @if ($officer)
-                                        {{-- @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false]) --}}
+                                        @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
                                         {{ $user?->name }}
                                     @endif
                                 </td>
