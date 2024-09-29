@@ -1,12 +1,19 @@
 <?php
 
+use App\Actions\GenerateQrCode;
 use App\Models\Holiday;
 
 $size = isset($size)  ? mb_strtolower($size) : 'folio';
 
 $preview ??= false;
 
-$single ??= false;
+$qr ??= false;
+
+$certify ??= false;
+
+$officer = $certify ? false : @$misc['officer'] ?? true;
+
+$single ??= ($preview ?: $certify);
 
 if (! $preview) {
     $seal = file_exists(storage_path('app/public/'.settings('seal')))
@@ -15,15 +22,17 @@ if (! $preview) {
 
     $office = $user?->employee?->currentDeployment?->office;
 
-    $logo = $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
+    $logo = ($officer) && $office?->logo && file_exists(storage_path('app/public/'.$office->logo))
         ? base64_encode(file_get_contents(storage_path('app/public/'.$office->logo)))
         : null;
 
-    $time = now();
+    $timestamp ??= now();
 }
 
 $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y')) .
     ($timesheet->getPeriod() === 'overtimeWork' ? ' (OT)' : '');
+
+$generator = fn () => (new GenerateQrCode)->generate("https://".config('app.url')."/validation?q={$certify}", 72);
 ?>
 
 @extends('print.layout')
@@ -41,13 +50,14 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                 'justify-content:center',
             ])
         >
-            @for($side = 0; $side < ($preview || $single ? 1 : 2); $side++)
+            @for($side = 0; $side < ($single ? 1 : 2); $side++)
                 <div
                     @style([
                         'width:100%',
-                        'border-width:1pt' => ! $preview,
-                        'border-style:none dashed none none' => $side === 0,
-                        'border-style:none none none dashed' => $side === 1,
+                        'border:none;' => $size === 'a4',
+                        'border-width:1pt' => ! $single,
+                        'border-style:none dashed none none' => $side === 0 && ! $single,
+                        'border-style:none none none dashed' => $side === 1 && ! $single,
                     ])
                 >
                     <table
@@ -138,7 +148,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                                     Weekdays
                                 </span>
                             </td>
-                            <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
+                            <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration:none;letter-spacing:-0.1pt;">
                                 {{ $timesheet->details['schedule']['weekdays'] ?? 'as required' }}
                             </td>
                         </tr>
@@ -148,7 +158,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                                     Weekends
                                 </span>
                             </td>
-                            <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration: none;">
+                            <td colspan=3 class="underline courier bold font-sm bottom left nowrap" style="text-decoration:none;letter-spacing:-0.1pt;">
                                 {{ $timesheet->details['schedule']['weekends'] ?? 'as required' }}
                             </td>
                         </tr>
@@ -187,7 +197,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                                     @class([
                                         'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
                                         'holiday' => ($holiday && (@$misc['holidays'] ?? true)),
-                                        'absent' => $timetable?->absent && (@$misc['highlights'] ?? true),
+                                        'absent' => $timetable?->absent && (@$misc['highlights'] ?? true) && (@$misc['absences'] ?? true),
                                         // 'invalid' => $timetable?->invalid,
                                         'font-sm' => true
                                     ])
@@ -297,10 +307,18 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                         @endfor
                         <tr style="height:10pt"> </tr>
                         <tr>
-                            <td colspan=2 class="font-md courier right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
+                            <td colspan=2 class="font-md courier right bold" style="padding-right:12pt;padding-bottom:2pt;">TOTAL:</td>
                             <td colspan=4 @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md' ])>
                                 @if ($misc['calculate'] ?? $preview)
-                                    {{ $timesheet->total }}
+                                    <div style="display:flex;justify-content:space-between;">
+                                        {{
+                                            str(
+                                                collect(explode(';', $timesheet->total))
+                                                    ->map(fn (string $data) => str($data)->wrap('<span>', '</span>')->replace('UT', ''))
+                                                    ->join('')
+                                            )->toHtmlString()
+                                        }}
+                                    </div>
                                 @endif
                             </td>
                         </tr>
@@ -398,7 +416,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                                             P = Previous <br>
                                         @endif
                                         @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['recast']))))
-                                            ‽ = Rectified
+                                            {{-- ‽ = Rectified --}}
                                         @endif
                                     </div>
                                     <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
@@ -422,18 +440,35 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                             </tr>
                             <tr>
                                 <td colspan=3></td>
-                                <td class="relative underline font-xs center bottom bold courier nowrap" colspan=3 style="color:#0007;border-color:#0007!important;">
-                                    @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
-                                    {{ $user?->name }}
+                                <td
+                                    colspan=3
+                                    @class([
+                                        'relative font-xs center bottom bold courier nowrap',
+                                        'underline' => $officer
+                                    ])
+                                    @style([
+                                        'color:#0007;border-color:#0007!important;' => $officer
+                                    ])
+                                >
+                                    @if ($officer)
+                                        {{-- @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false]) --}}
+                                        {{ $user?->name }}
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan=3> </td>
                                 <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
-                                    {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
+                                    @if ($officer)
+                                        {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
+                                    @elseif($certify)
+                                        <span class="absolute" style="top:-45pt;right:0;">
+                                            {!! $generator($timesheet->id) !!}
+                                        </span>
+                                    @endif
 
                                     <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">
-                                        {{ $time->format('Y-m-d|H:i') }}
+                                        {{ $timestamp->format('Y-m-d|H:i:s') }}
                                     </div>
                                 </td>
                             </tr>

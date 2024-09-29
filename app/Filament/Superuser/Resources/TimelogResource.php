@@ -37,7 +37,8 @@ class TimelogResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('scanner.name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->extraAttributes(['class' => 'font-mono']),
                 Tables\Columns\TextColumn::make('employee.name')
                     ->placeholder('Unknown')
                     ->searchable(),
@@ -45,8 +46,10 @@ class TimelogResource extends Resource
                     ->label('UID')
                     ->searchable(query: fn ($query, $search) => $query->whereUid($search)),
                 Tables\Columns\TextColumn::make('time')
+                    ->searchable()
                     ->dateTime('Y-m-d H:i:s')
-                    ->sortable(),
+                    ->sortable()
+                    ->extraAttributes(['class' => 'font-mono']),
                 Tables\Columns\TextColumn::make('state'),
                 Tables\Columns\TextColumn::make('mode'),
             ])

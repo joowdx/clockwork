@@ -7,9 +7,7 @@ use App\Events\TimelogsSynchronized;
 use App\Jobs\ProcessTimesheet;
 use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
-use App\Models\Holiday;
 use App\Traits\TimelogsHasher;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 
@@ -44,20 +42,25 @@ class PostTimelogsSynchronization
                         ->select('uid')
                         ->distinct();
 
-                    $holidays = Holiday::search(Carbon::parse($date));
-
                     return Employee::query()
                         ->whereHas('enrollments', fn ($q) => $q->where('enrollment.scanner_id', $event->scanner->id)->whereIn('enrollment.uid', $uids))
                         ->with([
                             'timelogs' => fn ($q) => $q->whereDate('time', $date),
-                            'timetables' => fn ($q) => $q->whereDate('date', $date),
+                            'timetables' => fn ($q) => $q->whereDate('date', $date)->take(1),
                             'timetables.timelogs',
+                            'timetables.timesheet',
                         ])
                         ->lazyById()
-                        ->reject(fn ($employee) => ($timetable = $employee->timetables->first())
-                            ? $this->generateDigest($timetable, $employee->timelogs, $holidays) === $timetable->digest
-                            : false
-                        )
+                        ->reject(function ($employee) {
+                            $timetable = $employee->timetables->first();
+
+                            $certified = match ($timetable->period) {
+                                'full' => $timetable->timesheet->certificationDetails('full')?->at,
+                                default => $timetable->timesheet->certificationDetails($timetable->period)?->at ?: $timetable->timesheet->certificationDetails('full')?->at,
+                            };
+
+                            return $certified ?: $timetable->checkDigest();
+                        })
                         ->mapWithKeys(fn ($employee) => ["$date|$employee->id" => new ProcessTimetable($employee, Carbon::parse($date))])
                         ->toArray();
                 });
@@ -89,7 +92,6 @@ class PostTimelogsSynchronization
 
             Bus::batch($timesheets->values()->concat($timetables)->all())
                 ->onQueue('main')
-                ->then(fn () => Notification::make()->success()->title('Upload successful')->sendToDatabase(auth()->user()))
                 ->dispatch();
         }
     }

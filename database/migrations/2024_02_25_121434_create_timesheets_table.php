@@ -17,6 +17,7 @@ return new class extends Migration
             $table->jsonb('details')->nullable();
             $table->foreignUlid('employee_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->char('digest', 128)->nullable();
+            $table->jsonb('certification')->nullable();
             $table->timestamps();
             $table->unique(['month', 'employee_id']);
         });

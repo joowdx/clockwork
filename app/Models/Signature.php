@@ -100,6 +100,19 @@ class Signature extends Model
         )->shouldCache();
     }
 
+    public function certificateBase64(): Attribute
+    {
+        return Attribute::make(
+            function () {
+                if (file_exists($file = storage_path('app/'.$this->certificate))) {
+                    return base64_encode(file_get_contents($file));
+                }
+
+                throw new InvalidArgumentException('File not found.');
+            }
+        )->shouldCache();
+    }
+
     public function verify(#[SensitiveParameter] string $password): bool
     {
         try {

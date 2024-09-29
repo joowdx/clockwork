@@ -10,6 +10,11 @@ class GetRawAttendancePunch
 {
     public function __invoke(Collection $timelogs, Carbon $date): array
     {
+        return $this->extract($timelogs, $date);
+    }
+
+    public function extract(Collection $timelogs, Carbon $date)
+    {
         $timelogs->ensure(Timelog::class);
 
         $timelogs = $timelogs->filter(fn ($timelog) => $timelog->time->isSameDay($date));

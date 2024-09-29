@@ -9,11 +9,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "bacon/bacon-qr-code": "^3.0",
         "codeat3/blade-google-material-design-icons": "^1.19",
         "dutchcodingcompany/filament-socialite": "^1.4",
         "fakerphp/faker": "^1.9.1",
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "^2.7",
         "jeffgreco13/filament-breezy": "^2.3",
         "laravel/breeze": "^2.0",
         "laravel/folio": "^1.1",

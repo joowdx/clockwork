@@ -6,9 +6,11 @@ use App\Filament\Superuser\Resources\SignatureResource;
 use App\Models\Signature;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
@@ -36,6 +38,24 @@ class Profile extends EditProfile
                             ->schema([
                                 Tab::make('Information')
                                     ->schema([
+                                        TextInput::make('uid')
+                                            ->label('UID')
+                                            ->minLength(8)
+                                            ->maxLength(8)
+                                            ->alphaNum()
+                                            ->required()
+                                            ->dehydrateStateUsing(fn (string $state) => strtoupper($state))
+                                            ->unique('employees', 'uid', ignoreRecord: true),
+                                        Select::make('sex')
+                                            ->required()
+                                            ->options([
+                                                'male' => 'Male',
+                                                'female' => 'Female',
+                                            ]),
+                                        DatePicker::make('birthdate')
+                                            ->label('Birthdate')
+                                            ->required()
+                                            ->format('Y-m-d'),
                                         $this->getEmailFormComponent()
                                             ->label('Email'),
                                         TextInput::make('number'),
@@ -120,7 +140,7 @@ class Profile extends EditProfile
                                                         Action::make('upload')
                                                             ->requiresConfirmation()
                                                             ->modalIcon('heroicon-o-arrow-up-tray')
-                                                            ->modalDescription('Upload a valid certificate file. You will be asked to enter your certificate\'s password every time you sign a document.')
+                                                            ->modalDescription('Upload a valid certificate file.')
                                                             ->form([
                                                                 FileUpload::make('tmp')
                                                                     ->disk('local')
@@ -143,7 +163,8 @@ class Profile extends EditProfile
                                                                     }),
                                                                 TextInput::make('password')
                                                                     ->label('Password')
-                                                                    ->hint('Optional')
+                                                                    ->markAsRequired()
+                                                                    ->rule('required')
                                                                     ->password()
                                                                     ->rule(fn (Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
                                                                         if (empty($value) || empty($get('tmp'))) {
@@ -164,16 +185,12 @@ class Profile extends EditProfile
 
                                                                 $set('password', $data['password']);
                                                             }),
-                                                        Action::make('password')
-                                                            ->hidden(fn (Signature $signature, mixed $state) => empty($state) || isset($signature->password))
-                                                            ->requiresConfirmation()
-                                                            ->modalIcon('heroicon-o-arrow-up-tray')
-                                                            ->modalDescription('You can optionally provide your password here.'),
                                                         Action::make('Download')
                                                             ->hidden(fn (string $operation, mixed $state) => $operation === 'create' || empty($state))
                                                             ->action(fn (Signature $signature) => Storage::download($signature->certificate, $signature->signaturable->name)),
                                                     ]),
-                                                Hidden::make('certificate_password'),
+                                                Hidden::make('password')
+                                                    ->dehydrated(fn (?string $state) => ! is_null($state)),
                                             ])
                                             ->mutateRelationshipDataBeforeCreateUsing(function (array $data) {
                                                 if (str($data['specimen'])->startsWith('livewire-tmp/')) {

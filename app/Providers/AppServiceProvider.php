@@ -14,6 +14,7 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
@@ -47,5 +48,7 @@ class AppServiceProvider extends ServiceProvider
         Notifications::alignment(Alignment::Start);
 
         FilamentIcon::register(['panels::user-menu.logout-button' => 'gmdi-logout-o', 'panels::user-menu.profile-item' => 'gmdi-account-circle-o']);
+
+        URL::forceScheme('https');
     }
 }

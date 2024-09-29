@@ -42,7 +42,7 @@ trait TimelogsHasher
         Timesheet|Timetable|null $model = null,
         ?Collection $timelogs = null,
         ?Collection $holidays = null
-    ): string {
+    ): bool {
         $model = $model ?? $this;
 
         $timelogs = $timelogs ?? $model->timelogs;

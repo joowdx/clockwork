@@ -26,6 +26,8 @@ class EmployeePanelProvider extends PanelProvider
         return $panel
             ->id('employee')
             ->path('employee')
+            ->brandName('Clockwork')
+            ->brandLogo(fn () => view('banner'))
             ->colors(['primary' => Color::Cyan])
             ->login(EmployeeLogin::class)
             ->profile(Profile::class)

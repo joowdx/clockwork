@@ -23,8 +23,6 @@ class AppPanelProvider extends PanelProvider
             ->path('')
             ->default()
             ->login(Login::class)
-            // ->passwordReset()
-            // ->registration()
             ->revealablePasswords(false)
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
@@ -35,14 +33,17 @@ class AppPanelProvider extends PanelProvider
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
             ->userMenuItems(Navigation::menuItems());
-        // ->spaUrlExceptions(Navigation::spaExceptions())
-        // ->spa()
     }
 }
 
 class Redirect extends Pages\Dashboard
 {
     public function __construct()
+    {
+        (new LoginResponse)->toResponse(request());
+    }
+
+    public function mount()
     {
         (new LoginResponse)->toResponse(request());
     }

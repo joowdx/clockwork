@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Helpers\NumberRangeCompressor;
+use App\Traits\TimelogsHasher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -19,6 +22,7 @@ use InvalidArgumentException;
 class Timesheet extends Model
 {
     use HasFactory, HasUlids, Prunable;
+    use TimelogsHasher;
 
     protected $fillable = [
         'month',
@@ -28,6 +32,7 @@ class Timesheet extends Model
 
     protected $casts = [
         'details' => 'json',
+        'certification' => 'object',
     ];
 
     protected string $span = 'full';
@@ -37,6 +42,18 @@ class Timesheet extends Model
     protected ?int $from = null;
 
     protected ?int $to = null;
+
+    protected static function booted()
+    {
+        static::deleting(fn (self $timesheet) => $timesheet->export?->delete());
+    }
+
+    public function setSpan(string $span): self
+    {
+        $this->span = $span;
+
+        return $this;
+    }
 
     public function setFullMonth(): self
     {
@@ -138,7 +155,7 @@ class Timesheet extends Model
         );
     }
 
-    public function misses(): Attribute
+    public function missed(): Attribute
     {
         return Attribute::make(
             fn () => $this->{$this->getPeriod()}->map->punch->filter()->map(function ($timetable) {
@@ -234,7 +251,7 @@ class Timesheet extends Model
 
                     $undertime = $format($this->{$this->getPeriod()}->filter->present->sum('undertime'));
 
-                    return "$days days; ".($undertime ? "$undertime UT" : '');
+                    return "{$days}days; ".($undertime ? "$undertime UT" : '');
                 };
 
                 return match ($this->span) {
@@ -242,6 +259,36 @@ class Timesheet extends Model
                     'full', '1st', '2nd', 'regular' => $standard(),
                     default => null,
                 };
+            }
+        );
+    }
+
+    public function certified(): Attribute
+    {
+        return Attribute::make(
+            function () {
+                return $this->exports->reduce(function ($carry, $export) {
+                    $carry['1st'] = $carry['1st'] || $export->details->period === '1st';
+                    $carry['2nd'] = $carry['2nd'] || $export->details->period === '2nd';
+                    $carry['full'] = $carry['full'] || $export->details->period === 'full';
+
+                    return $carry;
+                }, ['1st' => false, '2nd' => false, 'full' => false]);
+            }
+        );
+    }
+
+    public function verified(): Attribute
+    {
+        return Attribute::make(
+            function () {
+                return $this->exports->reduce(function ($carry, $export) {
+                    $carry['1st'] = $carry['1st'] || $export->details->period === '1st' && @$export->details->verification->head->at;
+                    $carry['2nd'] = $carry['2nd'] || $export->details->period === '2nd' && @$export->details->verification->head->at;
+                    $carry['full'] = $carry['full'] || $export->details->period === 'full' && @$export->details->verification->head->at;
+
+                    return $carry;
+                }, ['1st' => false, '2nd' => false, 'full' => false]);
             }
         );
     }
@@ -258,6 +305,34 @@ class Timesheet extends Model
         $to = ($to ? ($to instanceof Carbon ? $to : Carbon::parse($to)) : today())->endOfMonth();
 
         $query->whereBetween('month', [$from, $to]);
+    }
+
+    public function scopeCertified(Builder $builder, ?string $period = null, ?string $level = null): Builder
+    {
+        $period = match ($period) {
+            'first' => '1st',
+            'second' => '2nd',
+            'full' => 'full',
+            default => $period,
+        };
+
+        if ($period && ! in_array($period, ['1st', '2nd', 'full'])) {
+            throw new InvalidArgumentException('Argument $period invalid.');
+        }
+
+        if ($level && ! in_array($level, ['supervisor', 'head'])) {
+            throw new InvalidArgumentException('Argument $level invalid.');
+        }
+
+        return $builder->whereHas('exports', function ($query) use ($period, $level) {
+            if ($period) {
+                $query->where('details->period', $period);
+            }
+
+            if ($level) {
+                $query->where("details->$level", true);
+            }
+        });
     }
 
     public function prunable(): Builder
@@ -353,5 +428,37 @@ class Timesheet extends Model
             ->where('enrollment.active', true)
             ->latest('time')
             ->latest('timelogs.id');
+    }
+
+    public function exports(): MorphMany
+    {
+        return $this->morphMany(Export::class, 'exportable');
+    }
+
+    public function firstHalfExportable(): MorphOne
+    {
+        return $this->exports()
+            ->one()
+            ->ofMany(['id' => 'max'], function ($query) {
+                $query->where('details->period', '1st');
+            });
+    }
+
+    public function secondHalfExportable(): MorphOne
+    {
+        return $this->exports()
+            ->one()
+            ->ofMany(['id' => 'max'], function ($query) {
+                $query->where('details->period', '2nd');
+            });
+    }
+
+    public function fullMonthExportable(): MorphOne
+    {
+        return $this->exports()
+            ->one()
+            ->ofMany(['id' => 'max'], function ($query) {
+                $query->where('details->period', 'full');
+            });
     }
 }

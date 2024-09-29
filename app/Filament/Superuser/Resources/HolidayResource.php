@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class HolidayResource extends Resource
 {
@@ -65,7 +66,7 @@ class HolidayResource extends Resource
                         return Carbon::parse($get('date'))->lt(now());
                     }),
                 Forms\Components\Hidden::make('created_by')
-                    ->default(auth()->id()),
+                    ->default(Auth::id()),
             ]);
     }
 

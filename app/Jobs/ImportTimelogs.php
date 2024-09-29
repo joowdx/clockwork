@@ -16,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\LazyCollection;
 use League\Csv\Reader;
 
@@ -42,7 +43,7 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         private readonly int $chunkSize = 10000,
         private readonly bool $notify = true,
     ) {
-        $this->user = auth()->user();
+        $this->user = Auth::user();
 
         $this->scanner = Scanner::where('uid', $device)->firstOrFail();
 
@@ -147,6 +148,8 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                     'mode',
                 ]);
             });
+
+            Scanner::where('uid', $this->device)->update(['synced_at' => now()]);
 
             TimelogsSynchronized::dispatch(
                 $this->scanner,

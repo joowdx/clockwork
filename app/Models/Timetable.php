@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\TimelogsHasher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 class Timetable extends Model
 {
     use HasFactory, HasUlids;
+    use TimelogsHasher;
 
     protected $fillable = [
         'date',
@@ -70,6 +72,13 @@ class Timetable extends Model
     {
         return Attribute::make(
             set: fn ($holiday) => $holiday ?: null,
+        );
+    }
+
+    public function period(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->date->day <= 15 ? '1st' : '2nd',
         );
     }
 

@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Pages\Dashboard\Actions\FilterAction;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class PreselectFormAction extends FilterAction
 {
@@ -119,7 +120,7 @@ class PreselectFormAction extends FilterAction
                         ->placeholder('Print format')
                         ->default('csc')
                         ->required()
-                        ->options(['default' => 'Default format', 'csc' => 'CSC format']),
+                        ->options(['default' => 'Default format', 'csc' => 'CSC format', 'preformatted' => 'CSC format (preformatted)']),
                     Select::make('size')
                         ->live()
                         ->placeholder('Paper Size')
@@ -162,7 +163,7 @@ class PreselectFormAction extends FilterAction
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                 ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! auth()->user()->signature) {
+                    if ($value && ! Auth::user()->signature) {
                         $fail('Configure your electronic signature first');
                     }
                 }),

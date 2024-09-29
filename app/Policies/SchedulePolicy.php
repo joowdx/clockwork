@@ -15,7 +15,7 @@ class SchedulePolicy
         }
 
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => $user?->hasPermission(UserPermission::SCHEDULE) ?? false,
+            'superuser', 'manager' => $user?->hasPermission(UserPermission::SCHEDULE) ?? false,
             'secretary' => true,
             default => false,
         };

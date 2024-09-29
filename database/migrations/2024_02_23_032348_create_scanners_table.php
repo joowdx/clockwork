@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('port')->nullable();
             $table->string('pass')->nullable();
             $table->boolean('active')->default(true);
+            $table->timestamp('synced_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

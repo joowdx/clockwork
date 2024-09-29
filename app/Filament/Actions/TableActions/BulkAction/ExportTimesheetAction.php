@@ -4,8 +4,10 @@ namespace App\Filament\Actions\TableActions\BulkAction;
 
 use App\Actions\ExportTimesheet;
 use App\Models\Employee;
+use App\Models\Timesheet;
 use App\Models\User;
 use Exception;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Group;
@@ -15,6 +17,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
@@ -101,18 +104,22 @@ class ExportTimesheetAction extends BulkAction
                 ->format($data['format'])
                 ->size($data['size'])
                 ->user(@$data['user'] ? User::find(@$data['user']) : user())
-                ->signature($data['electronic_signature'])
-                ->password($data['digital_signature'] ? $data['password'] : null)
                 ->individual($data['individual'] ?? false)
                 ->transmittal($data['transmittal'] ?? 0)
                 ->grouping($data['grouping'] ?? false)
                 ->single($data['single'] ?? false)
+                ->signature([
+                    'electronic' => @$data['electronic_signature'],
+                    'digital' => @$data['digital_signature'],
+                ])
                 ->misc([
                     'calculate' => @$data['calculate'],
                     'supervisor' => @$data['supervisor'],
+                    'officer' => @$data['officer'],
                     'weekends' => @$data['weekends'],
                     'holidays' => @$data['holidays'],
                     'highlights' => @$data['highlights'],
+                    'absences' => @$data['absences'],
                 ])
                 ->download();
         } catch (ProcessFailedException $exception) {
@@ -166,7 +173,7 @@ class ExportTimesheetAction extends BulkAction
                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                 ->searchable(),
             Checkbox::make('electronic_signature')
-                ->helperText('Electronically sign the document. This does not provide security against tampering.')
+                ->helperText('Electronically sign the document.')
                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
@@ -178,9 +185,10 @@ class ExportTimesheetAction extends BulkAction
                     }
                 }),
             Checkbox::make('digital_signature')
+                ->hidden()
+                ->live()
                 ->helperText('Digitally sign the document to prevent tampering.')
                 ->dehydrated(true)
-                ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     if (! $value) {
@@ -216,18 +224,9 @@ class ExportTimesheetAction extends BulkAction
         ];
 
         $period = [
-            // Checkbox::make('individual')
-            //     ->hintIcon('heroicon-o-question-mark-circle')
-            //     ->hintIconTooltip('Export employee timesheet separately generating multiple files to be downloaded as an archive. However, this requires more processing time and to prevent server overload or request timeouts, please select no more than 25 records.')
-            //     ->rule(fn (HasTable $livewire) => function ($attribute, $value, $fail) use ($livewire) {
-            //         if ($value && count($livewire->selectedTableRecords) > 25) {
-            //             $fail('Please select less than 25 records when exporting individually.');
-            //         }
-            //     }),
             Radio::make('format')
                 ->live()
-                // ->placeholder('Print format')
-                ->default(fn ($livewire) => $livewire->filters['format'] ?? 'default')
+                ->default(fn ($livewire) => $livewire->filters['format'] ?? (in_array(Filament::getCurrentPanel()->getId(), ['employee', 'director', 'manager']) ? 'csc' : 'default'))
                 ->required()
                 ->options([
                     'default' => 'Default format',
@@ -237,7 +236,7 @@ class ExportTimesheetAction extends BulkAction
                 ->descriptions([
                     'default' => 'Raw attendance data. Displays more detailed information about the employees\' attendance.',
                     'csc' => ($preview ? 'Preview' : 'Export').' in CSC form with attendance data based off the employees\' set schedules. You may need to generate their timesheets manually if they have no timesheet data for the selected period. Ignores employees with no timesheet data.',
-                    'preformatted' => 'Schedule-agnostic attendance preformatted in CSC form. Attendance data are fetched as is and may not reflect the actual schedule of the employees.',
+                    'preformatted' => 'Schedule-agnostic attendance preformatted in CSC form. Attendance data are fetched as is and may not reflect the actual schedule of the employees. Any digital signature aside from officer will not be applied.',
                 ]),
             TextInput::make('month')
                 ->hidden($employee)
@@ -246,19 +245,43 @@ class ExportTimesheetAction extends BulkAction
                 ->type('month')
                 ->required(),
             Select::make('period')
-                ->default(fn ($livewire) => $livewire->filters['period'] ?? (today()->day > 15 ? '1st' : 'full'))
+                ->default(function (Employee|Timesheet|null $record, $livewire) {
+                    if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
+                        return $record->certified['full'] ? 'full' : ($record->certified['1st'] ? '1st' : '2nd');
+                    }
+
+                    return $livewire->filters['period'] ?? (today()->day > 15 ? '1st' : 'full');
+                })
                 ->required()
                 ->live()
-                ->options([
-                    'full' => 'Full month',
-                    '1st' => 'First half',
-                    '2nd' => 'Second half',
-                    'regular' => 'Regular days',
-                    'overtime' => 'Overtime work',
-                    'dates' => 'Custom dates',
-                    'range' => 'Custom range',
-                ])
-                ->disableOptionWhen(function (Get $get, ?string $value) {
+                ->options(function () {
+                    if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
+                        return [
+                            'full' => 'Full month',
+                            '1st' => 'First half',
+                            '2nd' => 'Second half',
+                        ];
+                    }
+
+                    return [
+                        'full' => 'Full month',
+                        '1st' => 'First half',
+                        '2nd' => 'Second half',
+                        'regular' => 'Regular days',
+                        'overtime' => 'Overtime work',
+                        'dates' => 'Custom dates',
+                        'range' => 'Custom range',
+                    ];
+                })
+                ->disableOptionWhen(function (Employee|Timesheet|null $record, Get $get, ?string $value) {
+                    if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
+                        return match ($value) {
+                            'full' => ! $record->certified['full'],
+                            '1st' => ! $record->certified['1st'],
+                            '2nd' => ! $record->certified['2nd'],
+                        };
+                    }
+
                     if ($get('format') === 'csc') {
                         return false;
                     }
@@ -373,25 +396,38 @@ class ExportTimesheetAction extends BulkAction
                     Tab::make('Miscellaneous')
                         ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
                         ->schema([
-                            Checkbox::make('calculate')
+                            Toggle::make('individual')
+                                ->default(false)
+                                ->helperText('Export employee timesheet separately generating multiple files to be downloaded as an archive.'),
+                            Toggle::make('calculate')
                                 ->visible(fn (Get $get) => $get('format') === 'csc')
                                 ->default(false)
                                 ->helperText('Calculate days worked and minutes of undertime.'),
-                            Checkbox::make('single')
+                            Toggle::make('single')
                                 ->default(false)
                                 ->helperText('Generate single timesheet per page.'),
-                            Checkbox::make('supervisor')
+                            Toggle::make('supervisor')
                                 ->default(true)
-                                ->helperText('Include supervisor signatory field in the timesheet.'),
-                            Checkbox::make('weekends')
+                                ->helperText('Include supervisor field in the timesheet.'),
+                            Toggle::make('officer')
+                                ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
+                                ->default(true)
+                                ->helperText('Include officer-in-charge field in the timesheet.'),
+                            Toggle::make('weekends')
                                 ->default(true)
                                 ->helperText('Label weekends in the timesheet if no attendance data is present.'),
-                            Checkbox::make('holidays')
+                            Toggle::make('holidays')
                                 ->default(true)
                                 ->helperText('Label holidays in the timesheet if no attendance data is present.'),
-                            Checkbox::make('highlights')
+                            Toggle::make('highlights')
+                                ->default(fn (Get $get) => $get('format') === 'csc')
+                                ->reactive()
+                                ->afterStateUpdated(fn ($get, $set, $state) => $set('absences', $state ? $get('absences') : false))
+                                ->helperText('Highlight blank or missing entries in the timesheet.'),
+                            Toggle::make('absences')
                                 ->default(true)
-                                ->helperText('Highlight blank or empty entries in the timesheet.'),
+                                ->disabled(fn (Get $get) => ! $get('highlights'))
+                                ->helperText('Highlight absent entries red in the timesheet (needs highlights enabled).'),
                         ]),
                 ]),
             ];

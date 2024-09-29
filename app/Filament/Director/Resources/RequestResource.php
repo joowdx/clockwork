@@ -17,6 +17,8 @@ class RequestResource extends Resource
 {
     protected static ?string $model = Request::class;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationIcon = 'gmdi-rule-folder-o';
 
     public static function form(Form $form): Form

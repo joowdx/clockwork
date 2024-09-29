@@ -39,7 +39,11 @@ class ViewTimesheetAction extends BulkAction
 
             $this->modalHeading('View timesheets');
 
-            $this->modalWidth(fn ($livewire) => $livewire->mountedTableBulkActionData['format'] === 'csc' ? 'xl' : '3xl');
+            $this->modalWidth(fn ($livewire) => match ($livewire->mountedTableBulkActionData['format']) {
+                'default' => '3xl',
+                'preformatted' => 'md',
+                'csc' => 'xl',
+            });
 
             $this->modalSubmitAction(false);
 
@@ -98,7 +102,7 @@ class ViewTimesheetAction extends BulkAction
                             }
                         });
                     } else {
-                        $query->whereBetween('time', [$from, $to]);
+                        $query->whereBetween('time', [$from->subDay(), $to->addDay()]);
                     }
                 };
 
@@ -120,8 +124,6 @@ class ViewTimesheetAction extends BulkAction
             $this->modalCancelActionLabel('Close');
 
             $this->modalFooterActionsAlignment('end');
-
-            $this->slideOver();
         } else {
             $this->name = 'view-timesheet-form';
 
@@ -143,5 +145,7 @@ class ViewTimesheetAction extends BulkAction
 
             $this->action(fn ($records, $livewire) => $livewire->replaceMountedTableBulkAction('bulk-view-timesheet', $records->toArray()));
         }
+
+        $this->slideOver();
     }
 }

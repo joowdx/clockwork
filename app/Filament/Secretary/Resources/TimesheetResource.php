@@ -9,15 +9,13 @@ use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
 use App\Filament\Actions\TableActions\UpdateEmployeeAction;
 use App\Filament\Filters\ActiveFilter;
+use App\Filament\Filters\OfficeFilter;
 use App\Filament\Filters\StatusFilter;
 use App\Filament\Secretary\Resources\TimesheetResource\Pages;
 use App\Models\Employee;
-use App\Models\Office;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -89,74 +87,7 @@ class TimesheetResource extends Resource
                 //         });
                 //     });
                 // }),
-                Filter::make('offices')
-                    ->form([
-                        Select::make('offices')
-                            ->options(
-                                Office::query()
-                                    ->where(function ($query) {
-                                        $user = user();
-
-                                        $query->whereIn('id', $user->offices->pluck('id'));
-
-                                        $query->orWhereHas('employees', function ($query) use ($user) {
-                                            $query->whereHas('scanners', function ($query) use ($user) {
-                                                $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
-
-                                                $query->where('enrollment.active', true);
-                                            });
-
-                                            $query->where('deployment.active', true);
-                                        });
-                                    })
-                                    ->pluck('code', 'id')
-                            )
-                            ->searchable()
-                            ->getSearchResultsUsing(function (string $search) {
-                                $user = user();
-
-                                $query = Office::query();
-
-                                $query->where(function ($query) use ($user) {
-                                    $query->whereIn('id', $user->offices->pluck('id'));
-
-                                    $query->orWhereHas('employees', function ($query) use ($user) {
-                                        $query->whereHas('scanners', function (Builder $query) use ($user) {
-                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
-                                        });
-                                    });
-                                });
-
-                                $query->where(function ($query) use ($search) {
-                                    $query->where('code', 'ilike', "%{$search}%")
-                                        ->orWhere('name', 'ilike', "%{$search}%");
-                                });
-
-                                return $query->pluck('code', 'id');
-                            })
-                            ->preload()
-                            ->multiple(),
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        $query->when($data['offices'], function ($query) use ($data) {
-                            $query->whereHas('offices', function ($query) use ($data) {
-                                $query->whereIn('offices.id', $data['offices'])
-                                    ->where('deployment.active', true);
-                            });
-                        });
-                    })
-                    ->indicateUsing(function (array $data) {
-                        if (empty($data['offices'])) {
-                            return null;
-                        }
-
-                        $offices = Office::select('code')
-                            ->orderBy('code')
-                            ->find($data['offices'])
-                            ->pluck('code');
-
-                        return 'Offices: '.$offices->join(', ');
-                    }),
+                OfficeFilter::make(),
                 SelectFilter::make('groups')
                     ->relationship(
                         'groups',

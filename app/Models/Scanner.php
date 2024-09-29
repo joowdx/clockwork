@@ -32,10 +32,12 @@ class Scanner extends Model implements Auditable
         'host',
         'port',
         'pass',
+        'synced_at',
     ];
 
     protected $casts = [
         'print' => 'json',
+        'synced_at' => 'datetime',
     ];
 
     protected static function boot(): void

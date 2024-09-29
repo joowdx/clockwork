@@ -4,6 +4,7 @@ namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Employee\Resources\TimesheetResource;
+use App\Filament\Employee\Widgets\ScannerStatisticsWidget;
 use App\Models\Employee;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Auth;
 
 class ListTimesheets extends ListRecords
@@ -22,10 +24,21 @@ class ListTimesheets extends ListRecords
         return Filament::auth()->user()->titled_name;
     }
 
+    public function getSubheading(): string|Htmlable|null
+    {
+        $warning = <<<'HTML'
+            <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
+                Since this system is still in active development, please always secure a backup of your data by downloading and storing it in a safe place.
+            </span>
+        HTML;
+
+        return str($warning)->toHtmlString();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            $this->generate(),
+            // $this->generate(),
         ];
     }
 
@@ -84,5 +97,12 @@ class ListTimesheets extends ListRecords
                     ->validationMessages(['accepted' => 'You must confirm that you understand what you are doing.']),
             ])
             ->action(fn (array $data) => $generate->generateAction(Auth::user(), $data));
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            ScannerStatisticsWidget::class,
+        ];
     }
 }

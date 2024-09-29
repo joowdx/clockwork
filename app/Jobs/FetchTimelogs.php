@@ -17,6 +17,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
@@ -48,7 +49,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $this->fetcher = new TimelogFetcher($this->scanner);
 
-        $this->user = auth()->user();
+        $this->user = Auth::user();
 
         $this->queue = 'main';
 
@@ -110,6 +111,8 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                         'mode',
                     ]);
                 });
+
+                Scanner::where('uid', $this->device)->update(['synced_at' => now()]);
             });
 
             TimelogsSynchronized::dispatch(
