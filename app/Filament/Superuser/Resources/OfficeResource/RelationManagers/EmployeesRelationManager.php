@@ -174,9 +174,11 @@ class EmployeesRelationManager extends RelationManager
                             }
 
                             if (isset($data['supervisor_id']) && $data['supervisor_id']) {
-                                $records->filter(fn ($record) => in_array($record->employee_id, [$data['supervisor_id'], $this->ownerRecord->head?->id]))
-                                    ->toQuery()
-                                    ->update(['supervisor_id' => null]);
+                                $employees = $records->filter(fn ($record) => in_array($record->employee_id, [$data['supervisor_id'], $this->ownerRecord->head?->id]));
+
+                                if ($employees->isNotEmpty()) {
+                                    $employees->toQuery()->update(['supervisor_id' => null]);
+                                }
                             }
                         }),
                     Tables\Actions\DeleteBulkAction::make()
