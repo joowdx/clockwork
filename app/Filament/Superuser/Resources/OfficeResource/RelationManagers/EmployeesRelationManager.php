@@ -82,10 +82,6 @@ class EmployeesRelationManager extends RelationManager
                     ->formatStateUsing(fn ($record) => $record->supervisor?->titled_name)
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('current')
-                    ->getStateUsing(fn ($record) => $record->current ? 'Yes' : 'No')
-                    ->icon(fn ($record) => $record->current ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->toggleable()
                     ->getStateUsing(function (Deployment $record): string {
@@ -95,6 +91,10 @@ class EmployeesRelationManager extends RelationManager
                                 return $status->append(" ({$record->employee->substatus->value})")->replace('_', '-')->title();
                             });
                     }),
+                Tables\Columns\TextColumn::make('current')
+                    ->getStateUsing(fn ($record) => $record->current ? 'Yes' : 'No')
+                    ->icon(fn ($record) => $record->current ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('active')
                     ->getStateUsing(fn ($record) => $record->active ? 'Yes' : 'No')
                     ->icon(fn ($record) => $record->active ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
