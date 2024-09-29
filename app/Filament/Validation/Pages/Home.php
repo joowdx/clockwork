@@ -40,7 +40,7 @@ class Home extends Dashboard
 
     public function getHeading(): string|Htmlable
     {
-        return 'Validation';
+        return is_null($this->export) ? '' : 'Validation';
     }
 
     public function getSubheading(): string|Htmlable|null
