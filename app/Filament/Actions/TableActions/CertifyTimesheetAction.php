@@ -3,6 +3,7 @@
 namespace App\Filament\Actions\TableActions;
 
 use App\Models\Timesheet;
+use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
@@ -152,6 +153,10 @@ class CertifyTimesheetAction extends Action
 
                     if ($user->signature === null) {
                         return $fail('You must have a signature to certify.');
+                    }
+
+                    if ($user instanceof User && empty($user->signature->certificate)) {
+                        return $fail('You must have a valid digital signature to verify.');
                     }
                 })
                 ->validationMessages(['accepted' => 'You must '.(in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').' first.']),
