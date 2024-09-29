@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 
 class EmployeesRelationManager extends RelationManager
@@ -57,6 +58,7 @@ class EmployeesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('employee', fn ($q) => $q->where('active', 1)))
             ->columns([
                 Tables\Columns\TextColumn::make('uid')
                     ->label('UID')
@@ -66,10 +68,15 @@ class EmployeesRelationManager extends RelationManager
                     ->label('Name')
                     ->placeholder(fn ($record) => $record->employee_id)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('employee.status')
-                    ->label('Status')
-                    ->placeholder(fn ($record) => $record->employee_id)
-                    ->toggleable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->toggleable()
+                    ->getStateUsing(function (Enrollment $record): string {
+                        return str($record->employee->status?->value)
+                            ->title()
+                            ->when($record->employee->substatus?->value, function ($status) use ($record) {
+                                return $status->append(" ({$record->employee->substatus->value})")->replace('_', '-')->title();
+                            });
+                    }),
                 Tables\Columns\TextColumn::make('active')
                     ->getStateUsing(fn ($record) => $record->active ? 'Yes' : 'No')
                     ->icon(fn ($record) => $record->active ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
@@ -99,6 +106,9 @@ class EmployeesRelationManager extends RelationManager
                         ->modalIcon('heroicon-o-shield-exclamation'),
                 ]),
             ])
+            ->defaultSort(function (Builder $query) {
+                $query->orderByRaw("CAST(uid as INT) asc");
+            })
             ->recordAction(null);
     }
 }

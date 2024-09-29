@@ -4,12 +4,14 @@ namespace App\Filament\Secretary\Resources\OfficeResource\RelationManagers;
 
 use App\Filament\Filters\ActiveFilter;
 use App\Models\Deployment;
+use App\Models\Employee;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
 
@@ -71,7 +73,7 @@ class EmployeesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->whereHas('employee', fn ($q) => $q->whereActive(1)))
+            ->modifyQueryUsing(fn ($query) => $query->with('employee')->whereHas('employee', fn ($q) => $q->whereActive(1)))
             ->columns([
                 Tables\Columns\TextColumn::make('employee.full_name')
                     ->sortable()
@@ -84,6 +86,15 @@ class EmployeesRelationManager extends RelationManager
                     ->getStateUsing(fn ($record) => $record->current ? 'Yes' : 'No')
                     ->icon(fn ($record) => $record->current ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->toggleable()
+                    ->getStateUsing(function (Deployment $record): string {
+                        return str($record->employee->status?->value)
+                            ->title()
+                            ->when($record->employee->substatus?->value, function ($status) use ($record) {
+                                return $status->append(" ({$record->employee->substatus->value})")->replace('_', '-')->title();
+                            });
+                    }),
                 Tables\Columns\TextColumn::make('active')
                     ->getStateUsing(fn ($record) => $record->active ? 'Yes' : 'No')
                     ->icon(fn ($record) => $record->active ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
@@ -123,7 +134,7 @@ class EmployeesRelationManager extends RelationManager
                         ->requiresConfirmation()
                         ->modalDescription('Leave blank to leave unchanged.')
                         ->modalIcon('heroicon-m-pencil-square')
-                        ->form([
+                        ->form(fn (Collection $records) => [
                             Forms\Components\Select::make('current')
                                 ->boolean(),
                             Forms\Components\Select::make('supervisor_id')
@@ -141,11 +152,9 @@ class EmployeesRelationManager extends RelationManager
                                 ->placeholder('-')
                                 ->validationMessages(['unique' => 'Employee is already deployed to this office.'])
                                 ->hintAction(
-                                    Action::make('Remove supervisor')
+                                    Action::make('Remove')
                                         ->icon('heroicon-o-x-circle')
-                                        ->action(function (Forms\Set $set) {
-                                            $set('supervisor_id', '<to-remove>');
-                                        })
+                                        ->action(fn () => $records->toQuery()->update(['supervisor_id' => null])),
                                 )
                                 ->rules([
                                     fn (?Deployment $record) => Rule::unique('deployment', 'office_id')
@@ -154,9 +163,7 @@ class EmployeesRelationManager extends RelationManager
                                 ]),
                         ])
                         ->action(function (Collection $records, array $data) {
-                            $data = array_filter($data);
-
-                            $supervisor = isset($data['supervisor_id']) && $data['supervisor_id'] !== '<to-remove>' ? $data['supervisor_id'] : null;
+                            $data = array_filter($data, fn ($value) => $value !== null);
 
                             $records->toQuery()->update($data);
 
@@ -166,8 +173,8 @@ class EmployeesRelationManager extends RelationManager
                                     ->update(['current' => false]);
                             }
 
-                            if ($supervisor) {
-                                $records->filter(fn ($record) => in_array($record->employee_id, [$supervisor, $this->ownerRecord->head?->id]))
+                            if (isset($data['supervisor_id']) && $data['supervisor_id']) {
+                                $records->filter(fn ($record) => in_array($record->employee_id, [$data['supervisor_id'], $this->ownerRecord->head?->id]))
                                     ->toQuery()
                                     ->update(['supervisor_id' => null]);
                             }
@@ -177,6 +184,26 @@ class EmployeesRelationManager extends RelationManager
                         ->modalIcon('heroicon-o-shield-exclamation'),
                 ]),
             ])
+            ->defaultSort(function (Builder $query) {
+                $query->orderBy(
+                    Employee::select('status')
+                        ->whereColumn('employees.id', 'deployment.employee_id')
+                        ->limit(1),
+                    'desc'
+                );
+
+                $query->orderBy(
+                    Employee::select('substatus')
+                        ->whereColumn('employees.id', 'deployment.employee_id')
+                        ->limit(1),
+                );
+
+                $query->orderBy(
+                    Employee::select('name')
+                        ->whereColumn('employees.id', 'deployment.employee_id')
+                        ->limit(1),
+                );
+            })
             ->recordAction(null);
     }
 }

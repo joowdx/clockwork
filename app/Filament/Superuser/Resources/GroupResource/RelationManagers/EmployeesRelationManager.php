@@ -3,6 +3,7 @@
 namespace App\Filament\Superuser\Resources\GroupResource\RelationManagers;
 
 use App\Filament\Filters\ActiveFilter;
+use App\Models\Employee;
 use App\Models\Member;
 use Filament\Facades\Filament;
 use Filament\Forms;
@@ -83,6 +84,15 @@ class EmployeesRelationManager extends RelationManager
 
                         return str($offices)->toHtmlString();
                     }),
+                Tables\Columns\TextColumn::make('status')
+                    ->toggleable()
+                    ->getStateUsing(function (Member $record): string {
+                        return str($record->employee->status?->value)
+                            ->title()
+                            ->when($record->employee->substatus?->value, function ($status) use ($record) {
+                                return $status->append(" ({$record->employee->substatus->value})")->replace('_', '-')->title();
+                            });
+                    }),
                 Tables\Columns\TextColumn::make('active')
                     ->getStateUsing(fn ($record) => $record->active ? 'Yes' : 'No')
                     ->icon(fn ($record) => $record->active ? 'heroicon-o-check' : 'heroicon-o-no-symbol')
@@ -151,6 +161,26 @@ class EmployeesRelationManager extends RelationManager
                         ->modalIcon('heroicon-o-shield-exclamation'),
                 ]),
             ])
+            ->defaultSort(function (Builder $query) {
+                $query->orderBy(
+                    Employee::select('status')
+                        ->whereColumn('employees.id', 'member.employee_id')
+                        ->limit(1),
+                    'desc'
+                );
+
+                $query->orderBy(
+                    Employee::select('substatus')
+                        ->whereColumn('employees.id', 'member.employee_id')
+                        ->limit(1),
+                );
+
+                $query->orderBy(
+                    Employee::select('name')
+                        ->whereColumn('employees.id', 'member.employee_id')
+                        ->limit(1),
+                );
+            })
             ->recordAction(null);
     }
 }
