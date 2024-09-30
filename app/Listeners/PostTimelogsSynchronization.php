@@ -54,12 +54,13 @@ class PostTimelogsSynchronization
                         ->reject(function ($employee) {
                             $timetable = $employee->timetables->first();
 
-                            $certified = match ($timetable->period) {
-                                'full' => $timetable->timesheet->certificationDetails('full')?->at,
-                                default => $timetable->timesheet->certificationDetails($timetable->period)?->at ?: $timetable->timesheet->certificationDetails('full')?->at,
+                            $certified = match ($timetable?->period) {
+                                null => false,
+                                'full' => $timetable->timesheet->certified['full'],
+                                default => $timetable->timesheet->certified['1st'] ?: $timetable->timesheet->certified['2nd'],
                             };
 
-                            return $certified ?: $timetable->checkDigest();
+                            return $certified ?: $timetable?->checkDigest();
                         })
                         ->mapWithKeys(fn ($employee) => ["$date|$employee->id" => new ProcessTimetable($employee, Carbon::parse($date))])
                         ->toArray();
