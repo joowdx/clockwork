@@ -2,6 +2,7 @@
 
 namespace App\Filament\Manager\Resources;
 
+use App\Filament\Actions\TableActions\BulkActionGroup\VerifyTimesheetAction;
 use App\Filament\Actions\TableActions\CertifyTimesheetAction;
 use App\Filament\Actions\TableActions\DownloadTimesheetAction;
 use App\Filament\Actions\TableActions\ViewTimesheetAction;
@@ -154,9 +155,12 @@ class TimesheetResource extends Resource
                 ViewTimesheetAction::make()
                     ->label('View')
                     ->slideOver(),
-                CertifyTimesheetAction::make(),
+                // CertifyTimesheetAction::make(),
                 DownloadTimesheetAction::make()
                     ->label('Download'),
+            ])
+            ->bulkActions([
+                VerifyTimesheetAction::make(),
             ])
             ->defaultSort(fn (Builder $query) => $query->orderBy('month', 'desc')->orderBy(Employee::select('name')->whereColumn('employee_id', 'employees.id')))
             ->recordAction(null)

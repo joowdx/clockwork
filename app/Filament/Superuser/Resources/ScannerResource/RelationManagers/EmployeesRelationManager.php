@@ -107,7 +107,7 @@ class EmployeesRelationManager extends RelationManager
                 ]),
             ])
             ->defaultSort(function (Builder $query) {
-                $query->orderByRaw("CAST(uid as INT) asc");
+                $query->orderByRaw('CAST(uid as INT) asc');
             })
             ->recordAction(null);
     }

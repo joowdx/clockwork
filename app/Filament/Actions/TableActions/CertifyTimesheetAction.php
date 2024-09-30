@@ -7,6 +7,8 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\ViewField;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Carbon;
@@ -40,7 +42,9 @@ class CertifyTimesheetAction extends Action
 
         $this->modalIcon('gmdi-fact-check-o');
 
-        $this->successNotificationTitle('Timesheet ' . ($this->level === null ? 'certified' : 'verified'));
+        $this->successNotificationTitle('Timesheet '.($this->level === null ? 'certified' : 'verified'));
+
+        $this->slideOver();
 
         $this->hidden(function (Timesheet $record) {
             if ($this->level === false) {
@@ -51,15 +55,10 @@ class CertifyTimesheetAction extends Action
                 return $record->certified['1st'] && $record->certified['2nd'] || $record->certified['full'];
             }
 
-            return match ($this->level) {
-                'head' => $record->certified['1st'] && @$record->firstHalfExportable->details->verification->head->at ||
-                    $record->certified['2nd'] && @$record->secondHalfExportable->details->verification->head->at ||
-                    $record->certified['full'] && @$record->fullMonthExportable->details->verification->head->at,
-                'supervisor' => $record->certified['1st'] && @$record->firstHalfExportable->details->verification->supervisor->at ||
-                    $record->certified['2nd'] && @$record->secondHalfExportable->details->verification->supervisor->at ||
-                    $record->certified['full'] && @$record->fullMonthExportable->details->verification->supervisor->at,
-                default => false,
-            };
+            return $record->certified['full']
+                ? @$record->fullMonthExportable->details->verification->{$this->level}->at
+                : ($record->certified['1st'] ? @$record->firstHalfExportable->details->verification->{$this->level}->at : true) &&
+                    ($record->certified['2nd'] ? @$record->secondHalfExportable->details->verification->{$this->level}->at : true);
         });
 
         $this->modalDescription(function (Timesheet $record) {
@@ -79,88 +78,110 @@ class CertifyTimesheetAction extends Action
                 ->toHtmlString();
         });
 
-        $this->form([
-            Select::make('period')
-                ->required()
-                ->multiple()
-                ->options([
-                    '1st' => '1st half',
-                    '2nd' => '2nd half',
-                    'full' => 'Full month',
-                ])
-                ->dehydratedWhenHidden()
-                ->disableOptionWhen(function (Timesheet $record, ?string $value) {
-                    if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
-                        return match ($value) {
-                            'full' => ! ($record->certified['1st'] && $record->certified['2nd'] || $record->certified['full']),
-                            '1st' => ! $record->certified['1st'],
-                            '2nd' => ! $record->certified['2nd'],
-                        };
-                    }
-                })
-                ->rule(fn (Timesheet $record) => function ($attribute, $value, $fail) use ($record) {
-                    if (Carbon::parse($record->month)->setDay(15)->endOfDay()->gte(now()) && in_array('1st', $value)) {
-                        return $fail('First half of the month is not yet certifiable since it has yet to end.');
-                    }
+        $this->form(function (Timesheet $record) {
+            $timesheets = [];
 
-                    if (today()->startOfMonth()->isSameDay($record->month) && (in_array('full', $value) || in_array('2nd', $value))) {
-                        return $fail('Full month or second half of the month not yet certifiable since it has yet to end.');
-                    }
-
-                    if (in_array('full', $value) && count($value) > 1) {
-                        return $fail('You can only certify in either full month or both halves of the month.');
-                    }
-
-                    if ($this->level === null) {
-                        if (in_array('full', $value) && $record->certified['full']) {
-                            return $fail('Full month is already certified.');
+            return [
+                Select::make('period')
+                    ->required()
+                    ->multiple()
+                    ->reactive()
+                    ->options([
+                        '1st' => '1st half',
+                        '2nd' => '2nd half',
+                        'full' => 'Full month',
+                    ])
+                    ->dehydratedWhenHidden()
+                    ->disableOptionWhen(function (Timesheet $record, ?string $value) {
+                        if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
+                            return match ($value) {
+                                'full' => ! ($record->certified['1st'] && $record->certified['2nd'] || $record->certified['full']),
+                                '1st' => ! $record->certified['1st'],
+                                '2nd' => ! $record->certified['2nd'],
+                            };
+                        }
+                    })
+                    ->afterStateUpdated(function (Timesheet $record, ?array $state) use (&$timesheets) {
+                        if (empty($state)) {
+                            $timesheets = [];
                         }
 
-                        if (in_array('full', $value) && ($record->certified['1st'] || $record->certified['2nd'])) {
-                            return $fail(($record->certified['1st'] ? 'First' : 'Second').' half of the month is already certified. ');
+                        $timesheets = collect($state)->map(function ($period) use ($record) {
+                            return $record->replicate()->setSPan($period);
+                        })->toArray();
+                    })
+                    ->rule(fn (Timesheet $record) => function ($attribute, $value, $fail) use ($record) {
+                        if (Carbon::parse($record->month)->setDay(15)->endOfDay()->gte(now()) && in_array('1st', $value)) {
+                            return $fail('First half of the month is not yet certifiable since it has yet to end.');
                         }
 
-                        if (in_array('1st', $value) && $record->certified['1st']) {
-                            return $fail('First half of the month is already certified.');
+                        if (today()->startOfMonth()->isSameDay($record->month) && (in_array('full', $value) || in_array('2nd', $value))) {
+                            return $fail('Full month or second half of the month not yet certifiable since it has yet to end.');
                         }
 
-                        if (in_array('2nd', $value) && $record->certified['2nd']) {
-                            return $fail('Second half of the month is already certified.');
-                        }
-                    }
-
-                    if ($this->level === 'head') {
-                        if (in_array('full', $value) && $record->certified['full'] && @$record->fullMonthExportable->details->head) {
-                            return $fail('Full month is already verified.');
+                        if (in_array('full', $value) && count($value) > 1) {
+                            return $fail('You can only certify in either full month or both halves of the month.');
                         }
 
-                        if (in_array('1st', $value) && $record->certified['1st'] && @$record->firstHalfExportable->details->head) {
-                            return $fail('First half of the month is already verified.');
+                        if ($this->level === null) {
+                            if (in_array('full', $value) && $record->certified['full']) {
+                                return $fail('Full month is already certified.');
+                            }
+
+                            if (in_array('full', $value) && ($record->certified['1st'] || $record->certified['2nd'])) {
+                                return $fail(($record->certified['1st'] ? 'First' : 'Second').' half of the month is already certified. ');
+                            }
+
+                            if (in_array('1st', $value) && $record->certified['1st']) {
+                                return $fail('First half of the month is already certified.');
+                            }
+
+                            if (in_array('2nd', $value) && $record->certified['2nd']) {
+                                return $fail('Second half of the month is already certified.');
+                            }
                         }
 
-                        if (in_array('2nd', $value) && $record->certified['2nd'] && @$record->secondHalfExportable->details->head) {
-                            return $fail('Second half of the month is already verified.');
+                        if ($this->level === 'head') {
+                            if (in_array('full', $value) && $record->certified['full'] && @$record->fullMonthExportable->details->head) {
+                                return $fail('Full month is already verified.');
+                            }
+
+                            if (in_array('1st', $value) && $record->certified['1st'] && @$record->firstHalfExportable->details->head) {
+                                return $fail('First half of the month is already verified.');
+                            }
+
+                            if (in_array('2nd', $value) && $record->certified['2nd'] && @$record->secondHalfExportable->details->head) {
+                                return $fail('Second half of the month is already verified.');
+                            }
                         }
-                    }
-                }),
-            Checkbox::make('confirmation')
-                ->label(fn () => 'I '.(in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').' that the information is accurate and correct report of the hours of work performed.')
-                ->markAsRequired()
-                ->accepted()
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    /** @var \App\Models\User|\App\Models\Employee */
-                    $user = Auth::user();
+                    }),
+                ViewField::make('timesheet')
+                    ->hidden(fn (Get $get) => empty($get('period')))
+                    ->dehydrated(false)
+                    ->view('filament.validation.pages.preview')
+                    ->viewData([
+                        'timesheets' => $timesheets,
+                        'styles' => false,
+                    ]),
+                Checkbox::make('confirmation')
+                    ->label(fn () => 'I '.(in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').' that the information is accurate and correct report of the hours of work performed.')
+                    ->markAsRequired()
+                    ->accepted()
+                    ->rule(fn () => function ($attribute, $value, $fail) {
+                        /** @var \App\Models\User|\App\Models\Employee */
+                        $user = Auth::user();
 
-                    if ($user->signature === null) {
-                        return $fail('You must have a signature to certify.');
-                    }
+                        if ($user->signature === null) {
+                            return $fail('You must have a signature to certify.');
+                        }
 
-                    if ($user instanceof User && empty($user->signature->certificate)) {
-                        return $fail('You must have a valid digital signature to verify.');
-                    }
-                })
-                ->validationMessages(['accepted' => 'You must '.(in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').' first.']),
-        ]);
+                        if ($user instanceof User && empty($user->signature->certificate)) {
+                            return $fail('You must have a valid digital signature to verify.');
+                        }
+                    })
+                    ->validationMessages(['accepted' => 'You must '.(in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').' first.']),
+            ];
+        });
 
         $this->action(function (self $action, Timesheet $timesheet, array $data) {
             if ($this->level === false) {
@@ -229,7 +250,7 @@ class CertifyTimesheetAction extends Action
         });
     }
 
-    protected function generate(Timesheet $timesheet, string $period, string $export)
+    public function generate(Timesheet $timesheet, string $period, string $export)
     {
         /** @var \App\Models\User|\App\Models\Employee */
         $user = Auth::user();
@@ -254,7 +275,7 @@ class CertifyTimesheetAction extends Action
         return $pdf->base64();
     }
 
-    protected function sign(string $data, string $level, $timestamp): string
+    public function sign(string $data, string $level, $timestamp): string
     {
         /** @var \App\Models\User|\App\Models\Employee */
         $user = Auth::user();

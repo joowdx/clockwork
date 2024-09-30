@@ -31,7 +31,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
             >
                 <col width=65 span=6>
                 <tr>
-                    <td class="arial bottom left" colspan=2 style="padding-bottom:2.5pt;padding-right:10pt;">
+                    <td class="courier bottom left" colspan=2 style="padding-bottom:2.5pt;padding-right:10pt;">
                         Month
                     </td>
                     <td class="font-md courier bold left" colspan=4 style="text-decoration: none;">
@@ -190,8 +190,29 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
     </div>
 @endforeach
 
-@push('head')
+@if($styles ?? true)
+    @push('head')
+        <style>
+            .undertime-badge {
+                width: 12pt !important;
+                height: 12pt !important;
+            }
+            @media (prefers-color-scheme: dark) {
+                .undertime-badge {
+                    color: gray;
+                    background-color: #FFF;
+                }
+                td {
+                    border-color: #333 !important;
+                }
+            }
+        </style>
+    @endpush
+@else
     <style>
+        {!! File::get(base_path('resources/css/print.css')) !!}
+        {!! File::get(base_path('resources/css/fonts.css')) !!}
+
         .undertime-badge {
             width: 12pt !important;
             height: 12pt !important;
@@ -206,4 +227,4 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
             }
         }
     </style>
-@endpush
+@endif
