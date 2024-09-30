@@ -111,19 +111,19 @@ class VerifyTimesheetAction extends BulkActionGroup
 
                     return;
                 }
+                $timestamp = now()->format('Y-m-d H:i:s');
 
-                $signer = fn ($record) => app(CertifyTimesheetAction::class, ['name' => 'signer'])->sign($record, $this->level, $period);
+                $signer = fn ($record) => app(CertifyTimesheetAction::class, ['name' => 'signer'])->sign($record, $this->level, $timestamp);
 
-                $records->each(function (Timesheet $record) use ($signer) {
-                    $timestamp = now()->format('Y-m-d H:i:s');
+                $records->each(function (Timesheet $record) use ($signer, $timestamp) {
 
                     $export = $record->exports->first();
 
-                    $signed = $signer(base64_encode($export->content), $this->level, $timestamp);
+                    $signed = $signer(base64_encode($export->content));
 
                     $export->forceFill([
                         'content' => $signed,
-                        "details->verification->{$this->level}->at" => now()->format('Y-m-d H:i:s'),
+                        "details->verification->{$this->level}->at" => $timestamp,
                     ])->save();
                 });
 

@@ -32,7 +32,7 @@ if (! $preview) {
 $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y')) .
     ($timesheet->getPeriod() === 'overtimeWork' ? ' (OT)' : '');
 
-$generator = fn () => (new GenerateQrCode)->generate("https://".config('app.url')."/validation?q={$certify}", 72);
+$generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validation?q={$certify}", 72);
 ?>
 
 @extends('print.layout')

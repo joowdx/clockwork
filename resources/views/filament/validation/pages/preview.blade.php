@@ -29,7 +29,7 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
                     'margin:auto',
                 ])
             >
-                <col width=65 span=6>
+                <col width=57 span=6>
                 <tr>
                     <td class="courier bottom left" colspan=2 style="padding-bottom:2.5pt;padding-right:10pt;">
                         Month
