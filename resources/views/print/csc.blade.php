@@ -376,7 +376,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             @if($supervisor)
                                 <tr>
                                     <td colspan=6 @class(['center font-sm', 'underline' => $supervisor])>
-                                        {{ $timesheet->details['supervisor'] ?? '' }}
+                                        {{ $timesheet->details['supervisor'] ?? (($sv = $employee->currentDeployment?->supervisor?->name) === $employee->name ? null : $sv) }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -398,7 +398,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             </tr>
                             <tr>
                                 <td colspan=6 class="underline center font-sm">
-                                    {{ $timesheet->details['head'] ?? '' }}
+                                    {{ $timesheet->details['head'] ?? (($head = $employee->currentDeployment?->office?->head)?->is($employee) ? null : $head?->titled_name) }}
                                 </td>
                             </tr>
                             <tr>
