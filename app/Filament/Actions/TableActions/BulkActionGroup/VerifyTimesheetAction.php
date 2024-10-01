@@ -75,14 +75,12 @@ class VerifyTimesheetAction extends BulkActionGroup
 
                 return [
                     TimesheetOption::make('timesheets')
+                        ->bulkToggleable()
                         ->records($records)
                         ->options($records->mapWithKeys(fn ($record) => [$record->id => $record->employee->name])->toArray())
                         ->searchable()
                         ->label('Timesheets')
                         ->required(),
-                    // ViewField::make('timesheets')
-                    //     ->view('forms.components.timesheet-option')
-                    //     ->viewData(['timesheets' => $records]),
                     Checkbox::make('confirmation')
                         ->label(fn () => 'I verify that the information is accurate and correct report of the hours of work performed.')
                         ->hidden($records->isEmpty())
