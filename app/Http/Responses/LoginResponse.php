@@ -19,13 +19,13 @@ class LoginResponse implements Responsable
 
         $route = match (true) {
             $this->user instanceof Employee => 'filament.employee.resources.timesheets.index',
-            $this->user->hasAnyRole(UserRole::ROOT, UserRole::SUPERUSER) => 'filament.superuser.pages.dashboard',
-            $this->user->hasRole(UserRole::EXECUTIVE) => 'filament.executive.pages.dashboard',
-            $this->user->hasRole(UserRole::BUREAUCRAT) => 'filament.bureaucrat.pages.dashboard',
-            $this->user->hasRole(UserRole::DIRECTOR) => 'filament.director.pages.dashboard',
-            $this->user->hasRole(UserRole::MANAGER) => 'filament.manager.pages.dashboard',
-            $this->user->hasRole(UserRole::SECRETARY) => 'filament.secretary.pages.dashboard',
-            $this->user->hasRole(UserRole::SECURITY) => 'filament.security.pages.dashboard',
+            $this->user->hasAnyRole(UserRole::ROOT, UserRole::SUPERUSER) => url(str(settings('superuser') ?: 'superuser')->slug()),
+            $this->user->hasRole(UserRole::EXECUTIVE) => url(str(settings('executive') ?: 'executive')->slug()),
+            $this->user->hasRole(UserRole::BUREAUCRAT) => url(str(settings('bureaucrat') ?: 'bureaucrat')->slug()),
+            $this->user->hasRole(UserRole::DIRECTOR) => url(str(settings('director') ?: 'director')->slug()),
+            $this->user->hasRole(UserRole::MANAGER) => url(str(settings('manager') ?: 'manager')->slug()),
+            $this->user->hasRole(UserRole::SECRETARY) => url(str(settings('secretary') ?: 'secretary')->slug()),
+            $this->user->hasRole(UserRole::SECURITY) => url(str(settings('security') ?: 'security')->slug()),
             default => 'filament.app.pages.dashboard',
         };
 
