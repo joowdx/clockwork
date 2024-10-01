@@ -38,7 +38,7 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // $this->generate(),
+            $this->generate(),
         ];
     }
 
