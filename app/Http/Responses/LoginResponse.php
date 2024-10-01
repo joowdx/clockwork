@@ -18,7 +18,7 @@ class LoginResponse implements Responsable
         $this->user = $request->user() ?? $request->user('employee');
 
         $route = match (true) {
-            $this->user instanceof Employee => 'filament.employee.resources.timesheets.index',
+            $this->user instanceof Employee => route('filament.employee.resources.timesheets.index'),
             $this->user->hasAnyRole(UserRole::ROOT, UserRole::SUPERUSER) => url(str(settings('superuser') ?: 'superuser')->slug()),
             $this->user->hasRole(UserRole::EXECUTIVE) => url(str(settings('executive') ?: 'executive')->slug()),
             $this->user->hasRole(UserRole::BUREAUCRAT) => url(str(settings('bureaucrat') ?: 'bureaucrat')->slug()),
@@ -29,6 +29,6 @@ class LoginResponse implements Responsable
             default => 'filament.app.pages.dashboard',
         };
 
-        return redirect()->intended(route($route));
+        return redirect()->intended($route);
     }
 }
