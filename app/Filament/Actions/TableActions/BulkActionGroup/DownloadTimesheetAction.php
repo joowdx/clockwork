@@ -75,7 +75,6 @@ class DownloadTimesheetAction extends BulkActionGroup
                         ->bulkToggleable()
                         ->records($records)
                         ->options($records->mapWithKeys(fn ($record) => [$record->id => $record->employee->name])->toArray())
-                        ->searchable()
                         ->label('Timesheets')
                         ->required(),
                 ];
