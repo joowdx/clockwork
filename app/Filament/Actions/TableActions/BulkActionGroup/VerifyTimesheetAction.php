@@ -7,7 +7,6 @@ use App\Forms\Components\TimesheetOption;
 use App\Models\Timesheet;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\ViewField;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Illuminate\Database\Eloquent\Collection;
@@ -66,6 +65,7 @@ class VerifyTimesheetAction extends BulkActionGroup
             ->successNotificationTitle('Timesheets verified successfully.')
             ->failureNotificationTitle('Verification failed.')
             ->modalWidth('max-w-lg')
+            ->closeModalByClickingAway()
             ->form(function (Collection $records) use ($period) {
                 $records = $records->toQuery()
                     ->whereHas('exports', fn ($q) => $q->where('details->period', $period)->whereNull("details->verification->{$this->level}->at"))
@@ -101,7 +101,7 @@ class VerifyTimesheetAction extends BulkActionGroup
                 $records = $records->toQuery()
                     ->whereIn('id', $data['timesheets'])
                     ->whereHas('exports', fn ($q) => $q->where('details->period', $period))
-                    ->with(['exports' => fn ($q) => $q->where('details->period', $period)])
+                    ->with(['employee', 'exports' => fn ($q) => $q->where('details->period', $period)])
                     ->get();
 
                 if ($records->isEmpty()) {
