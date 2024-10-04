@@ -26,7 +26,7 @@ class LoginResponse implements Responsable
             $this->user->hasRole(UserRole::MANAGER) => url(str(settings('manager') ?: 'manager')->slug()),
             $this->user->hasRole(UserRole::SECRETARY) => url(str(settings('secretary') ?: 'secretary')->slug()),
             $this->user->hasRole(UserRole::SECURITY) => url(str(settings('security') ?: 'security')->slug()),
-            default => 'filament.app.pages.dashboard',
+            default => route('filament.app.pages.dashboard'),
         };
 
         return redirect()->intended($route);
