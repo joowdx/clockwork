@@ -4,6 +4,7 @@ namespace App\Filament\Auth;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use Exception;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Component;
@@ -14,7 +15,10 @@ use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Auth\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -89,12 +93,16 @@ class Employee extends \Filament\Pages\Auth\Login
 
     protected function getAccountSetupAction(): Action
     {
-        $lacking = function ($employee, $fail, $message, $boolean = false) {
+        $lacking = function ($employee, $fail = null, $message = '', $boolean = true) {
             $employee = $employee instanceof \App\Models\Employee ? $employee : \App\Models\Employee::find($employee);
 
             $lacking = $employee?->offices->isEmpty() || empty($employee?->birthdate) || empty($employee?->sex);
 
             if ($lacking && $boolean) {
+                return true;
+            }
+
+            if ($lacking && $fail && $message && $boolean === false) {
                 return $fail($message);
             }
         };
@@ -115,14 +123,14 @@ class Employee extends \Filament\Pages\Auth\Login
             }
 
             if (
-                ! $employee->birthdate->isSameDay($data[1] ?? '') ||
-                ! $employee->offices->pluck('id')->contains($data[3]) ||
-                $employee->sex !== $data[2]
+                ! $employee?->birthdate?->isSameDay($data[1] ?? '') ||
+                ! $employee?->offices->pluck('id')->contains($data[3]) ||
+                $employee?->sex !== $data[2]
             ) {
                 return $fail('Data does not match the record.');
             }
 
-            if (! empty($employee->password) && ! empty($employee->verified_at) && $success) {
+            if (! empty($employee->password) && ! empty($employee->email_verified_at) && $success) {
                 return $fail('Employee account has already been set up.');
             }
         };
@@ -158,15 +166,21 @@ class Employee extends \Filament\Pages\Auth\Login
                                 })
                                 ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
                                     if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null) {
+                                        $message = 'Employee data is incomplete. Please contact the officers in charge.';
+
+                                        $lacking($v, $f, $message, false);
+
                                         $confirmation([$v, $get('birthdate'), $get('sex'), $get('office')], $f, 1);
                                     }
-
-                                    $lacking($v, $f, 'Employee data is incomplete.');
                                 }),
                             DatePicker::make('birthdate')
                                 ->required()
                                 ->rule('date')
-                                ->rule(fn (Get $get) => fn ($attribute, $value, $fail) => $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $fail)),
+                                ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
+                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && !$lacking($get('employee'), boolean: true)) {
+                                        $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $f);
+                                    }
+                                }),
                             Select::make('sex')
                                 ->required()
                                 ->in(['male', 'female'])
@@ -174,7 +188,11 @@ class Employee extends \Filament\Pages\Auth\Login
                                     'male' => 'Male',
                                     'female' => 'Female',
                                 ])
-                                ->rule(fn (Get $get) => fn ($attribute, $value, $fail) => $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $fail)),
+                                ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
+                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && !$lacking($get('employee'), boolean: true)) {
+                                        $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $f);
+                                    }
+                                }),
                             Select::make('office')
                                 ->required()
                                 ->searchable()
@@ -185,7 +203,11 @@ class Employee extends \Filament\Pages\Auth\Login
                                         ->pluck('code', 'id')
                                         ->take(5);
                                 })
-                                ->rule(fn (Get $get) => fn ($attribute, $value, $fail) => $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $fail)),
+                                ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
+                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && !$lacking($get('employee'), boolean: true)) {
+                                        $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $f);
+                                    }
+                                }),
                         ]),
                     Step::make('Authentication')
                         ->description('Set your login credentials')
@@ -214,10 +236,13 @@ class Employee extends \Filament\Pages\Auth\Login
                 ]),
             ])
             ->action(function (Action $action, array $data) {
-                \App\Models\Employee::find($data['employee'])->update([
-                    'email' => $data['email'],
-                    'password' => $data['password'],
-                ]);
+                $employee = \App\Models\Employee::find($data['employee']);
+
+                $data = array_filter(['email' => $data['email'], 'password' => $data['password'] ?? null]);
+
+                $employee->update($data);
+
+                $this->sendEmailVerificationNotification($employee);
 
                 $action->sendSuccessNotification();
             });
@@ -231,6 +256,28 @@ class Employee extends \Filament\Pages\Auth\Login
             isset($data['email']) ? 'email' : 'id' => $data['email'] ?? $data['id'],
             'password' => @$data['password'],
         ];
+    }
+
+    protected function sendEmailVerificationNotification(Model $user): void
+    {
+        if (! $user instanceof MustVerifyEmail) {
+            return;
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return;
+        }
+
+        if (! method_exists($user, 'notify')) {
+            $userClass = $user::class;
+
+            throw new Exception("Model [{$userClass}] does not have a [notify()] method.");
+        }
+
+        $notification = app(VerifyEmail::class);
+        $notification->url = Filament::getVerifyEmailUrl($user);
+
+        $user->notify($notification);
     }
 
     public function adminAction(): \Filament\Actions\Action
