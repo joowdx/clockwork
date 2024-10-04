@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Pages\Auth\EditProfile;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use LSNepomuceno\LaravelA1PdfSign\Exceptions\ProcessRunTimeException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
@@ -56,9 +57,31 @@ class Profile extends EditProfile
                                             ->label('Birthdate')
                                             ->required()
                                             ->format('Y-m-d'),
+                                        TextInput::make('number')
+                                            ->placeholder('9xxxxxxxxx')
+                                            ->mask('9999999999')
+                                            ->prefix('+63 ')
+                                            ->minLength(10)
+                                            ->maxLength(10)
+                                            ->markAsRequired()
+                                            ->rule('required')
+                                            ->rule(fn () => function ($a, $v, $f) {
+                                                if (! preg_match('/^9.*/', $v)) {
+                                                    $f('Incorrect number format');
+                                                }
+                                            }),
                                         $this->getEmailFormComponent()
-                                            ->label('Email'),
-                                        TextInput::make('number'),
+                                            ->label('Email')
+                                            ->rules(['required', 'email:strict,dns,spoof,filter'])
+                                            ->helperText(function () {
+                                                $help = <<<'HTML'
+                                                    <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
+                                                        Please be cautious when changing your email address. Unreachable email addresses may result in account lockout.
+                                                    </span>
+                                                HTML;
+
+                                                return str($help)->toHtmlString();
+                                            }),
                                     ]),
                                 Tab::make('Password')
                                     ->schema([
@@ -271,5 +294,16 @@ class Profile extends EditProfile
                     ]),
             ),
         ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $record->update($data);
+
+        if ($record->wasChanged('email')) {
+            $record->forceFill(['email_verified_at' => null])->save();
+        }
+
+        return $record;
     }
 }

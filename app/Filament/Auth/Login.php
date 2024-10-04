@@ -36,10 +36,19 @@ class Login extends \Filament\Pages\Auth\Login
     {
         return TextInput::make('username')
             ->label('Username')
-            ->required()
+            ->required(false)
+            ->markAsRequired()
+            ->rule('required')
             ->autocomplete()
-            ->autofocus()
-            ->extraInputAttributes(['tabindex' => 1]);
+            ->autofocus();
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return parent::getPasswordFormComponent()
+            ->required(false)
+            ->markAsRequired()
+            ->rule('required');
     }
 
     protected function throwFailureValidationException(): never

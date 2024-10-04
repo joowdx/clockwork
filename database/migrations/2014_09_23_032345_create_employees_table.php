@@ -41,7 +41,7 @@ return new class extends Migration
             $table->foreignUlid('office_id')->nullable();
             $table->char('uid', 8)->unique()->nullable();
             $table->boolean('active')->default(true);
-            $table->rememberToken();
+            $table->timestamp('email_verified_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
             $table->unique(['first_name', 'middle_name', 'last_name', 'qualifier_name'], 'unique_employee');

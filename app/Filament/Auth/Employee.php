@@ -70,7 +70,7 @@ class Employee extends \Filament\Pages\Auth\Login
             ->required(false)
             ->markAsRequired()
             ->hintAction($this->getPasswordSetupAction())
-            ->rule('required');
+            ->rules(['required', 'email:strict,dns,spoof,filter']);
     }
 
     protected function getPasswordFormComponent(): Component
@@ -83,7 +83,8 @@ class Employee extends \Filament\Pages\Auth\Login
 
     protected function getRememberFormComponent(): Component
     {
-        return parent::getRememberFormComponent();
+        return parent::getRememberFormComponent()
+            ->hidden();
     }
 
     protected function getPasswordSetupAction(): Action
@@ -191,9 +192,17 @@ class Employee extends \Filament\Pages\Auth\Login
                         ->schema([
                             TextInput::make('email')
                                 ->markAsRequired()
+                                ->rule(fn (Get $get) => Rule::unique('employees', 'email')->ignore($get('employee')))
                                 ->rules(['required', 'email:strict,dns,spoof,filter'])
-                                ->rule(Password::default()->uncompromised())
-                                ->rule(fn (Get $get) => Rule::unique('employees', 'email')->ignore($get('employee'))),
+                                ->helperText(function () {
+                                    $help = <<<'HTML'
+                                        <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
+                                            Please be cautious when setting up your email address as unreachable email addresses may result in account lockout.
+                                        </span>
+                                    HTML;
+
+                                    return str($help)->toHtmlString();
+                                }),
                             TextInput::make('password')
                                 ->label('New Password')
                                 ->validationAttribute('new password')
