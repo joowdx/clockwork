@@ -69,7 +69,7 @@ class Employee extends \Filament\Pages\Auth\Login
             ->type('text')
             ->required(false)
             ->markAsRequired()
-            ->hintAction($this->getPasswordSetupAction())
+            ->hintAction($this->getAccountSetupAction())
             ->rules(['required', 'email:strict,dns,spoof,filter']);
     }
 
@@ -87,7 +87,7 @@ class Employee extends \Filament\Pages\Auth\Login
             ->hidden();
     }
 
-    protected function getPasswordSetupAction(): Action
+    protected function getAccountSetupAction(): Action
     {
         $lacking = function ($employee, $fail, $message, $boolean = false) {
             $employee = $employee instanceof \App\Models\Employee ? $employee : \App\Models\Employee::find($employee);
@@ -122,7 +122,7 @@ class Employee extends \Filament\Pages\Auth\Login
                 return $fail('Data does not match the record.');
             }
 
-            if (! empty($employee->password) && $success) {
+            if (! empty($employee->password) && ! empty($employee->verified_at) && $success) {
                 return $fail('Employee account has already been set up.');
             }
         };
@@ -193,20 +193,12 @@ class Employee extends \Filament\Pages\Auth\Login
                             TextInput::make('email')
                                 ->markAsRequired()
                                 ->rule(fn (Get $get) => Rule::unique('employees', 'email')->ignore($get('employee')))
-                                ->rules(['required', 'email:strict,dns,spoof,filter'])
-                                ->helperText(function () {
-                                    $help = <<<'HTML'
-                                        <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                                            Please be cautious when setting up your email address as unreachable email addresses may result in account lockout.
-                                        </span>
-                                    HTML;
-
-                                    return str($help)->toHtmlString();
-                                }),
+                                ->rules(['required', 'email:strict,dns,spoof,filter']),
                             TextInput::make('password')
                                 ->label('New Password')
                                 ->validationAttribute('new password')
                                 ->password()
+                                ->visible(fn (Get $get) => \App\Models\Employee::find($get('employee'))?->password === null)
                                 ->same('password_confirmation')
                                 ->markAsRequired()
                                 ->rule('required')
@@ -215,6 +207,7 @@ class Employee extends \Filament\Pages\Auth\Login
                             TextInput::make('password_confirmation')
                                 ->label('Confirm password')
                                 ->password()
+                                ->visible(fn (Get $get) => \App\Models\Employee::find($get('employee'))?->password === null)
                                 ->markAsRequired()
                                 ->rule('required'),
                         ]),
