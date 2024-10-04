@@ -27,6 +27,7 @@
         "laravel/tinker": "^2.8",
         "livewire/volt": "^1.6",
         "lsnepomuceno/laravel-a1-pdf-sign": "^1.1",
+        "mailersend/laravel-driver": "^2.7",
         "owenvoke/blade-fontawesome": "^2.6",
         "spatie/laravel-pdf": "^1.5",
         "webklex/laravel-pdfmerger": "*"
