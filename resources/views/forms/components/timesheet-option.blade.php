@@ -216,9 +216,15 @@
                                 </div>
                             </div>
 
+                            @php($timesheet = $getTimesheets()->first(fn ($timesheet) => $timesheet->id === $value))
+
+                            <div class="month" hidden>
+                                {{ $timesheet->month }}
+                            </div>
+
                             <div>
                                 @include('filament.validation.pages.preview', [
-                                    'timesheets' => $getTimesheets()->filter(fn ($timesheet) => $timesheet->id == $value),
+                                    'timesheets' => [$timesheet],
                                 ])
                             </div>
                         </label>
