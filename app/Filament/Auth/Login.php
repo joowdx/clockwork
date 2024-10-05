@@ -40,7 +40,8 @@ class Login extends \Filament\Pages\Auth\Login
             ->markAsRequired()
             ->rule('required')
             ->autocomplete()
-            ->autofocus();
+            ->autofocus()
+            ->extraInputAttributes(['tabindex' => 2]);
     }
 
     protected function getPasswordFormComponent(): Component
@@ -48,7 +49,14 @@ class Login extends \Filament\Pages\Auth\Login
         return parent::getPasswordFormComponent()
             ->required(false)
             ->markAsRequired()
-            ->rule('required');
+            ->rule('required')
+            ->extraInputAttributes(['tabindex' => 3]);
+    }
+
+    protected function getRememberFormComponent(): Component
+    {
+        return parent::getRememberFormComponent()
+            ->extraAttributes(['tabindex' => 5]);
     }
 
     protected function throwFailureValidationException(): never
@@ -72,6 +80,7 @@ class Login extends \Filament\Pages\Auth\Login
             ->link()
             ->label(__('here...'))
             ->extraAttributes(['class' => 'italic'])
-            ->url(route('filament.employee.auth.login'));
+            ->url(route('filament.employee.auth.login'))
+            ->extraAttributes(['tabindex' => 1]);
     }
 }
