@@ -106,7 +106,7 @@ class DownloadTimesheetAction extends BulkActionGroup
 
                 $action->sendSuccessNotification();
 
-                $name = "Timesheets.zip";
+                $name = 'Timesheets.zip';
 
                 $headers = ['Content-Type' => 'application/zip', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 

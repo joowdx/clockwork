@@ -177,7 +177,7 @@ class Employee extends \Filament\Pages\Auth\Login
                                 ->required()
                                 ->rule('date')
                                 ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
-                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && !$lacking($get('employee'), boolean: true)) {
+                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && ! $lacking($get('employee'), boolean: true)) {
                                         $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $f);
                                     }
                                 }),
@@ -189,7 +189,7 @@ class Employee extends \Filament\Pages\Auth\Login
                                     'female' => 'Female',
                                 ])
                                 ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
-                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && !$lacking($get('employee'), boolean: true)) {
+                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && ! $lacking($get('employee'), boolean: true)) {
                                         $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $f);
                                     }
                                 }),
@@ -204,7 +204,7 @@ class Employee extends \Filament\Pages\Auth\Login
                                         ->take(5);
                                 })
                                 ->rule(fn (Get $get) => function ($a, $v, $f) use ($get, $confirmation, $lacking) {
-                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && !$lacking($get('employee'), boolean: true)) {
+                                    if ($get('birthdate') !== null && $get('sex') !== null && $get('office') !== null && ! $lacking($get('employee'), boolean: true)) {
                                         $confirmation([$get('employee'), $get('birthdate'), $get('sex'), $get('office')], $f);
                                     }
                                 }),
