@@ -18,7 +18,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use UnitEnum;
 
-class User extends Authenticatable implements FilamentUser //, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens, HasFactory, HasUlids, Notifiable, SoftDeletes;
 

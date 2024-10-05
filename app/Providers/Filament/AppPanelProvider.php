@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
 use App\Http\Responses\LoginResponse;
 use App\Providers\Filament\Utils\Middleware;
@@ -24,6 +25,8 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->login(Login::class)
             ->revealablePasswords(false)
+            ->emailVerification(Verification::class)
+            ->passwordReset()
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\\Filament\\App\\Pages')

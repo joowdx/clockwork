@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Account;
+use App\Filament\Auth\Verification;
 use App\Filament\Manager\Resources\TimesheetResource;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
@@ -20,6 +21,8 @@ class DirectorPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('banner'))
             ->id('director')
             ->profile(Account::class)
+            ->emailVerification(Verification::class)
+            ->passwordReset()
             ->path(str(settings('director') ?: 'director')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Director/Resources'), for: 'App\\Filament\\Director\\Resources')

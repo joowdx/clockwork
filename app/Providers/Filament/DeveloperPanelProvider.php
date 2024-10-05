@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Account;
+use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
@@ -19,6 +20,8 @@ class DeveloperPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('banner'))
             ->id('developer')
             ->profile(Account::class)
+            ->emailVerification(Verification::class)
+            ->passwordReset()
             ->path(str(settings('developer') ?: 'developer')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Developer/Resources'), for: 'App\\Filament\\Developer\\Resources')

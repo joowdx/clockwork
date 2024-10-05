@@ -4,7 +4,7 @@ namespace App\Filament\Auth;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use Exception;
+use App\Traits\CanSendEmailVerification;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Component;
@@ -15,16 +15,17 @@ use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Notifications\Auth\VerifyEmail;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class Employee extends \Filament\Pages\Auth\Login
 {
+    use CanSendEmailVerification;
+
     protected static string $view = 'filament.auth.login';
 
     public function mount(): void
@@ -74,7 +75,8 @@ class Employee extends \Filament\Pages\Auth\Login
             ->required(false)
             ->markAsRequired()
             ->hintAction($this->getAccountSetupAction())
-            ->rules(['required', 'email:strict,dns,spoof,filter']);
+            ->rules(['required', 'email:strict,rfc,dns,spoof,filter'])
+            ->extraInputAttributes(['tabindex' => 2]);
     }
 
     protected function getPasswordFormComponent(): Component
@@ -82,13 +84,15 @@ class Employee extends \Filament\Pages\Auth\Login
         return parent::getPasswordFormComponent()
             ->required(false)
             ->markAsRequired()
-            ->rule('required');
+            ->rule('required')
+            ->hint(filament()->hasPasswordReset() ? new HtmlString(Blade::render('<x-filament::link :href="filament()->getRequestPasswordResetUrl()" tabindex="5"> {{ __(\'filament-panels::pages/auth/login.actions.request_password_reset.label\') }}</x-filament::link>')) : null)
+            ->extraInputAttributes(['tabindex' => 4]);
     }
 
     protected function getRememberFormComponent(): Component
     {
         return parent::getRememberFormComponent()
-            ->hidden();
+            ->extraInputAttributes(['tabindex' => 6]);
     }
 
     protected function getAccountSetupAction(): Action
@@ -144,6 +148,7 @@ class Employee extends \Filament\Pages\Auth\Login
             ->modalIcon('heroicon-o-shield-check')
             ->modalCancelActionLabel('Cancel')
             ->closeModalByClickingAway(false)
+            ->extraAttributes(['tabindex' => 3])
             ->slideOver()
             ->form([
                 Wizard::make([
@@ -258,34 +263,13 @@ class Employee extends \Filament\Pages\Auth\Login
         ];
     }
 
-    protected function sendEmailVerificationNotification(Model $user): void
-    {
-        if (! $user instanceof MustVerifyEmail) {
-            return;
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            return;
-        }
-
-        if (! method_exists($user, 'notify')) {
-            $userClass = $user::class;
-
-            throw new Exception("Model [{$userClass}] does not have a [notify()] method.");
-        }
-
-        $notification = app(VerifyEmail::class);
-        $notification->url = Filament::getVerifyEmailUrl($user);
-
-        $user->notify($notification);
-    }
-
     public function adminAction(): \Filament\Actions\Action
     {
         return \Filament\Actions\Action::make('register')
             ->link()
             ->label(__('here...'))
             ->extraAttributes(['class' => 'italic'])
-            ->url(route('filament.app.auth.login'));
+            ->url(route('filament.app.auth.login'))
+            ->extraAttributes(['tabindex' => 1]);
     }
 }

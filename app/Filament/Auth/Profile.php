@@ -4,6 +4,7 @@ namespace App\Filament\Auth;
 
 use App\Filament\Superuser\Resources\SignatureResource;
 use App\Models\Signature;
+use App\Traits\CanSendEmailVerification;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -25,6 +26,8 @@ use SensitiveParameter;
 
 class Profile extends EditProfile
 {
+    use CanSendEmailVerification;
+
     protected function getForms(): array
     {
         return [
@@ -302,6 +305,8 @@ class Profile extends EditProfile
 
         if ($record->wasChanged('email')) {
             $record->forceFill(['email_verified_at' => null])->save();
+
+            $this->sendEmailVerificationNotification($record);
         }
 
         return $record;

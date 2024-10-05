@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Employee as EmployeeLogin;
 use App\Filament\Auth\Profile;
+use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -29,7 +30,7 @@ class EmployeePanelProvider extends PanelProvider
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
             ->colors(['primary' => Color::Gray])
-            ->emailVerification()
+            ->emailVerification(Verification::class)
             ->login(EmployeeLogin::class)
             ->profile(Profile::class)
             ->revealablePasswords(false)

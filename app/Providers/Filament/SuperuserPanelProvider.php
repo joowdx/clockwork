@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Account;
+use App\Filament\Auth\Verification;
 use App\Filament\Superuser\Pages\Dashboard;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
@@ -20,6 +21,8 @@ class SuperuserPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('banner'))
             ->id('superuser')
             ->profile(Account::class)
+            ->emailVerification(Verification::class)
+            ->passwordReset()
             ->path(str(settings('superuser') ?: 'superuser')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Superuser/Resources'), for: 'App\\Filament\\Superuser\\Resources')

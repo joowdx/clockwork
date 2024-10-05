@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Account;
+use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
@@ -19,6 +20,8 @@ class ExecutivePanelProvider extends PanelProvider
             ->brandLogo(fn () => view('banner'))
             ->id('executive')
             ->profile(Account::class)
+            ->emailVerification(Verification::class)
+            ->passwordReset()
             ->path(str(settings('executive') ?: 'executive')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Executive/Resources'), for: 'App\\Filament\\Executive\\Resources')

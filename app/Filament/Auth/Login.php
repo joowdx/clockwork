@@ -8,6 +8,8 @@ use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 
 class Login extends \Filament\Pages\Auth\Login
@@ -50,6 +52,7 @@ class Login extends \Filament\Pages\Auth\Login
             ->required(false)
             ->markAsRequired()
             ->rule('required')
+            ->hint(filament()->hasPasswordReset() ? new HtmlString(Blade::render('<x-filament::link :href="filament()->getRequestPasswordResetUrl()" tabindex="4"> {{ __(\'filament-panels::pages/auth/login.actions.request_password_reset.label\') }}</x-filament::link>')) : null)
             ->extraInputAttributes(['tabindex' => 3]);
     }
 
@@ -69,7 +72,7 @@ class Login extends \Filament\Pages\Auth\Login
     protected function getCredentialsFromFormData(array $data): array
     {
         return [
-            'username' => $data['username'],
+            filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username' => $data['username'],
             'password' => $data['password'],
         ];
     }

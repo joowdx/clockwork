@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Account;
+use App\Filament\Auth\Verification;
 use App\Filament\Superuser\Resources\EmployeeResource;
 use App\Filament\Superuser\Resources\GroupResource;
 use App\Filament\Superuser\Resources\HolidayResource;
@@ -25,6 +26,8 @@ class ManagerPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('banner'))
             ->id('manager')
             ->profile(Account::class)
+            ->emailVerification(Verification::class)
+            ->passwordReset()
             ->path(str(settings('manager') ?: 'manager')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Manager/Resources'), for: 'App\\Filament\\Manager\\Resources')

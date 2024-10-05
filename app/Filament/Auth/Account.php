@@ -4,6 +4,7 @@ namespace App\Filament\Auth;
 
 use App\Filament\Superuser\Resources\SignatureResource;
 use App\Models\Signature;
+use App\Traits\CanSendEmailVerification;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -15,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Pages\Auth\EditProfile;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use LSNepomuceno\LaravelA1PdfSign\Exceptions\ProcessRunTimeException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
@@ -22,6 +24,8 @@ use SensitiveParameter;
 
 class Account extends EditProfile
 {
+    use CanSendEmailVerification;
+
     protected function getForms(): array
     {
         return [
@@ -41,7 +45,8 @@ class Account extends EditProfile
                                             ->disabled()
                                             ->markAsRequired(),
                                         $this->getNameFormComponent(),
-                                        $this->getEmailFormComponent(),
+                                        $this->getEmailFormComponent()
+                                            ->rules(['required', 'email:strict,rfc,dns,spoof,filter']),
                                         TextInput::make('position')
                                             ->maxLength(255),
                                     ]),
@@ -256,5 +261,18 @@ class Account extends EditProfile
                     ]),
             ),
         ];
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $record->update($data);
+
+        if ($record->wasChanged('email')) {
+            $record->forceFill(['email_verified_at' => null])->save();
+
+            $this->sendEmailVerificationNotification($record);
+        }
+
+        return $record;
     }
 }
