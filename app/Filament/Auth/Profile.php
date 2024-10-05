@@ -75,7 +75,7 @@ class Profile extends EditProfile
                                             }),
                                         $this->getEmailFormComponent()
                                             ->label('Email')
-                                            ->rules(['required', 'email:strict,dns,spoof,filter'])
+                                            ->rules(['required', 'email:rfc,strict,dns,spoof,filter'])
                                             ->helperText(function () {
                                                 $help = <<<'HTML'
                                                     <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">

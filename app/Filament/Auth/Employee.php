@@ -75,7 +75,7 @@ class Employee extends \Filament\Pages\Auth\Login
             ->required(false)
             ->markAsRequired()
             ->hintAction($this->getAccountSetupAction())
-            ->rules(['required', 'email:strict,rfc,dns,spoof,filter'])
+            ->rules(['required'])
             ->extraInputAttributes(['tabindex' => 2]);
     }
 
