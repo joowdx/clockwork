@@ -40,7 +40,7 @@
     "require-dev": {
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.29",
-        "laravel/telescope": "*",
+        "laravel/telescope": "^5.2",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^8.1",
         "pestphp/pest": "^2.34",
