@@ -31,7 +31,7 @@ class BackupDatabase
             $path = base_path('database/backups/'.$file);
 
             $process = Process::forever()->env([
-                'PGDATABASE' => config('database.connections.pgsql.driver'),
+                'PGDATABASE' => config('database.connections.pgsql.database'),
                 'PGPASSWORD' => config('database.connections.pgsql.password'),
                 'PGUSER' => config('database.connections.pgsql.username'),
                 'PGHOST' => config('database.connections.pgsql.host'),
