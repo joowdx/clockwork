@@ -168,6 +168,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
+        App\Providers\PulseServiceProvider::class,
         App\Providers\Filament\SuperuserPanelProvider::class,
         App\Providers\Filament\AppPanelProvider::class,
         App\Providers\Filament\SecretaryPanelProvider::class,
