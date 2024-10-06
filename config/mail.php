@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => env('MAIL_MAILER', 'failover'),
 
     /*
     |--------------------------------------------------------------------------
@@ -28,8 +28,8 @@ return [
     | sending an e-mail. You will specify which one you are using for your
     | mailers below. You are free to add additional mailers as required.
     |
-    | Supported: "smtp", "sendmail", "mailgun", "ses", "ses-v2",
-    |            "postmark", "log", "array", "failover", "roundrobin"
+    | Supported: "smtp", "sendmail", "mailersend", "mailgun", "ses", "ses-v2",
+    |            "postmark", "resend", "log", "array", "failover", "roundrobin"
     |
     */
 
@@ -90,8 +90,9 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
+                'roundrobin',
                 'smtp',
-                'log',
+                'log,',
             ],
         ],
 
