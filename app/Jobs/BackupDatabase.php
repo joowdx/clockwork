@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Actions\BackupDatabase as DumpDatabaseAction;
+use App\Actions\BackupDatabase as BackupDatabaseAction;
 use App\Models\User;
 use Exception;
 use Filament\Notifications\Notification;
@@ -12,6 +12,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class BackupDatabase implements ShouldQueue
 {
@@ -26,7 +27,7 @@ class BackupDatabase implements ShouldQueue
      */
     public function __construct()
     {
-        $this->user = auth()->user();
+        $this->user = Auth::user();
 
         $this->queue = 'main';
 
@@ -44,7 +45,7 @@ class BackupDatabase implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(DumpDatabaseAction $dumper): void
+    public function handle(BackupDatabaseAction $dumper): void
     {
         try {
             $dump = $dumper();

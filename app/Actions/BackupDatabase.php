@@ -31,11 +31,11 @@ class BackupDatabase
             $path = base_path('database/backups/'.$file);
 
             $process = Process::forever()->env([
-                'PGDATABASE' => env('DB_DATABASE'),
-                'PGPASSWORD' => env('DB_PASSWORD'),
-                'PGUSER' => env('DB_USERNAME'),
-                'PGHOST' => env('DB_HOST'),
-                'PGPORT' => env('DB_PORT'),
+                'PGDATABASE' => config('database.connections.pgsql.driver'),
+                'PGPASSWORD' => config('database.connections.pgsql.password'),
+                'PGUSER' => config('database.connections.pgsql.username'),
+                'PGHOST' => config('database.connections.pgsql.host'),
+                'PGPORT' => config('database.connections.pgsql.port'),
             ]);
 
             $process->run([
