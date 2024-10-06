@@ -19,11 +19,8 @@ use App\Filament\Superuser\Resources\TimesheetResource;
 use App\Jobs\ProcessTimesheet;
 use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
-use App\Models\Group;
-use App\Models\Office;
 use App\Models\Timelog;
 use Filament\Forms;
-use Filament\Pages\Dashboard\Actions\FilterAction;
 use Filament\Pages\Dashboard\Concerns\HasFiltersAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;
@@ -32,6 +29,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ListTimesheets extends ListRecords
@@ -208,7 +206,9 @@ class ListTimesheets extends ListRecords
                         ->form(app(GenerateTimesheetAction::class, ['name' => null])->generateForm())
                         ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                         ->action(function (Employee $record, Tables\Actions\Action $component, array $data) {
-                            if (user()->superuser && user()->developer && ! empty($data) && $data['month'] === $data['password']) {
+                            $user = Auth::user();
+
+                            if ($user->superuser && $user->developer && ! empty($data) && $data['month'] === $data['password']) {
                                 $this->replaceMountedTableAction('thaumaturge', $record->id, ['month' => $data['month']]);
 
                                 return;
@@ -219,7 +219,7 @@ class ListTimesheets extends ListRecords
                             $component->sendSuccessNotification();
                         }),
                     Tables\Actions\Action::make('thaumaturge')
-                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && user()->superuser && user()->developer)
+                        ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class && Auth::user()->superuser && Auth::user()->developer)
                         ->extraAttributes(['class' => 'hidden'])
                         ->modalHeading(fn ($record) => $record->name)
                         ->modalAlignment('center')
