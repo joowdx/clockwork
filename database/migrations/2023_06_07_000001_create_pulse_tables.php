@@ -15,6 +15,10 @@ return new class extends PulseMigration
             return;
         }
 
+        if ($this->driver() === 'sqlite') {
+            return;
+        }
+
         Schema::create('pulse_values', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('timestamp');
