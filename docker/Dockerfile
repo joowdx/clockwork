@@ -70,7 +70,7 @@ COPY start-container /usr/local/bin/start-container
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
-RUN echo "* * * * * root    cd /var/www/html && php artisan schedule:run >> /dev/null 2>&1" >> /etc/crontab
+RUN crontab -l | { cat; echo "* * * * * /usr/bin/php /var/www/html/artisan schedule:run >> /dev/null 2>&1"; } | crontab -
 
 EXPOSE 8000
 

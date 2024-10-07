@@ -14,7 +14,9 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('model:prune')->monthly();
 
-        $schedule->command('dump:databse')->monthly();
+        $schedule->command('dump:database')->monthly();
+
+        $schedule->command('auth:clear-resets')->everyFifteenMinutes();
     }
 
     /**
