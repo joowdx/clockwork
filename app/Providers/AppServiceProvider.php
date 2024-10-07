@@ -31,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        URL::forceScheme('https');
+
         App::bind(LoginResponse::class, \App\Http\Responses\LoginResponse::class);
 
         App::bind(LogoutResponse::class, \App\Http\Responses\LogoutResponse::class);
@@ -48,8 +50,6 @@ class AppServiceProvider extends ServiceProvider
         Notifications::alignment(Alignment::Start);
 
         FilamentIcon::register(['panels::user-menu.logout-button' => 'gmdi-logout-o', 'panels::user-menu.profile-item' => 'gmdi-account-circle-o']);
-
-        URL::forceScheme('https');
 
         if ($this->app->environment('local')) {
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);

@@ -157,15 +157,11 @@ return [
 
     'providers' => ServiceProvider::defaultProviders()->merge([
         /*
-         * Package Service Providers...
-         */
-        Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
-        /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\HorizonServiceProvider::class,
         App\Providers\PulseServiceProvider::class,
@@ -181,7 +177,10 @@ return [
         App\Providers\Filament\EmployeePanelProvider::class,
         App\Providers\Filament\ValidationPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
-
+        /*
+         * Package Service Providers...
+         */
+        Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
     ])->toArray(),
 
