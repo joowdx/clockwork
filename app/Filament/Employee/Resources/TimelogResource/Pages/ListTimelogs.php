@@ -29,13 +29,6 @@ class ListTimelogs extends ListRecords
         return str($warning)->toHtmlString();
     }
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
-
     protected function getFooterWidgets(): array
     {
         return [
