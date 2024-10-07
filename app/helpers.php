@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
-
 if (! function_exists('settings')) {
     function settings(?string $key, bool $defaults = true): mixed
     {
@@ -23,7 +21,7 @@ if (! function_exists('user')) {
     function user(): ?\App\Models\User
     {
         /** @var ?\App\Models\User */
-        $user = Auth::user();
+        $user = \Illuminate\Support\Facades\Auth::user();
 
         return $user;
     }
