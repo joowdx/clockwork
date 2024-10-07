@@ -16,8 +16,14 @@ class Enrollment extends Pivot
         'uid',
         'employee_id',
         'scanner_id',
+        'device',
         'active',
     ];
+
+    public static function booted(): void
+    {
+        static::saved(fn (self $enrollment) => $enrollment->updateQuietly(['device' => $enrollment->scanner->uid]));
+    }
 
     public function employee(): BelongsTo
     {
