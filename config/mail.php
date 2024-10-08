@@ -85,7 +85,7 @@ return [
             'mailers' => [
                 'roundrobin',
                 'smtp',
-                'log,',
+                'log',
             ],
         ],
 
