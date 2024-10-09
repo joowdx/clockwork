@@ -30,8 +30,8 @@ class SecurityPanelProvider extends PanelProvider
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
-            ->userMenuItems(Navigation::menuItems())
-            ->spaUrlExceptions(Navigation::spaExceptions())
-            ->spa();
+            ->userMenuItems(Navigation::menuItems());
+        // ->spaUrlExceptions(Navigation::spaExceptions())
+        // ->spa()
     }
 }

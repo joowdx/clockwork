@@ -29,8 +29,8 @@ class DeveloperPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Developer/Widgets'), for: 'App\\Filament\\Developer\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
-            ->userMenuItems(Navigation::menuItems())
-            ->spaUrlExceptions(Navigation::spaExceptions())
-            ->spa();
+            ->userMenuItems(Navigation::menuItems());
+        // ->spaUrlExceptions(Navigation::spaExceptions())
+        // ->spa()
     }
 }
