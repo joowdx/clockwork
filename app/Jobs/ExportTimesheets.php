@@ -67,7 +67,7 @@ class ExportTimesheets implements ShouldQueue
                         ->markAsRead()
                         ->url(route('export', $export), true),
                 ]);
-        } catch (Exception) {
+        } catch (Exception $exception) {
             $notification = Notification::make()
                 ->danger()
                 ->title('Timesheet Export Failed')
@@ -77,5 +77,9 @@ class ExportTimesheets implements ShouldQueue
         $notification->sendToDatabase($this->user);
 
         $notification->broadcast($this->user);
+
+        if ($exception ?? false) {
+            throw $exception;
+        }
     }
 }
