@@ -76,8 +76,8 @@ class ExportTimesheets implements ShouldQueue
 
             Log::error('Timesheet export failed', [
                 'user' => $this->user->id,
-                'exporter' => $this->exporter->id(),
                 'exception' => $exception->getMessage(),
+                'exporter' => $this->exporter->id(),
             ]);
         }
 

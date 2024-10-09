@@ -16,4 +16,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('test', fn () => 'Hello World!')->name('test');
 
-Route::get('export/{export', ExportController::class)->name('export');
+Route::get('export/{export}', ExportController::class)->name('export');

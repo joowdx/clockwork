@@ -134,7 +134,7 @@ class ExportTimesheetAction extends BulkAction
                 return Notification::make()
                     ->info()
                     ->title('Generating export')
-                    ->body('Please wait for the download link to be available')
+                    ->body('Please wait while we generate the timesheets. You will be notified once it is ready.')
                     ->send();
             } else {
                 return $export->download();
