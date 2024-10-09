@@ -34,27 +34,31 @@ if (! $preview) {
 $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Carbon::parse($date)->day)->toArray()) : "$from-$to") .
     Carbon::parse($month)->format(' F Y');
 
-function hasNextDay(array $timelogs, array $current, ?array $middle = null) {
-    $cf = in_array(array_key_first($current), ['p2', 'p4']);
-    $pe = in_array(array_key_last($timelogs), ['p1', 'p3']);
+if (! function_exists('hasNextDay')) {
+    function hasNextDay(array $timelogs, array $current, ?array $middle = null) {
+        $cf = in_array(array_key_first($current), ['p2', 'p4']);
+        $pe = in_array(array_key_last($timelogs), ['p1', 'p3']);
 
-    return (@$timelogs['p1'] || @$timelogs['p3']) &&
-        !(@$timelogs['p2'] || @$timelogs['p4']) &&
-        (@$current['p2'] || @$current['p4']) &&
-        !(@$current['p1'] || @$current['p3']) ||
-        ($cf || $pe) ||
-        ($middle && empty($middle));
+        return (@$timelogs['p1'] || @$timelogs['p3']) &&
+            !(@$timelogs['p2'] || @$timelogs['p4']) &&
+            (@$current['p2'] || @$current['p4']) &&
+            !(@$current['p1'] || @$current['p3']) ||
+            ($cf || $pe) ||
+            ($middle && empty($middle));
+    }
 }
 
-function hasPreviousDay(array $timelogs, array $current) {
-    $cl = in_array(array_key_last($current), ['p1', 'p3']);
-    $nf = in_array(array_key_first($timelogs), ['p2', 'p4']);
+if (! function_exists('hasNextDay')) {
+    function hasPreviousDay(array $timelogs, array $current) {
+        $cl = in_array(array_key_last($current), ['p1', 'p3']);
+        $nf = in_array(array_key_first($timelogs), ['p2', 'p4']);
 
-    return (@$timelogs['p2'] || @$timelogs['p4']) &&
-        !(@$timelogs['p1'] || @$timelogs['p3']) &&
-        (@$current['p1'] || @$current['p3']) &&
-        !(@$current['p2'] || @$current['p4']) ||
-        ($cl || $nf);
+        return (@$timelogs['p2'] || @$timelogs['p4']) &&
+            !(@$timelogs['p1'] || @$timelogs['p3']) &&
+            (@$current['p1'] || @$current['p3']) &&
+            !(@$current['p2'] || @$current['p4']) ||
+            ($cl || $nf);
+    }
 }
 ?>
 

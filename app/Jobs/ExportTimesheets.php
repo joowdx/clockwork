@@ -11,6 +11,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ExportTimesheets implements ShouldQueue
 {
@@ -72,14 +73,16 @@ class ExportTimesheets implements ShouldQueue
                 ->danger()
                 ->title('Timesheet Export Failed')
                 ->body('Something went wrong. Please try again.');
+
+            Log::error('Timesheet export failed', [
+                'user' => $this->user->id,
+                'exporter' => $this->exporter->id(),
+                'exception' => $exception->getMessage(),
+            ]);
         }
 
         $notification->sendToDatabase($this->user);
 
         $notification->broadcast($this->user);
-
-        if ($exception ?? false) {
-            throw $exception;
-        }
     }
 }
