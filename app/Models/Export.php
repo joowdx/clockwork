@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 use function Safe\stream_get_contents;
 
 class Export extends Model
 {
-    use HasFactory, HasUlids;
+    use HasFactory, HasUlids, Prunable;
 
     protected $fillable = [
         'digest',
@@ -55,5 +56,12 @@ class Export extends Model
     public function exportable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function prunable()
+    {
+        return static::query()
+            ->orWhere(fn ($query) => $query->whereNotNull('exportable_type')->whereNotNull('exportable_id')->whereDoesntHave('exportable'))
+            ->orWhere(fn ($query) => $query->whereNotNull('user_id')->where('created_at', '<=', now()->subDay()));
     }
 }

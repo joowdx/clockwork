@@ -12,9 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('model:prune')->monthly();
-
         $schedule->command('dump:database')->monthly();
+
+        $schedule->command('model:prune')->everyFifteenMinutes();
 
         $schedule->command('auth:clear-resets')->everyFifteenMinutes();
     }

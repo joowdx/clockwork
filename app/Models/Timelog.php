@@ -181,6 +181,6 @@ class Timelog extends Model
 
     public function prunable(): Builder
     {
-        return static::where('created_at', '<=', now()->subYears(2));
+        return static::where('time', '<=', now()->subYears(2));
     }
 }

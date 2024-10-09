@@ -24,6 +24,7 @@ use Webklex\PDFMerger\Facades\PDFMergerFacade;
 use Webklex\PDFMerger\PDFMerger;
 use ZipArchive;
 
+use function Safe\file_get_contents;
 use function Safe\tmpfile;
 
 class ExportTimesheet implements Responsable
@@ -53,6 +54,8 @@ class ExportTimesheet implements Responsable
     private bool $single = false;
 
     private array $misc = [];
+
+    private bool $download = true;
 
     public function __construct(
         Collection|Employee|null $employee = null,
@@ -204,11 +207,13 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
-    public function download(): BinaryFileResponse|StreamedResponse
+    public function download(bool $download = true): BinaryFileResponse|StreamedResponse|array
     {
         if ($this->format === 'default' && in_array($this->period, ['regular', 'overtime'])) {
             throw new InvalidArgumentException('Default format is not supported for regular and overtime period');
         }
+
+        $this->download = $download;
 
         @[$period, $range] = explode('|', $this->period, 2);
 
@@ -327,7 +332,7 @@ class ExportTimesheet implements Responsable
         };
     }
 
-    protected function exportAsZip(LazyCollection|Collection|null $exportable = null): BinaryFileResponse
+    protected function exportAsZip(LazyCollection|Collection|null $exportable = null): BinaryFileResponse|array
     {
         $name = $this->filename().'.zip';
 
@@ -363,10 +368,23 @@ class ExportTimesheet implements Responsable
 
         $zip->close();
 
-        return response()->download($temp, $name, $headers)->deleteFileAfterSend();
+        if ($this->download) {
+            return response()->download($temp, $name, $headers)->deleteFileAfterSend();
+        }
+
+        try {
+            return [
+                'filename' => $name,
+                'content' => file_get_contents($temp),
+            ];
+        } finally {
+            if (file_exists($temp)) {
+                unlink($temp);
+            }
+        }
     }
 
-    protected function exportAsPdf(LazyCollection|Collection|null $exportable = null): StreamedResponse
+    protected function exportAsPdf(LazyCollection|Collection|null $exportable = null): StreamedResponse|array
     {
         $name = $this->filename().'.pdf';
 
@@ -377,7 +395,14 @@ class ExportTimesheet implements Responsable
             default => $this->pdf($exportable),
         };
 
-        return response()->streamDownload(fn () => print ($downloadable), $name, $headers);
+        if ($this->download) {
+            return response()->streamDownload(fn () => print ($downloadable), $name, $headers);
+        }
+
+        return [
+            'filename' => $name,
+            'content' => $downloadable,
+        ];
     }
 
     protected function pdf(?iterable $exportable, bool $base64 = true): PdfBuilder|PDFMerger|string
@@ -543,5 +568,30 @@ class ExportTimesheet implements Responsable
     public function toResponse($request): BinaryFileResponse|StreamedResponse
     {
         return $this->download();
+    }
+
+    public function id()
+    {
+        $employee = $this->employee instanceof Collection ? $this->employee->pluck('uid')->join('-') : $this->employee->uid;
+
+        $month = $this->month->format('Y-m');
+
+        $user = $this->user->id;
+
+        return hash('sha256', json_encode([
+            'employee' => $employee,
+            'month' => $month,
+            'user' => $user,
+            'signature' => $this->signature,
+            'period' => $this->period,
+            'dates' => $this->dates,
+            'format' => $this->format,
+            'size' => $this->size,
+            'transmittal' => $this->transmittal,
+            'grouping' => $this->grouping,
+            'individual' => $this->individual,
+            'single' => $this->single,
+            'misc' => $this->misc,
+        ]));
     }
 }

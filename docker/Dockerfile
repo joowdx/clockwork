@@ -56,6 +56,10 @@ RUN apt-get update \
 
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.3
 
+COPY opcache.ini /etc/php/8.3/cli/conf.d/10-opcache.ini
+COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
+RUN phpdismod pcov xdebug
+
 RUN groupadd --force -g $WWWGROUP sail
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 
@@ -68,7 +72,6 @@ RUN fc-cache -vf
 COPY openssl.cnf /etc/ssl/openssl.cnf
 COPY start-container /usr/local/bin/start-container
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
 RUN crontab -l | { cat; echo "* * * * * /usr/bin/php /var/www/html/artisan schedule:run >> /dev/null 2>&1"; } | crontab -
 

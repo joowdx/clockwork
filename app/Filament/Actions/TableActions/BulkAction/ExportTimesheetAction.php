@@ -3,6 +3,7 @@
 namespace App\Filament\Actions\TableActions\BulkAction;
 
 use App\Actions\ExportTimesheet;
+use App\Jobs\ExportTimesheets;
 use App\Models\Employee;
 use App\Models\Timesheet;
 use App\Models\User;
@@ -92,11 +93,16 @@ class ExportTimesheetAction extends BulkAction
         };
 
         try {
-            if ($employee instanceof Collection && $employee->count() > 100) {
-                throw new $actionException('Too many records', 'To prevent server overload, please select less than 100 records');
+            $max = match ($data['format']) {
+                'preformatted' => 100,
+                default => 150,
+            };
+
+            if ($employee instanceof Collection && $employee->count() > $max) {
+                throw new $actionException('Too many records', "To prevent server overload, please select no more than $max records for format: {$data['format']}.");
             }
 
-            return (new ExportTimesheet)
+            $export = (new ExportTimesheet)
                 ->employee($employee)
                 ->month($data['month'])
                 ->period($data['period'])
@@ -120,8 +126,19 @@ class ExportTimesheetAction extends BulkAction
                     'holidays' => @$data['holidays'],
                     'highlights' => @$data['highlights'],
                     'absences' => @$data['absences'],
-                ])
-                ->download();
+                ]);
+
+            if ($employee instanceof Collection && $employee->count() > 10) {
+                ExportTimesheets::dispatch($export);
+
+                return Notification::make()
+                    ->info()
+                    ->title('Generating export')
+                    ->body('Please wait for the download link to be available')
+                    ->send();
+            } else {
+                return $export->download();
+            }
         } catch (ProcessFailedException $exception) {
             $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";
 
@@ -178,10 +195,22 @@ class ExportTimesheetAction extends BulkAction
                 ->live()
                 ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                    if (! $value) {
+                        return;
+                    }
+
                     $user = $get('user') ? User::find($get('user')) : user();
 
-                    if ($value && ! $user->signature) {
-                        $fail('Configure your electronic signature first');
+                    $name = $get('user')
+                        ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+                        : 'your';
+
+                    if (! $user->signature) {
+                        $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                    }
+
+                    if (! file_exists(storage_path('app/'.$user->signature->specimen))) {
+                        $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
                     }
                 }),
             Checkbox::make('digital_signature')
@@ -200,12 +229,16 @@ class ExportTimesheetAction extends BulkAction
 
                     $user = $get('user') ? User::find($get('user')) : user();
 
-                    if ($user->signature?->certificate === null) {
-                        $name = $get('user')
-                            ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
-                            : 'your';
+                    $name = $get('user')
+                        ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+                        : 'your';
 
+                    if ($user->signature?->certificate === null) {
                         return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+                    }
+
+                    if (! file_exists(storage_path('app/'.$user->signature->certificate))) {
+                        $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
                     }
                 }),
         ];
