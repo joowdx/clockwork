@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,3 +15,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('test', fn () => 'Hello World!')->name('test');
+
+Route::get('export/{export', ExportController::class)->name('export');
