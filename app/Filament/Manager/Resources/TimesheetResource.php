@@ -40,7 +40,11 @@ class TimesheetResource extends Resource
             ->modifyQueryUsing(function (Builder $query) {
                 $query->certified();
 
-                $query->with(['employee', 'timetables', 'exports' => fn ($query) => $query->select(['id', 'exportable_id', 'exportable_type', 'details'])]);
+                $query->with([
+                    'employee',
+                    'fullMonth' => fn ($query) => $query->select(['id', 'punch', 'present', 'half', 'timesheet_id'])->whereNot('punch', '[]'),
+                    'exports' => fn ($query) => $query->select(['id', 'exportable_id', 'exportable_type', 'details']),
+                ]);
 
                 $query->whereHas('employee');
 
