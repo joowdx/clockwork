@@ -56,6 +56,7 @@ class EmployeePanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->authGuard('employee');
+            ->authGuard('employee')
+            ->spa();
     }
 }
