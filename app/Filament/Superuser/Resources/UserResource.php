@@ -49,6 +49,7 @@ class UserResource extends Resource
                             ->columnSpan(2)
                             ->rule('required')
                             ->rule('email')
+                            ->unique(ignoreRecord: true)
                             ->markAsRequired()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('password')

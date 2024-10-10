@@ -4,6 +4,7 @@ namespace App\Filament\Superuser\Resources\UserResource\Pages;
 
 use App\Filament\Superuser\Resources\UserResource;
 use Filament\Actions;
+use Filament\Actions\Modal\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 
 class EditUser extends EditRecord
@@ -23,6 +24,8 @@ class EditUser extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
+            Actions\RestoreAction::make(),
+            Actions\ForceDeleteAction::make(),
         ];
     }
 }
