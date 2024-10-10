@@ -19,6 +19,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use League\Csv\InvalidArgument;
@@ -69,7 +70,9 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
         private readonly int $chunkSize = 1000,
         private readonly bool $notify = true,
     ) {
-        $this->user = auth()->user();
+        $this->user = Auth::user();
+
+        $this->queue = 'main';
     }
 
     /**
