@@ -2,11 +2,12 @@
 
 namespace App\Filament\Actions\TableActions\BulkAction;
 
-use App\Actions\ExportTimesheet;
 use App\Jobs\ExportTimesheets;
 use App\Models\Employee;
+use App\Models\Export;
 use App\Models\Timesheet;
 use App\Models\User;
+use App\Services\TimesheetExporter;
 use Exception;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use Illuminate\Contracts\Support\Htmlable;
@@ -102,7 +104,7 @@ class ExportTimesheetAction extends BulkAction
                 throw new $actionException('Too many records', "To prevent server overload, please select no more than $max records for format: {$data['format']}.");
             }
 
-            $export = (new ExportTimesheet)
+            $export = (new TimesheetExporter)
                 ->employee($employee)
                 ->month($data['month'])
                 ->period($data['period'])
@@ -114,6 +116,7 @@ class ExportTimesheetAction extends BulkAction
                 ->transmittal($data['transmittal'] ?? 0)
                 ->grouping($data['grouping'] ?? false)
                 ->single($data['single'] ?? false)
+                ->check(!($data['skip_checks'] ?? false))
                 ->signature([
                     'electronic' => @$data['electronic_signature'],
                     'digital' => @$data['digital_signature'],
@@ -128,16 +131,38 @@ class ExportTimesheetAction extends BulkAction
                     'absences' => @$data['absences'],
                 ]);
 
-            if ($employee instanceof Collection && $employee->count() > 10) {
-                ExportTimesheets::dispatch($export);
+            if ($employee instanceof Collection && $employee->count() <= 5) {
+                return $export->download();
+            } elseif (! $data['skip_checks'] && Export::where('details->hash', $export->id())->exists()) {
+                $exported = Export::where('details->hash', $export->id())->first();
+
+                $body = <<<HTML
+                    <b>{$exported->filename}</b> <br>
+                    Your export is ready for download. This will only be available for 1 hour.
+                HTML;
+
+                return Notification::make()
+                    ->icon('heroicon-o-archive-box-arrow-down')
+                    ->title('Timesheet Export Ready')
+                    ->body(str($body)->toHtmlString())
+                    ->actions([
+                        Action::make('download')
+                            ->button()
+                            ->color('primary')
+                            ->markAsRead()
+                            ->url(route('export', $exported), true),
+                    ])
+                    ->broadcast(Auth::user())
+                    ->sendToDatabase(Auth::user())
+                    ->send();
+            } else {
+                ExportTimesheets::dispatchSync($export);
 
                 return Notification::make()
                     ->info()
                     ->title('Generating export')
                     ->body('Please wait while we generate the timesheets. You will be notified once it is ready.')
                     ->send();
-            } else {
-                return $export->download();
             }
         } catch (ProcessFailedException $exception) {
             $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";
@@ -148,6 +173,13 @@ class ExportTimesheetAction extends BulkAction
                 ->body('Please try again later')
                 ->send();
         } catch (Exception $exception) {
+
+            throw $exception;
+            return Notification::make()
+                ->danger()
+                ->title('Please try again')
+                ->send();
+
             if ($exception instanceof $actionException) {
                 return Notification::make()
                     ->danger()
@@ -165,7 +197,6 @@ class ExportTimesheetAction extends BulkAction
         $config = [
             Select::make('size')
                 ->visible($preview)
-                ->live()
                 ->placeholder('Paper Size')
                 ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
                 ->required()
@@ -185,15 +216,12 @@ class ExportTimesheetAction extends BulkAction
             Select::make('user')
                 ->label('Spoof as')
                 ->visible(fn () => ($user = user())->developer && $user->superuser)
-                ->reactive()
                 ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                 ->searchable(),
             Checkbox::make('electronic_signature')
                 ->helperText('Electronically sign the document.')
                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     if (! $value) {
                         return;
@@ -214,10 +242,8 @@ class ExportTimesheetAction extends BulkAction
                     }
                 }),
             Checkbox::make('digital_signature')
-                ->live()
                 ->helperText('Digitally sign the document to prevent tampering.')
                 ->dehydrated(true)
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     if (! $value) {
                         return;
@@ -241,11 +267,14 @@ class ExportTimesheetAction extends BulkAction
                         $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
                     }
                 }),
+            Checkbox::make('skip_checks')
+                ->helperText('Skip checks for existing exports with the same parameters.')
+                ->hintIcon('heroicon-o-question-mark-circle')
+                ->hintIconTooltip('This will bypass the check for existing exports with the same parameters and forcefully generate a new one.'),
         ];
 
         $period = [
             Radio::make('format')
-                ->live()
                 ->default(fn ($livewire) => $livewire->filters['format'] ?? (in_array(Filament::getCurrentPanel()->getId(), ['employee', 'director', 'manager']) ? 'csc' : 'default'))
                 ->required()
                 ->options([
@@ -260,7 +289,6 @@ class ExportTimesheetAction extends BulkAction
                 ]),
             TextInput::make('month')
                 ->hidden($employee)
-                ->live()
                 ->default(fn ($livewire) => $livewire->filters['month'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m')))
                 ->type('month')
                 ->required(),
@@ -273,7 +301,6 @@ class ExportTimesheetAction extends BulkAction
                     return $livewire->filters['period'] ?? (today()->day > 15 ? '1st' : 'full');
                 })
                 ->required()
-                ->live()
                 ->options(function () {
                     if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
                         return [
@@ -414,13 +441,11 @@ class ExportTimesheetAction extends BulkAction
                     Tab::make('Options')
                         ->schema([...$export, ...$config]),
                     Tab::make('Miscellaneous')
-                        ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
                         ->schema([
                             Toggle::make('individual')
                                 ->default(false)
                                 ->helperText('Export employee timesheet separately generating multiple files to be downloaded as an archive.'),
                             Toggle::make('calculate')
-                                ->visible(fn (Get $get) => $get('format') === 'csc')
                                 ->default(false)
                                 ->helperText('Calculate days worked and minutes of undertime.'),
                             Toggle::make('single')

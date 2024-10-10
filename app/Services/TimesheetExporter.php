@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions;
+namespace App\Services;
 
 use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
@@ -23,11 +24,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Webklex\PDFMerger\Facades\PDFMergerFacade;
 use Webklex\PDFMerger\PDFMerger;
 use ZipArchive;
-
 use function Safe\file_get_contents;
 use function Safe\tmpfile;
 
-class ExportTimesheet implements Responsable
+class TimesheetExporter implements Responsable
 {
     private Collection|Employee $employee;
 
@@ -56,6 +56,8 @@ class ExportTimesheet implements Responsable
     private array $misc = [];
 
     private bool $download = true;
+
+    private bool $check = true;
 
     public function __construct(
         Collection|Employee|null $employee = null,
@@ -207,6 +209,18 @@ class ExportTimesheet implements Responsable
         return $this;
     }
 
+    public function check(bool $check = true): static
+    {
+        $this->check = $check;
+
+        return $this;
+    }
+
+    public function skipChecks(): bool
+    {
+        return ! $this->check;
+    }
+
     public function download(bool $download = true): BinaryFileResponse|StreamedResponse|array
     {
         if ($this->format === 'default' && in_array($this->period, ['regular', 'overtime'])) {
@@ -347,22 +361,30 @@ class ExportTimesheet implements Responsable
         $zip->setCompressionIndex(-1, ZipArchive::CM_STORE);
 
         match ($exportable) {
-            null => $this->employee->each(function ($employee) use ($zip) {
-                $content = match ($this->signature === true ?: @$this->signature['digital']) {
-                    true => $this->signed([$employee]),
-                    default => $this->pdf([$employee]),
-                };
+            null => $this->employee->chunk(5)->each(function ($employees) use ($zip) {
+                $tasks = $employees->map(function ($employee) {
+                    return fn () => match ($this->signature === true ?: @$this->signature['digital']) {
+                        true => $this->signed([$employee]),
+                        default => $this->pdf([$employee]),
+                    };
+                });
 
-                $zip->addFromString($employee->name.'.pdf', $content);
+                foreach (Concurrency::run($tasks->toArray()) as $index => $content) {
+                    $zip->addFromString($employees[$index]->name.'.pdf', $content);
+                }
             }),
 
-            default => $exportable->each(function ($timesheet) use ($zip) {
-                $content = match ($this->signature === true ?: @$this->signature['digital']) {
-                    true => $this->signed([$timesheet]),
-                    default => $this->pdf([$timesheet]),
-                };
+            default => $exportable->chunk(5)->each(function ($timesheet) use ($zip) {
+                $tasks = $timesheet->map(function ($timesheet) {
+                    return fn () => match ($this->signature === true ?: @$this->signature['digital']) {
+                        true => $this->signed([$timesheet]),
+                        default => $this->pdf([$timesheet]),
+                    };
+                });
 
-                $zip->addFromString($timesheet->employee->name.'.pdf', $content);
+                foreach (Concurrency::run($tasks->toArray()) as $index => $content) {
+                    $zip->addFromString($timesheet[$index]->employee->name.'.pdf', $content);
+                }
             })
         };
 

@@ -180,6 +180,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Illuminate\Concurrency\ConcurrencyServiceProvider::class,
         Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
     ])->toArray(),
