@@ -179,11 +179,11 @@ class EmployeeResource extends Resource
                 ->visible($isCalledBySelf)
                 ->columns(3)
                 ->schema([
+                    Forms\Components\TextInput::make('email')
+                        ->rule('email:rfc,strict,dns,spoof,filter'),
                     Forms\Components\TextInput::make('uid')
-                        ->columnSpan(2)
                         ->visibleOn('view'),
                     Forms\Components\TextInput::make('uid')
-                        ->columnSpan(2)
                         ->label('UID')
                         ->helperText('This eight character UID will used to uniquely identify the employee across interconnected systems.')
                         ->minLength(8)
