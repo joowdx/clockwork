@@ -171,7 +171,14 @@ class ScannerResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
-            ->recordUrl(null);
+            ->recordUrl(null)
+            ->defaultSort(function (Builder $query) {
+                $query->orderBy('priority', 'desc');
+
+                $query->orderByRaw('uid is NOT NULL desc');
+
+                $query->orderBy('name');
+            });
     }
 
     public static function getRelations(): array
