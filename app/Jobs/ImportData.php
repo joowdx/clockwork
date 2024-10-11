@@ -400,7 +400,8 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     ->success()
                     ->title('Data import successful')
                     ->body('Data has been successfully imported.')
-                    ->sendToDatabase($this->user);
+                    ->sendToDatabase($this->user)
+                    ->broadcast($this->user);
             });
         } catch (Exception $exception) {
             if ($exception instanceof $invalidDataException) {
@@ -408,7 +409,8 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     ->danger()
                     ->title($exception->title)
                     ->body($exception->body)
-                    ->sendToDatabase($this->user);
+                    ->sendToDatabase($this->user)
+                    ->broadcast($this->user);
 
                 return;
             }
@@ -417,7 +419,8 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                 ->danger()
                 ->title('Data import failed')
                 ->body($exception->getMessage())
-                ->sendToDatabase($this->user);
+                ->sendToDatabase($this->user)
+                ->broadcast($this->user);
         }
     }
 
