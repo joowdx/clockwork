@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions;
+namespace App\Services;
 
 use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
@@ -27,7 +27,7 @@ use ZipArchive;
 use function Safe\file_get_contents;
 use function Safe\tmpfile;
 
-class ExportTimesheet implements Responsable
+class TimesheetExporter implements Responsable
 {
     private Collection|Employee $employee;
 
@@ -56,6 +56,8 @@ class ExportTimesheet implements Responsable
     private array $misc = [];
 
     private bool $download = true;
+
+    private bool $check = true;
 
     public function __construct(
         Collection|Employee|null $employee = null,
@@ -205,6 +207,18 @@ class ExportTimesheet implements Responsable
         $this->misc = $misc;
 
         return $this;
+    }
+
+    public function check(bool $check = true): static
+    {
+        $this->check = $check;
+
+        return $this;
+    }
+
+    public function skipChecks(): bool
+    {
+        return ! $this->check;
     }
 
     public function download(bool $download = true): BinaryFileResponse|StreamedResponse|array
@@ -572,16 +586,15 @@ class ExportTimesheet implements Responsable
 
     public function id()
     {
-        $employee = $this->employee instanceof Collection ? $this->employee->pluck('uid')->join('-') : $this->employee->uid;
+        return hash('sha256', json_encode($this->args()));
+    }
 
-        $month = $this->month->format('Y-m');
-
-        $user = $this->user->id;
-
-        return hash('sha256', json_encode([
-            'employee' => $employee,
-            'month' => $month,
-            'user' => $user,
+    public function args()
+    {
+        return [
+            'employee' => $this->employee,
+            'month' => $this->month,
+            'user' => $this->user,
             'signature' => $this->signature,
             'period' => $this->period,
             'dates' => $this->dates,
@@ -592,6 +605,6 @@ class ExportTimesheet implements Responsable
             'individual' => $this->individual,
             'single' => $this->single,
             'misc' => $this->misc,
-        ]));
+        ];
     }
 }

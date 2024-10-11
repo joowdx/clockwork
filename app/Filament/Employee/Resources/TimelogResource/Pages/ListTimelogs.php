@@ -4,7 +4,6 @@ namespace App\Filament\Employee\Resources\TimelogResource\Pages;
 
 use App\Filament\Employee\Resources\TimelogResource;
 use App\Filament\Employee\Widgets\ScannerStatisticsWidget;
-use Filament\Actions;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;

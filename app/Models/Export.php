@@ -62,6 +62,6 @@ class Export extends Model
     {
         return static::query()
             ->orWhere(fn ($query) => $query->whereNotNull('exportable_type')->whereNotNull('exportable_id')->whereDoesntHave('exportable'))
-            ->orWhere(fn ($query) => $query->whereNotNull('user_id')->where('created_at', '<=', now()->subDay()));
+            ->orWhere(fn ($query) => $query->whereNotNull('user_id')->where('created_at', '<=', now()->subHour()));
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Actions\ExportTimesheet;
 use App\Models\Export;
 use App\Models\User;
+use App\Services\TimesheetExporter;
 use Exception;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
@@ -19,15 +19,40 @@ class ExportTimesheets implements ShouldQueue
 
     private User $user;
 
+    private Export $export;
+
+    private bool $exists = false;
+
     /**
      * Create a new job instance.
      */
     public function __construct(
-        private ExportTimesheet $exporter,
+        private TimesheetExporter $exporter,
     ) {
         $this->user = Auth::user();
 
         $this->queue = 'main';
+
+        if (Export::where('details->hash', $this->exporter->id())->exists()) {
+            $this->exists = true;
+
+            $this->export = Export::where('details->hash', $this->exporter->id())->first();
+
+            return;
+        }
+
+        $export = Export::make()
+            ->forceFill([
+                'filename' => '',
+                'user_id' => $this->user->id,
+                'details' => [
+                    'hash' => $this->exporter->id(),
+                ],
+            ]);
+
+        $export->save();
+
+        $this->export = $export;
     }
 
     /**
@@ -35,7 +60,7 @@ class ExportTimesheets implements ShouldQueue
      */
     public function uniqueId(): string
     {
-        return $this->exporter->id();
+        return $this->export->details->hash;
     }
 
     /**
@@ -44,17 +69,20 @@ class ExportTimesheets implements ShouldQueue
     public function handle(): void
     {
         try {
-            ['filename' => $filename, 'content' => $content] = $this->exporter->download(false);
+            if ($this->exists && ! $this->exporter->skipChecks()) {
+                $this->export->forceFill(['created_at' => now()])->save();
+            } else {
+                ['filename' => $filename, 'content' => $content] = $this->exporter->download(false);
 
-            $export = Export::create([
-                'filename' => $filename,
-                'content' => $content,
-                'user_id' => $this->user->id,
-            ]);
+                $this->export->update([
+                    'filename' => $filename,
+                    'content' => $content,
+                ]);
+            }
 
             $body = <<<HTML
-                <b>$filename</b> <br>
-                Your export is ready for download. This will only be available for 24 hours.
+                <b>{$this->export->filename}</b> <br>
+                Your export is ready for download. This will only be available for 1 hour.
             HTML;
 
             $notification = Notification::make()
@@ -66,7 +94,7 @@ class ExportTimesheets implements ShouldQueue
                         ->button()
                         ->color('primary')
                         ->markAsRead()
-                        ->url(route('export', $export), true),
+                        ->url(route('export', $this->export), true),
                 ]);
         } catch (Exception $exception) {
             $notification = Notification::make()
@@ -79,6 +107,8 @@ class ExportTimesheets implements ShouldQueue
                 'exception' => $exception->getMessage(),
                 'exporter' => $this->exporter->id(),
             ]);
+
+            $this->export->delete();
         }
 
         $notification->sendToDatabase($this->user);

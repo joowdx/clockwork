@@ -2,11 +2,11 @@
 
 namespace App\Filament\Actions\TableActions\BulkAction;
 
-use App\Actions\ExportTimesheet;
 use App\Jobs\ExportTimesheets;
 use App\Models\Employee;
 use App\Models\Timesheet;
 use App\Models\User;
+use App\Services\TimesheetExporter;
 use Exception;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
@@ -102,7 +102,7 @@ class ExportTimesheetAction extends BulkAction
                 throw new $actionException('Too many records', "To prevent server overload, please select no more than $max records for format: {$data['format']}.");
             }
 
-            $export = (new ExportTimesheet)
+            $exporter = (new TimesheetExporter)
                 ->employee($employee)
                 ->month($data['month'])
                 ->period($data['period'])
@@ -129,7 +129,7 @@ class ExportTimesheetAction extends BulkAction
                 ]);
 
             if ($employee instanceof Collection && $employee->count() > 10) {
-                ExportTimesheets::dispatch($export);
+                ExportTimesheets::dispatch($exporter);
 
                 return Notification::make()
                     ->info()
@@ -137,7 +137,7 @@ class ExportTimesheetAction extends BulkAction
                     ->body('Please wait while we generate the timesheets. You will be notified once it is ready.')
                     ->send();
             } else {
-                return $export->download();
+                return $exporter->download();
             }
         } catch (ProcessFailedException $exception) {
             $message = $employee instanceof Collection ? 'Failed to export timesheets' : "Failed to export {$employee->name}'s timesheet";
