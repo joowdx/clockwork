@@ -121,8 +121,8 @@ class EmployeeResource extends Resource
                         ->helperText('Qualifier name or name extension to distinguish an individual from others who may have the same name.')
                         ->options([
                             'N/A' => 'N/A',
-                            'Jr.' => 'Jr.',
-                            'Sr.' => 'Sr.',
+                            'Jr' => 'Jr.',
+                            'Sr' => 'Sr.',
                             'II' => 'II',
                             'III' => 'III',
                             'IV' => 'IV',
@@ -133,7 +133,7 @@ class EmployeeResource extends Resource
                             'IX' => 'IX',
                             'X' => 'X',
                         ])
-                        ->in(['N/A', 'Jr.', 'Sr.', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'])
+                        ->in(['N/A', 'Jr', 'Sr', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'])
                         ->hintAction(
                             Forms\Components\Actions\Action::make('na')
                                 ->label('n/a')
