@@ -165,7 +165,6 @@ class ExportTimesheetAction extends BulkAction
         $config = [
             Select::make('size')
                 ->visible($preview)
-                ->live()
                 ->placeholder('Paper Size')
                 ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
                 ->required()
@@ -185,15 +184,12 @@ class ExportTimesheetAction extends BulkAction
             Select::make('user')
                 ->label('Spoof as')
                 ->visible(fn () => ($user = user())->developer && $user->superuser)
-                ->reactive()
                 ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                 ->searchable(),
             Checkbox::make('electronic_signature')
                 ->helperText('Electronically sign the document.')
                 ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     if (! $value) {
                         return;
@@ -214,10 +210,8 @@ class ExportTimesheetAction extends BulkAction
                     }
                 }),
             Checkbox::make('digital_signature')
-                ->live()
                 ->helperText('Digitally sign the document to prevent tampering.')
                 ->dehydrated(true)
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
                 ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
                     if (! $value) {
                         return;
@@ -245,7 +239,6 @@ class ExportTimesheetAction extends BulkAction
 
         $period = [
             Radio::make('format')
-                ->live()
                 ->default(fn ($livewire) => $livewire->filters['format'] ?? (in_array(Filament::getCurrentPanel()->getId(), ['employee', 'director', 'manager']) ? 'csc' : 'default'))
                 ->required()
                 ->options([
@@ -260,7 +253,6 @@ class ExportTimesheetAction extends BulkAction
                 ]),
             TextInput::make('month')
                 ->hidden($employee)
-                ->live()
                 ->default(fn ($livewire) => $livewire->filters['month'] ?? (today()->day > 15 ? today()->startOfMonth()->format('Y-m') : today()->subMonth()->format('Y-m')))
                 ->type('month')
                 ->required(),
@@ -273,7 +265,7 @@ class ExportTimesheetAction extends BulkAction
                     return $livewire->filters['period'] ?? (today()->day > 15 ? '1st' : 'full');
                 })
                 ->required()
-                ->live()
+                ->reactive()
                 ->options(function () {
                     if (in_array(Filament::getCurrentPanel()->getId(), ['director', 'manager'])) {
                         return [
@@ -368,7 +360,6 @@ class ExportTimesheetAction extends BulkAction
         $export = [
             Select::make('size')
                 ->visible(! $preview)
-                ->live()
                 ->placeholder('Paper Size')
                 ->default(fn ($livewire) => $livewire->filters['folio'] ?? 'folio')
                 ->required()
@@ -414,13 +405,11 @@ class ExportTimesheetAction extends BulkAction
                     Tab::make('Options')
                         ->schema([...$export, ...$config]),
                     Tab::make('Miscellaneous')
-                        ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
                         ->schema([
                             Toggle::make('individual')
                                 ->default(false)
                                 ->helperText('Export employee timesheet separately generating multiple files to be downloaded as an archive.'),
                             Toggle::make('calculate')
-                                ->visible(fn (Get $get) => $get('format') === 'csc')
                                 ->default(false)
                                 ->helperText('Calculate days worked and minutes of undertime.'),
                             Toggle::make('single')
@@ -430,7 +419,6 @@ class ExportTimesheetAction extends BulkAction
                                 ->default(true)
                                 ->helperText('Include supervisor field in the timesheet.'),
                             Toggle::make('officer')
-                                ->visible(fn (Get $get) => in_array($get('format'), ['csc', 'preformatted']))
                                 ->default(true)
                                 ->helperText('Include officer-in-charge field in the timesheet.'),
                             Toggle::make('weekends')
