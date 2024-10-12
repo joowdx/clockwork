@@ -17,6 +17,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('auth:clear-resets')->everyFifteenMinutes();
 
         $schedule->command('model:prune')->everyMinute();
+
+        if($this->app->environment('local')) {
+            $schedule->command('telescope:prune')->hourly();
+        }
     }
 
     /**
