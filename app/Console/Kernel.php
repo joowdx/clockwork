@@ -18,7 +18,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('model:prune')->everyMinute();
 
-        if($this->app->environment('local')) {
+        if ($this->app->environment('local')) {
             $schedule->command('telescope:prune')->hourly();
         }
     }
