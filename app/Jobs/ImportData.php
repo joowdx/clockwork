@@ -21,6 +21,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\LazyCollection;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
@@ -375,8 +376,6 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                         ['employee_id'],
                     );
 
-                    Scanner::find($existingScanners)->lazy()->each(fn ($scanner) => $scanner->enrollments()->update(['device' => $scanner->uid]));
-
                     if (! @$skipGroups) {
                         $employee->groups()->sync(
                             collect(str_getcsv($row['groups']))
@@ -396,31 +395,18 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     }
                 }
 
-                Notification::make()
-                    ->success()
-                    ->title('Data import successful')
-                    ->body('Data has been successfully imported.')
-                    ->sendToDatabase($this->user)
-                    ->broadcast($this->user);
+                Scanner::withoutGlobalSCopes()->lazy()->each(fn ($scanner) => $scanner->enrollments()->withoutGlobalScopes()->update(['device' => $scanner->uid]));
+
+                $this->notifyUser('Data import successful', 'Data has been successfully imported.', 'success');
             });
         } catch (Exception $exception) {
             if ($exception instanceof $invalidDataException) {
-                Notification::make()
-                    ->danger()
-                    ->title($exception->title)
-                    ->body($exception->body)
-                    ->sendToDatabase($this->user)
-                    ->broadcast($this->user);
+                $this->notifyUser($exception->title, $exception->body);
 
                 return;
             }
 
-            Notification::make()
-                ->danger()
-                ->title('Data import failed')
-                ->body($exception->getMessage())
-                ->sendToDatabase($this->user)
-                ->broadcast($this->user);
+            $this->notifyUser('Data import failed', $exception->getMessage());
         }
     }
 
@@ -447,5 +433,15 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
         });
 
         return $columnMapping->toArray();
+    }
+
+    public function notifyUser(string $title, string $body, string $type = 'danger')
+    {
+        Notification::make()
+            ->$type()
+            ->title($title)
+            ->body($body)
+            ->sendToDatabase($this->user)
+            ->broadcast($this->user);
     }
 }
