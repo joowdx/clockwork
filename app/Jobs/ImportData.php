@@ -21,6 +21,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\LazyCollection;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
@@ -66,6 +67,7 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
 
     public function __construct(
         private readonly string $fileName,
+        private readonly string $originalName,
         private readonly array $importOptions = [],
         private readonly int $chunkSize = 1000,
         private readonly bool $notify = true,
@@ -294,6 +296,10 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
 
                     $name = array_map([$this, 'formatName'], array_intersect_key($row, array_flip($this->uniqueColumns)));
 
+                    if (collect($name)->some(fn ($name) => preg_match('/[^\p{L}\s\-.]/u', $name))) {
+                        throw new $invalidDataException('Invalid data', 'Name contains invalid characters. Only letters, spaces, dashes, and periods are allowed. Please check for any encoding issues. Try saving the file as UTF-8 and re-upload.');
+                    }
+
                     if (
                         Employee::withoutGlobalScopes()
                             ->where($name)
@@ -362,7 +368,10 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     $enrollments = collect(array_intersect_key($row, $existingScanners));
 
                     // DELETE EMPLOYEE ENROLLMENTS
-                    // $employee->scanners()->detach($enrollments->filter()->map(fn ($uid, $scanner) => $existingScanners[$scanner])->toArray());
+                    Enrollment::query()
+                        ->where('employee_id', $employee->id)
+                        ->whereIn('scanner_id', $enrollments->filter()->map(fn ($uid, $scanner) => $existingScanners[$scanner])->toArray())
+                        ->delete();
 
                     // INSERTS AND OVERWRITES CONFLICTING ENROLLMENTS
                     Enrollment::upsert(
@@ -396,16 +405,16 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
 
                 Scanner::withoutGlobalSCopes()->lazy()->each(fn ($scanner) => $scanner->enrollments()->withoutGlobalScopes()->update(['device' => $scanner->uid]));
 
-                $this->notifyUser('Data import successful', 'Data has been successfully imported.', 'success');
+                $this->notifyUser('Data import successful', "($this->originalName) Data has been successfully imported.", 'success');
             });
         } catch (Exception $exception) {
             if ($exception instanceof $invalidDataException) {
-                $this->notifyUser($exception->title, $exception->body);
+                $this->notifyUser($exception->title, "($this->originalName) $exception->body");
 
                 return;
             }
 
-            $this->notifyUser('Data import failed', $exception->getMessage());
+            $this->notifyUser('Data import failed', "($this->originalName) {$exception->getMessage()}");
         }
     }
 

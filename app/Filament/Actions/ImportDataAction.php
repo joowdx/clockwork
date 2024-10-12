@@ -47,7 +47,7 @@ class ImportDataAction extends Action
                 return;
             }
 
-            ImportData::dispatch($data['file']->getRealPath());
+            ImportData::dispatch($data['file']->getRealPath(), $data['file']->getClientOriginalName());
 
             Notification::make()
                 ->success()
