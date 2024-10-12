@@ -66,7 +66,25 @@ class EmployeesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('employee')->with(['employee.offices', 'employee.scanners']))
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->with(['employee.offices', 'employee.scanners']);
+
+                if (Filament::getCurrentPanel()->getId() === 'secretary') {
+                    $query->whereHas('employee', function ($query) {
+                        $query->whereHas('scanners', function ($query) {
+                            $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
+                        });
+
+                        $query->orWhereHas('offices', function ($query) {
+                            $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
+                        });
+
+                        $query->where('employees.active', true);
+                    });
+                } else {
+                    $query->whereHas('employee');
+                }
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('employee.name')
                     ->searchable(),

@@ -156,12 +156,12 @@ class EmployeeResource extends Resource
                 SoftDeletingScope::class,
             ])
             ->where(function (Builder $query) {
-                $query->whereHas('offices', function (Builder $query) {
-                    $query->whereIn('offices.id', Auth::user()->offices->pluck('id'));
+                $query->orWhereHas('offices', function (Builder $query) {
+                    $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
                 });
 
-                $query->whereHas('scanners', function (Builder $query) {
-                    $query->whereIn('scanners.id', Auth::user()->scanners->pluck('id'));
+                $query->orWhereHas('scanners', function (Builder $query) {
+                    $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
                 });
             });
     }

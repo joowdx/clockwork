@@ -31,6 +31,7 @@ class GroupResource extends Resource
                         ->alphaDash()
                         ->required()
                         ->columnSpanFull()
+                        ->unique(ignoreRecord: true)
                         ->dehydrateStateUsing(fn (string $state): ?string => mb_strtolower($state)),
                 ]),
         ]);
@@ -39,13 +40,44 @@ class GroupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                $query->where(function ($query) {
+                    $query->whereHas('employees', function ($query) {
+                        $query->where(function ($query) {
+                            $query->orWhereHas('scanners', function ($query) {
+                                $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
+                            });
+
+                            $query->orWhereHas('offices', function ($query) {
+                                $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
+                            });
+                        });
+
+                        $query->where('employees.active', true);
+                    });
+
+                    $query->orWhereDoesntHave('employees');
+                });
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employees_count')
                     ->label('Employees')
-                    ->counts(['employees' => fn ($query) => $query->where('member.active', true)])
+                    ->counts(['employees' => function ($query) {
+                        $query->where('member.active', true);
+
+                        $query->where(function (Builder $query) {
+                            $query->orWhereHas('offices', function (Builder $query) {
+                                $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
+                            });
+
+                            $query->orWhereHas('scanners', function (Builder $query) {
+                                $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
+                            });
+                        });
+                    }])
                     ->sortable(),
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
@@ -65,8 +97,7 @@ class GroupResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label(null),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
