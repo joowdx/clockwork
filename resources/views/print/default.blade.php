@@ -134,11 +134,11 @@
                             </div>
                         </td>
                         <td class="underline font-md top courier right" colspan="2">
-                            {{-- <span class="uppercase bold">Misc</span>
+                            <span class="uppercase bold">Misc</span>
 
                             <div @class(['lowercase', $preview ? 'font-sm' : 'font-xs'])>
                                 rectified = <sup>‽</sup>
-                            </div> --}}
+                            </div>
                         </td>
                     </tr>
                     @foreach ($month->range($month->format('Y-m-') . $month->daysInMonth) as $date)

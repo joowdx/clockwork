@@ -538,7 +538,7 @@ $hasPreviousDay = function (array $timelogs, array $current) {
                             <tr>
                                 <td colspan=1 class="relative">
                                     <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
-                                        {{-- ‽ = Rectified --}}
+                                        ‽ = Rectified
                                     </div>
                                     <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
 
