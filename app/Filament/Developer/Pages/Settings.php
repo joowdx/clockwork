@@ -65,6 +65,11 @@ class Settings extends Page
                             })
                             ->toArray(),
                     ),
+                Forms\Components\Section::make('Features')
+                    ->schema([
+                        Forms\Components\Toggle::make('schedule')
+                            ->helperText('Enable schedule feature to secretary roles')
+                    ]),
             ]);
     }
 
