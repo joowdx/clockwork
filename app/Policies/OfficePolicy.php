@@ -16,7 +16,7 @@ class OfficePolicy
 
         return match (Filament::getCurrentPanel()->getId()) {
             'superuser', 'manager' => $user?->hasPermission(UserPermission::OFFICE) ?? false,
-            'secretary' => true,
+            'secretary' => $user?->offices()->exists(),
             default => false,
         };
     }

@@ -16,7 +16,7 @@ class ScannerPolicy
 
         return match (Filament::getCurrentPanel()->getId()) {
             'superuser', 'manager' => $user?->hasPermission(UserPermission::SCANNER) ?? false,
-            'secretary' => true,
+            'secretary' => $user?->offices()->exists(),
             default => false,
         };
     }
