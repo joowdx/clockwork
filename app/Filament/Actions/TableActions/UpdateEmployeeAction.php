@@ -3,9 +3,11 @@
 namespace App\Filament\Actions\TableActions;
 
 use App\Filament\Superuser\Resources\EmployeeResource;
+use App\Models\Deployment;
 use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\Group;
+use App\Models\Member;
 use App\Models\Office;
 use App\Models\Scanner;
 use Filament\Forms\Components\Group as FormGroup;
@@ -19,6 +21,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\DB;
 
 class UpdateEmployeeAction extends Action
 {
@@ -67,7 +70,6 @@ class UpdateEmployeeAction extends Action
                             'device' => $enrollment->device,
                             'scanner_id' => $enrollment->scanner_id,
                             'active' => $enrollment->active,
-                            'device' => $enrollment->scanner_id,
                             'uid' => $enrollment->uid,
                         ],
                     ];
@@ -94,7 +96,6 @@ class UpdateEmployeeAction extends Action
                         ->schema([
                             Repeater::make('deployments')
                                 ->hiddenLabel()
-                                ->itemLabel(fn (array $state) => Office::select('code')->find($state['office_id'])?->code)
                                 ->reorderable(false)
                                 ->addActionLabel('Add office')
                                 ->schema([
@@ -137,7 +138,8 @@ class UpdateEmployeeAction extends Action
                                                 ->orWhere('code', 'ilike', "%$search%")
                                                 ->pluck('name', 'id');
                                         })
-                                        ->reactive()
+                                        ->disabled(fn (Get $get) => $get('id'))
+                                        ->dehydrated()
                                         ->searchable()
                                         ->required()
                                         ->exists('offices', 'id')
@@ -201,7 +203,6 @@ class UpdateEmployeeAction extends Action
                         ->schema([
                             Repeater::make('enrollments')
                                 ->hiddenLabel()
-                                ->itemLabel(fn (array $state) => Scanner::select('name')->find($state['scanner_id'])?->name)
                                 ->reorderable(false)
                                 ->columns(5)
                                 ->addActionLabel('Add scanner')
@@ -210,7 +211,8 @@ class UpdateEmployeeAction extends Action
                                     Select::make('scanner_id')
                                         ->label('Scanner')
                                         ->options(Scanner::orderBy('priority', 'desc')->orderBy('name')->pluck('name', 'id'))
-                                        ->reactive()
+                                        ->disabled(fn (Get $get) => $get('id'))
+                                        ->dehydrated()
                                         ->searchable()
                                         ->required()
                                         ->exists('scanners', 'id')
@@ -239,6 +241,7 @@ class UpdateEmployeeAction extends Action
                                             }
                                         }),
                                     Toggle::make('active')
+                                        ->default(true)
                                         ->required()
                                         ->inline(false),
                                 ]),
@@ -247,7 +250,6 @@ class UpdateEmployeeAction extends Action
                         ->schema([
                             Repeater::make('memberships')
                                 ->hiddenLabel()
-                                ->itemLabel(fn (array $state) => Group::select('name')->find($state['group_id'])?->name)
                                 ->reorderable(false)
                                 ->columns(5)
                                 ->addActionLabel('Add group')
@@ -268,7 +270,8 @@ class UpdateEmployeeAction extends Action
                                                 ->take(25)
                                                 ->pluck('name', 'id');
                                         })
-                                        ->reactive()
+                                        ->disabled(fn (Get $get) => $get('id'))
+                                        ->dehydrated()
                                         ->searchable()
                                         ->required()
                                         ->exists('groups', 'id')
@@ -283,50 +286,54 @@ class UpdateEmployeeAction extends Action
         ]);
 
         $this->action(function (Employee $record, array $data) {
-            $record->fill($data)->save();
+            DB::transaction(function() use ($record, $data) {
+                $record->fill($data)->save();
 
-            $record->scanners()
-                ->withoutGlobalScopes()
-                ->sync(
-                    collect($data['enrollments'])
-                        ->mapWithKeys(function ($enrollment) {
-                            return [
-                                $enrollment['scanner_id'] => [
-                                    'device' => $enrollment['device'],
-                                    'active' => $enrollment['active'],
-                                    'uid' => $enrollment['uid'],
-                                ],
-                            ];
-                        })
-                );
+                $enrollments = collect($data['enrollments'])->map(function ($data) use ($record) {
+                    return [
+                        'id' => $data['id'] ?? strtolower(str()->ulid()),
+                        'employee_id' => $record->id,
+                        ...$data,
+                    ];
+                });
 
-            $record->offices()
-                ->withoutGlobalScopes()
-                ->sync(
-                    collect($data['deployments'])
-                        ->mapWithKeys(function ($deployment) {
-                            return [
-                                $deployment['office_id'] => [
-                                    'supervisor_id' => $deployment['supervisor_id'],
-                                    'active' => $deployment['active'],
-                                    'current' => $deployment['current'],
-                                ],
-                            ];
-                        })
-                );
+                Enrollment::upsert($enrollments->toArray(), ['id'], ['scanner_id', 'device', 'uid', 'active']);
 
-            $record->groups()
-                ->withoutGlobalScopes()
-                ->sync(
-                    collect($data['memberships'])
-                        ->mapWithKeys(function ($membership) {
-                            return [
-                                $membership['group_id'] => [
-                                    'active' => $membership['active'],
-                                ],
-                            ];
-                        })
-                );
+                Enrollment::query()
+                    ->where('employee_id', $record->id)
+                    ->whereNotIn('id', $enrollments->pluck('id'))
+                    ->delete();
+
+                $deployments = collect($data['deployments'])->map(function ($data) use ($record) {
+                    return [
+                        'id' => $data['id'] ?? strtolower(str()->ulid()),
+                        'employee_id' => $record->id,
+                        ...$data,
+                    ];
+                });
+
+                Deployment::upsert($deployments->toArray(), ['id'], ['supervisor_id', 'office_id', 'current', 'active']);
+
+                Deployment::query()
+                    ->where('employee_id', $record->id)
+                    ->whereNotIn('id', $deployments->pluck('id'))
+                    ->delete();
+
+                $memberships = collect($data['memberships'])->map(function ($data) use ($record) {
+                    return [
+                        'id' => $data['id'] ?? strtolower(str()->ulid()),
+                        'employee_id' => $record->id,
+                        ...$data,
+                    ];
+                });
+
+                Member::upsert($memberships->toArray(), ['id'], ['group_id', 'active']);
+
+                Member::query()
+                    ->where('employee_id', $record->id)
+                    ->whereNotIn('id', $memberships->pluck('id'))
+                    ->delete();
+            });
 
             $this->sendSuccessNotification();
         });
