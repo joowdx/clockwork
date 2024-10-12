@@ -54,10 +54,16 @@ class ScannerStatisticsWidget extends BaseWidget
 
             $uid = $superuser ? "<span class='text-sm text-custom-600 dark:text-custom-400' style='--c-400:var(--primary-400);--c-600:var(--primary-600);'>{$uid}</span> " : '';
 
-            $description = $synced && $latest ? <<<HTML
-                {$scanner->timelogs_count} records as of $synced <br>
-                {$scanner->synced_at?->format('jS \of F Y @H:i:s')}
-            HTML : null;
+            $description = $synced && $latest ? match($superuser) {
+                true => <<<HTML
+                    {$scanner->timelogs_count} records as of $synced <br>
+                    {$scanner->synced_at?->format('jS \of F Y @H:i:s')}
+                HTML,
+                default => <<<HTML
+                    as of $synced <br>
+                    {$scanner->synced_at?->format('jS \of M Y @H:i:s')}
+                HTML,
+            } : null;
 
             return Stat::make(str("{$uid}{$name}")->toHtmlString(), $latest ?? 'No data')
                 ->description(str($description)->toHtmlString());
