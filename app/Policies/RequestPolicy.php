@@ -3,20 +3,21 @@
 namespace App\Policies;
 
 use App\Enums\UserPermission;
+use App\Models\Employee;
 use App\Models\User;
 use Filament\Facades\Filament;
 
-class SchedulePolicy
+class RequestPolicy
 {
-    public function viewAny(?User $user): bool
+    public function viewAny(User|Employee|null $user)
     {
         if ($user === null) {
             return false;
         }
 
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser' => settings('schedule') ?? false && $user?->hasPermission(UserPermission::SCHEDULE),
-            'manager', 'secretary' => settings('schedule') ?? false,
+            'superuser' => settings('requests') ?? false && $user?->hasPermission(UserPermission::REQUEST),
+            'manager', 'secretary' => settings('requests') ?? false,
             default => false,
         };
     }

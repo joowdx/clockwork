@@ -67,8 +67,10 @@ class Settings extends Page
                     ),
                 Forms\Components\Section::make('Features')
                     ->schema([
+                        Forms\Components\Toggle::make('requests')
+                            ->helperText('Enable requests feature'),
                         Forms\Components\Toggle::make('schedule')
-                            ->helperText('Enable schedule feature to secretary roles')
+                            ->helperText('Enable schedule feature'),
                     ]),
             ]);
     }

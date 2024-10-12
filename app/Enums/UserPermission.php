@@ -12,6 +12,7 @@ enum UserPermission: string implements HasLabel
     case GROUP = 'group';
     case HOLIDAY = 'holiday';
     case OFFICE = 'office';
+    case REQUEST = 'request';
     case SCANNER = 'scanner';
     case SCHEDULE = 'schedule';
     case SETTING = 'setting';
@@ -29,6 +30,7 @@ enum UserPermission: string implements HasLabel
             self::GROUP => 'Group',
             self::HOLIDAY => 'Holiday',
             self::OFFICE => 'Office',
+            self::REQUEST => 'Request',
             self::SCANNER => 'Scanner',
             self::SCHEDULE => 'Schedule',
             self::SETTING => 'Setting',

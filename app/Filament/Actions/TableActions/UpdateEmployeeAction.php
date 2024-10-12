@@ -286,7 +286,7 @@ class UpdateEmployeeAction extends Action
         ]);
 
         $this->action(function (Employee $record, array $data) {
-            DB::transaction(function() use ($record, $data) {
+            DB::transaction(function () use ($record, $data) {
                 $record->fill($data)->save();
 
                 $enrollments = collect($data['enrollments'])->map(function ($data) use ($record) {
