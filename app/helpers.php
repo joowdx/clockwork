@@ -1,7 +1,7 @@
 <?php
 
 if (! function_exists('settings')) {
-    function settings(?string $key, bool $defaults = true): mixed
+    function settings(?string $key = null, bool $defaults = true): mixed
     {
         if (is_null($key)) {
             return null;
