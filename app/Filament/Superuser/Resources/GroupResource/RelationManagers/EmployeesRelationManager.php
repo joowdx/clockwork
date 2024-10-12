@@ -12,7 +12,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class EmployeesRelationManager extends RelationManager
@@ -35,11 +34,11 @@ class EmployeesRelationManager extends RelationManager
 
                         $query->where(function (Builder $query) {
                             $query->orWhereHas('offices', function (Builder $query) {
-                                $query->whereIn('offices.id', Auth::user()->offices->pluck('id'));
+                                $query->whereIn('offices.id', user()->offices->pluck('id'));
                             });
 
                             $query->orWhereHas('scanners', function (Builder $query) {
-                                $query->whereIn('scanners.id', Auth::user()->scanners->pluck('id'));
+                                $query->whereIn('scanners.id', user()->scanners->pluck('id'));
                             });
                         });
                     })
@@ -72,11 +71,11 @@ class EmployeesRelationManager extends RelationManager
                 if (Filament::getCurrentPanel()->getId() === 'secretary') {
                     $query->whereHas('employee', function ($query) {
                         $query->whereHas('scanners', function ($query) {
-                            $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
+                            $query->whereIn('scanners.id', user()->scanners->pluck('id'));
                         });
 
                         $query->orWhereHas('offices', function ($query) {
-                            $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
+                            $query->whereIn('offices.id', user()->offices->pluck('id'));
                         });
 
                         $query->where('employees.active', true);

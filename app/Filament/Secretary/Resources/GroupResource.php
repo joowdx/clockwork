@@ -40,25 +40,6 @@ class GroupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function ($query) {
-                $query->where(function ($query) {
-                    $query->whereHas('employees', function ($query) {
-                        $query->where(function ($query) {
-                            $query->orWhereHas('scanners', function ($query) {
-                                $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
-                            });
-
-                            $query->orWhereHas('offices', function ($query) {
-                                $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
-                            });
-                        });
-
-                        $query->where('employees.active', true);
-                    });
-
-                    $query->orWhereDoesntHave('employees');
-                });
-            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -70,11 +51,11 @@ class GroupResource extends Resource
 
                         $query->where(function (Builder $query) {
                             $query->orWhereHas('offices', function (Builder $query) {
-                                $query->whereIn('offices.id', user()->offices()->pluck('offices.id'));
+                                $query->whereIn('offices.id', user()->offices->pluck('id'));
                             });
 
                             $query->orWhereHas('scanners', function (Builder $query) {
-                                $query->whereIn('scanners.id', user()->scanners()->pluck('scanners.id'));
+                                $query->whereIn('scanners.id', user()->scanners->pluck('id'));
                             });
                         });
                     }])
@@ -130,6 +111,23 @@ class GroupResource extends Resource
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]);
+            ])
+            ->where(function ($query) {
+                $query->whereHas('employees', function ($query) {
+                    $query->where(function ($query) {
+                        $query->orWhereHas('scanners', function ($query) {
+                            $query->whereIn('scanners.id', user()->scanners->pluck('id'));
+                        });
+
+                        $query->orWhereHas('offices', function ($query) {
+                            $query->whereIn('offices.id', user()->offices->pluck('id'));
+                        });
+                    });
+
+                    $query->where('employees.active', true);
+                });
+
+                $query->orWhereDoesntHave('employees');
+            });
     }
 }
