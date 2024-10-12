@@ -61,7 +61,7 @@ class UserResource extends Resource
                             ->dehydrated(fn (?string $state) => ! empty($state))
                             ->requiredWith('passwordConfirmation')
                             ->same('passwordConfirmation')
-                            ->hiddenOn(['view']),
+                            ->hiddenOn(['view', 'edit']),
                         Forms\Components\TextInput::make('passwordConfirmation')
                             ->columnSpan(2)
                             ->password()
@@ -69,7 +69,7 @@ class UserResource extends Resource
                             ->markAsRequired(fn (string $operation) => $operation === 'create')
                             ->requiredWith('password')
                             ->dehydrated(false)
-                            ->hiddenOn(['view']),
+                            ->hiddenOn(['view', 'edit']),
                     ]),
                 Forms\Components\Section::make('Employee Account Link')
                     ->columns(3)
