@@ -8,12 +8,13 @@ use App\Services\TimesheetExporter;
 use Exception;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class ExportTimesheets implements ShouldQueue
+class ExportTimesheets implements ShouldBeEncrypted, ShouldQueue
 {
     use Queueable;
 
@@ -82,12 +83,12 @@ class ExportTimesheets implements ShouldQueue
 
             $body = <<<HTML
                 <b>{$this->export->filename}</b> <br>
-                Your export is ready for download. This will only be available for 1 hour.
+                This will only be available for 15 minutes.
             HTML;
 
             $notification = Notification::make()
                 ->icon('heroicon-o-archive-box-arrow-down')
-                ->title('Timesheet Export Ready')
+                ->title('Timesheet export ready for download')
                 ->body(str($body)->toHtmlString())
                 ->actions([
                     Action::make('download')
@@ -102,14 +103,24 @@ class ExportTimesheets implements ShouldQueue
                 ->title('Timesheet Export Failed')
                 ->body('Something went wrong. Please try again.');
 
-            Log::error('Timesheet export failed', [
-                'user' => $this->user->id,
-                'exception' => $exception->getMessage(),
-                'exporter' => $this->exporter->id(),
-            ]);
-
             $this->export->delete();
+
+            throw $exception;
         }
+
+        $notification->sendToDatabase($this->user);
+
+        $notification->broadcast($this->user);
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        $this->export->delete();
+
+        $notification = Notification::make()
+            ->danger()
+            ->title('Timesheet Export Failed')
+            ->body('Something went wrong. Please try again.');
 
         $notification->sendToDatabase($this->user);
 

@@ -13,7 +13,7 @@ $certify ??= false;
 
 $officer = $certify ? false : @$misc['officer'] ?? true;
 
-$single = $preview ?: $certify ?: $signature === true ?: @$signature['digital'] ?: $single;
+$single = $preview ?: $certify ?: $signed ?: $single;
 
 if (! $preview) {
     $seal = file_exists(storage_path('app/public/'.settings('seal')))

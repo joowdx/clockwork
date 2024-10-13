@@ -439,33 +439,30 @@ class TimesheetExporter implements Responsable
 
         if ($this->format === 'csc') {
             $args = [
-                'timesheets' => $exportable,
                 'size' => $this->size,
+                'timesheets' => $exportable,
             ];
         } elseif ($this->format === 'preformatted') {
             $args = [
-                'employees' => $this->employee,
                 'size' => $this->size,
                 'month' => $this->month,
                 'from' => $period !== 'dates' ? $from : null,
                 'to' => $period !== 'dates' ? $to : null,
                 'dates' => $period === 'dates' ? $this->dates : null,
                 'period' => $period,
+                'employees' => match ($exportable) {
+                    null => match (get_class($this->employee)) {
+                        Collection::class, EloquentCollection::class, LazyCollection::class => $this->employee,
+                        default => EloquentCollection::make([$this->employee])
+                    },
+                    default => match (is_array($exportable)) {
+                        true => EloquentCollection::make($exportable),
+                        default => $exportable,
+                    },
+                },
             ];
         } else {
-            $employees = match ($exportable) {
-                null => match (get_class($this->employee)) {
-                    Collection::class, EloquentCollection::class, LazyCollection::class => $this->employee,
-                    default => EloquentCollection::make([$this->employee])
-                },
-                default => match (is_array($exportable)) {
-                    true => EloquentCollection::make([$exportable]),
-                    default => $exportable,
-                },
-            };
-
             $args = [
-                'employees' => $employees,
                 'size' => $this->size,
                 'signature' => $this->signature,
                 'month' => $this->month,
@@ -473,6 +470,16 @@ class TimesheetExporter implements Responsable
                 'to' => $period !== 'dates' ? $to : null,
                 'dates' => $period === 'dates' ? $this->dates : null,
                 'period' => $period,
+                'employees' => match ($exportable) {
+                    null => match (get_class($this->employee)) {
+                        Collection::class, EloquentCollection::class, LazyCollection::class => $this->employee,
+                        default => EloquentCollection::make([$this->employee])
+                    },
+                    default => match (is_array($exportable)) {
+                        true => EloquentCollection::make($exportable),
+                        default => $exportable,
+                    },
+                },
             ];
         }
 

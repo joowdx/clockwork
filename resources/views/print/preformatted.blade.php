@@ -34,7 +34,7 @@ if (! $preview) {
 $label = ($period === 'dates' ? $compressor(collect($dates)->map(fn($date) => Carbon::parse($date)->day)->toArray()) : "$from-$to") .
     Carbon::parse($month)->format(' F Y');
 
-$hasNextDay = function (array $timelogs, array $current, ?array $middle = null) {
+$hasNextDay ??= function (array $timelogs, array $current, ?array $middle = null) {
     $cf = in_array(array_key_first($current), ['p2', 'p4']);
     $pe = in_array(array_key_last($timelogs), ['p1', 'p3']);
 
@@ -46,7 +46,7 @@ $hasNextDay = function (array $timelogs, array $current, ?array $middle = null) 
         ($middle && empty($middle));
 };
 
-$hasPreviousDay = function (array $timelogs, array $current) {
+$hasPreviousDay ??= function (array $timelogs, array $current) {
     $cl = in_array(array_key_last($current), ['p1', 'p3']);
     $nf = in_array(array_key_first($timelogs), ['p2', 'p4']);
 

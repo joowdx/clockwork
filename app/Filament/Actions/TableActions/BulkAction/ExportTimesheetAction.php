@@ -93,13 +93,10 @@ class ExportTimesheetAction extends BulkAction
         };
 
         try {
-            $max = match ($data['format']) {
-                'preformatted' => 100,
-                default => 150,
-            };
+            $max = 300 - ($data['individual'] ? 100 : 0) - ($data['digital_signature'] ? 50 : 0) - ($data['transmittal'] > 0 ? 25 : 0);
 
             if ($employee instanceof Collection && $employee->count() > $max) {
-                throw new $actionException('Too many records', "To prevent server overload, please select no more than $max records for format: {$data['format']}.");
+                throw new $actionException('Too many records', "To prevent server overload, please select no more than $max records.");
             }
 
             $exporter = (new TimesheetExporter)
@@ -182,7 +179,6 @@ class ExportTimesheetAction extends BulkAction
             //     ->required()
             //     ->placeholder('Generate transmittal'),
             Select::make('user')
-                ->label('Spoof as')
                 ->visible(fn () => ($user = user())->developer && $user->superuser)
                 ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
@@ -202,11 +198,11 @@ class ExportTimesheetAction extends BulkAction
                         : 'your';
 
                     if (! $user->signature) {
-                        $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
                     }
 
-                    if (! file_exists(storage_path('app/'.$user->signature->specimen))) {
-                        $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                    if (! file_exists(storage_path('app/'.$user->signature?->specimen))) {
+                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
                     }
                 }),
             Checkbox::make('digital_signature')
@@ -218,7 +214,7 @@ class ExportTimesheetAction extends BulkAction
                     }
 
                     if (! $get('electronic_signature')) {
-                        $fail('Digital signature requires electronic signature');
+                        return $fail('Digital signature requires electronic signature');
                     }
 
                     $user = $get('user') ? User::find($get('user')) : user();
@@ -231,8 +227,8 @@ class ExportTimesheetAction extends BulkAction
                         return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
                     }
 
-                    if (! file_exists(storage_path('app/'.$user->signature->certificate))) {
-                        $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                    if (! file_exists(storage_path('app/'.$user->signature?->certificate))) {
+                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
                     }
                 }),
         ];
@@ -411,7 +407,7 @@ class ExportTimesheetAction extends BulkAction
                                 ->helperText('Export employee timesheet separately generating multiple files to be downloaded as an archive.'),
                             Toggle::make('calculate')
                                 ->default(false)
-                                ->helperText('Calculate days worked and minutes of undertime.'),
+                                ->helperText('Calculate days worked and minutes of undertime (CSC Form).'),
                             Toggle::make('single')
                                 ->default(false)
                                 ->helperText('Force single timesheet per page.'),
