@@ -7,6 +7,7 @@ use App\Enums\EmploymentSubstatus;
 use App\Models\Employee;
 use App\Models\Enrollment;
 use App\Models\Group;
+use App\Models\Member;
 use App\Models\Office;
 use App\Models\Scanner;
 use App\Models\User;
@@ -295,8 +296,8 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
 
                     $name = array_map([$this, 'formatName'], array_intersect_key($row, array_flip($this->uniqueColumns)));
 
-                    if (collect($name)->some(fn ($name) => preg_match('/[^\p{L}\s\-.]/u', $name))) {
-                        throw new $invalidDataException('Invalid data', 'Name contains invalid characters. Only letters, spaces, dashes, and periods are allowed. Please check for any encoding issues. Try saving the file as UTF-8 and re-upload.');
+                    if (collect($name)->some(fn ($name) => preg_match('/[^\p{L}\s\-.,]/u', $name))) {
+                        throw new $invalidDataException('Invalid data', 'Name contains invalid characters. Only letters, spaces, commas, dashes, and periods are allowed. Please check for any encoding issues. Try saving the file as UTF-8 and re-upload.' . collect($name)->join(', '));
                     }
 
                     if (
@@ -384,12 +385,21 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     );
 
                     if (! @$skipGroups) {
-                        $employee->groups()->sync(
-                            collect(str_getcsv($row['groups']))
-                                ->map(fn ($group) => mb_strtolower(trim($group)))
-                                ->filter(fn ($group) => isset($existingGroups[$group]))
-                                ->map(fn ($group) => $existingGroups[$group])
-                        );
+                        $groups = collect(str_getcsv($row['groups']))
+                            ->map(fn ($group) => mb_strtolower(trim($group)))
+                            ->filter(fn ($group) => isset($existingGroups[$group]))
+                            ->map(fn ($group) => [
+                                'id' => strtolower(str()->ulid()),
+                                'group_id' => $existingGroups[$group],
+                                'employee_id' => $employee->id,
+                            ]);
+
+                        Member::insertOrIgnore($groups->toArray());
+
+                        Member::query()
+                            ->where('employee_id', $employee->id)
+                            ->whereNotIn('group_id', $groups->pluck('group_id')->toArray())
+                            ->delete();
                     }
 
                     if (! @$skipOffices) {
