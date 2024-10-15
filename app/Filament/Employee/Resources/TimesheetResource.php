@@ -229,7 +229,7 @@ class TimesheetResource extends Resource
                                 $action->sendFailureNotification();
                             }
                         }),
-                    CertifyTimesheetAction::make(),
+                    // CertifyTimesheetAction::make(),
                     Tables\Actions\DeleteAction::make()
                         ->hidden(fn (Timesheet $record) => $record->exports->isEmpty())
                         ->successNotificationTitle('Deleted successfully.')
