@@ -99,7 +99,7 @@ class ExportAttendanceAction extends Action
                 ->strict($data['strict'])
                 ->current($data['current'])
                 ->size($data['size'])
-                ->user($data['user'] ? User::find($data['user']) : user())
+                ->user(@$data['user'] ? User::find($data['user']) : user())
                 ->signature([
                     'electronic' => @$data['electronic_signature'],
                     'digital' => @$data['digital_signature'],
