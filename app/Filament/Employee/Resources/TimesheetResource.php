@@ -43,10 +43,10 @@ class TimesheetResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('days')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('timetables_count')
-                    ->toggleable()
-                    ->label('Absences')
-                    ->counts(['timetables' => fn ($query) => $query->where('absent', true)]),
+                // Tables\Columns\TextColumn::make('timetables_count')
+                //     ->toggleable()
+                //     ->label('Absences')
+                //     ->counts(['timetables' => fn ($query) => $query->where('absent', true)]),
                 Tables\Columns\TextColumn::make('timetables_sum_undertime')
                     ->toggleable()
                     ->label('Undertime')
