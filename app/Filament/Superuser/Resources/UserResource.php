@@ -118,7 +118,10 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('username')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('roles'),
+                Tables\Columns\TextColumn::make('roles')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('offices.code')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -129,6 +132,12 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('offices')
+                    ->relationship('offices', 'code')
+                    ->searchable()
+                    ->preload()
+                    ->multiple()
+                    ->native(false),
                 Tables\Filters\TrashedFilter::make()
                     ->native(false),
             ])
