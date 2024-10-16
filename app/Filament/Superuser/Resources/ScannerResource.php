@@ -44,6 +44,7 @@ class ScannerResource extends Resource
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->alphaDash()
+                        ->unique(ignoreRecord: true)
                         ->dehydrateStateUsing(fn (string $state): ?string => mb_strtolower($state)),
                     Forms\Components\TextInput::make('uid')
                         ->hint('Device ID')
