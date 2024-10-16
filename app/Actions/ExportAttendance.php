@@ -227,8 +227,8 @@ class ExportAttendance implements Responsable
         $headers = ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 
         $downloadable = match ($this->signature === true ?: @$this->signature['digital']) {
-            null => $this->pdf(),
-            default => $this->signed()
+            true => $this->signed(),
+            default => $this->pdf(),
         };
 
         return response()->streamDownload(fn () => print ($downloadable), $name, $headers);
