@@ -37,15 +37,9 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y nodejs \
     && npm install -g npm \
-    && npm install -g pnpm \
-    && npm install -g bun \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /etc/apt/keyrings/yarn.gpg >/dev/null \
-    && echo "deb [signed-by=/etc/apt/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list \
     && curl -sS https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | tee /etc/apt/keyrings/pgdg.gpg >/dev/null \
     && echo "deb [signed-by=/etc/apt/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y yarn \
-    && apt-get install -y $MYSQL_CLIENT \
     && apt-get install -y postgresql-client-$POSTGRES_VERSION \
     && apt-get install -y \
     libappindicator1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libfontconfig1 libgbm1 libgbm-dev libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libc6 libcups2 libdbus-1-3 libdrm2 libexpat1 libgcc1 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libuuid1 libx11-6 libx11-xcb1 libxcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxkbcommon0 libxrandr2 libxrender1 libxshmfence1 libxshmfence-dev libxss1 libxtst6 \
@@ -63,7 +57,7 @@ RUN phpdismod pcov xdebug
 RUN groupadd --force -g $WWWGROUP sail
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 
-RUN pip3 install pyzkc>=0.9.1 && npm install --location=global --unsafe-perm puppeteer@^17
+RUN pip3 install pyzkc>=0.9.1 pyHanko[pkcs11,image-support,opentype,xmp] >=0.25.1 && npm install --location=global --unsafe-perm puppeteer@^17
 RUN chmod -R o+rx /usr/lib/node_modules/puppeteer/.local-chromium
 
 COPY NotoSansTagalog.ttf /usr/share/fonts/truetype/NotoSansTagalog.ttf
