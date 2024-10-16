@@ -10,6 +10,7 @@ use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\GroupsRel
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\OfficesRelationManager;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\ScannersRelationManager;
 use App\Models\Employee;
+use App\Models\Scopes\ActiveScope;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -349,6 +350,7 @@ class EmployeeResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
+                ActiveScope::class,
                 SoftDeletingScope::class,
             ]);
     }
