@@ -20,7 +20,7 @@ trait TimelogsHasher
 
         $timelogs = $timelogs ?? $model->timelogs;
 
-        $scanners = $timelogs->loadMissing('scanner')->map(fn ($timelog) => ['uid' => $timelog->uid, ...$timelog->scanner->only('print', 'active')]);
+        $scanners = $timelogs->loadMissing('scanner')->map(fn ($timelog) => ['uid' => $timelog->uid, ...$timelog->scanner?->only('print', 'active')]);
 
         $timelogs = $timelogs->when($check, fn ($timelogs) => $timelogs->ensure(Timelog::class))->map->withoutRelations();
 

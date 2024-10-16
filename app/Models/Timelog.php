@@ -122,7 +122,8 @@ class Timelog extends Model
 
     public function scanner(): BelongsTo
     {
-        return $this->belongsTo(Scanner::class, 'device', 'uid');
+        return $this->belongsTo(Scanner::class, 'device', 'uid')
+            ->withoutGlobalScopes();
     }
 
     public function original(): BelongsTo
