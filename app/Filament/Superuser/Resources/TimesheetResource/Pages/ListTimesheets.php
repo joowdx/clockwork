@@ -269,37 +269,26 @@ class ListTimesheets extends ListRecords
                                                     ->columns(2)
                                                     ->defaultItems(0)
                                                     ->addActionLabel('Create')
-                                                    ->itemLabel(function (array $state) {
-                                                        if (is_null($state['time'])) {
-                                                            return null;
-                                                        }
-
-                                                        return Carbon::parse($state['time'])->format('Y-m-d H:i:s').' '.$state['state']->getLabel();
-                                                    })
                                                     ->schema(function (Employee $record) use ($from, $to) {
                                                         $scanners = $record->scanners()->whereNotNull('scanners.uid')->get();
 
                                                         return [
                                                             Forms\Components\Select::make('device')
-                                                                ->live()
                                                                 ->options($scanners->pluck('name', 'uid')->toArray())
                                                                 ->required()
                                                                 ->afterStateUpdated(function (int $state, Forms\Set $set) use ($scanners) {
                                                                     $set('uid', $scanners->first(fn ($scanner) => $scanner->uid === $state)?->pivot->uid);
                                                                 }),
                                                             Forms\Components\DateTimePicker::make('time')
-                                                                ->live()
                                                                 ->distinct()
                                                                 ->required()
                                                                 ->minDate($from->format('Y-m-d H:i:s'))
                                                                 ->maxDate($to->format('Y-m-d H:i:s')),
                                                             Forms\Components\Select::make('state')
-                                                                ->live()
                                                                 ->options(TimelogState::class)
                                                                 ->default(TimelogState::CHECK_IN)
                                                                 ->required(),
                                                             Forms\Components\Select::make('mode')
-                                                                ->live()
                                                                 ->options(function () {
                                                                     return collect(TimelogMode::cases())->mapWithKeys(fn ($mode) => [
                                                                         $mode->value => $mode->getLabel(true),
