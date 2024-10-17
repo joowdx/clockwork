@@ -9,13 +9,14 @@ use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\MorphToSelect;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use LSNepomuceno\LaravelA1PdfSign\Exceptions\ProcessRunTimeException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
 use SensitiveParameter;
@@ -78,12 +79,12 @@ class SignatureResource extends Resource
         };
 
         return $form
+            ->columns(3)
             ->schema([
                 $signaturable::make('signaturable')
                     ->label('Owner')
                     ->native(false)
-                    ->columns(2)
-                    ->columnSpanFull()
+                    ->columnSpan(1)
                     ->required()
                     ->searchable()
                     ->preload()
@@ -94,122 +95,49 @@ class SignatureResource extends Resource
                             ->titleAttribute('name'),
                     ]),
                 Forms\Components\Fieldset::make('Signature')
+                    ->columns(1)
+                    ->columnSpan(2)
                     ->schema([
                         Forms\Components\FileUpload::make('specimen')
-                            ->extraInputAttributes(['class' => 'hide-file-upload-label'])
-                            ->disk('local')
-                            ->visibility('private')
-                            ->directory('signatures/specimens')
-                            ->disabled()
-                            ->dehydrated()
                             ->required()
-                            ->acceptedFileTypes(['image/png', 'image/webp'])
-                            ->previewable(false)
-                            ->deletable(false)
-                            ->hintActions([
-                                Forms\Components\Actions\Action::make('upload')
-                                    ->requiresConfirmation()
-                                    ->modalIcon('heroicon-o-arrow-up-tray')
-                                    ->modalDescription('Please ensure that the specimen has a clear and transparent background.')
-                                    ->form([
-                                        Forms\Components\FileUpload::make('tmp')
-                                            ->disk('local')
-                                            ->visibility('private')
-                                            ->directory('livewire-tmp')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
-                                            ->getUploadedFileNameForStorageUsing(fn ($state) => current($state)->hashName())
-                                            ->label('Specimen')
-                                            ->required(),
-                                    ])
-                                    ->action(function (Forms\Set $set, array $data) {
-                                        $set('specimen', [$data['tmp']]);
-                                    }),
-                            ])
-                            ->hintActions([
-                                Forms\Components\Actions\Action::make('preview')
-                                    ->hidden(fn (string $operation) => $operation === 'create')
-                                    ->requiresConfirmation()
-                                    ->modalIcon(null)
-                                    ->modalDescription(null)
-                                    ->modalContent(fn (Signature $record) => static::signatureView($record))
-                                    ->modalCancelAction(false)
-                                    ->modalSubmitAction(false)
-                                    ->form(fn (Signature $signature) => [
-                                        Forms\Components\Actions::make([
-                                            Forms\Components\Actions\Action::make('Download')
-                                                ->action(fn () => Storage::download($signature->specimen, $signature->signaturable->name)),
-                                        ])->alignRight(),
-                                    ]),
-                            ]),
+                            ->disk('fake')
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
+                            ->acceptedFileTypes(['image/png'])
+                            ->downloadable()
+                            ->getUploadedFileNameForStorageUsing(
+                                fn (TemporaryUploadedFile $file): string => 'data:'.$file->getMimeType().';base64,'.base64_encode($file->getContent())
+                            ),
                         Forms\Components\FileUpload::make('certificate')
-                            ->extraInputAttributes(['class' => 'hide-file-upload-label'])
-                            ->disk('local')
-                            ->visibility('private')
-                            ->directory('signatures/certificates')
-                            ->disabled()
-                            ->dehydrated()
-                            ->previewable(false)
-                            ->deletable(false)
-                            ->hintActions([
-                                Forms\Components\Actions\Action::make('upload')
-                                    ->requiresConfirmation()
-                                    ->modalIcon('heroicon-o-arrow-up-tray')
-                                    ->modalDescription('Upload a valid certificate file. You will be asked to enter your certificate\'s password every time you sign a document.')
-                                    ->form([
-                                        Forms\Components\FileUpload::make('tmp')
-                                            ->disk('local')
-                                            ->visibility('private')
-                                            ->directory('livewire-tmp')
-                                            ->previewable(false)
-                                            ->getUploadedFileNameForStorageUsing(fn ($state) => pathinfo(current($state)->hashName(), PATHINFO_FILENAME).'.pfx')
-                                            ->label('Certificate')
-                                            ->required()
-                                            ->rule(fn () => function ($attribute, $value, $fail) {
-                                                try {
-                                                    (new ManageCert)->setPreservePfx()->fromUpload($value, '');
-                                                } catch (ProcessRunTimeException $exception) {
-                                                    if (str($exception->getMessage())->contains('password')) {
-                                                        return;
-                                                    }
+                            ->disk('fake')
+                            ->reactive()
+                            ->acceptedFileTypes(['application/x-pkcs12'])
+                            ->downloadable()
+                            ->getUploadedFileNameForStorageUsing(
+                                fn (TemporaryUploadedFile $file): string => 'data:'.$file->getMimeType().';base64,'.base64_encode($file->getContent())
+                            ),
+                        Forms\Components\TextInput::make('password')
+                            ->visible(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
+                            ->password()
+                            ->requiredWith('certificate')
+                            ->rule(fn (Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
+                                if (empty($value) || empty($get('certificate'))) {
+                                    return;
+                                }
 
-                                                    $fail('The file is not a valid certificate.');
-                                                }
-                                            }),
-                                        Forms\Components\TextInput::make('password')
-                                            ->label('Password')
-                                            ->hint('Optional')
-                                            ->password()
-                                            ->rule(fn (Forms\Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
-                                                if (empty($value) || empty($get('tmp'))) {
-                                                    return;
-                                                }
+                                if (! current($get('certificate')) instanceof TemporaryUploadedFile) {
+                                    return;
+                                }
 
-                                                try {
-                                                    (new ManageCert)->setPreservePfx()->fromUpload(current($get('tmp')), $value);
-                                                } catch (ProcessRunTimeException $exception) {
-                                                    if (str($exception->getMessage())->contains('password')) {
-                                                        $fail('The password is incorrect.');
-                                                    }
-                                                }
-                                            }),
-                                    ])
-                                    ->action(function (Forms\Set $set, array $data) {
-                                        $set('certificate', [$data['tmp']]);
-
-                                        $set('password', $data['password']);
-                                    }),
-                                Forms\Components\Actions\Action::make('password')
-                                    ->hidden(fn (Signature $signature, mixed $state) => empty($state) || isset($signature->password))
-                                    ->requiresConfirmation()
-                                    ->modalIcon('heroicon-o-arrow-up-tray')
-                                    ->modalDescription('You can optionally provide your password here.'),
-                                Forms\Components\Actions\Action::make('Download')
-                                    ->hidden(fn (string $operation, mixed $state) => $operation === 'create' || empty($state))
-                                    ->action(fn (Signature $signature) => Storage::download($signature->certificate, $signature->signaturable->name)),
-                            ]),
-                        Forms\Components\Hidden::make('password'),
+                                try {
+                                    (new ManageCert)->setPreservePfx()->fromUpload(current($get('certificate')), $value);
+                                } catch (ProcessRunTimeException $exception) {
+                                    if (str($exception->getMessage())->contains('password')) {
+                                        $fail('The password is incorrect.');
+                                    }
+                                }
+                            }),
                     ]),
             ]);
     }

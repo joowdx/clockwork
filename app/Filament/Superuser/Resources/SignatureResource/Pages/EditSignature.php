@@ -18,45 +18,4 @@ class EditSignature extends EditRecord
             Actions\RestoreAction::make(),
         ];
     }
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        if (str($data['specimen'])->startsWith('livewire-tmp/')) {
-            if (file_exists(storage_path('app/'.$data['specimen']))) {
-                $file = 'signatures/specimens/'.str($data['specimen'])->afterLast('/');
-
-                if (! is_dir(storage_path('app/signatures/specimens'))) {
-                    mkdir(storage_path('app/signatures/specimens'), recursive: true);
-                }
-
-                if (file_exists(storage_path('app/'.$this->record->specimen))) {
-                    unlink(storage_path('app/'.$this->record->specimen));
-                }
-
-                rename(storage_path('app/'.$data['specimen']), storage_path('app/'.$file));
-
-                $data['specimen'] = $file;
-            }
-        }
-
-        if (str($data['certificate'])->startsWith('livewire-tmp/')) {
-            if (file_exists(storage_path('app/'.$data['certificate']))) {
-                $file = 'signatures/certificates/'.str($data['certificate'])->afterLast('/');
-
-                if (! is_dir(storage_path('app/signatures/certificates'))) {
-                    mkdir(storage_path('app/signatures/certificates'), recursive: true);
-                }
-
-                if ($this->record->certificate && file_exists(storage_path('app/'.$this->record->certificate))) {
-                    unlink(storage_path('app/'.$this->record->certificate));
-                }
-
-                rename(storage_path('app/'.$data['certificate']), storage_path('app/'.$file));
-
-                $data['certificate'] = $file;
-            }
-        }
-
-        return $data;
-    }
 }

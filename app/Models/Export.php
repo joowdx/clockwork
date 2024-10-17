@@ -32,11 +32,7 @@ class Export extends Model
     public static function booted()
     {
         static::saved(function (Export $export) {
-            if (is_null($export->content)) {
-                return;
-            }
-
-            $export->updateQuietly(['digest' => hash('sha512', $export->content)]);
+            $export->updateQuietly(['digest' => $export->content !== null ? hash('sha512', $export->content) : null]);
         });
     }
 

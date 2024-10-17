@@ -50,17 +50,29 @@ class Signature extends Model
         return $this->morphTo();
     }
 
+    public function specimen(): Attribute
+    {
+        return Attribute::make(
+            fn (mixed $specimen): ?string => $specimen !== null ? decrypt(stream_get_contents($specimen)) : null,
+            fn (mixed $specimen): mixed => $specimen !== null ? encrypt($specimen) : null,
+        )->shouldCache();
+    }
+
+    public function certificate(): Attribute
+    {
+        return Attribute::make(
+            fn (mixed $certificate): ?string => $certificate !== null ? decrypt(stream_get_contents($certificate)) : null,
+            fn (mixed $certificate): mixed => $certificate !== null ? encrypt($certificate) : null,
+        )->shouldCache();
+    }
+
     public function dimension(): Attribute
     {
         return Attribute::make(
             function () {
-                if (file_exists($file = storage_path('app/'.$this->specimen))) {
-                    [$x, $y] = getimagesize($file);
+                [$x, $y] = getimagesizefromstring($this->specimen);
 
-                    return [$x, $y];
-                }
-
-                throw new InvalidArgumentException('File not found.');
+                return [$x, $y];
             }
         )->shouldCache();
     }
@@ -90,33 +102,25 @@ class Signature extends Model
     public function specimenBase64(): Attribute
     {
         return Attribute::make(
-            function () {
-                if (file_exists($file = storage_path('app/'.$this->specimen))) {
-                    return base64_encode(file_get_contents($file));
-                }
-
-                throw new InvalidArgumentException('File not found.');
-            }
+            fn () => explode(',', $this->specimen)[1]
         )->shouldCache();
     }
 
     public function certificateBase64(): Attribute
     {
         return Attribute::make(
-            function () {
-                if (file_exists($file = storage_path('app/'.$this->certificate))) {
-                    return base64_encode(file_get_contents($file));
-                }
-
-                throw new InvalidArgumentException('File not found.');
-            }
+            fn () => explode(',', $this->certificate)[1]
         )->shouldCache();
     }
 
     public function verify(#[SensitiveParameter] string $password): bool
     {
         try {
-            (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$this->certificate), $password);
+            $tmp = tempnam(sys_get_temp_dir(), "{$this->id}-");
+
+            file_put_contents($tmp, base64_decode($this->certificateBase64));
+
+            (new ManageCert)->fromPfx($tmp, $password);
 
             return true;
         } catch (ProcessRunTimeException $exception) {
