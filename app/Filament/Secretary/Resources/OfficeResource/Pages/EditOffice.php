@@ -41,7 +41,10 @@ class EditOffice extends EditRecord
             Deployment::query()
                 ->where('employee_id', $this->record->employee_id)
                 ->whereNot('office_id', $this->record->id)
-                ->update(['supervisor_id' => null]);
+                ->update([
+                    'current' => false,
+                    'supervisor_id' => null,
+                ]);
         }
     }
 
