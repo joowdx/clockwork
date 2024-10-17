@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('signatures', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->binary('specimen');
-            $table->binary('certificate')->nullable();
-            $table->text('password')->nullable();
+            $table->binary('certificate');
+            $table->text('password');
             $table->ulidMorphs('signaturable');
             $table->softDeletes();
             $table->timestamps();

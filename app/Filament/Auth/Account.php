@@ -75,6 +75,7 @@ class Account extends EditProfile
                                                         fn (TemporaryUploadedFile $file): string => 'data:'.$file->getMimeType().';base64,'.base64_encode($file->getContent())
                                                     ),
                                                 FileUpload::make('certificate')
+                                                    ->required()
                                                     ->disk('fake')
                                                     ->reactive()
                                                     ->acceptedFileTypes(['application/x-pkcs12'])
