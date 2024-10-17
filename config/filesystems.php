@@ -56,6 +56,10 @@ return [
             'throw' => false,
         ],
 
+        'fake' => [
+            'driver' => 'fake',
+        ],
+
     ],
 
     /*

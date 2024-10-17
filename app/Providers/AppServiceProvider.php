@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Drivers\FakeFilesystemAdapter;
 use App\Models\Token;
 use Filament\Forms\Components\Select;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
@@ -13,7 +14,9 @@ use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Filament\Tables\Table;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -55,5 +58,15 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
+
+        Storage::extend('fake', function (Application $app, array $config) {
+            $adapter = new FakeFilesystemAdapter;
+
+            return new \Illuminate\Filesystem\FilesystemAdapter(
+                new \League\Flysystem\Filesystem($adapter, $config),
+                $adapter,
+                $config
+            );
+        });
     }
 }
