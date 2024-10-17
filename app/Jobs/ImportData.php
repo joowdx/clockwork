@@ -297,7 +297,7 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
                     $name = array_map([$this, 'formatName'], array_intersect_key($row, array_flip($this->uniqueColumns)));
 
                     if (collect($name)->some(fn ($name) => preg_match('/[^\p{L}\s\-.,]/u', $name))) {
-                        throw new $invalidDataException('Invalid data', 'Name contains invalid characters. Only letters, spaces, commas, dashes, and periods are allowed. Please check for any encoding issues. Try saving the file as UTF-8 and re-upload.' . collect($name)->join(', '));
+                        throw new $invalidDataException('Invalid data', 'Name contains invalid characters. Only letters, spaces, commas, dashes, and periods are allowed. Please check for any encoding issues. Try saving the file as UTF-8 and re-upload.'.collect($name)->join(', '));
                     }
 
                     if (
