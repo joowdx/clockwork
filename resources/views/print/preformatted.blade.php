@@ -484,7 +484,7 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                 <td class="underline" colspan=6></td>
                             </tr>
                             <tr>
-                                <td class="bahnschrift-light top center font-xs" colspan=6>Employee's Signature</td>
+                                <td class="bahnschrift-light top center font-xs" colspan=6>Employee Signature</td>
                             </tr>
                             <tr>
                                 <td class="italic arial font-xs" colspan=6>Verified as to the prescribed office hours:</td>
@@ -507,7 +507,7 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                 </tr>
                                 <tr>
                                     <td class="bahnschrift-light top center font-xs" colspan=6>
-                                        Supervisor
+                                        Immediate Supervisor
                                     </td>
                                 </tr>
                             @endif
@@ -528,7 +528,7 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                 </td>
                             </tr>
                             <tr>
-                                <td class="bahnschrift-light top center font-xs" colspan=6>Department Head</td>
+                                <td class="bahnschrift-light top center font-xs" colspan=6>Office Head</td>
                             </tr>
                             @if ($size === 'legal')
                                 <tr>
@@ -571,10 +571,6 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                         'color:#0007;border-color:#0007!important;' => @$misc['officer'] ?? true
                                     ])
                                 >
-                                    @if (@$misc['officer'] ?? true)
-                                        @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
-                                        {{ $user?->name }}
-                                    @endif
                                 </td>
                             </tr>
                             <tr>

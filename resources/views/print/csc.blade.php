@@ -360,7 +360,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                 </td>
                             </tr>
                             <tr>
-                                <td class="bahnschrift-light top center font-xs" colspan=6>Employee's Signature</td>
+                                <td class="bahnschrift-light top center font-xs" colspan=6>Employee Signature</td>
                             </tr>
                             <tr>
                                 <td class="italic arial font-xs" colspan=6>Verified as to the prescribed office hours:</td>
@@ -381,7 +381,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                 </tr>
                                 <tr>
                                     <td class="bahnschrift-light top center font-xs" colspan=6>
-                                        Supervisor
+                                        Immediate Supervisor
                                     </td>
                                 </tr>
                             @endif
@@ -402,7 +402,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                 </td>
                             </tr>
                             <tr>
-                                <td class="bahnschrift-light top center font-xs" colspan=6>Department Head</td>
+                                <td class="bahnschrift-light top center font-xs" colspan=6>Office Head</td>
                             </tr>
                             <tr>
                                 <td colspan=6></td>
@@ -456,10 +456,6 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                         'color:#0007;border-color:#0007!important;' => $officer
                                     ])
                                 >
-                                    @if ($officer)
-                                        @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
-                                        {{ $user?->name }}
-                                    @endif
                                 </td>
                             </tr>
                             <tr>
