@@ -68,6 +68,7 @@ class TimesheetController extends Controller
             'created_at',
             'updated_at',
             'deleted_at',
+            'email_verified_at',
             'laravel_through_key',
             'employee_id',
             'timesheet_id',
