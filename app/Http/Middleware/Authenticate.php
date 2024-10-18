@@ -21,6 +21,18 @@ class Authenticate extends Middleware
         $auth = Auth::guard($id === 'employee' ? null : 'employee');
 
         if (! $current->check() && ! $auth->check()) {
+            if (empty($guards)) {
+                $guards = [null];
+            }
+
+            foreach ($guards as $guard) {
+                if ($this->auth->guard($guard)->check()) {
+                    $this->auth->shouldUse($guard);
+
+                    return;
+                }
+            }
+
             $this->unauthenticated($request, $guards);
 
             return;
