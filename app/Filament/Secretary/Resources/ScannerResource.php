@@ -92,7 +92,7 @@ class ScannerResource extends Resource
                     ->placeholder('<blank>')
                     ->label('UID')
                     ->sortable(query: fn ($query, $direction) => $query->orderByRaw("CAST(uid as INT) $direction"))
-                    ->searchable(query: fn ($query, $search) => $query->whereRaw("CAST(uid as TEXT) = $search")),
+                    ->searchable(query: fn ($query, $search) => $query->whereRaw("CAST(uid as TEXT) = '$search'")),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('employees_count')

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\SignPdfAction;
 use App\Helpers\NumberRangeCompressor;
 use App\Models\Employee;
 use App\Models\Timesheet;
@@ -13,8 +14,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
-use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
-use LSNepomuceno\LaravelA1PdfSign\Sign\SignaturePdf;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Spatie\LaravelPdf\PdfBuilder;
@@ -552,19 +551,24 @@ class TimesheetExporter implements Responsable
 
         $name = $this->filename().'.pdf';
 
+        $path = sys_get_temp_dir()."/$name";
+
         $export->save(sys_get_temp_dir()."/$name");
 
-        $signature = $this->user->signature;
+        $out = storage_path('signing/test.pdf');
 
-        $certificate = (new ManageCert)
-            ->setPreservePfx()
-            ->fromPfx(storage_path('app/'.$signature->certificate), $this->user->signature->password);
+        (new SignPdfAction)
+            ($this->user, $path, $out, 'employee-field', SignPdfAction::FOLIO_TIMESHEET_EMPLOYEE_COORDINATES);
 
         try {
-            return (new SignaturePdf(sys_get_temp_dir()."/$name", $certificate))->signature();
+            return file_get_contents($out);
         } finally {
-            if (file_exists(sys_get_temp_dir()."/$name")) {
-                unlink(sys_get_temp_dir()."/$name");
+            if (file_exists($path)) {
+                unlink($path);
+            }
+
+            if (file_exists($out)) {
+                unlink($out);
             }
         }
     }

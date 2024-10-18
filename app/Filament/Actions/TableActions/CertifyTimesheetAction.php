@@ -213,9 +213,7 @@ class CertifyTimesheetAction extends Action
 
                     $exportable = $this->generate($timesheet, $period, $certification, $timestamp);
 
-                    $exportable = $user->signature?->certificate
-                        ? $this->sign($exportable, $level, $timestamp->format('Y-m-d H:i:s'))
-                        : base64_decode($exportable);
+                    $exportable = base64_decode($exportable);
 
                     $export = $timesheet->exports()->create([
                         'filename' => $filename,

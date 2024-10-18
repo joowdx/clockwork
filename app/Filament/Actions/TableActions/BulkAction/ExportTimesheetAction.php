@@ -197,12 +197,12 @@ class ExportTimesheetAction extends BulkAction
                         ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
                         : 'your';
 
-                    if (! $user->signature) {
-                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                    if ($user->signature?->specimen === null) {
+                        return $fail('Please configure '.($get('user') ? $name : 'your').' electronic signature certificate first');
                     }
 
-                    if (! file_exists(storage_path('app/'.$user->signature?->specimen))) {
-                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                    if ($user->signature?->certificate === null) {
+                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
                     }
                 }),
             Checkbox::make('digital_signature')
@@ -223,12 +223,12 @@ class ExportTimesheetAction extends BulkAction
                         ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
                         : 'your';
 
-                    if ($user->signature?->certificate === null) {
-                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+                    if ($user->signature?->specimen === null) {
+                        return $fail('Please configure '.($get('user') ? $name : 'your').' electronic signature certificate first');
                     }
 
-                    if (! file_exists(storage_path('app/'.$user->signature?->certificate))) {
-                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
+                    if ($user->signature?->certificate === null) {
+                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
                     }
                 }),
         ];
