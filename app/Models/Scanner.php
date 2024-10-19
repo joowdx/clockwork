@@ -32,6 +32,7 @@ class Scanner extends Model implements Auditable
         'host',
         'port',
         'pass',
+        'active',
         'synced_at',
     ];
 

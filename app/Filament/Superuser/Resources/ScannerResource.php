@@ -3,10 +3,12 @@
 namespace App\Filament\Superuser\Resources;
 
 use App\Filament\Actions\TableActions\FetchAction;
+use App\Filament\Filters\ActiveFilter;
 use App\Filament\Superuser\Resources\ScannerResource\Pages;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Superuser\Resources\ScannerResource\RelationManagers\UsersRelationManager;
 use App\Models\Scanner;
+use App\Models\Scopes\ActiveScope;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -27,8 +29,6 @@ class ScannerResource extends Resource
 
     public static function formSchema(): array
     {
-        $isCalledBySelf = @debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1]['class'] === get_called_class();
-
         return [
             Forms\Components\Section::make('Scanner Details')
                 ->columns()
@@ -39,8 +39,14 @@ class ScannerResource extends Resource
                         ->grouped()
                         ->inline()
                         ->default(false)
-                        ->columnSpanFull()
                         ->helperText('Prioritized scanners have higher precedence over others.'),
+                    Forms\Components\ToggleButtons::make('active')
+                        ->required()
+                        ->boolean()
+                        ->grouped()
+                        ->inline()
+                        ->default(false)
+                        ->helperText('Inactive scanners will be ignored.'),
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->alphaDash()
@@ -130,6 +136,7 @@ class ScannerResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                ActiveFilter::make(),
                 Tables\Filters\TrashedFilter::make()
                     ->native(false),
             ])
@@ -203,6 +210,7 @@ class ScannerResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
+                ActiveScope::class,
                 SoftDeletingScope::class,
             ]);
     }
