@@ -112,7 +112,7 @@ class ExportTimesheetAction extends BulkAction
                 ->grouping($data['grouping'] ?? false)
                 ->single($data['single'] ?? false)
                 ->signature([
-                    'electronic' => @$data['electronic_signature'],
+                    'electronic' => @$data['digital_signature'] ?: @$data['electronic_signature'],
                     'digital' => @$data['digital_signature'],
                 ])
                 ->misc([
@@ -183,54 +183,50 @@ class ExportTimesheetAction extends BulkAction
                 ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                 ->searchable(),
-            Checkbox::make('electronic_signature')
-                ->helperText('Electronically sign the document.')
-                ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
-                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    if (! $value) {
-                        return;
-                    }
+            // Checkbox::make('electronic_signature')
+            //     ->helperText('Electronically sign the document.')
+            //     ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
+            //     ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+            //         if (! $value) {
+            //             return;
+            //         }
 
-                    $user = $get('user') ? User::find($get('user')) : user();
+            //         $user = $get('user') ? User::find($get('user')) : user();
 
-                    $name = $get('user')
-                        ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
-                        : 'your';
+            //         $name = $get('user')
+            //             ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+            //             : 'your';
 
-                    if (! $user->signature) {
-                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
-                    }
+            //         if ($user->signature?->specimen === null) {
+            //             return $fail('Please configure '.($get('user') ? $name : 'your').' electronic signature certificate first');
+            //         }
 
-                    if (! file_exists(storage_path('app/'.$user->signature?->specimen))) {
-                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
-                    }
-                }),
-            Checkbox::make('digital_signature')
-                ->helperText('Digitally sign the document to prevent tampering.')
-                ->dehydrated(true)
-                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    if (! $value) {
-                        return;
-                    }
+            //         if ($user->signature?->certificate === null) {
+            //             return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+            //         }
+            //     }),
+            // Checkbox::make('digital_signature')
+            //     ->helperText('Digitally sign the document to prevent tampering.')
+            //     ->dehydrated(true)
+            //     ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+            //         if (! $value) {
+            //             return;
+            //         }
 
-                    if (! $get('electronic_signature')) {
-                        return $fail('Digital signature requires electronic signature');
-                    }
+            //         $user = $get('user') ? User::find($get('user')) : user();
 
-                    $user = $get('user') ? User::find($get('user')) : user();
+            //         $name = $get('user')
+            //             ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+            //             : 'your';
 
-                    $name = $get('user')
-                        ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
-                        : 'your';
+            //         if ($user->signature?->specimen === null) {
+            //             return $fail('Please configure '.($get('user') ? $name : 'your').' electronic signature certificate first');
+            //         }
 
-                    if ($user->signature?->certificate === null) {
-                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
-                    }
-
-                    if (! file_exists(storage_path('app/'.$user->signature?->certificate))) {
-                        return $fail('Configure '.($get('user') ? $name : 'your').' electronic signature first');
-                    }
-                }),
+            //         if ($user->signature?->certificate === null) {
+            //             return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+            //         }
+            //     }),
         ];
 
         $period = [
@@ -365,31 +361,27 @@ class ExportTimesheetAction extends BulkAction
                     'folio' => 'Folio',
                     'legal' => 'Legal',
                 ]),
-            Group::make()
-                ->columns(2)
-                ->schema([
-                    Select::make('transmittal')
-                        ->live()
-                        ->visible(! $preview)
-                        ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
-                        ->options([0, 1, 2, 3, 5])
-                        ->in([0, 1, 2, 3, 5])
-                        ->hintIcon('heroicon-o-question-mark-circle')
-                        ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
-                    Select::make('grouping')
-                        ->visible(! $preview)
-                        ->disabled(fn (Get $get) => $get('transmittal') <= 0)
-                        ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
-                        ->options([
-                            'offices' => 'Office',
-                            false => 'None',
-                        ])
-                        ->hintIcon('heroicon-o-question-mark-circle')
-                        ->hintIconTooltip('
-                            Grouping by office might generate multiple timesheets for employees with multiple offices.
-                            No grouping will generate a single transmittal for all selected employees.
-                        '),
-                ]),
+            Select::make('transmittal')
+                ->live()
+                ->visible(! $preview)
+                ->default(fn ($livewire) => $livewire->filters['transmittal'] ?? 0)
+                ->options([0, 1, 2, 3, 5])
+                ->in([0, 1, 2, 3, 5])
+                ->hintIcon('heroicon-o-question-mark-circle')
+                ->hintIconTooltip('Input the number of copies of transmittal to be generated.'),
+            Select::make('grouping')
+                ->visible(! $preview)
+                ->disabled(fn (Get $get) => $get('transmittal') <= 0)
+                ->default(fn ($livewire) => $livewire->filters['grouping'] ?? 'offices')
+                ->options([
+                    'offices' => 'Office',
+                    false => 'None',
+                ])
+                ->hintIcon('heroicon-o-question-mark-circle')
+                ->hintIconTooltip('
+                    Grouping by office might generate multiple timesheets for employees with multiple offices.
+                    No grouping will generate a single transmittal for all selected employees.
+                '),
         ];
 
         return $preview

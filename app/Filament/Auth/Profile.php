@@ -154,7 +154,7 @@ class Profile extends EditProfile
 
                                                 ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
 
-                                                $data['specimen'] = "data:{$mime};base64,{$image}".base64_encode($image);
+                                                $data['specimen'] = "data:{$mime};base64,".base64_encode($image);
 
                                                 return $data;
                                             })

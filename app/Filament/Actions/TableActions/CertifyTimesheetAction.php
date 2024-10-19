@@ -2,6 +2,7 @@
 
 namespace App\Filament\Actions\TableActions;
 
+use App\Actions\SignPdfAction;
 use App\Models\Timesheet;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -275,7 +276,7 @@ class CertifyTimesheetAction extends Action
         return $pdf->base64();
     }
 
-    public function sign(string $data, string $level, $timestamp): string
+    public function sign(string $data, string $level): string
     {
         /** @var \App\Models\User|\App\Models\Employee */
         $user = Auth::user();
@@ -284,62 +285,26 @@ class CertifyTimesheetAction extends Action
 
         file_put_contents($pdf, base64_decode($data));
 
-        $signature = $user->signature;
+        $field = match ($level) {
+            'employee' => 'employee-field',
+            'supervisor' => 'supervisor-field',
+            'head' => 'head-field',
+        };
 
-        $image = Image::make(storage_path('app/'.$signature->specimen));
-
-        $specimen = sys_get_temp_dir().'/'.uniqid().'.png';
-
-        $image->resize(400, 300, function ($constraint) {
-            $constraint->aspectRatio();
-        });
-
-        $image->text('Digitally signed', $image->width() * 0.75, $image->height() * 0.20, function ($font) {
-            $font->file(resource_path('fonts/roboto.ttf'));
-            $font->size(16);
-            $font->align('center');
-            $font->valign('middle');
-        });
-
-        $image->text($timestamp, $image->width() * 0.75, $image->height() * 0.20 + 16, function ($font) {
-            $font->file(resource_path('fonts/roboto.ttf'));
-            $font->size(16);
-            $font->align('center');
-            $font->valign('middle');
-        });
-
-        $image->save($specimen);
-
-        $certificate = (new ManageCert)->setPreservePfx()->fromPfx(storage_path('app/'.$signature->certificate), $signature->password);
-
-        $y = match ($level) {
-            'employee' => 238,
-            'head' => 280,
-            'supervisor' => 265,
+        $coordinates = match ($level) {
+            'employee' => SignPdfAction::FOLIO_TIMESHEET_EMPLOYEE_COORDINATES,
+            'supervisor' => SignPdfAction::FOLIO_TIMESHEET_SUPERVISOR_COORDINATES,
+            'head' => SignPdfAction::FOLIO_TIMESHEET_HEAD_COORDINATES,
         };
 
         try {
-            return (new SignaturePdf($pdf, $certificate))
-                ->setImage(
-                    $specimen,
-                    pageX: 90,
-                    pageY: $y,
-                    imageH: $signature->portrait || ! $signature->landscape ? 35 : 20,
-                    imageW: 0,
-                )
-                ->setInfo(
-                    name: $user->name,
-                    reason: in_array($level, ['supervisor', 'head']) ? 'Verification' : 'Certification',
-                    location: 'Philippines',
-                )
-                ->signature();
+            (new SignPdfAction)
+                ($user, $pdf, null, $field, $coordinates);
+
+            return file_get_contents($pdf);
         } finally {
             if (file_exists($pdf)) {
                 unlink($pdf);
-            }
-
-            if (file_exists($specimen)) {
-                unlink($specimen);
             }
         }
     }
