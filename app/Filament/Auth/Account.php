@@ -2,7 +2,7 @@
 
 namespace App\Filament\Auth;
 
-use App\Actions\OptimizeSignatureSpecimen;
+use App\Actions\OptimizeImage;
 use App\Traits\CanSendEmailVerification;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -70,7 +70,7 @@ class Account extends EditProfile
                                                     ->image()
                                                     ->imageEditor()
                                                     ->imageCropAspectRatio('4:3')
-                                                    ->imageEditorAspectRatios(['16:9', '4:3', '1:1', '3:4'])
+                                                    ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
                                                     ->acceptedFileTypes(['image/png', 'image/webp', 'image/x-webp'])
                                                     ->downloadable()
                                                     ->getUploadedFileNameForStorageUsing(
@@ -114,7 +114,7 @@ class Account extends EditProfile
                                                         }
                                                     }),
                                             ])
-                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, OptimizeSignatureSpecimen $optimizer) {
+                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, OptimizeImage $optimizer) {
                                                 $image = explode(',', $data['specimen'])[1];
 
                                                 ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
@@ -123,12 +123,16 @@ class Account extends EditProfile
 
                                                 return $data;
                                             })
-                                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, OptimizeSignatureSpecimen $optimizer) {
+                                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, OptimizeImage $optimizer) {
                                                 $image = explode(',', $data['specimen'])[1];
 
                                                 ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
 
                                                 $data['specimen'] = "data:{$mime};base64,".base64_encode($image);
+
+                                                if ($data['password'] ?? null === null) {
+                                                    unset($data['password']);
+                                                }
 
                                                 return $data;
                                             }),
@@ -141,7 +145,7 @@ class Account extends EditProfile
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $record->update($data);
+        parent::handleRecordUpdate($record, $data);
 
         if ($record->wasChanged('email')) {
             $record->forceFill(['email_verified_at' => null])->save();

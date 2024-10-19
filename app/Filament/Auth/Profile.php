@@ -2,7 +2,7 @@
 
 namespace App\Filament\Auth;
 
-use App\Actions\OptimizeSignatureSpecimen;
+use App\Actions\OptimizeImage;
 use App\Traits\CanSendEmailVerification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -105,7 +105,7 @@ class Profile extends EditProfile
                                                     ->disk('fake')
                                                     ->image()
                                                     ->imageEditor()
-                                                    ->imageEditorAspectRatios(['16:9', '4:3', '1:1', '3:4'])
+                                                    ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
                                                     ->acceptedFileTypes(['image/png', 'image/webp', 'image/x-webp'])
                                                     ->downloadable()
                                                     ->getUploadedFileNameForStorageUsing(
@@ -127,9 +127,9 @@ class Profile extends EditProfile
                                                     ->hintIcon('heroicon-o-question-mark-circle')
                                                     ->hintIconTooltip('The certificate should be a valid PKCS#12 file.'),
                                                 TextInput::make('password')
-                                                    ->visible(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
                                                     ->password()
-                                                    ->required()
+                                                    ->visible(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
+                                                    ->required(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
                                                     ->dehydratedWhenHidden()
                                                     ->rule(fn (Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
                                                         if (empty($value) || empty($get('certificate'))) {
@@ -149,7 +149,7 @@ class Profile extends EditProfile
                                                         }
                                                     }),
                                             ])
-                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, OptimizeSignatureSpecimen $optimizer) {
+                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, OptimizeImage $optimizer) {
                                                 $image = explode(',', $data['specimen'])[1];
 
                                                 ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
@@ -158,12 +158,16 @@ class Profile extends EditProfile
 
                                                 return $data;
                                             })
-                                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, OptimizeSignatureSpecimen $optimizer) {
+                                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, OptimizeImage $optimizer) {
                                                 $image = explode(',', $data['specimen'])[1];
 
                                                 ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
 
                                                 $data['specimen'] = "data:{$mime};base64,".base64_encode($image);
+
+                                                if ($data['password'] ?? null === null) {
+                                                    unset($data['password']);
+                                                }
 
                                                 return $data;
                                             }),

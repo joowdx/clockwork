@@ -2,7 +2,7 @@
 
 namespace App\Filament\Superuser\Resources\SignatureResource\Pages;
 
-use App\Actions\OptimizeSignatureSpecimen;
+use App\Actions\OptimizeImage;
 use App\Filament\Superuser\Resources\SignatureResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -14,7 +14,7 @@ class CreateSignature extends CreateRecord
     {
         $data['specimen'] = 'data:image/x-webp;base64,'.
             base64_encode(
-                app(OptimizeSignatureSpecimen::class)(base64_decode(explode(',', $data['specimen'])[1]))
+                app(OptimizeImage::class)(base64_decode(explode(',', $data['specimen'])[1]))
             );
 
         return $data;
