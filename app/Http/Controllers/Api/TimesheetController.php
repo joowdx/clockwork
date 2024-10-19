@@ -43,14 +43,10 @@ class TimesheetController extends Controller
             'dates' => 'required_if:period,dates|array',
             'period' => 'required|string|in:1st,2nd,full,regular,overtime,dates,range',
             'month' => 'required|string|date_format:Y-m',
-            'uid.*' => 'required|string|exists:employees,uid',
+            'uid.*' => 'required|string',
             'uid' => ['required', function ($a, $v, $f) {
                 if (! is_string($v) && ! is_array($v)) {
                     $f('The uid field is invalid.');
-                }
-
-                if (is_string($v) && Employee::where('uid', $v)->doesntExist()) {
-                    $f('The selected uid is invalid.');
                 }
             }],
         ]);
@@ -60,6 +56,8 @@ class TimesheetController extends Controller
         }
 
         $validated = $validator->validated();
+
+        $uid = is_array($validated['uid']) ? array_map(fn ($uid) => strtolower($uid), $validated['uid']) : strtolower($validated['uid']);
 
         $month = Carbon::parse($validated['month']);
 
