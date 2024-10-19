@@ -32,6 +32,13 @@ class Office extends Model
         );
     }
 
+    public function icon(): Attribute
+    {
+        return Attribute::make(
+            fn () => storage_path('app/public/'.$this->logo),
+        );
+    }
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

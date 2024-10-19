@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superuser\Resources\OfficeResource\Pages;
 
+use App\Actions\OptimizeImage;
 use App\Filament\Superuser\Resources\OfficeResource;
 use App\Models\Deployment;
 use Filament\Actions;
@@ -46,6 +47,11 @@ class EditOffice extends EditRecord
                     'current' => false,
                     'supervisor_id' => null,
                 ]);
+        }
+        if ($this->record->logo && file_exists($this->record->icon) && pathinfo($this->record->icon, PATHINFO_EXTENSION) !== 'webp') {
+            $optimized = app(OptimizeImage::class)($this->record->icon);
+
+            $this->record->update(['logo' => preg_replace('/^.*\/offices/', 'offices', $optimized)]);
         }
     }
 

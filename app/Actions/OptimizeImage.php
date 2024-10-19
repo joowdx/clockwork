@@ -3,12 +3,24 @@
 namespace App\Actions;
 
 use Imagick;
+use ImagickException;
 
-class OptimizeSignatureSpecimen
+class OptimizeImage
 {
     const MAX = 480;
 
-    public function __invoke(string $path): mixed
+    /**
+     * @throws ImagickException
+     */
+    public function __invoke(string $path): array|string|null
+    {
+        return $this->optimize($path);
+    }
+
+    /**
+     * @throws ImagickException
+     */
+    public function optimize(string $path): array|string|null
     {
         $image = new Imagick;
 
@@ -30,7 +42,15 @@ class OptimizeSignatureSpecimen
 
         try {
             if (file_exists($path)) {
-                $image->writeImage(pathinfo($path, PATHINFO_DIRNAME).'/'.pathinfo($path, PATHINFO_FILENAME).'.webp');
+                $optimized = pathinfo($path, PATHINFO_DIRNAME).'/'.pathinfo($path, PATHINFO_FILENAME).'.webp';
+
+                if ($path !== $optimized) {
+                    unlink($path);
+                }
+
+                $image->writeImage($optimized);
+
+                return $optimized;
             } else {
                 return [
                     'content' => $image->getImageBlob(),
