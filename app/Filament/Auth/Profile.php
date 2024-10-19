@@ -105,7 +105,7 @@ class Profile extends EditProfile
                                                     ->disk('fake')
                                                     ->image()
                                                     ->imageEditor()
-                                                    ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
+                                                    ->imageEditorAspectRatios(['16:9', '4:3', '1:1', '3:4'])
                                                     ->acceptedFileTypes(['image/png', 'image/webp', 'image/x-webp'])
                                                     ->downloadable()
                                                     ->getUploadedFileNameForStorageUsing(

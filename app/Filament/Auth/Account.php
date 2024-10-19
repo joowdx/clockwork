@@ -70,7 +70,7 @@ class Account extends EditProfile
                                                     ->image()
                                                     ->imageEditor()
                                                     ->imageCropAspectRatio('4:3')
-                                                    ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
+                                                    ->imageEditorAspectRatios(['16:9', '4:3', '1:1', '3:4'])
                                                     ->acceptedFileTypes(['image/png', 'image/webp', 'image/x-webp'])
                                                     ->downloadable()
                                                     ->getUploadedFileNameForStorageUsing(
