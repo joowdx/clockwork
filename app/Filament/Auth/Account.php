@@ -2,6 +2,7 @@
 
 namespace App\Filament\Auth;
 
+use App\Actions\OptimizeSignatureSpecimen;
 use App\Traits\CanSendEmailVerification;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -68,12 +69,16 @@ class Account extends EditProfile
                                                     ->disk('fake')
                                                     ->image()
                                                     ->imageEditor()
+                                                    ->imageCropAspectRatio('4:3')
                                                     ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
-                                                    ->acceptedFileTypes(['image/png'])
+                                                    ->acceptedFileTypes(['image/png', 'image/webp', 'image/x-webp'])
                                                     ->downloadable()
                                                     ->getUploadedFileNameForStorageUsing(
                                                         fn (TemporaryUploadedFile $file): string => 'data:'.$file->getMimeType().';base64,'.base64_encode($file->getContent())
-                                                    ),
+                                                    )
+                                                    ->helperText('Your signature specimen to be affixed in a signature field when signing a document.')
+                                                    ->hintIcon('heroicon-o-question-mark-circle')
+                                                    ->hintIconTooltip('The specimen should be a PNG image with a transparent background.'),
                                                 FileUpload::make('certificate')
                                                     ->required()
                                                     ->disk('fake')
@@ -82,11 +87,15 @@ class Account extends EditProfile
                                                     ->downloadable()
                                                     ->getUploadedFileNameForStorageUsing(
                                                         fn (TemporaryUploadedFile $file): string => 'data:'.$file->getMimeType().';base64,'.base64_encode($file->getContent())
-                                                    ),
+                                                    )
+                                                    ->helperText('Your certificate to be used to cryptographically sign a document to prove its authenticity.')
+                                                    ->hintIcon('heroicon-o-question-mark-circle')
+                                                    ->hintIconTooltip('The certificate should be a valid PKCS#12 file.'),
                                                 TextInput::make('password')
-                                                    ->visible(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
                                                     ->password()
-                                                    ->requiredWith('certificate')
+                                                    ->visible(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
+                                                    ->required(fn (Get $get) => current($get('certificate')) instanceof TemporaryUploadedFile)
+                                                    ->dehydratedWhenHidden()
                                                     ->rule(fn (Get $get) => function ($attribute, #[SensitiveParameter] $value, $fail) use ($get) {
                                                         if (empty($value) || empty($get('certificate'))) {
                                                             return;
@@ -104,7 +113,25 @@ class Account extends EditProfile
                                                             }
                                                         }
                                                     }),
-                                            ]),
+                                            ])
+                                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data, OptimizeSignatureSpecimen $optimizer) {
+                                                $image = explode(',', $data['specimen'])[1];
+
+                                                ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
+
+                                                $data['specimen'] = "data:{$mime};base64,".base64_encode($image);
+
+                                                return $data;
+                                            })
+                                            ->mutateRelationshipDataBeforeSaveUsing(function (array $data, OptimizeSignatureSpecimen $optimizer) {
+                                                $image = explode(',', $data['specimen'])[1];
+
+                                                ['mime' => $mime, 'content' => $image] = $optimizer(base64_decode($image));
+
+                                                $data['specimen'] = "data:{$mime};base64,".base64_encode($image);
+
+                                                return $data;
+                                            }),
                                     ]),
                             ]),
                     ]),

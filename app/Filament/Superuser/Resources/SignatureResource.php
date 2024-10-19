@@ -104,7 +104,7 @@ class SignatureResource extends Resource
                             ->image()
                             ->imageEditor()
                             ->imageEditorAspectRatios(['4:3', '1:1', '3:4'])
-                            ->acceptedFileTypes(['image/png'])
+                            ->acceptedFileTypes(['image/png', 'image/webp', 'image/x-webp'])
                             ->downloadable()
                             ->getUploadedFileNameForStorageUsing(
                                 fn (TemporaryUploadedFile $file): string => 'data:'.$file->getMimeType().';base64,'.base64_encode($file->getContent())

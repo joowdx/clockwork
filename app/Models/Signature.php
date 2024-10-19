@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use InvalidArgumentException;
 use LSNepomuceno\LaravelA1PdfSign\Exceptions\ProcessRunTimeException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
 use SensitiveParameter;
@@ -31,19 +30,6 @@ class Signature extends Model
     protected $casts = [
         'password' => 'encrypted',
     ];
-
-    protected static function booted(): void
-    {
-        static::deleting(function (self $signature) {
-            if (file_exists($file = storage_path('app/'.$signature->specimen))) {
-                unlink($file);
-            }
-
-            if ($signature->certificate && file_exists($file = storage_path('app/'.$signature->certificate))) {
-                unlink($file);
-            }
-        });
-    }
 
     public function signaturable()
     {
