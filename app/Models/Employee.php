@@ -155,8 +155,8 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
     public function uid(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $uid): ?string => $uid ? (string) str($uid)->upper() : null,
-            set: fn (?string $uid): ?string => $uid ? (string) str($uid)->upper() : null,
+            get: fn (?string $uid): ?string => $uid ? (string) str($uid)->lower() : null,
+            set: fn (?string $uid): ?string => $uid ? (string) str($uid)->lower() : null,
         )->shouldCache();
     }
 
