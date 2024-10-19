@@ -106,6 +106,7 @@ class SignPdfAction
                 if ($process->failed()) {
                     if ($timestamp && str($process->errorOutput())->contains('Timestamp')) {
                         $timestamp = false;
+
                         continue;
                     }
 
@@ -113,7 +114,7 @@ class SignPdfAction
                 }
 
                 break;
-            } while(1);
+            } while (1);
         } finally {
             if ($directory && is_dir($directory)) {
                 Process::run(['rm', '-rf', $directory]);
