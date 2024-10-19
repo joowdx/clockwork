@@ -35,10 +35,6 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'facebook' => [
-
-    ],
-
     'calendarific' => [
         'url' => env('CALENDARIFIC_URL', 'https://calendarific.com/api/v2/holidays'),
         'key' => env('CALENDARIFIC_KEY'),
