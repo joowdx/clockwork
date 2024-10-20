@@ -308,7 +308,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                         <tr style="height:10pt"> </tr>
                         <tr>
                             <td colspan=2 class="font-md courier right bold" style="padding-right:12pt;padding-bottom:2pt;">TOTAL:</td>
-                            <td colspan=4 @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md' ])>
+                            <td colspan={{ $preview ? 5 : 4 }} @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md' ])>
                                 @if ($misc['calculate'] ?? $preview)
                                     <div style="display:flex;justify-content:space-between;">
                                         {{
