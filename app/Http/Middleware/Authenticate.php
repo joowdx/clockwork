@@ -14,7 +14,9 @@ class Authenticate extends Middleware
      */
     protected function authenticate($request, array $guards): void
     {
-        $id = Filament::getCurrentPanel()->getId();
+        $panel = Filament::getCurrentPanel();
+
+        $id = $panel->getId();
 
         $current = Auth::guard($id === 'employee' ? 'employee' : null);
 
@@ -40,18 +42,10 @@ class Authenticate extends Middleware
 
         if ($current->check() || $auth->check()) {
             $this->auth->shouldUse(Filament::getAuthGuard());
-
-            return;
         }
 
-        $guard = Filament::auth();
-
-        $this->auth->shouldUse(Filament::getAuthGuard());
-
         /** @var Model $user */
-        $user = $guard->user();
-
-        $panel = Filament::getCurrentPanel();
+        $user = Filament::auth()->user();
 
         abort_if(
             $user instanceof FilamentUser ?
