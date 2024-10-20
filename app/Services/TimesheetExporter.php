@@ -312,10 +312,10 @@ class TimesheetExporter implements Responsable
             };
         }
 
-        $uid = $this->employee instanceof Collection ? $this->employee->pluck('uid')->toArray() : [$this->employee->uid];
+        $id = $this->employee instanceof Collection ? $this->employee->pluck('id')->toArray() : [$this->employee->id];
 
         $timesheets = Timesheet::query()
-            ->whereHas('employee', fn ($query) => $query->whereIn('uid', $uid))
+            ->whereIn('employee_id', $id)
             ->whereDate('month', $this->month->startOfMonth())
             ->when($period === '1st', fn ($query) => $query->with('firstHalf'))
             ->when($period === '2nd', fn ($query) => $query->with('secondHalf'))
