@@ -32,14 +32,12 @@ class DeleteTimesheetAction extends BulkAction
             TextInput::make('month')
                 ->markAsRequired()
                 ->rule('required')
-                ->type('month')
-                ->live(),
+                ->type('month'),
             TextInput::make('password')
                 ->markAsRequired()
                 ->rule('required')
                 ->currentPassword()
-                ->type('password')
-                ->live(),
+                ->type('password'),
         ]);
 
         $this->action(function (Collection $records, array $data) {
