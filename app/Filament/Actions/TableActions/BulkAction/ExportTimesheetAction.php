@@ -93,7 +93,7 @@ class ExportTimesheetAction extends BulkAction
         };
 
         try {
-            $max = 300 - ($data['individual'] ? 100 : 0) - ($data['digital_signature'] ? 50 : 0) - ($data['transmittal'] > 0 ? 25 : 0);
+            $max = 300 - ($data['individual'] ? 100 : 0) - ($data['transmittal'] > 0 ? 25 : 0);
 
             if ($employee instanceof Collection && $employee->count() > $max) {
                 throw new $actionException('Too many records', "To prevent server overload, please select no more than $max records.");
