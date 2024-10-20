@@ -15,11 +15,17 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->date('month');
             $table->jsonb('details')->nullable();
-            $table->foreignUlid('employee_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->char('digest', 128)->nullable();
-            $table->jsonb('certification')->nullable();
+            $table->string('span')->default('full');
+            $table->ulid('timesheet_id')->nullable();
+            $table->foreignUlid('employee_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
-            $table->unique(['month', 'employee_id']);
+            $table->unique(['employee_id', 'month', 'span']);
+            $table->unique(['timesheet_id', 'span']);
+        });
+
+        Schema::table('timesheets', function (Blueprint $table) {
+            $table->foreign('timesheet_id')->index()->nullable()->references('id')->on('timesheets')->cascadeOnUpdate()->cascadeOnDelete()->change();
         });
     }
 
