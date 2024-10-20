@@ -50,6 +50,7 @@ class OfficeFilter extends Filter
                                 });
                             });
                         })
+                        ->orderBy('code')
                         ->pluck('code', 'id')
                 )
                 ->placeholder('All')

@@ -15,6 +15,7 @@ use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\BulkAction\ViewTimesheetAction;
 use App\Filament\Actions\TableActions\UpdateEmployeeAction;
 use App\Filament\Actions\TimelogsActionGroup;
+use App\Filament\Filters\OfficeFilter;
 use App\Filament\Superuser\Resources\TimesheetResource;
 use App\Jobs\ProcessTimesheet;
 use App\Jobs\ProcessTimetable;
@@ -174,13 +175,8 @@ class ListTimesheets extends ListRecords
 
                         return $indicators;
                     }),
-                Tables\Filters\SelectFilter::make('offices')
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
-                    ->relationship('offices', 'code', fn ($query) => $query->where('deployment.active', true))
-                    ->multiple()
-                    ->preload(),
+                OfficeFilter::make(),
                 Tables\Filters\SelectFilter::make('groups')
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->relationship('groups', 'name')
                     ->multiple()
                     ->preload(),
