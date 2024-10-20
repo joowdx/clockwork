@@ -6,7 +6,7 @@ services:
             args:
                 WWWGROUP: '${WWWGROUP}'
         container_name: clockwork.app
-        image: joowdx/clockwork
+        image: joowdx/clockwork:v3
         restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
