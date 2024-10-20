@@ -32,6 +32,11 @@ class Navigation
                 ->icon('gmdi-business-center-o')
                 ->visible(fn () => $visibility('manager'))
                 ->url(fn () => url(str(settings('manager') ?: 'manager')->slug())),
+            MenuItem::make('leader')
+                ->label(str(settings('leader') ?: 'leader')->headline())
+                ->icon('gmdi-group-work-o')
+                ->visible(fn () => $visibility('leader'))
+                ->url(fn () => url(str(settings('leader') ?: 'leader')->slug())),
             MenuItem::make('director')
                 ->label(str(settings('director') ?: 'director')->headline())
                 ->icon('gmdi-double-arrow-o')

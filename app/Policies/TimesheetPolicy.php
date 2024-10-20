@@ -15,7 +15,10 @@ class TimesheetPolicy
         }
 
         return match (Filament::getCurrentPanel()->getId()) {
-            'superuser', 'manager' , 'director' => $user?->hasPermission(UserPermission::TIMESHEET) ?? false,
+            'superuser' => $user?->hasPermission(UserPermission::TIMESHEET) ?? false,
+            'manager',
+            'director',
+            'leader',
             'secretary' => true,
             default => false,
         };

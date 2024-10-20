@@ -11,8 +11,9 @@ enum UserRole: string implements HasLabel
     case DEVELOPER = 'developer';
     case EXECUTIVE = 'executive';
     case BUREAUCRAT = 'bureaucrat';
-    case DIRECTOR = 'director';
     case MANAGER = 'manager';
+    case DIRECTOR = 'director';
+    case LEADER = 'leader';
     case SECRETARY = 'secretary';
     case SECURITY = 'security';
     case DRIVER = 'driver';
@@ -36,8 +37,9 @@ enum UserRole: string implements HasLabel
     public static function requestable(bool $value = false)
     {
         $requestables = [
-            UserRole::MANAGER->value,
+            UserRole::LEADER->value,
             UserRole::DIRECTOR->value,
+            UserRole::MANAGER->value,
             UserRole::BUREAUCRAT->value,
             UserRole::EXECUTIVE->value,
         ];
