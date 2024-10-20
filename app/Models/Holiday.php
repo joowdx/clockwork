@@ -29,10 +29,12 @@ class Holiday extends Model
         'from' => 'datetime:H:i',
     ];
 
-    public static function search(Carbon|CarbonCarbon $date, bool $all = true): Collection|self|null
+    public static function search(Carbon|CarbonCarbon|string $date, bool $all = true): Collection|self|null
     {
+        $date = is_string($date) ? Carbon::parse($date) : $date;
+
         return cache()->remember(
-            'holiday-'.$date->format('Y-m-d').($all ? 'all' : 'one'), 60,
+            'holiday-'.$date->format('Y-m-d-').($all ? 'all' : 'one'), 60,
             fn () => static::query()->whereDate('date', $date)->{$all ? 'get' : 'first'}()
         );
     }

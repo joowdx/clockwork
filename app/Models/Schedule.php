@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Requestable;
+use Carbon\Carbon as CarbonCarbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -37,11 +38,13 @@ class Schedule extends Model
         'threshold' => 'json',
     ];
 
-    public static function search(Carbon $date, ?Employee $employee = null, ?Carbon $until = null)
+    public static function search(Carbon|CarbonCarbon|string $date, ?Employee $employee = null, ?Carbon $until = null)
     {
+        $date = is_string($date) ? Carbon::parse($date) : $date;
+
         if (isset($until)) {
             return cache()->remember(
-                $date->format('Y-m-d').$until->format('Y-m-d').$employee?->id, 120,
+                $date->format('Y-m-d-').$until->format('Y-m-d-').$employee?->id, 120,
                 function () use ($date, $employee, $until) {
                     if (is_null($employee)) {
                         $schedules = Schedule::global()->active($date, $until)->get();
@@ -67,7 +70,7 @@ class Schedule extends Model
         }
 
         return cache()->remember(
-            $date->format('Y-m-d').$employee?->id, 120,
+            $date->format('Y-m-d-').$employee?->id, 120,
             function () use ($date, $employee) {
                 $holiday = Holiday::search($date, false);
 

@@ -71,16 +71,8 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ->with('scanner')
             ->get();
 
-        $holiday = Holiday::search($this->date);
-
         if ($timelogs->isEmpty()) {
-            $timetable->update([
-                'holiday' => $holiday->map->name->join(', ') ?: null,
-                'absent' => $absent = $holiday->isEmpty() && $this->date->isWeekday(),
-                'regular' => $absent,
-                'present' => false,
-                'digest' => $this->generateDigest($timetable),
-            ]);
+            $timetable->delete();
 
             return;
         }
@@ -97,13 +89,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         $holiday = Holiday::search($this->date);
 
         if ($timelogs->isEmpty()) {
-            $timetable->update([
-                'holiday' => $holiday->map->name->join(', ') ?: null,
-                'absent' => $absent = $holiday->isEmpty() && $this->date->isWeekday(),
-                'regular' => $absent,
-                'present' => false,
-                'digest' => $this->generateDigest($timetable),
-            ]);
+            $timetable->delete();
 
             return;
         }
@@ -184,10 +170,16 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $undertime = array_sum(array_column($roster, 'undertime'));
 
-        $excess = isset($roster['p4']['time']) ? (int) $out->diffInMinutes($out->clone()->setTime(...explode(':', $roster['p4']['time']))) : 0;
-
         if ($regular) {
-            $overtime = $excess >= ($schedule->threshold['overtime'] ?? 0) ? (int) ($excess / 60) * 60 : 0;
+            $excess = isset($roster['p4']['time']) ? (int) $out->diffInMinutes($out->clone()->setTime(...explode(':', $roster['p4']['time']))) : 0;
+
+            $overtime = match ($excess >= ($schedule->threshold['overtime']['min'] ?? INF)) {
+                false => 0,
+                default => match ($excess >= ($schedule->threshold['overtime']['max'] ?? 0)) {
+                    false => $excess,
+                    default => (int) $schedule->threshold['overtime']['max'],
+                }
+            };
         } else {
             $overtime = ($ot = ($shift1 + $shift2 - $undertime)) > $schedule->timetable['duration'] ? (int) ($ot / 60) * 60 : $ot;
         }
@@ -224,13 +216,7 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         $holiday = Holiday::search($this->date);
 
         if ($timelogs->isEmpty()) {
-            $timetable->update([
-                'holiday' => $holiday->map->name->join(', ') ?: null,
-                'absent' => $absent = $holiday->isEmpty() && $this->date->isWeekday(),
-                'regular' => $absent,
-                'present' => false,
-                'digest' => $this->generateDigest($timetable),
-            ]);
+            $timetable->delete();
 
             return;
         }
@@ -298,9 +284,9 @@ class ProcessTimetable implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $undertime = array_sum(array_column($roster, 'undertime'));
 
-        $excess = isset($roster['p2']['time']) ? (int) $out->diffInMinutes($out->clone()->setTime(...explode(':', $roster['p2']['time']))) : 0;
-
         if ($regular) {
+            $excess = isset($roster['p2']['time']) ? (int) $out->diffInMinutes($out->clone()->setTime(...explode(':', $roster['p2']['time']))) : 0;
+
             $overtime = $excess > ($schedule->threshold['overtime'] ?? INF) ? (int) ($excess / 60) * 60 : 0;
         } elseif (isset($roster['p1']['time']) && isset($roster['p2']['time'])) {
             $overtime = ($ot = $this->date->clone()->setTime(...explode(':', $p1))

@@ -485,25 +485,45 @@ class ScheduleResource extends Resource
                                             ->markAsRequired()
                                             ->rules(['required', 'min:0']),
                                     ]),
-                                Forms\Components\Fieldset::make('Miscellaneous')
+                                Forms\Components\Fieldset::make('Overtime')
                                     ->columns(2)
                                     ->schema([
-                                        Forms\Components\TextInput::make('threshold.tardy')
-                                            ->label('Tardy')
-                                            ->hint('mins')
-                                            ->hintIcon('heroicon-m-question-mark-circle')
-                                            ->hintIconTooltip('How many minutes after the punch(in) is considered tardy.')
-                                            ->default(0)
-                                            ->numeric()
-                                            ->type('text'),
-                                        Forms\Components\TextInput::make('threshold.overtime')
-                                            ->label('Overtime')
+                                        Forms\Components\TextInput::make('threshold.overtime.min')
+                                            ->label('Min')
                                             ->hint('mins')
                                             ->hintIcon('heroicon-m-question-mark-circle')
                                             ->hintIconTooltip('How many minutes after the last punch(out) is considered overtime.')
                                             ->default(120)
                                             ->numeric()
                                             ->type('text'),
+                                        Forms\Components\TextInput::make('threshold.overtime.max')
+                                            ->label('Max')
+                                            ->hint('mins')
+                                            ->hintIcon('heroicon-m-question-mark-circle')
+                                            ->hintIconTooltip('How many minutes after the last punch(out) can be considered overtime.')
+                                            ->default(300)
+                                            ->numeric()
+                                            ->type('text'),
+                                    ]),
+                                Forms\Components\Fieldset::make('Tardy')
+                                    ->columns(2)
+                                    ->schema([
+                                        Forms\Components\TextInput::make('threshold.tardy.min')
+                                            ->label('Min')
+                                            ->hint('mins')
+                                            ->hintIcon('heroicon-m-question-mark-circle')
+                                            ->hintIconTooltip('How many minutes after the punch(in) is considered tardy.')
+                                            ->default(0)
+                                            ->numeric()
+                                            ->type('text'),
+                                        // Forms\Components\TextInput::make('threshold.tardy.frequency')
+                                        //     ->label('Frequency')
+                                        //     ->hint('mins')
+                                        //     ->hintIcon('heroicon-m-question-mark-circle')
+                                        //     ->hintIconTooltip('How many minutes after the punch(in) is considered tardy.')
+                                        //     ->default(0)
+                                        //     ->numeric()
+                                        //     ->type('text'),
                                     ]),
                             ]),
                     ]),
