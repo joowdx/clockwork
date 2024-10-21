@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ExportController;
+use App\Models\Timesheet;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,3 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('test', fn () => 'Hello World!')->name('test');
 
 Route::get('export/{export}', ExportController::class)->name('export');
+
+Route::get('test2', function () {
+    return Timesheet::find('01j44dwz12ja1ps66w67chx6gu')
+        ->records;
+});

@@ -38,19 +38,33 @@ class TimesheetResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                $query->certified();
+                // $query->certified();
+
+                $query->whereColumn('id', '!=', 'timesheet_id');
 
                 $query->with([
                     'employee',
-                    'fullMonth' => fn ($query) => $query->select(['id', 'punch', 'present', 'half', 'timesheet_id'])->whereNot('punch', '[]'),
-                    'exports' => fn ($query) => $query->select(['id', 'exportable_id', 'exportable_type', 'details']),
+                    'records' => fn ($query) => $query->select(['timetables.id', 'punch', 'present', 'half', 'timetables.timesheet_id'])->whereNot('punch', '[]'),
+                    'exports' => fn ($query) => $query->select(['exports.id', 'exportable_id', 'exportable_type', 'details']),
                 ]);
 
                 $query->whereHas('employee');
 
-                $query->when(Filament::getCurrentPanel()->getId() === 'director', function ($query) {
+                $panel = Filament::getCurrentPanel()->getId();
+
+                $query->when($panel === 'director', function ($query) {
                     $query->whereHas('employee.offices', function (Builder $query) {
                         $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
+
+                        $query->where('deployment.current', true);
+                    });
+                });
+
+                $query->when($panel === 'leader', function ($query) {
+                    $query->whereHas('employee.offices', function (Builder $query) {
+                        $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
+
+                        $query->where('deployment.supervisor_id', Auth::user()->employee?->id);
 
                         $query->where('deployment.current', true);
                     });
@@ -86,8 +100,8 @@ class TimesheetResource extends Resource
 
                         return str($offices)->toHtmlString();
                     }),
-                Tables\Columns\TextColumn::make('month')
-                    ->sortable()
+                Tables\Columns\TextColumn::make('period')
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderBy('month', $direction)->orderBy('span'))
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('employee.uid')
                     ->label('UID')
@@ -95,42 +109,34 @@ class TimesheetResource extends Resource
                     ->toggleable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('days'),
-                Tables\Columns\TextColumn::make('timetables_count')
-                    ->toggleable()
-                    ->label('Absences')
-                    ->counts(['timetables' => fn ($query) => $query->where('absent', true)]),
-                Tables\Columns\TextColumn::make('timetables_sum_undertime')
-                    ->toggleable()
-                    ->label('Undertime')
-                    ->sum('timetables', 'undertime'),
-                Tables\Columns\TextColumn::make('timetables_sum_overtime')
-                    ->toggleable()
-                    ->label('Overtime')
-                    ->sum('timetables', 'overtime'),
+                Tables\Columns\TextColumn::make('undertime')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('overtime')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('missed')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('certified')
-                    ->toggleable()
-                    ->state(function (Timesheet $record) {
-                        $certified = collect($record->certified)
-                            ->filter()
-                            ->keys()
-                            ->map(fn ($key) => $key === 'full' ? 'Full month' : ucfirst("$key half"));
+                // Tables\Columns\TextColumn::make('certified')
+                //     ->toggleable()
+                //     ->state(function (Timesheet $record) {
+                //         $certified = collect($record->certified)
+                //             ->filter()
+                //             ->keys()
+                //             ->map(fn ($key) => $key === 'full' ? 'Full month' : ucfirst("$key half"));
 
-                        return $certified->join(', ');
-                    })
-                    ->placeholder(str('<i>(none)</i>')->toHtmlString()),
-                Tables\Columns\TextColumn::make('verified')
-                    ->toggleable()
-                    ->state(function (Timesheet $record) {
-                        $verified = collect($record->verified)
-                            ->filter()
-                            ->keys()
-                            ->map(fn ($key) => $key === 'full' ? 'Full month' : ucfirst("$key half"));
+                //         return $certified->join(', ');
+                //     })
+                //     ->placeholder(str('<i>(none)</i>')->toHtmlString()),
+                // Tables\Columns\TextColumn::make('verified')
+                //     ->toggleable()
+                //     ->state(function (Timesheet $record) {
+                //         $verified = collect($record->verified)
+                //             ->filter()
+                //             ->keys()
+                //             ->map(fn ($key) => $key === 'full' ? 'Full month' : ucfirst("$key half"));
 
-                        return $verified->join(', ');
-                    })
-                    ->placeholder(str('<i>(none)</i>')->toHtmlString()),
+                //         return $verified->join(', ');
+                //     })
+                //     ->placeholder(str('<i>(none)</i>')->toHtmlString()),
             ])
             ->filters([
                 Tables\Filters\Filter::make('month')
@@ -148,16 +154,40 @@ class TimesheetResource extends Resource
 
                         return 'Month: '.Carbon::parse($data['month'])->format('F Y');
                     }),
+                Tables\Filters\Filter::make('period')
+                    ->form([
+                        Forms\Components\Select::make('period')
+                            ->options([
+                                '1st' => 'First half',
+                                '2nd' => 'Second half',
+                                'full' => 'Full month',
+                            ]),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        $query->when(isset($data['period']) && $data['period'], fn ($query) => $query->where('span', $data['period']));
+                    })
+                    ->indicateUsing(function (array $data) {
+                        if (empty($data['period'])) {
+                            return null;
+                        }
+
+                        return 'Period: '.match($data['period']) {
+                            '1st' => 'First half',
+                            '2nd' => 'Second half',
+                            'full' => 'Full month',
+                            default => $data['period'],
+                        };
+                    }),
                 StatusFilter::make()
                     ->relationship('employee'),
                 OfficeFilter::make()
                     ->relationship('employee'),
             ])
             ->actions([
-                ViewTimesheetAction::make(listing: true),
-                ViewTimesheetAction::make()
-                    ->label('View')
-                    ->slideOver(),
+                // ViewTimesheetAction::make(listing: true),
+                // ViewTimesheetAction::make()
+                //     ->label('View')
+                //     ->slideOver(),
                 // CertifyTimesheetAction::make(),
                 // DownloadTimesheetAction::make()
                 //     ->label('Download'),

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -59,5 +60,10 @@ class Export extends Model
         return static::query()
             ->orWhere(fn ($query) => $query->whereNotNull('exportable_type')->whereNotNull('exportable_id')->whereDoesntHave('exportable'))
             ->orWhere(fn ($query) => $query->whereNotNull('user_id')->where('created_at', '<=', now()->subMinutes(15)));
+    }
+
+    public function scopeTimesheet(Builder $query): void
+    {
+        $query->where('exportable_type', Timesheet::class);
     }
 }

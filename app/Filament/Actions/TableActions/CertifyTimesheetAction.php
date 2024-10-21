@@ -8,8 +8,6 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\ViewField;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Carbon;
@@ -23,14 +21,14 @@ class CertifyTimesheetAction extends Action
 
     protected function setUp(): void
     {
-        $this->name ??= 'certify-timesheet';
-
         $this->level = match (Filament::getCurrentPanel()->getId()) {
             'director' => 'head',
             'supervisor' => 'supervisor',
             'employee' => null,
             default => false,
         };
+
+        $this->name ??= (in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').'-timesheet';
 
         $this->label(in_array($this->level, ['head', 'supervisor']) ? 'Verify' : 'Certify');
 
@@ -66,7 +64,7 @@ class CertifyTimesheetAction extends Action
                 Certify {$month->format('F Y')} timesheet information. <br>
 
                 <span class="text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                    Proceeding will overwrite existing digital signature applied (system limitation)
+                    <!-- Proceeding will overwrite existing digital signature applied (system limitation) -->
                 </span>
             HTML;
 
@@ -76,9 +74,7 @@ class CertifyTimesheetAction extends Action
                 ->toHtmlString();
         });
 
-        $this->form(function (Timesheet $record) {
-            $timesheets = [];
-
+        $this->form(function () {
             return [
                 Select::make('period')
                     ->required()
@@ -98,15 +94,6 @@ class CertifyTimesheetAction extends Action
                                 '2nd' => ! $record->certified['2nd'],
                             };
                         }
-                    })
-                    ->afterStateUpdated(function (Timesheet $record, ?array $state) use (&$timesheets) {
-                        if (empty($state)) {
-                            $timesheets = [];
-                        }
-
-                        $timesheets = collect($state)->map(function ($period) use ($record) {
-                            return $record->replicate()->setSPan($period);
-                        })->toArray();
                     })
                     ->rule(fn (Timesheet $record) => function ($attribute, $value, $fail) use ($record) {
                         if (Carbon::parse($record->month)->setDay(15)->endOfDay()->gte(now()) && in_array('1st', $value)) {
@@ -153,14 +140,6 @@ class CertifyTimesheetAction extends Action
                             }
                         }
                     }),
-                ViewField::make('timesheet')
-                    ->hidden(fn (Get $get) => empty($get('period')))
-                    ->dehydrated(false)
-                    ->view('filament.validation.pages.preview')
-                    ->viewData([
-                        'timesheets' => $timesheets,
-                        'styles' => false,
-                    ]),
                 Checkbox::make('confirmation')
                     ->label(fn () => 'I '.(in_array($this->level, ['head', 'supervisor']) ? 'verify' : 'certify').' that the information is accurate and correct report of the hours of work performed.')
                     ->markAsRequired()

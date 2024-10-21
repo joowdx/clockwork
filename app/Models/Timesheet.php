@@ -28,6 +28,7 @@ class Timesheet extends Model
         'month',
         'details',
         'digest',
+        'timesheet_id',
     ];
 
     protected $casts = [
@@ -164,6 +165,20 @@ class Timesheet extends Model
         );
     }
 
+    public function undertime(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->{$this->getPeriod()}->sum('undertime')
+        );
+    }
+
+    public function overtime(): Attribute
+    {
+        return Attribute::make(
+            fn () => $this->{$this->getPeriod()}->sum('overtime')
+        );
+    }
+
     public function period(): Attribute
     {
         return Attribute::make(
@@ -283,9 +298,14 @@ class Timesheet extends Model
         return Attribute::make(
             function () {
                 return $this->exports->reduce(function ($carry, $export) {
-                    $carry['1st'] = $carry['1st'] || $export->details->period === '1st' && @$export->details->verification->head->at;
-                    $carry['2nd'] = $carry['2nd'] || $export->details->period === '2nd' && @$export->details->verification->head->at;
-                    $carry['full'] = $carry['full'] || $export->details->period === 'full' && @$export->details->verification->head->at;
+                    $carry['1st'] = $carry['1st'] || $export->details->period === '1st' &&
+                        (@$export->details->verification->head->at || @$export->details->verification->supervisor->at);
+
+                    $carry['2nd'] = $carry['2nd'] || $export->details->period === '2nd' &&
+                        (@$export->details->verification->head->at || @$export->details->verification->supervisor->at);
+
+                    $carry['full'] = $carry['full'] || $export->details->period === 'full' &&
+                        (@$export->details->verification->head->at || @$export->details->verification->supervisor->at);
 
                     return $carry;
                 }, ['1st' => false, '2nd' => false, 'full' => false]);
@@ -347,34 +367,34 @@ class Timesheet extends Model
 
     public function fullMonth(): HasMany
     {
-        return $this->hasMany(Timetable::class)
+        return $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->orderBy('date');
     }
 
     public function regularDays(): HasMany
     {
-        return $this->hasMany(Timetable::class)
+        return $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->regularDays()
             ->orderBy('date');
     }
 
     public function overtimeWork(): HasMany
     {
-        return $this->hasMany(Timetable::class)
+        return $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->overtimeWork()
             ->orderBy('date');
     }
 
-    public function firstHalf(): HasMany
+    public function firstHalf(): HasMany|HasManyThrough
     {
-        return $this->hasMany(Timetable::class)
+        return $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->firstHalf()
             ->orderBy('date');
     }
 
     public function secondHalf(): HasMany
     {
-        return $this->hasMany(Timetable::class)
+        return $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->secondHalf()
             ->orderBy('date');
     }
@@ -383,7 +403,7 @@ class Timesheet extends Model
     {
         $month = Carbon::parse($this->month);
 
-        $relationship = $this->hasMany(Timetable::class)
+        $relationship = $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->whereYear('date', $month->year)
             ->whereMonth('date', $month->month)
             ->orderBy('date');
@@ -399,7 +419,7 @@ class Timesheet extends Model
 
     public function customRange(): HasMany
     {
-        return $this->hasMany(Timetable::class)
+        return $this->hasMany(Timetable::class, 'timesheet_id', 'timesheet_id')
             ->whereDay('date', '>=', $this->from ?? 1)
             ->whereDay('date', '<=', $this->to ?? Carbon::parse($this->month)->endOfMonth()->day)
             ->orderBy('date');
@@ -428,6 +448,27 @@ class Timesheet extends Model
             ->where('enrollment.active', true)
             ->latest('time')
             ->latest('timelogs.id');
+    }
+
+    public function timesheet(): BelongsTo
+    {
+        return $this->belongsTo(Timesheet::class);
+    }
+
+    public function records()
+    {
+        return $this->hasManyThrough(Timetable::class, Timesheet::class, 'id', 'timesheets.timesheet_id', null, 'timetables.timesheet_id')
+            ->where(function ($query) {
+                $query->orWhere(function ($query) {
+                    $query->where('timesheets.span', '1st')->whereDay('date', '<=', 15);
+                });
+
+                $query->orWhere(function ($query) {
+                    $query->where('timesheets.span', '2nd')->whereDay('date', '>', 15);
+                });
+
+                $query->orWhere('timesheets.span', 'full');
+            });
     }
 
     public function exports(): MorphMany
