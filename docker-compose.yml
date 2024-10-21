@@ -7,7 +7,7 @@ services:
             dockerfile: docker/Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: joowdx/clockwork
+        image: joowdx/clockwork:v2
         restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
