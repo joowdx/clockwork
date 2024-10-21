@@ -18,14 +18,28 @@ return new class extends Migration
             $table->char('digest', 128)->nullable();
             $table->string('span')->default('full');
             $table->ulid('timesheet_id')->nullable();
-            $table->foreignUlid('employee_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignUlid('employee_id')
+                ->index()
+                ->constrained()
+                ->references('id')
+                ->on('employees')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
             $table->timestamps();
             $table->unique(['employee_id', 'month', 'span']);
             $table->unique(['timesheet_id', 'span']);
         });
 
         Schema::table('timesheets', function (Blueprint $table) {
-            $table->foreign('timesheet_id')->index()->nullable()->references('id')->on('timesheets')->cascadeOnUpdate()->cascadeOnDelete()->change();
+            $table->foreign('timesheet_id')
+                ->nullable()
+                ->index()
+                ->constrained()
+                ->references('id')
+                ->on('timesheets')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete()
+                ->change();
         });
     }
 
