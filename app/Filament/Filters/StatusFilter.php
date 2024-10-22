@@ -13,6 +13,8 @@ class StatusFilter extends Filter
 {
     protected ?string $relationship = null;
 
+    protected bool $single = false;
+
     public static function make(?string $name = null): static
     {
         $filterClass = static::class;
@@ -34,10 +36,18 @@ class StatusFilter extends Filter
             Select::make('status')
                 ->options(EmploymentStatus::class)
                 ->placeholder('All')
-                ->multiple()
+                ->multiple(fn () => !$this->single)
                 ->searchable(),
             Select::make('substatus')
                 ->visible(function (callable $get) {
+                    if ($this->single) {
+                        if (is_array($get('status'))) {
+                            return;
+                        }
+
+                        return $get('status') === EmploymentStatus::CONTRACTUAL->value;
+                    }
+
                     $visibleOn = [
                         EmploymentStatus::CONTRACTUAL->value,
                     ];
@@ -46,9 +56,11 @@ class StatusFilter extends Filter
                 })
                 ->options(EmploymentSubstatus::class)
                 ->placeholder('All')
-                ->multiple()
+                ->multiple(fn () => !$this->single)
                 ->searchable(),
-        ]);
+        ])
+        ->columnSpan(2)
+        ->columns(2);
 
         $this->query(function (Builder $query, array $data) {
             if (! isset($data['status'])) {
@@ -56,6 +68,34 @@ class StatusFilter extends Filter
             }
 
             $filter = function (Builder $query) use ($data) {
+                if ($this->single) {
+                    if (is_array($data['status'])) {
+                        return;
+                    }
+
+                    $query->when(
+                        EmploymentStatus::INTERNSHIP->value === $data['status'],
+                        fn ($query) => $query->withoutGlobalScope('excludeInterns'),
+                    );
+
+                    $query->where('status', $data['status']);
+
+                    if (is_array($data['substatus'])) {
+                        return;
+                    }
+
+                    $query->when(
+                        $data['substatus'],
+                        fn ($query) => $query->where('substatus', $data['substatus'])
+                    );
+
+                    return;
+                }
+
+                if (is_string($data['status'])) {
+                    return;
+                }
+
                 $query->when(
                     in_array(EmploymentStatus::INTERNSHIP->value, $data['status']),
                     fn ($query) => $query->withoutGlobalScope('excludeInterns'),
@@ -65,6 +105,10 @@ class StatusFilter extends Filter
                     $data['status'],
                     fn ($query) => $query->whereIn('status', $data['status'])
                 );
+
+                if (is_string($data['substatus'])) {
+                    return;
+                }
 
                 $query->when(
                     $data['substatus'],
@@ -78,27 +122,46 @@ class StatusFilter extends Filter
         $this->indicateUsing(function (array $data) {
             $indicators = [];
 
-            if (isset($data['status']) && count($data['status'])) {
+            if ($this->single) {
+                if ($hasStatus = isset($data['status']) && is_string($data['status']) && strlen($data['status'])) {
+                    $indicators[] = Indicator::make('Status: '.EmploymentStatus::tryFrom($data['status'])?->getLabel())->removeField('status');
+                }
+
+                if ($hasStatus && isset($data['substatus']) && is_string($data['substatus']) && strlen($data['substatus'])) {
+                    $indicators[] = Indicator::make('Substatus: '.EmploymentSubstatus::tryFrom($data['substatus'])?->getLabel())->removeField('substatus');
+                }
+
+                return count($indicators) ? $indicators : null;
+            }
+
+            if ($hasStatus = isset($data['status']) && is_array($data['status']) && count($data['status'])) {
                 $statuses = collect($data['status'])
                     ->map(fn ($status) => EmploymentStatus::tryFrom($status)?->getLabel());
 
                 $indicators[] = Indicator::make('Status: '.$statuses->join(', '))->removeField('status');
             }
 
-            if (isset($data['substatus']) && count($data['substatus'])) {
+            if ($hasStatus && isset($data['substatus']) && is_array($data['substatus']) && count($data['substatus'])) {
                 $substatuses = collect($data['substatus'])
                     ->map(fn ($status) => EmploymentSubstatus::tryFrom($status)->getLabel());
 
                 $indicators[] = Indicator::make('Substatus: '.$substatuses->join(', '))->removeField('substatus');
             }
 
-            return $indicators;
+            return count($indicators) ? $indicators : null;
         });
     }
 
     public function relationship(?string $relationship): static
     {
         $this->relationship = $relationship;
+
+        return $this;
+    }
+
+    public function single(bool $single = true): static
+    {
+        $this->single = $single;
 
         return $this;
     }
