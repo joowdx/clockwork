@@ -15,6 +15,8 @@ class StatusFilter extends Filter
 
     protected bool $single = false;
 
+    protected bool $dropdown = true;
+
     public static function make(?string $name = null): static
     {
         $filterClass = static::class;
@@ -36,7 +38,7 @@ class StatusFilter extends Filter
             Select::make('status')
                 ->options(EmploymentStatus::class)
                 ->placeholder('All')
-                ->multiple(fn () => !$this->single)
+                ->multiple(fn () => ! $this->single)
                 ->searchable(),
             Select::make('substatus')
                 ->visible(function (callable $get) {
@@ -56,11 +58,9 @@ class StatusFilter extends Filter
                 })
                 ->options(EmploymentSubstatus::class)
                 ->placeholder('All')
-                ->multiple(fn () => !$this->single)
+                ->multiple(fn () => ! $this->single)
                 ->searchable(),
-        ])
-        ->columnSpan(2)
-        ->columns(2);
+        ]);
 
         $this->query(function (Builder $query, array $data) {
             if (! isset($data['status'])) {
@@ -150,6 +150,11 @@ class StatusFilter extends Filter
 
             return count($indicators) ? $indicators : null;
         });
+
+        if (! $this->dropdown) {
+            $this->columnSpan(2)
+                ->columns(2);
+        }
     }
 
     public function relationship(?string $relationship): static
@@ -162,6 +167,13 @@ class StatusFilter extends Filter
     public function single(bool $single = true): static
     {
         $this->single = $single;
+
+        return $this;
+    }
+
+    public function dropdown(bool $dropdown = true): static
+    {
+        $this->dropdown = $dropdown;
 
         return $this;
     }

@@ -5,6 +5,8 @@ namespace App\Filament\Superuser\Resources;
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
 use App\Filament\Filters\ActiveFilter;
+use App\Filament\Filters\OfficeFilter;
+use App\Filament\Filters\StatusFilter;
 use App\Filament\Superuser\Resources\EmployeeResource\Pages;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\GroupsRelationManager;
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\OfficesRelationManager;
@@ -180,8 +182,6 @@ class EmployeeResource extends Resource
                 ->visible($isCalledBySelf)
                 ->columns(3)
                 ->schema([
-                    Forms\Components\TextInput::make('email')
-                        ->rule('email:rfc,strict,dns,spoof,filter'),
                     Forms\Components\TextInput::make('uid')
                         ->visibleOn('view'),
                     Forms\Components\TextInput::make('uid')
@@ -189,8 +189,9 @@ class EmployeeResource extends Resource
                         ->helperText('This eight character UID will used to uniquely identify the employee across interconnected systems.')
                         ->minLength(8)
                         ->maxLength(8)
-                        ->readOnly()
                         ->alphaNum()
+                        ->markAsRequired()
+                        ->rule('required')
                         ->dehydrateStateUsing(fn ($state) => strtoupper($state))
                         ->unique(ignoreRecord: true)
                         ->hiddenOn('view')
@@ -203,9 +204,14 @@ class EmployeeResource extends Resource
                                         return Employee::whereUid($uid)->doesntExist();
                                     };
 
-                                    $set('uid', strtoupper(fake()->valid($valid)->bothify('?????###')));
+                                    $set('uid', strtolower(fake()->valid($valid)->bothify('?????###')));
                                 })
                         ),
+                    Forms\Components\TextInput::make('email')
+                        ->rule('email:rfc,strict,dns,spoof,filter')
+                        ->rule('required', fn (Employee $record) => ! empty($record->email))
+                        ->markAsRequired(fn (Employee $record) => ! empty($record->email))
+                        ->helperText('The email address will be used for account recovery, notifications, and other communication purposes.'),
                     Forms\Components\ToggleButtons::make('active')
                         ->boolean()
                         ->inline()
@@ -275,11 +281,8 @@ class EmployeeResource extends Resource
                         fn ($query) => $query->whereHas('offices'),
                         fn ($query) => $query->whereDoesntHave('offices'),
                     ),
-                Tables\Filters\SelectFilter::make('offices')
-                    ->multiple()
-                    ->searchable()
-                    ->relationship('offices', 'code')
-                    ->preload(),
+                OfficeFilter::make(),
+                StatusFilter::make(),
                 Tables\Filters\SelectFilter::make('groups')
                     ->multiple()
                     ->searchable()

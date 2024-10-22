@@ -25,9 +25,13 @@ class ScannersRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Select::make('scanner_id')
                     ->relationship('scanner', 'name', function ($query) {
-                        if (Filament::getCurrentPanel()->getId() !== 'superuser') {
+                        if (! in_array(Filament::getCurrentPanel()->getId(), ['superuser', 'manager'])) {
                             $query->whereIn('scanners.id', user()->scanners->pluck('id'));
                         }
+
+                        $query->whereNotIn('scanners.id', $this->ownerRecord->enrollments()->select('scanner_id'));
+
+                        $query->reorder()->orderBy('priority', 'desc')->orderBy('name');
                     })
                     ->preload()
                     ->searchable()
@@ -93,18 +97,24 @@ class ScannersRelationManager extends RelationManager
                 Tables\Actions\EditAction::make()
                     ->slideOver()
                     ->modalWidth('xl')
-                    ->visible(fn (Enrollment $record) => user()->scanners->first(fn ($scanner) => $scanner->id === $record->scanner_id)),
+                    ->visible(function (Enrollment $record) {
+                        return in_array(Filament::getCurrentPanel()->getId(), ['superuser', 'manager']) ?:
+                            user()->scanners->first(fn ($scanner) => $scanner->id === $record->scanner_id);
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->icon('heroicon-o-x-circle')
                     ->modalIcon('heroicon-o-shield-exclamation')
-                    ->visible(fn (Enrollment $record) => user()->scanners->first(fn ($scanner) => $scanner->id === $record->scanner_id)),
+                    ->visible(function (Enrollment $record) {
+                        return in_array(Filament::getCurrentPanel()->getId(), ['superuser', 'manager']) ?:
+                            user()->scanners->first(fn ($scanner) => $scanner->id === $record->scanner_id);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->icon('heroicon-o-x-circle')
                         ->modalIcon('heroicon-o-shield-exclamation')
-                        ->visible(fn () => Filament::getCurrentPanel()->getId() === 'superuser'),
+                        ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['superuser'])),
                 ]),
             ])
             ->defaultSort(function ($query) {

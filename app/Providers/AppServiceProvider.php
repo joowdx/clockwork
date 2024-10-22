@@ -13,6 +13,7 @@ use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\VerticalAlignment;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\App;
@@ -47,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
         Select::configureUsing(fn (Select $select) => $select->native(false));
 
         Table::configureUsing(fn (Table $table) => $table->paginated([10, 25, 50, 100])->defaultPaginationPageOption(25)->striped());
+
+        TrashedFilter::configureUsing(fn (TrashedFilter $filter) => $filter->native(false));
 
         Notifications::verticalAlignment(VerticalAlignment::End);
 

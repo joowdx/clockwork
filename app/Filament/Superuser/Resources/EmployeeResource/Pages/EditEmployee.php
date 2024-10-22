@@ -27,6 +27,7 @@ class EditEmployee extends EditRecord
     {
         return [
             Actions\Action::make('reset_password')
+                ->visible(fn (Employee $record) => ! empty($record->password))
                 ->requiresConfirmation()
                 ->modalIcon('heroicon-o-shield-check')
                 ->modalHeading('Password Reset')

@@ -11,6 +11,7 @@ use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\OfficesRe
 use App\Filament\Superuser\Resources\EmployeeResource\RelationManagers\ScannersRelationManager;
 use App\Models\Employee;
 use App\Models\Office;
+use App\Models\Scopes\ActiveScope;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -57,7 +58,6 @@ class EmployeeResource extends Resource
                 Tables\Columns\TextColumn::make('status'),
             ])
             ->filters([
-                ActiveFilter::make(),
                 StatusFilter::make(),
                 Tables\Filters\Filter::make('offices')
                     ->form([
@@ -120,6 +120,7 @@ class EmployeeResource extends Resource
 
                         return 'Offices: '.$offices->join(', ');
                     }),
+                ActiveFilter::make(),
                 TrashedFilter::make(),
             ])
             ->actions([
@@ -153,6 +154,7 @@ class EmployeeResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
+                ActiveScope::class,
                 SoftDeletingScope::class,
             ])
             ->where(function (Builder $query) {
