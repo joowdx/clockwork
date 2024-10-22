@@ -2,12 +2,16 @@
 
 namespace App\Filament\Superuser\Resources;
 
+use App\Enums\UserRole;
 use App\Filament\Superuser\Resources\OfficeResource\Pages;
 use App\Filament\Superuser\Resources\OfficeResource\RelationManagers\EmployeesRelationManager;
 use App\Filament\Superuser\Resources\OfficeResource\RelationManagers\UsersRelationManager;
+use App\Models\Employee;
 use App\Models\Office;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,7 +30,9 @@ class OfficeResource extends Resource
 
     public static function formSchema(bool $head = false): array
     {
-        $isCalledBySelf = @debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1]['class'] === get_called_class();
+        $self = @debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1]['class'] === get_called_class();
+
+        $panel = Filament::getCurrentPanel()->getId();
 
         return [
             Forms\Components\Section::make('General information')
@@ -60,9 +66,25 @@ class OfficeResource extends Resource
                         ->columnSpanFull()
                         ->nullable()
                         ->hiddenLabel()
-                        ->editOptionForm($isCalledBySelf ? EmployeeResource::formSchema() : null)
-                        ->createOptionForm($isCalledBySelf ? EmployeeResource::formSchema() : null)
-                        ->visible(fn () => $isCalledBySelf || $head),
+                        ->editOptionForm($self ? EmployeeResource::formSchema() : null)
+                        ->createOptionForm($self ? EmployeeResource::formSchema() : null)
+                        ->visible(fn () => $self || $head)
+                        ->disabled(function (Get $get) use ($panel) {
+                            if ($panel === 'superuser') {
+                                return true;
+                            }
+
+                            return Employee::find($get('head'))?->user?->hasRole(UserRole::DIRECTOR);
+                        })
+                        ->helperText(function (Get $get) use ($panel) {
+                            if ($panel === 'superuser') {
+                                return null;
+                            }
+
+                            return Employee::find($get('head'))?->user?->hasRole(UserRole::DIRECTOR)
+                                ? 'This office is currently handled actively by the selected employee.'
+                                : null;
+                        }),
                 ]),
         ];
     }
