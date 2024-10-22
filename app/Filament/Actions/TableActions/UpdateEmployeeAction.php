@@ -74,7 +74,7 @@ class UpdateEmployeeAction extends Action
                         ],
                     ];
                 })->values()->all(),
-                'memberships' => $record->groups()->withoutGlobalScopes()->get()->mapWithKeys(function ($group) {
+                'memberships' => $record->members()->withoutGlobalScopes()->get()->mapWithKeys(function ($group) {
                     return [
                         $group->id => [
                             'id' => $group->id,

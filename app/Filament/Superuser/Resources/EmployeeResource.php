@@ -186,15 +186,21 @@ class EmployeeResource extends Resource
                         ->visibleOn('view'),
                     Forms\Components\TextInput::make('uid')
                         ->label('UID')
-                        ->helperText('This eight character UID will used to uniquely identify the employee across interconnected systems.')
+                        ->helperText('This eight character UID will be used to uniquely identify the employee across interconnected systems.')
                         ->minLength(8)
                         ->maxLength(8)
                         ->alphaNum()
                         ->markAsRequired()
                         ->rule('required')
-                        ->dehydrateStateUsing(fn ($state) => strtoupper($state))
+                        ->rule('regex:/^(?!abcde123$)[A-Za-z]{5}\d{3}$/')
+                        ->length(8)
+                        ->validationAttribute('uid')
+                        ->dehydrateStateUsing(fn ($state) => strtolower($state))
                         ->unique(ignoreRecord: true)
                         ->hiddenOn('view')
+                        ->validationMessages([
+                            'regex' => 'The :attribute must be in the format of five letters followed by three numbers e.g. abcde123 (except abcde123).',
+                        ])
                         ->hintAction(
                             Forms\Components\Actions\Action::make('generate')
                                 ->label('Generate')

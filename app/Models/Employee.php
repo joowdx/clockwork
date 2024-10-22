@@ -276,6 +276,11 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
         return $this->morphOne(Signature::class, 'signaturable');
     }
 
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $panel->getId() === 'employee';
