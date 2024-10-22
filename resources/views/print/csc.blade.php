@@ -351,13 +351,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                 </tr>
                             @endif
                             <tr>
-                                <td class="underline" colspan=6>
-                                    @if ($certify)
-                                        <div style="display:flex;justify-content:center">
-                                            @includeWhen(is_null($user->signature?->certificate), 'print.signature', ['signature' => $user->signature])
-                                        </div>
-                                    @endif
-                                </td>
+                                <td class="underline" colspan=6></td>
                             </tr>
                             <tr>
                                 <td class="bahnschrift-light top center font-xs" colspan=6>Employee Signature</td>

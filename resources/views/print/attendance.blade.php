@@ -255,7 +255,6 @@
                             <tr>
                                 <td colspan="6"></td>
                                 <td colspan="4" class="relative underline font-sm center bottom nowrap consolas">
-                                    @includeWhen($signature, 'print.signature', ['signature' => $user->signature, 'signed' => $signed ?? false])
                                     {{ $user?->name }}
                                 </td>
                             </tr>
