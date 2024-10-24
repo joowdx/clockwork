@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\TimesheetCoordinates;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Process;
@@ -9,12 +10,6 @@ use RuntimeException;
 
 class SignPdfAction
 {
-    const FOLIO_TIMESHEET_EMPLOYEE_COORDINATES = '256,216,356,266';
-
-    const FOLIO_TIMESHEET_SUPERVISOR_COORDINATES = '256,163,356,213';
-
-    const FOLIO_TIMESHEET_HEAD_COORDINATES = '256,98,356,148';
-
     protected User|Employee|null $user = null;
 
     protected ?string $python;
@@ -59,7 +54,7 @@ class SignPdfAction
         string $path,
         ?string $out = null,
         ?string $field = null,
-        ?string $coordinates = null,
+        TimesheetCoordinates|string|null $coordinates = null,
         int $page = 1,
         array $data = [],
         bool $certify = false,
@@ -99,12 +94,12 @@ class SignPdfAction
             $timestamp = env('TIMESTAMP_URL') !== null;
 
             do {
-                $process = Process::forever()
+                $process = Process::timeout(30)
                     ->path($directory)
                     ->run($this->command($timestamp));
 
                 if ($process->failed()) {
-                    if ($timestamp && str($process->errorOutput())->contains('Timestamp')) {
+                    if ($timestamp && str($process->errorOutput())->lower()->contains('timestamp')) {
                         $timestamp = false;
 
                         continue;
@@ -129,9 +124,9 @@ class SignPdfAction
         return $this;
     }
 
-    public function coordinates(?string $coordinates): static
+    public function coordinates(TimesheetCoordinates|string|null $coordinates): static
     {
-        $this->coordinates = $coordinates;
+        $this->coordinates = $coordinates instanceof TimesheetCoordinates ? $coordinates->value : $coordinates;
 
         return $this;
     }

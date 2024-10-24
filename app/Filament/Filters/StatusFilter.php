@@ -4,6 +4,7 @@ namespace App\Filament\Filters;
 
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentSubstatus;
+use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
@@ -11,11 +12,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StatusFilter extends Filter
 {
-    protected ?string $relationship = null;
+    protected Closure|string|null $relationship = null;
 
     protected bool $single = false;
-
-    protected bool $dropdown = true;
 
     public static function make(?string $name = null): static
     {
@@ -116,7 +115,11 @@ class StatusFilter extends Filter
                 );
             };
 
-            $query->when($this->relationship, fn ($query) => $query->whereHas($this->relationship, $filter), $filter);
+            $query->when(
+                $this->relationship instanceof Closure ? ($this->relationship)() : $this->relationship,
+                fn ($query, $relationship) => $query->whereHas($relationship, $filter),
+                $filter
+            );
         });
 
         $this->indicateUsing(function (array $data) {
@@ -150,14 +153,9 @@ class StatusFilter extends Filter
 
             return count($indicators) ? $indicators : null;
         });
-
-        if (! $this->dropdown) {
-            $this->columnSpan(2)
-                ->columns(2);
-        }
     }
 
-    public function relationship(?string $relationship): static
+    public function relationship(Closure|string|null $relationship): static
     {
         $this->relationship = $relationship;
 
@@ -167,13 +165,6 @@ class StatusFilter extends Filter
     public function single(bool $single = true): static
     {
         $this->single = $single;
-
-        return $this;
-    }
-
-    public function dropdown(bool $dropdown = true): static
-    {
-        $this->dropdown = $dropdown;
 
         return $this;
     }

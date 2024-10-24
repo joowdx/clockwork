@@ -7,6 +7,8 @@ $size = isset($size)  ? mb_strtolower($size) : 'folio';
 
 $preview ??= false;
 
+$overtime ??= true;
+
 $qr ??= false;
 
 $certify ??= false;
@@ -76,7 +78,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                         ])
                     >
                         @if($preview)
-                            <col width=65 span=7>
+                            <col width=65 span={{ $overtime ? 7 : 6 }}>
                         @else
                             <col width=57 span=6>
                             <tr>
@@ -124,17 +126,17 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             </tr>
                         @endif
                         <tr>
-                            <td class="underline uppercase courier font-lg center bold" colspan={{ $preview ? 7 : 6 }} style="text-decoration: none;">
+                            <td class="underline uppercase courier font-lg center bold" colspan={{ $preview && $overtime ? 7 : 6 }} style="text-decoration: none;">
                                 {{ $timesheet->employee->name }}
                             </td>
                         </tr>
                         <tr>
-                            <td class="courier top center font-xs" colspan={{ $preview ? 7 : 6 }}>
+                            <td class="courier top center font-xs" colspan={{ $preview && $overtime ? 7 : 6 }}>
                                 Employee
                             </td>
                         </tr>
                         <tr>
-                            <td class="arial font-xs bottom right" colspan={{ $preview ? 3 : 2 }} style="padding-bottom:2.5pt;padding-right:10pt;">
+                            <td class="arial font-xs bottom right" colspan={{ $preview && $overtime ? 3 : 2 }} style="padding-bottom:2.5pt;padding-right:10pt;">
                                 For the month of:
                             </td>
                             <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
@@ -142,7 +144,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             </td>
                         </tr>
                         <tr>
-                            <td class="font-xs left middle arial" colspan={{ $preview ? 3 : 2 }} rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
+                            <td class="font-xs left middle arial" colspan={{ $preview && $overtime ? 3 : 2 }} rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
                             <td class="relative arial font-xs bottom left nowrap" colspan=1>
                                 <span class="absolute" style="bottom:1pt;left:-11pt;">
                                     Weekdays
@@ -175,7 +177,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                 <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
                             @endif
 
-                            @if ($preview)
+                            @if ($preview && $overtime)
                                 <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
                             @endif
                         </tr>
@@ -185,6 +187,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Arrival</td>
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Departure</td>
                         </tr>
+
                         @for ($day = 1; $day <= 31; $day++)
                             @php($date = Carbon\Carbon::parse($timesheet->month)->setDay($day))
 
@@ -280,7 +283,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                     >
                                         {{ $timesheet->getPeriod() === 'overtimeWork' && ! $preview ? $timetable?->overtime : $timetable?->undertime }}
                                     </td>
-                                    @if($preview)
+                                    @if($preview && $overtime)
                                         <td
                                             @class([
                                                 'border right bold',

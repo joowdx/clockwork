@@ -38,7 +38,7 @@ class ProcessTimesheet implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
         $this->month = is_string($month) ? Carbon::parse($month)->startOfMonth() : $month;
 
-        $this->sheet = $this->employee->timesheets()->firstOrCreate(['month' => $this->month->startOfMonth()]);
+        $this->sheet = $this->employee->timesheets()->firstOrCreate(['month' => $this->month->startOfMonth(), 'span' => 'full']);
     }
 
     /**

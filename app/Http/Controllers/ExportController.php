@@ -14,6 +14,6 @@ class ExportController extends Controller
 
         return response()->streamDownload(function () use ($export) {
             echo $export->content;
-        }, $export->filename);
+        }, pathinfo($export->filename, PATHINFO_BASENAME));
     }
 }

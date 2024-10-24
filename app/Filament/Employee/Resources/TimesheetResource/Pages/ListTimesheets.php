@@ -3,6 +3,7 @@
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
+use App\Filament\Actions\TableActions\NavigateTimesheetAction;
 use App\Filament\Employee\Resources\TimesheetResource;
 use App\Filament\Employee\Widgets\ScannerStatisticsWidget;
 use App\Models\Employee;
@@ -38,6 +39,7 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            NavigateTimesheetAction::make(),
             // $this->generate(),
         ];
     }

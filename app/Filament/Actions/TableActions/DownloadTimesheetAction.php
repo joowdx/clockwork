@@ -2,11 +2,9 @@
 
 namespace App\Filament\Actions\TableActions;
 
-use App\Models\Export;
 use App\Models\Timesheet;
-use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\Action;
-use ZipArchive;
+use Illuminate\Support\Carbon;
 
 class DownloadTimesheetAction extends Action
 {
@@ -28,48 +26,32 @@ class DownloadTimesheetAction extends Action
 
         $this->modalIcon('heroicon-o-document-arrow-down');
 
-        $this->modalDescription('');
+        $this->modalSubmitActionLabel('Download');
 
-        $this->form([
-            Select::make('period')
-                ->required()
-                ->multiple()
-                ->default(fn (Timesheet $record) => $record->exports->map->details->map->period->toArray())
-                ->options(function (Timesheet $record) {
-                    return $record->exports->mapWithKeys(function (Export $export) {
-                        return [
-                            $export->details->period => match ($export->details->period) {
-                                '1st' => 'First half',
-                                '2nd' => 'Second half',
-                                default => 'Full month',
-                            },
-                        ];
-                    });
-                }),
-        ]);
+        $this->modalDescription(function (Timesheet $record) {
+            $period = match ($record->span) {
+                'full' => 'month',
+                default => "{$record->span} half",
+            };
 
-        $this->action(function (Timesheet $record, array $data) {
-            $exports = $record->exports()->whereIn('details->period', $data['period'])->get();
+            $month = Carbon::parse($record->month)->format('F Y');
 
-            $name = "$record->month-".trim($record->employee->name, '.').'.zip';
+            $description = <<<HTML
+                Are you sure you want to download the timesheet of <br>
+                {$record->employee->titled_name} for the {$period} of {$month}?
+            HTML;
 
-            $headers = ['Content-Type' => 'application/zip', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
+            return str($description)->toHtmlString();
+        });
 
-            $temp = stream_get_meta_data(tmpfile())['uri'];
+        $this->action(function (Timesheet $record) {
+            $from = str_pad($record->from, 2, '0', STR_PAD_LEFT);
 
-            $zip = new ZipArchive;
+            $name = "{$record->month} {$from}-{$record->to} ".trim($record->employee->name, '.').'.pdf';
 
-            $zip->open($temp, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+            $headers = ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 
-            $zip->setCompressionIndex(-1, ZipArchive::CM_STORE);
-
-            $exports->each(function (Export $export) use ($zip) {
-                $zip->addFromString($export->filename, $export->content);
-            });
-
-            $zip->close();
-
-            return response()->download($temp, $name, $headers)->deleteFileAfterSend();
+            return response()->streamDownload(fn () => print ($record->export->content), $name, $headers);
         });
     }
 }

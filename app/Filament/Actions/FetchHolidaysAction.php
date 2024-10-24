@@ -7,6 +7,7 @@ use App\Models\Holiday;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class FetchHolidaysAction extends Action
 {
@@ -45,7 +46,7 @@ class FetchHolidaysAction extends Action
                         'date' => $holiday['date']['iso'],
                         'type' => mb_strtolower($holiday['primary_type']) === 'regular holiday' ? 'regular-holiday' : 'special-holiday',
                         'remarks' => $holiday['description'],
-                        'created_by' => auth()->id(),
+                        'created_by' => Auth::id(),
                     ];
                 })->toArray();
             } catch (\Exception $e) {
