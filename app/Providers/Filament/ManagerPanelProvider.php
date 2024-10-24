@@ -44,6 +44,7 @@ class ManagerPanelProvider extends PanelProvider
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
+            ->databaseNotificationsPolling(15)
             ->userMenuItems(Navigation::menuItems());
         // ->spaUrlExceptions(Navigation::spaExceptions())
         // ->spa()
