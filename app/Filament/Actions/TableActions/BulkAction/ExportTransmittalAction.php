@@ -89,11 +89,11 @@ class ExportTransmittalAction extends BulkAction
                 ->dates($data['dates'] ?? [])
                 ->format($data['format'])
                 ->size($data['size'])
-                ->strict($data['strict'])
-                ->current($data['current'])
-                ->user($data['user'] ? User::find($data['user']) : user())
-                ->signature($data['electronic_signature'])
-                ->password($data['digital_signature'] ? $data['password'] : null)
+                ->strict($data['strict'] ?? false)
+                ->current($data['current'] ?? false)
+                ->user(@$data['user'] ? User::find($data['user']) : user())
+                // ->signature($data['electronic_signature'])
+                // ->password($data['digital_signature'] ? $data['password'] : null)
                 ->groups($data['groups'] ?? [])
                 ->download();
         } catch (ProcessFailedException $exception) {
@@ -228,30 +228,30 @@ class ExportTransmittalAction extends BulkAction
             //     ->boolean()
             //     ->required()
             //     ->placeholder('Generate transmittal'),
-            Checkbox::make('electronic_signature')
-                ->hintIcon('heroicon-o-check-badge')
-                ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
-                ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    $user = $get('user') ? User::find($get('user')) : user();
+            // Checkbox::make('electronic_signature')
+            //     ->hintIcon('heroicon-o-check-badge')
+            //     ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
+            //     ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
+            //     ->live()
+            //     ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
+            //     ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+            //         $user = $get('user') ? User::find($get('user')) : user();
 
-                    if (! $user?->signature->verify($value)) {
-                        $fail('Configure your electronic signature first');
-                    }
-                }),
-            Checkbox::make('digital_signature')
-                ->hintIcon('heroicon-o-shield-check')
-                ->hintIconTooltip('Digitally sign the document to prevent tampering.')
-                ->dehydrated(true)
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
-                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                    if ($value && ! $get('electronic_signature')) {
-                        $fail('Digital signature requires electronic signature');
-                    }
-                }),
+            //         if (! $user?->signature->verify($value)) {
+            //             $fail('Configure your electronic signature first');
+            //         }
+            //     }),
+            // Checkbox::make('digital_signature')
+            //     ->hintIcon('heroicon-o-shield-check')
+            //     ->hintIconTooltip('Digitally sign the document to prevent tampering.')
+            //     ->dehydrated(true)
+            //     ->live()
+            //     ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
+            //     ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+            //         if ($value && ! $get('electronic_signature')) {
+            //             $fail('Digital signature requires electronic signature');
+            //         }
+            //     }),
             TextInput::make('password')
                 ->password()
                 ->visible(fn (Get $get) => $get('digital_signature') && $get('electronic_signature'))
