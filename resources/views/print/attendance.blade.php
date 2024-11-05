@@ -20,7 +20,9 @@
 
 @php($states ??= [])
 
-@php($filter = function (&$query, $date, $filter = false) use ($from, $to, $modes, $scanners, $states) {
+@php($scope ??= null)
+
+@php($filter = function (&$query, $date, $filter = false) use ($from, $to, $modes, $scanners, $states, $scope) {
     $query->whereDate('time', $date);
 
     $query->when($from, fn ($q) => $q->whereTime('time', '>=', $from));
@@ -54,11 +56,12 @@
         @foreach (collect($dates)->sort() as $date)
             @php(
                 $employees = $office->employees()
-                    ->when($strict ??= false, fn ($query) => $query->whereHas('timelogs', fn ($query) => $filter($query, $date, true)))
                     ->with(['timelogs' => fn ($query) => $filter($query, $date)])
+                    ->when($strict ??= false, fn ($query) => $query->whereHas('timelogs', fn ($query) => $filter($query, $date, true)))
                     ->when($status ??= null, fn ($q) => is_array($status) ? $q->whereIn('status', $status) : $q->where('status', $status))
                     ->when(($substatus ??= null) && $status, fn ($q) => is_array($substatus) ? $q->whereIn('substatus', $substatus) : $q->where('substatus', $substatus))
                     ->when(($current ??= false) && (get_class($office) === Office::class), fn ($q) => $q->where('deployment.current', true))
+                    ->when($scope, $scope)
                     ->get()
                     ->when($strict, fn ($employees) => $employees->reject(fn ($employee) => $employee->timelogs->isEmpty())) // bugged - don't remove
                     ->values()

@@ -7,6 +7,7 @@ use App\Models\Group;
 use App\Models\Office;
 use App\Models\Scanner;
 use App\Models\User;
+use Closure;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -55,6 +56,8 @@ class ExportAttendance implements Responsable
 
     private string $size = 'folio';
 
+    private ?Closure $scope = null;
+
     public function __construct(
         ?Model $office = null,
         ?array $dates = null,
@@ -81,6 +84,7 @@ class ExportAttendance implements Responsable
         string $size = 'folio',
         ?User $user = null,
         array|bool|null $signature = false,
+        ?Closure $scope = null,
     ): StreamedResponse {
         return $this->office($office)
             ->dates($dates)
@@ -94,6 +98,7 @@ class ExportAttendance implements Responsable
             ->size($size)
             ->user($user)
             ->signature($signature)
+            ->scope($scope)
             ->download();
     }
 
@@ -220,6 +225,13 @@ class ExportAttendance implements Responsable
         return $this;
     }
 
+    public function scope(?Closure $scope): static
+    {
+        $this->scope = $scope;
+
+        return $this;
+    }
+
     public function download(): StreamedResponse|BinaryFileResponse
     {
         $name = $this->filename().'.pdf';
@@ -275,6 +287,7 @@ class ExportAttendance implements Responsable
             'size' => $this->size,
             'signature' => $this->signature === true ?: @$this->signature['electronic'],
             'signed' => $this->signature === true ?: @$this->signature['digital'],
+            'scope' => $this->scope,
         ];
 
         $attendance = Pdf::view($this->transmittal === true ? 'print.transmittal.attendance' : 'print.attendance', $args)
@@ -331,7 +344,7 @@ class ExportAttendance implements Responsable
 
         $title = $prefix.'('.collect($this->office)->map(fn (Office|Group $o) => $o instanceof Office ? $o->code : $o->name)->join(',').')';
 
-        return str($title)->limit(255)->toString();
+        return str($title)->limit(255)->replaceMatches('/[\\\\\/:*?"<>|]/', '-')->toString();
     }
 
     public function toResponse($request): BinaryFileResponse|StreamedResponse

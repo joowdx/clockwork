@@ -22,6 +22,7 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -100,10 +101,22 @@ class ExportAttendanceAction extends Action
                 ->current($data['current'])
                 ->size($data['size'])
                 ->user(@$data['user'] ? User::find($data['user']) : user())
-                ->signature([
-                    'electronic' => @$data['electronic_signature'],
-                    'digital' => @$data['digital_signature'],
-                ])
+                ->scope(
+                    Filament::getCurrentPanel()->getId() !== 'admin'
+                        ? function (Builder $query) {
+                            $user = user();
+
+                            $query->where(function ($query) use ($user) {
+                                $query->orWhereHas('offices', function ($query) use ($user) {
+                                    $query->whereIn('offices.id', $user->offices()->select('offices.id'));
+                                });
+
+                                $query->orWhereHas('scanners', function ($query) use ($user) {
+                                    $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
+                                });
+                            });
+                        } : null
+                )
                 ->transmittal($this->transmittal ? true : ($data['transmittal'] ?? false))
                 ->download();
         } catch (ProcessFailedException $exception) {
@@ -151,6 +164,8 @@ class ExportAttendanceAction extends Action
                                                 });
                                             });
                                         })
+                                        ->reorder()
+                                        ->orderBy('priority', 'desc')
                                         ->orderBy('name')
                                         ->pluck('name', 'uid');
                                 })
@@ -219,16 +234,16 @@ class ExportAttendanceAction extends Action
                                 ->afterStateUpdated(fn ($set) => $set('offices', null)),
                             Select::make('offices')
                                 ->label(fn (Get $get) => $get('by') === 'office' ? 'Offices' : 'Groups')
-                                ->helperText(function (Get $get) {
-                                    if ($get('by') === 'group') {
-                                        $help = <<<'HTML'
-                                            This will include <i><b>all</b></i> employees of the selected group regardless
-                                            of their deployed office or enrolled scanners.
-                                        HTML;
+                                // ->helperText(function (Get $get) {
+                                //     if ($get('by') === 'group') {
+                                //         $help = <<<'HTML'
+                                //             This will include <i><b>all</b></i> employees of the selected group regardless
+                                //             of their deployed office or enrolled scanners.
+                                //         HTML;
 
-                                        return str($help)->toHtmlString();
-                                    }
-                                })
+                                //         return str($help)->toHtmlString();
+                                //     }
+                                // })
                                 ->multiple()
                                 ->required()
                                 ->columnSpanFull()
@@ -238,29 +253,29 @@ class ExportAttendanceAction extends Action
                                     $admin = Filament::getCurrentPanel()->getId() === 'admin';
 
                                     return ('App\Models\\'.ucfirst($get('by')))::query()
-                                        ->when(! $admin, function ($query) use ($get) {
+                                        ->when(! $admin, function (Builder $query) use ($get) {
                                             $user = user();
 
-                                            match ($get) {
+                                            match ($get('by')) {
                                                 'group' => $query->where(function ($query) use ($user) {
                                                     $query->orWhereHas('employees', function ($query) use ($user) {
                                                         $query->whereHas('offices', function ($query) use ($user) {
-                                                            $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
+                                                            $query->whereIn('offices.id', $user->offices()->select('offices.id'));
                                                         });
                                                     });
 
                                                     $query->orWhereHas('employees', function ($query) use ($user) {
                                                         $query->whereHas('scanners', function ($query) use ($user) {
-                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                            $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
                                                         });
                                                     });
                                                 }),
                                                 default => $query->where(function ($query) use ($user) {
-                                                    $query->whereIn('id', $user->offices->pluck('id'));
+                                                    $query->whereIn('id', $user->offices()->select('offices.id'));
 
                                                     $query->orWhereHas('employees', function ($query) use ($user) {
                                                         $query->whereHas('scanners', function ($query) use ($user) {
-                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                            $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
                                                         });
                                                     });
                                                 })
@@ -277,26 +292,26 @@ class ExportAttendanceAction extends Action
                                         ->when(! $admin, function ($query) use ($get) {
                                             $user = user();
 
-                                            match ($get) {
+                                            match ($get('by')) {
                                                 'group' => $query->where(function ($query) use ($user) {
                                                     $query->orWhereHas('employees', function ($query) use ($user) {
                                                         $query->whereHas('offices', function ($query) use ($user) {
-                                                            $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
+                                                            $query->whereIn('offices.id', $user->offices()->select('offices.id'));
                                                         });
                                                     });
 
                                                     $query->orWhereHas('employees', function ($query) use ($user) {
                                                         $query->whereHas('scanners', function ($query) use ($user) {
-                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                            $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
                                                         });
                                                     });
                                                 }),
                                                 default => $query->where(function ($query) use ($user) {
-                                                    $query->whereIn('id', $user->offices->pluck('id'));
+                                                    $query->whereIn('id', $user->offices()->select('offices.id'));
 
                                                     $query->orWhereHas('employees', function ($query) use ($user) {
                                                         $query->whereHas('scanners', function ($query) use ($user) {
-                                                            $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                                                            $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
                                                         });
                                                     });
                                                 })
@@ -354,42 +369,42 @@ class ExportAttendanceAction extends Action
                                 ->options(User::take(25)->whereNot('id', Auth::id())->orderBy('name')->pluck('name', 'id'))
                                 ->getSearchResultsUsing(fn ($search) => User::take(25)->whereNot('id', Auth::id())->where('name', 'ilike', "%{$search}%")->pluck('name', 'id'))
                                 ->searchable(),
-                            Checkbox::make('electronic_signature')
-                                ->helperText('Electronically sign the document. This does not provide security against tampering.')
-                                ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
-                                ->live()
-                                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                    $user = $get('user') ? User::find($get('user')) : user();
+                            // Checkbox::make('electronic_signature')
+                            //     ->helperText('Electronically sign the document. This does not provide security against tampering.')
+                            //     ->default(fn ($livewire) => $livewire->filters['electronic_signature'] ?? false)
+                            //     ->live()
+                            //     ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
+                            //     ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                            //         $user = $get('user') ? User::find($get('user')) : user();
 
-                                    if ($value && ! $user->signature) {
-                                        $fail('Configure your electronic signature first');
-                                    }
-                                }),
-                            Checkbox::make('digital_signature')
-                                ->helperText('Digitally sign the document to prevent tampering.')
-                                ->dehydrated(true)
-                                ->live()
-                                ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
-                                ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
-                                    if (! $value) {
-                                        return;
-                                    }
+                            //         if ($value && ! $user->signature) {
+                            //             $fail('Configure your electronic signature first');
+                            //         }
+                            //     }),
+                            // Checkbox::make('digital_signature')
+                            //     ->helperText('Digitally sign the document to prevent tampering.')
+                            //     ->dehydrated(true)
+                            //     ->live()
+                            //     ->afterStateUpdated(fn ($get, $set, $state) => $set('electronic_signature', $state ? true : $get('electronic_signature')))
+                            //     ->rule(fn (Get $get) => function ($attribute, $value, $fail) use ($get) {
+                            //         if (! $value) {
+                            //             return;
+                            //         }
 
-                                    if (! $get('electronic_signature')) {
-                                        $fail('Digital signature requires electronic signature');
-                                    }
+                            //         if (! $get('electronic_signature')) {
+                            //             $fail('Digital signature requires electronic signature');
+                            //         }
 
-                                    $user = $get('user') ? User::find($get('user')) : user();
+                            //         $user = $get('user') ? User::find($get('user')) : user();
 
-                                    if ($user->signature?->certificate === null) {
-                                        $name = $get('user')
-                                            ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
-                                            : 'your';
+                            //         if ($user->signature?->certificate === null) {
+                            //             $name = $get('user')
+                            //                 ? str("$user->name'")->when(! str($user->name)->endsWith('s'), fn ($str) => $str->append('s'))->toString()
+                            //                 : 'your';
 
-                                        return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
-                                    }
-                                }),
+                            //             return $fail('Please configure '.($get('user') ? $name : 'your').' digital signature certificate first');
+                            //         }
+                            //     }),
                         ]),
                 ]),
         ];
