@@ -168,6 +168,7 @@ class SignatureResource extends Resource
                     // Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
+            ->deferLoading()
             ->recordUrl(null);
     }
 

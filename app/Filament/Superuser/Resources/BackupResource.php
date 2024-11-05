@@ -61,7 +61,8 @@ class BackupResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->deferLoading();
     }
 
     public static function getEloquentQuery(): Builder

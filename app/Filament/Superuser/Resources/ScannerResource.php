@@ -180,6 +180,7 @@ class ScannerResource extends Resource
                 ]),
             ])
             ->recordUrl(null)
+            ->deferLoading()
             ->defaultSort(function (Builder $query) {
                 $query->orderBy('priority', 'desc');
 

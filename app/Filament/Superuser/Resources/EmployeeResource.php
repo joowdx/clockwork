@@ -344,6 +344,7 @@ class EmployeeResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
+            ->deferLoading()
             ->recordUrl(null);
     }
 

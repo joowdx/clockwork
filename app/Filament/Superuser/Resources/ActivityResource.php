@@ -69,6 +69,7 @@ class ActivityResource extends Resource
                             }),
                     ]),
             ])
+            ->deferLoading()
             ->defaultSort('created_at', 'desc');
     }
 

@@ -144,6 +144,7 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->deferLoading()
             ->recordUrl(null);
     }
 

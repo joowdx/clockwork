@@ -78,7 +78,8 @@ class ScannerResource extends Resource
                                 ->rules(['required', 'string']),
                         ]),
                 ]),
-            ]);
+            ])
+            ->deferLoading();
     }
 
     public static function getRelations(): array

@@ -146,6 +146,7 @@ class TimelogResource extends Resource
 
                 ]),
             ])
+            ->deferLoading()
             ->defaultSort('time', 'desc')
             ->filtersFormWidth(MaxWidth::ThreeExtraLarge)
             ->filtersFormColumns(2);

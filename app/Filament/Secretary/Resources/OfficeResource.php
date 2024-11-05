@@ -66,6 +66,7 @@ class OfficeResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                 ]),
             ])
+            ->deferLoading()
             ->recordUrl(null);
     }
 

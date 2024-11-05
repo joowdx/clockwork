@@ -341,6 +341,7 @@ class ListTimesheets extends ListRecords
                 DeleteTimesheetAction::make('delete')
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class),
             ])
+            ->deferLoading()
             ->deselectAllRecordsWhenFiltered(false)
             ->recordAction(null)
             ->defaultSort(fn () => ($this->filters['model'] ?? Employee::class) == Employee::class ? 'full_name' : null, 'asc');

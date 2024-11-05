@@ -124,6 +124,7 @@ class HolidayResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
+            ->deferLoading()
             ->recordAction(null)
             ->defaultSort('date', 'desc');
     }

@@ -87,6 +87,7 @@ class GroupResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
+            ->deferLoading()
             ->recordUrl(null);
     }
 

@@ -125,6 +125,7 @@ class TimesheetResource extends Resource
                     ->label('Generate'),
                 DeleteTimesheetAction::make('delete'),
             ])
+            ->deferLoading()
             ->recordAction(null)
             ->recordUrl(null)
             ->defaultSort('name', 'asc')
@@ -152,11 +153,11 @@ class TimesheetResource extends Resource
                 $user = user();
 
                 $query->whereHas('offices', function (Builder $query) use ($user) {
-                    $query->whereIn('offices.id', $user->offices->pluck('id')->toArray());
+                    $query->whereIn('offices.id', $user->offices()->select('offices.id'));
                 });
 
                 $query->orWhereHas('scanners', function (Builder $query) use ($user) {
-                    $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                    $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
                 });
             });
     }
