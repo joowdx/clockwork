@@ -147,6 +147,16 @@ class EmployeeResource extends Resource
                         ->dehydrateStateUsing(fn ($state) => $state === 'N/A' ? '' : $state)
                         ->markAsRequired()
                         ->rules('required'),
+                    Forms\Components\TextInput::make('prefix_name')
+                        ->label('Name prefix')
+                        ->helperText('Prefix or title of the employee e.g. Atty., Engr., Dr., Fr., etc.')
+                        ->minLength(2)
+                        ->markAsRequired(),
+                    Forms\Components\TextInput::make('suffix_name')
+                        ->label('Name suffix')
+                        ->helperText('Suffix or honorific of the employee e.g. Ph.D., M.D., MIT, MBA, MPA, etc.')
+                        ->minLength(2)
+                        ->markAsRequired(),
                     Forms\Components\DatePicker::make('birthdate'),
                     Forms\Components\Select::make('sex')
                         ->options(['male' => 'Male', 'female' => 'Female']),
