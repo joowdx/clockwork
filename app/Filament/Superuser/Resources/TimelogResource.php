@@ -13,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
@@ -36,17 +37,17 @@ class TimelogResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('scanner.name')
-                    ->searchable()
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->sortable()
                     ->extraAttributes(['class' => 'font-mono']),
                 Tables\Columns\TextColumn::make('employee.name')
                     ->placeholder('Unknown')
-                    ->searchable(),
+                    ->searchable(isIndividual: true, isGlobal: false),
                 Tables\Columns\TextColumn::make('uid')
                     ->label('UID')
-                    ->searchable(query: fn ($query, $search) => $query->whereUid($search)),
+                    ->searchable(query: fn ($query, $search) => $query->whereUid($search), isIndividual: true, isGlobal: false),
                 Tables\Columns\TextColumn::make('time')
-                    ->searchable()
+                    ->searchable(isIndividual: true, isGlobal: false)
                     ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->extraAttributes(['class' => 'font-mono']),
@@ -70,12 +71,12 @@ class TimelogResource extends Resource
                     ->indicateUsing(function (array $data) {
                         $indicators = [];
 
-                        if (isset($data['from'])) {
+                        if (isset($data['from']) && !empty($data['from'])) {
                             $indicators[] = Indicator::make('From: '.Carbon::parse($data['from'])->format('Y-m-d H:i'))
                                 ->removeField('from');
                         }
 
-                        if (isset($data['until'])) {
+                        if (isset($data['until']) && !empty($data['until'])) {
                             $indicators[] = Indicator::make('Until: '.Carbon::parse($data['until'])->format('Y-m-d H:i'))
                                 ->removeField('until');
                         }
@@ -87,38 +88,6 @@ class TimelogResource extends Resource
                     ->searchable()
                     ->multiple()
                     ->preload(),
-                Tables\Filters\Filter::make('employee')
-                    ->form([
-                        Select::make('employee')
-                            ->getSearchResultsUsing(
-                                function (?string $search): array {
-                                    return Employee::query()
-                                        ->when($search, fn ($query, $search) => $query->where('name', 'ilike', "%{$search}%"))
-                                        ->limit(20)
-                                        ->pluck('name', 'id')
-                                        ->toArray();
-                                }
-                            )
-                            ->getOptionLabelUsing(fn ($value): ?string => Employee::find($value)?->name)
-                            ->searchable()
-                            ->multiple()
-                            ->preload(),
-                    ])
-                    ->query(function ($query, array $data) {
-                        $query->when($data['employee'], fn ($query, $id) => $query->whereHas('employee', fn ($q) => $q->whereIn('employees.id', $id)));
-                    })
-                    ->indicateUsing(function (array $data) {
-                        if (empty($data['employee'])) {
-                            return;
-                        }
-
-                        $employees = Employee::select('name')
-                            ->find($data['employee'])
-                            ->pluck('name');
-
-                        return Indicator::make('Employee: '.$employees->join(' & '))
-                            ->removeField('employee');
-                    }),
                 Tables\Filters\SelectFilter::make('mode')
                     ->options(TimelogMode::class)
                     ->multiple()
@@ -137,7 +106,7 @@ class TimelogResource extends Resource
                         fn ($query) => $query->whereHas('employee'),
                     )
                     ->native(false),
-            ])
+            ], FiltersLayout::AboveContent)
             ->actions([
 
             ])
