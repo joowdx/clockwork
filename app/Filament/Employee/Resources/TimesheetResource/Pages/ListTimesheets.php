@@ -3,6 +3,7 @@
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
+use App\Filament\Actions\TableActions\NavigateTimesheetAction;
 use App\Filament\Employee\Resources\TimesheetResource;
 use App\Filament\Employee\Widgets\ScannerStatisticsWidget;
 use App\Models\Employee;
@@ -11,8 +12,10 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class ListTimesheets extends ListRecords
@@ -38,7 +41,18 @@ class ListTimesheets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            // NavigateTimesheetAction::make(),
             // $this->generate(),
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'Monthly' => Tab::make()
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('span', 'full')),
+            'Certified' => Tab::make()
+                ->modifyQueryUsing(fn (Builder $query) => $query->certified()),
         ];
     }
 

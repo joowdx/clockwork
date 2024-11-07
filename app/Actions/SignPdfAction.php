@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\TimesheetCoordinates;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Process;
@@ -9,12 +10,6 @@ use RuntimeException;
 
 class SignPdfAction
 {
-    const FOLIO_TIMESHEET_EMPLOYEE_COORDINATES = '256,216,356,266';
-
-    const FOLIO_TIMESHEET_SUPERVISOR_COORDINATES = '256,163,356,213';
-
-    const FOLIO_TIMESHEET_HEAD_COORDINATES = '256,98,356,148';
-
     protected User|Employee|null $user = null;
 
     protected ?string $python;
@@ -55,26 +50,35 @@ class SignPdfAction
     }
 
     public function __invoke(
-        User|Employee $user,
+        User|Employee|null $user,
         string $path,
         ?string $out = null,
         ?string $field = null,
-        ?string $coordinates = null,
+        TimesheetCoordinates|string|null $coordinates = null,
         int $page = 1,
         array $data = [],
         bool $certify = false,
+        ?string $certificate = null,
+        ?string $specimen = null,
+        ?string $password = null,
     ): void {
         $this->field($field)
             ->coordinates($coordinates)
             ->page($page)
             ->data($data)
             ->certify($certify)
-            ->sign($user, $path, $out);
+            ->sign($user, $path, $out, $certificate, $specimen, $password);
     }
 
-    public function sign(User|Employee $user, string $path, ?string $out): void
-    {
-        if ($user->signature === null) {
+    public function sign(
+        User|Employee|null $user,
+        string $path,
+        ?string $out,
+        ?string $certificate = null,
+        ?string $specimen = null,
+        ?string $password = null,
+    ): void {
+        if ($user !== null && $user?->signature === null) {
             throw new RuntimeException('User signature is not yet configured');
         }
 
@@ -91,20 +95,26 @@ class SignPdfAction
                 mkdir($directory, 0777, true);
             }
 
-            file_put_contents($directory.'certificate.pfx', base64_decode($user->signature->certificateBase64));
-            file_put_contents($directory.'signature.webp', base64_decode($user->signature->specimenBase64));
-            file_put_contents($directory.'password', $user->signature->password);
+            if ($user) {
+                file_put_contents($directory.'certificate.pfx', base64_decode($user->signature->certificateBase64));
+                file_put_contents($directory.'signature.webp', base64_decode($user->signature->specimenBase64));
+            } else {
+                rename($certificate, $directory.'certificate.pfx');
+                rename($specimen, $directory.'signature.webp');
+            }
+
+            file_put_contents($directory.'password', $user?->signature->password ?? $password);
             file_put_contents($directory.'pyhanko.yml', $this->yml());
 
             $timestamp = env('TIMESTAMP_URL') !== null;
 
             do {
-                $process = Process::forever()
+                $process = Process::timeout(30)
                     ->path($directory)
                     ->run($this->command($timestamp));
 
                 if ($process->failed()) {
-                    if ($timestamp && str($process->errorOutput())->contains('Timestamp')) {
+                    if ($timestamp && str($process->errorOutput())->lower()->contains('timestamp')) {
                         $timestamp = false;
 
                         continue;
@@ -129,9 +139,9 @@ class SignPdfAction
         return $this;
     }
 
-    public function coordinates(?string $coordinates): static
+    public function coordinates(TimesheetCoordinates|string|null $coordinates): static
     {
-        $this->coordinates = $coordinates;
+        $this->coordinates = $coordinates instanceof TimesheetCoordinates ? $coordinates->value : $coordinates;
 
         return $this;
     }
@@ -180,7 +190,7 @@ class SignPdfAction
         }
 
         return array_merge($command, [
-            '--contact-info='.($this->data['contact'] ?? $this->user->email),
+            '--contact-info='.($this->data['contact'] ?? $this->user?->email),
             '--location='.($this->data['location'] ?? 'Philippines'),
             'pkcs12',
             '--passfile=password',
@@ -192,6 +202,10 @@ class SignPdfAction
 
     public function id(): string
     {
+        if ($this->user === null) {
+            return str()->ulid().'-'.$this->path;
+        }
+
         return "{$this->user->id}-{$this->path}";
     }
 

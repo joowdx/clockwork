@@ -38,9 +38,11 @@ class Schedule extends Model
         'threshold' => 'json',
     ];
 
-    public static function search(Carbon|CarbonCarbon|string $date, ?Employee $employee = null, ?Carbon $until = null)
+    public static function search(Carbon|CarbonCarbon|string $date, ?Employee $employee = null, Carbon|CarbonCarbon|string|null $until = null)
     {
         $date = is_string($date) ? Carbon::parse($date) : $date;
+
+        $until = is_string($until) ? Carbon::parse($until) : $until;
 
         if (isset($until)) {
             return cache()->remember(

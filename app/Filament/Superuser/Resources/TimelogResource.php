@@ -5,10 +5,8 @@ namespace App\Filament\Superuser\Resources;
 use App\Enums\TimelogMode;
 use App\Enums\TimelogState;
 use App\Filament\Superuser\Resources\TimelogResource\Pages;
-use App\Models\Employee;
 use App\Models\Timelog;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
@@ -71,12 +69,12 @@ class TimelogResource extends Resource
                     ->indicateUsing(function (array $data) {
                         $indicators = [];
 
-                        if (isset($data['from']) && !empty($data['from'])) {
+                        if (isset($data['from']) && ! empty($data['from'])) {
                             $indicators[] = Indicator::make('From: '.Carbon::parse($data['from'])->format('Y-m-d H:i'))
                                 ->removeField('from');
                         }
 
-                        if (isset($data['until']) && !empty($data['until'])) {
+                        if (isset($data['until']) && ! empty($data['until'])) {
                             $indicators[] = Indicator::make('Until: '.Carbon::parse($data['until'])->format('Y-m-d H:i'))
                                 ->removeField('until');
                         }

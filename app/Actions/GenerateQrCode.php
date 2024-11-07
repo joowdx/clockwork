@@ -2,27 +2,33 @@
 
 namespace App\Actions;
 
-use BaconQrCode\Renderer\Color\Rgb;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\RendererStyle\Fill;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class GenerateQrCode
 {
-    public function __invoke(mixed $data, int $size = 256): string
+    public function __invoke(mixed $data, int $size = 256, ?string $image = null, string $format = 'svg'): string
     {
-        return $this->generate($data, $size);
+        return $this->generate($data, $size, $image, $format);
     }
 
-    public function generate(mixed $data, int $size = 256): string
+    public function generate(mixed $data, int $size = 256, ?string $image = null, string $format = 'svg'): string
     {
-        $renderer = new ImageRenderer(
-            new RendererStyle($size, 0, null, null, Fill::uniformColor(new Rgb(255, 255, 255), new Rgb(0, 0, 0))),
-            new SvgImageBackEnd,
-        );
+        $from = [19, 91, 146];
 
-        return (new Writer($renderer))->writeString($data);
+        $to = [0, 254, 255];
+
+        $qr = QrCode::size($size)
+            ->format($format)
+            ->margin(1)
+            ->gradient($from[0], $from[1], $from[2], $to[0], $to[1], $to[2], 'diagonal')
+            ->eye('circle')
+            ->style('dot')
+            ->errorCorrection('M');
+
+        if ($image) {
+            $qr->merge($image, .3, true);
+        }
+
+        return $qr->generate($data);
     }
 }

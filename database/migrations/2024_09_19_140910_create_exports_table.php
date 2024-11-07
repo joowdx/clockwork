@@ -16,10 +16,10 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('filename');
             $table->char('digest', 128)->nullable();
-            $table->json('details')->nullable();
-            $table->text('exception')->nullable();
+            $table->jsonb('details')->nullable();
+            $table->jsonb('signers')->nullable();
             $table->binary('content')->nullable();
-            $table->string('status')->nullable();
+            $table->string('disk')->nullable();
             $table->unsignedInteger('downloads')->default(0);
             $table->timestamp('downloaded_at')->nullable();
             $table->nullableUlidMorphs('exportable');

@@ -55,7 +55,7 @@ class Home extends Dashboard
                 ->url('/'),
             Action::make('download_file')
                 ->color('gray')
-                ->action(fn () => response()->streamDownload(fn () => print ($this->export->content), $this->export->filename)),
+                ->action(fn () => response()->streamDownload(fn () => print ($this->export->content), pathinfo($this->export->filename, PATHINFO_BASENAME))),
         ];
     }
 
@@ -84,9 +84,8 @@ class Home extends Dashboard
                         ->hiddenLabel()
                         ->alignCenter()
                         ->formatStateUsing(function (): View {
-                            return view('filament.validation.pages.preview', [
+                            return view('filament.validation.pages.csc', [
                                 'timesheets' => [$this->export->exportable->setSpan($this->export->details->period)],
-                                'preview' => true,
                             ]);
                         }),
                     TextEntry::make('digest')

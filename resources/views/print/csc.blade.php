@@ -7,6 +7,8 @@ $size = isset($size)  ? mb_strtolower($size) : 'folio';
 
 $preview ??= false;
 
+$overtime ??= true;
+
 $qr ??= false;
 
 $certify ??= false;
@@ -27,12 +29,19 @@ if (! $preview) {
         : null;
 
     $timestamp ??= now();
+
+    $supervisor ??= @$misc['supervisor'] ?? true;
 }
 
 $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($timesheet->month)->format('F Y')) .
     ($timesheet->getPeriod() === 'overtimeWork' ? ' (OT)' : '');
 
-$generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validation?q={$certify}", 72);
+$generator = fn ($timesheet) => (new GenerateQrCode) (
+        config('app.url')."/validation?q={$timesheet}",
+        256,
+        $seal ? storage_path('app/public/'.settings('seal')) : null,
+        'png',
+    );
 ?>
 
 @extends('print.layout')
@@ -76,7 +85,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                         ])
                     >
                         @if($preview)
-                            <col width=65 span=7>
+                            <col width=65 span={{ $overtime ? 7 : 6 }}>
                         @else
                             <col width=57 span=6>
                             <tr>
@@ -124,17 +133,17 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             </tr>
                         @endif
                         <tr>
-                            <td class="underline uppercase courier font-lg center bold" colspan={{ $preview ? 7 : 6 }} style="text-decoration: none;">
+                            <td class="underline uppercase courier font-lg center bold" colspan={{ $preview && $overtime ? 7 : 6 }} style="text-decoration: none;">
                                 {{ $timesheet->employee->name }}
                             </td>
                         </tr>
                         <tr>
-                            <td class="courier top center font-xs" colspan={{ $preview ? 7 : 6 }}>
+                            <td class="courier top center font-xs" colspan={{ $preview && $overtime ? 7 : 6 }}>
                                 Employee
                             </td>
                         </tr>
                         <tr>
-                            <td class="arial font-xs bottom right" colspan={{ $preview ? 3 : 2 }} style="padding-bottom:2.5pt;padding-right:10pt;">
+                            <td class="arial font-xs bottom right" colspan={{ $preview && $overtime ? 3 : 2 }} style="padding-bottom:2.5pt;padding-right:10pt;">
                                 For the month of:
                             </td>
                             <td class="underline font-md courier bold center" colspan=4 style="text-decoration: none;">
@@ -142,7 +151,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             </td>
                         </tr>
                         <tr>
-                            <td class="font-xs left middle arial" colspan={{ $preview ? 3 : 2 }} rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
+                            <td class="font-xs left middle arial" colspan={{ $preview && $overtime ? 3 : 2 }} rowspan=2 height=40>Official hours for <br> arrival &amp; departure </td>
                             <td class="relative arial font-xs bottom left nowrap" colspan=1>
                                 <span class="absolute" style="bottom:1pt;left:-11pt;">
                                     Weekdays
@@ -175,7 +184,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                 <td class="border center middle courier" rowspan=2 width=58>Under<br>time</td>
                             @endif
 
-                            @if ($preview)
+                            @if ($preview && $overtime)
                                 <td class="border center middle courier" rowspan=2 width=58>Over<br>time</td>
                             @endif
                         </tr>
@@ -185,6 +194,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Arrival</td>
                             <td class="border courier center" width=58 style="font-size:7.5pt;">Departure</td>
                         </tr>
+
                         @for ($day = 1; $day <= 31; $day++)
                             @php($date = Carbon\Carbon::parse($timesheet->month)->setDay($day))
 
@@ -280,7 +290,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                     >
                                         {{ $timesheet->getPeriod() === 'overtimeWork' && ! $preview ? $timetable?->overtime : $timetable?->undertime }}
                                     </td>
-                                    @if($preview)
+                                    @if($preview && $overtime)
                                         <td
                                             @class([
                                                 'border right bold',
@@ -345,11 +355,17 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                             <tr>
                                 <td colspan=6 style="height:22.5pt;"></td>
                             </tr>
-                            @if (! ($supervisor ??= @$misc['supervisor'] ?? true))
+                            {{-- @if (!
+                                (
+                                    $supervisor = $certify
+                                        ? (bool) $timesheet->details['supervisor']
+                                        : $supervisor
+                                )
+                            )
                                 <tr>
                                     <td colspan=6 style="height:22.5pt;"></td>
                                 </tr>
-                            @endif
+                            @endif --}}
                             <tr>
                                 <td class="underline" colspan=6></td>
                             </tr>
@@ -367,18 +383,25 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                     <td colspan=6></td>
                                 </tr>
                             @endif
-                            @if($supervisor)
-                                <tr>
-                                    <td colspan=6 @class(['center font-sm', 'underline' => $supervisor])>
-                                        {{ $timesheet->details['supervisor'] ?? (($sv = $timesheet->employee->currentDeployment?->supervisor?->name) === $timesheet->employee->name ? null : $sv) }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="bahnschrift-light top center font-xs" colspan=6>
+                            @php(
+                                $supervisor = $certify
+                                    ? (bool) $timesheet->details['supervisor']
+                                    : $supervisor
+                            )
+                            <tr>
+                                <td colspan=6 @class(['center font-sm', 'underline' => $supervisor])>
+                                    @if ($supervisor)
+                                        {{ $timesheet->details['supervisor'] ?? $timesheet->employee->currentDeployment?->office?->head?->titled_name }}
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="bahnschrift-light top center font-xs" colspan=6>
+                                    @if ($supervisor)
                                         Immediate Supervisor
-                                    </td>
-                                </tr>
-                            @endif
+                                    @endif
+                                </td>
+                            </tr>
                             <tr>
                                 <td colspan=6 style="height:22.5pt;"></td>
                             </tr>
@@ -416,7 +439,7 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                             P = Previous <br>
                                         @endif
                                         @if ($timesheet->timetables->some(fn($timetable) => collect($timetable->punch)->some(fn ($punches) => isset($punches['recast']))))
-                                            {{-- ‽ = Rectified --}}
+                                            ‽ = Rectified
                                         @endif
                                     </div>
                                     <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;">
@@ -450,17 +473,23 @@ $generator = fn () => (new GenerateQrCode)->generate(config('app.url')."/validat
                                         'color:#0007;border-color:#0007!important;' => $officer
                                     ])
                                 >
+                                    @if ($officer)
+                                        {{ $user?->name }}
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan=3> </td>
                                 <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
-                                    @if ($officer)
-                                        {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
-                                    @elseif($certify)
-                                        <span class="absolute" style="top:-45pt;right:0;">
-                                            {!! $generator($timesheet->id) !!}
-                                        </span>
+                                    @if ($certify)
+                                        <image
+                                            class="absolute object-contain"
+                                            style="top:-45pt;right:0;max-width:72px;max-height:72px;"
+                                            src="data:image/png;base64,{!!base64_encode($generator($timesheet->id))!!}"
+                                            alt-text="validation-url"
+                                        />
+                                    @elseif($officer)
+                                        {{ $user->position ?: $user?->employee?->designation ?? 'Staff-in-charge' }}
                                     @endif
 
                                     <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">

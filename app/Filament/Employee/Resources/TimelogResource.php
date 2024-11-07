@@ -101,12 +101,7 @@ class TimelogResource extends Resource
                     ->multiple()
                     ->searchable(),
             ])
-            ->actions([
-
-            ])
-            ->bulkActions([
-
-            ])
+            ->deferLoading()
             ->defaultSort('time', 'desc')
             ->recordAction(null)
             ->recordUrl(null);

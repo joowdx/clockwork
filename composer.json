@@ -10,14 +10,12 @@
     "require": {
         "php": "^8.2",
         "azure-oss/storage-blob-laravel": "^1.0",
-        "bacon/bacon-qr-code": "^3.0",
         "codeat3/blade-google-material-design-icons": "^1.19",
         "dutchcodingcompany/filament-socialite": "^1.4",
         "fakerphp/faker": "^1.9.1",
         "filament/filament": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.7",
-        "jeffgreco13/filament-breezy": "^2.3",
         "laravel/breeze": "^2.0",
         "laravel/folio": "^1.1",
         "laravel/framework": "^11.0",
@@ -35,6 +33,7 @@
         "owenvoke/blade-fontawesome": "^2.6",
         "resend/resend-php": "^0.13.0",
         "sentry/sentry-laravel": "^4.9",
+        "simplesoftwareio/simple-qrcode": "~4",
         "spatie/laravel-pdf": "^1.5",
         "symfony/http-client": "^7.1",
         "symfony/mailgun-mailer": "^7.1",
@@ -69,7 +68,8 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan filament:upgrade",
+            "@php artisan vendor:publish --force --tag=livewire:assets --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"

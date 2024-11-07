@@ -67,7 +67,7 @@ class ScheduleResource extends Resource
                                     ]),
                             ]),
                         Forms\Components\Select::make('office_id')
-                            ->relationship('office', 'name', fn ($query) => $query->whereIn('id', auth()->user()->offices->pluck('id')->toArray()))
+                            ->relationship('office', 'name', fn ($query) => $query->whereIn('id', user()->offices()->select('offices.id')))
                             ->searchable()
                             ->preload()
                             ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
@@ -306,7 +306,8 @@ class ScheduleResource extends Resource
                                     ]),
                             ]),
                     ]),
-            ]);
+            ])
+            ->deferLoading();
     }
 
     public static function table(Table $table): Table
