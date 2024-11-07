@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\HolidayController;
+use App\Http\Controllers\Api\SignerController;
 use App\Http\Controllers\Api\TimesheetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,3 +22,5 @@ Route::middleware('auth:sanctum')->get('/user', fn (Request $request) => $reques
 Route::match(['get', 'post'], 'timesheet', TimesheetController::class)->middleware(['auth:sanctum']);
 
 Route::match(['get', 'post'], 'holiday', HolidayController::class)->middleware(['auth:sanctum']);
+
+Route::match(['get', 'post'], 'signer', SignerController::class)->middleware(['auth:sanctum']);
