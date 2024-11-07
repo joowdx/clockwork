@@ -391,7 +391,7 @@ $generator = fn ($timesheet) => (new GenerateQrCode) (
                             <tr>
                                 <td colspan=6 @class(['center font-sm', 'underline' => $supervisor])>
                                     @if ($supervisor)
-                                        {{ $timesheet->details['supervisor'] ?? $timesheet->employee->currentDeployment?->office?->head?->titled_name }}
+                                        {{ $timesheet->details['supervisor'] ?? $timesheet->employee->currentDeployment?->supervisor?->titled_name }}
                                     @endif
                                 </td>
                             </tr>

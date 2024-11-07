@@ -272,7 +272,7 @@
                                     </td>
                                     <td colspan="4" class="uppercase cascadia center font-sm" style="padding-right:1rem;">
                                         <div class="overline">
-                                            Officer-in-charge
+                                            {{ $user->position ?: $user?->employee?->designation ?? 'Staff-in-charge' }}
                                         </div>
                                     </td>
                                 </tr>
