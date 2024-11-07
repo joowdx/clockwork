@@ -485,7 +485,7 @@ $generator = fn ($timesheet) => (new GenerateQrCode) (
                                         <image
                                             class="absolute object-contain"
                                             style="top:-45pt;right:0;max-width:72px;max-height:72px;"
-                                            src="data:image/png;base64,{!!base64_encode($generator($timesheet->id))!!}"
+                                            src="data:image/png;base64,{!!base64_encode($generator($timesheet->export->id))!!}"
                                             alt-text="validation-url"
                                         />
                                     @elseif($officer)

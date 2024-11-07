@@ -76,7 +76,7 @@ class CertifyTimesheetAction extends Action
                         return $fail('You must have to configure your digital signature first.');
                     }
 
-                    if (Filament::getCurrentPanel()->getId() === 'director' && $record->details->supervisor && $record->leaderSigner === null) {
+                    if (Filament::getCurrentPanel()->getId() === 'director' && @$record->details['supervisor'] && $record->leaderSigner === null) {
                         return $fail('This timesheet has not been verified by the ' . settings('leader') . ' yet.');
                     }
 

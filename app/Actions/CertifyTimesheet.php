@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
+use Throwable;
 
 class CertifyTimesheet
 {
@@ -120,40 +121,48 @@ class CertifyTimesheet
 
     protected function generate(Timesheet $timesheet, User|Employee $user, array $data, string $path): string
     {
-        $data = [
-            ...$data,
-            'timesheets' => [$timesheet],
-            'user' => $user,
-            'month' => $timesheet->month,
-            'period' => $data['period'] instanceof TimesheetPeriod ? $data['period']->value : $data['period'] ?? 'full',
-            'format' => 'csc',
-            'size' => $data['size'] ?? 'folio',
-            'certify' => 1,
-            'misc' => [
-                'calculate' => true,
-            ],
-        ];
+        try {
+            $timesheet->export()->create([
+                'filename' => $path,
+                'disk' => 'azure',
+                'details' => [
+                    'period' => $timesheet->span,
+                ],
+            ]);
 
-        $pdf = Pdf::view('print.csc', $data);
+            $data = [
+                ...$data,
+                'timesheets' => [$timesheet],
+                'user' => $user,
+                'month' => $timesheet->month,
+                'period' => $data['period'] instanceof TimesheetPeriod ? $data['period']->value : $data['period'] ?? 'full',
+                'format' => 'csc',
+                'size' => $data['size'] ?? 'folio',
+                'certify' => 1,
+                'misc' => [
+                    'calculate' => true,
+                ],
+            ];
 
-        if (env('APP_ENV') === 'local' && get_current_user() === 'root') {
-            $pdf->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
+            $pdf = Pdf::view('print.csc', $data);
+
+            if (env('APP_ENV') === 'local' && get_current_user() === 'root') {
+                $pdf->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
+            }
+
+            match ($data['size'] ?? 'folio') {
+                'folio' => $pdf->paperSize(8.5, 13, 'in'),
+                default => $pdf->format($data['size']),
+            };
+
+            return base64_decode($pdf->base64());
+        } catch (Throwable $e) {
+            $timesheet->export->delete();
+
+            $timesheet->delete();
+
+            throw $e;
         }
-
-        match ($data['size'] ?? 'folio') {
-            'folio' => $pdf->paperSize(8.5, 13, 'in'),
-            default => $pdf->format($data['size']),
-        };
-
-        $timesheet->export()->create([
-            'filename' => $path,
-            'disk' => 'azure',
-            'details' => [
-                'period' => $timesheet->span,
-            ],
-        ]);
-
-        return base64_decode($pdf->base64());
     }
 
     protected function details(Timesheet $timesheet, string $period)

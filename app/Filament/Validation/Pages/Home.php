@@ -35,7 +35,7 @@ class Home extends Dashboard
 
     public function getMaxContentWidth(): MaxWidth
     {
-        return MaxWidth::ExtraLarge;
+        return MaxWidth::TwoExtraLarge;
     }
 
     public function getHeading(): string|Htmlable
@@ -65,36 +65,60 @@ class Home extends Dashboard
             ->record($this->export)
             ->columns(3)
             ->schema([
-                TextEntry::make('details.certification.at')
+                Group::make([
+                    TextEntry::make('exportable.days')
+                        ->label('Days'),
+                    TextEntry::make('overtime')
+                        ->label('Overtime')
+                        ->state(function ($record) {
+                            return $record->exportable->getOvertime(true);
+                        }),
+                    TextEntry::make('undertime')
+                        ->label('Undertime')
+                        ->state(function ($record) {
+                            return $record->exportable->getUndertime(true);
+                        }),
+                    TextEntry::make('missed')
+                        ->label('Missed')
+                        ->state(function ($record) {
+                            return $record->exportable->getMissed(true);
+                        }),
+                ])
+                    ->columns(2)
+                    ->columnSpan('full'),
+                TextEntry::make('created_at')
                     ->label('Certified by employee')
                     ->since()
                     ->dateTimeTooltip(),
-                TextEntry::make('details.verification.supervisor.at')
+                TextEntry::make('exportable.leaderSigner.created_at')
                     ->label('Verified by supervisor')
-                    ->placeholder(str('<i>Not yet</i>')->toHtmlString())
+                    ->placeholder(str('<i>None</i>')->toHtmlString())
                     ->since()
                     ->dateTimeTooltip(),
-                TextEntry::make('details.verification.head.at')
+                TextEntry::make('exportable.directorSigner.created_at')
                     ->label('Verified by head')
-                    ->placeholder(str('<i>Not yet</i>')->toHtmlString())
+                    ->placeholder(str('<i>None</i>')->toHtmlString())
                     ->since()
                     ->dateTimeTooltip(),
                 Group::make([
                     TextEntry::make('exportable')
-                        ->hiddenLabel()
-                        ->alignCenter()
+                        ->label('Timesheet')
+                        ->columnSpan('full')
                         ->formatStateUsing(function (): View {
                             return view('filament.validation.pages.csc', [
-                                'timesheets' => [$this->export->exportable->setSpan($this->export->details->period)],
+                                'timesheets' => [$this->export->exportable->setSpan($this->export->exportable->span)],
+                                'styles' => false,
+                                'month' => false,
                             ]);
                         }),
                     TextEntry::make('digest')
+                        ->columnSpan('full')
                         ->fontFamily(FontFamily::Mono)
                         ->extraAttributes(['style' => 'word-break:break-all;'])
                         ->copyable()
                         ->copyMessage('Copied!')
                         ->copyMessageDuration(1500),
-                ])->columnSpan(3),
+                ])->columnSpan('full'),
             ]);
     }
 }
