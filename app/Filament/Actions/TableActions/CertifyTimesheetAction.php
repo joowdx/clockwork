@@ -77,15 +77,15 @@ class CertifyTimesheetAction extends Action
                     }
 
                     if (Filament::getCurrentPanel()->getId() === 'director' && @$record->details['supervisor'] && $record->leaderSigner === null) {
-                        return $fail('This timesheet has not been verified by the ' . settings('leader') . ' yet.');
+                        return $fail('This timesheet has not been verified by the '.settings('leader').' yet.');
                     }
 
                     if (Filament::getCurrentPanel()->getId() === 'leader' && $record->directorSigner) {
-                        return $fail('This timesheet has already been verified by the ' . settings('director') . ' (' . $record->directorSigner->signer->name. ').');
+                        return $fail('This timesheet has already been verified by the '.settings('director').' ('.$record->directorSigner->signer->name.').');
                     }
 
-                    if ($record->{$this->level . 'Signer'} !== null) {
-                        return $fail('This timesheet has already been verified by the ' . settings($this->level) . ' (' . $record->{$this->level . 'Signer'}->signer->name. ').');
+                    if ($record->{$this->level.'Signer'} !== null) {
+                        return $fail('This timesheet has already been verified by the '.settings($this->level).' ('.$record->{$this->level.'Signer'}->signer->name.').');
                     }
                 })
                 ->label(function () {

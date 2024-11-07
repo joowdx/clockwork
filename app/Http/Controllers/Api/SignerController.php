@@ -34,10 +34,10 @@ class SignerController extends Controller
                         return;
                     }
 
-                    if (!$employee->signature?->specimen || !$employee->signature?->certificate || !$employee->signature?->password) {
+                    if (! $employee->signature?->specimen || ! $employee->signature?->certificate || ! $employee->signature?->password) {
                         return $fail('The employee is not configured for signing.');
                     }
-                }
+                },
             ],
             'signatures' => 'nullable|array',
             'signatures.*.field' => 'required|string',
@@ -71,7 +71,7 @@ class SignerController extends Controller
 
                         throw $exception;
                     }
-                }
+                },
             ],
         ]);
 
@@ -84,7 +84,7 @@ class SignerController extends Controller
 
             $pdf = storage_path('app/'.$pdf);
 
-            foreach($request->employees as $row) {
+            foreach ($request->employees as $row) {
                 $employee = Employee::where('uid', $row['uid'])->first();
 
                 $signer(
@@ -101,7 +101,7 @@ class SignerController extends Controller
                 );
             }
 
-            foreach($request->signatures as $signature) {
+            foreach ($request->signatures as $signature) {
                 $signer(
                     null,
                     $pdf,
