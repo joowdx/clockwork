@@ -146,9 +146,7 @@ class CertifyTimesheet
 
             $pdf = Pdf::view('print.csc', $data);
 
-            if (env('APP_ENV') === 'local' && get_current_user() === 'root') {
-                $pdf->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
-            }
+            $pdf->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
 
             match ($data['size'] ?? 'folio') {
                 'folio' => $pdf->paperSize(8.5, 13, 'in'),
