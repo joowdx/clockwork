@@ -17,14 +17,6 @@
             <p class="mt-2 text-sm text-center text-gray-500 fi-simple-header-subheading dark:text-gray-400">
                 {{ $this->getSubHeading() }}
             </p>
-
-            <p class="mt-2 text-base text-center text-gray-400 fi-simple-header-subheading dark:text-gray-500">
-                @if (get_class($this) === \App\Filament\Auth\Login::class)
-                    Employee? Login {{ $this->employeeAction }}
-                @else
-                    Admin? Login {{ $this->adminAction }}
-                @endif
-            </p>
         </header>
 
         @yield('content')

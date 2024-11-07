@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Auth\Employee as EmployeeLogin;
 use App\Filament\Auth\Profile;
 use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
@@ -29,9 +28,8 @@ class EmployeePanelProvider extends PanelProvider
             ->path('employee')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->colors(['primary' => Color::Gray])
+            ->colors(['primary' => Color::Cyan])
             ->emailVerification(Verification::class)
-            ->login(EmployeeLogin::class)
             ->profile(Profile::class)
             ->revealablePasswords(false)
             ->passwordReset()
