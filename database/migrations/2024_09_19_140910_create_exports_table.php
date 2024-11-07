@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('filename');
             $table->char('digest', 128)->nullable();
             $table->jsonb('details')->nullable();
-            $table->jsonb('signers')->nullable();
             $table->binary('content')->nullable();
             $table->string('disk')->nullable();
             $table->unsignedInteger('downloads')->default(0);
