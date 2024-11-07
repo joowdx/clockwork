@@ -113,14 +113,16 @@ class TimesheetResource extends Resource
                 ViewTimesheetAction::make(listing: true),
                 ViewTimesheetAction::make()
                     ->label('View'),
-                Tables\Actions\BulkActionGroup::make([
-                    ExportTimesheetAction::make()
-                        ->label('Timesheet'),
-                    ExportTransmittalAction::make()
-                        ->label('Transmittal'),
-                ])
+                ExportTimesheetAction::make()
+                    ->color('gray')
                     ->label('Export')
                     ->icon('heroicon-o-document-arrow-down'),
+                // Tables\Actions\BulkActionGroup::make([
+                //     ExportTransmittalAction::make()
+                //         ->label('Transmittal'),
+                // ])
+                //     ->label('Export')
+                //     ->icon('heroicon-o-document-arrow-down'),
                 GenerateTimesheetAction::make()
                     ->label('Generate'),
                 DeleteTimesheetAction::make('delete'),

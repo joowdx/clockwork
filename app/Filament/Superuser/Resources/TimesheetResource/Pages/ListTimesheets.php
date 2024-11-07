@@ -320,15 +320,26 @@ class ListTimesheets extends ListRecords
                 ViewTimesheetAction::make()
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->label('View'),
-                Tables\Actions\BulkActionGroup::make([
-                    ExportTimesheetAction::make()
-                        ->label('Timesheet'),
-                    ExportTransmittalAction::make()
-                        ->label('Transmittal'),
-                ])
-                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
+                ExportTimesheetAction::make()
+                    ->color('gray')
                     ->label('Export')
-                    ->icon('heroicon-o-document-arrow-down'),
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class),
+                // Tables\Actions\BulkActionGroup::make([
+                //     ExportTransmittalAction::make()
+                //         ->label('Transmittal'),
+                // ])
+                //     ->label('Export')
+                //     ->icon('heroicon-o-document-arrow-down'),
+                // Tables\Actions\BulkActionGroup::make([
+                //     ExportTimesheetAction::make()
+                //         ->label('Timesheet'),
+                //     ExportTransmittalAction::make()
+                //         ->label('Transmittal'),
+                // ])
+                //     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
+                //     ->label('Export')
+                //     ->icon('heroicon-o-document-arrow-down'),
                 Tables\Actions\BulkAction::make('generate')
                     ->visible(fn () => ($this->filters['model'] ?? Employee::class) === Employee::class)
                     ->icon('heroicon-o-bolt')
