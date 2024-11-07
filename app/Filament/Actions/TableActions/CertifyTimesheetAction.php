@@ -40,7 +40,7 @@ class CertifyTimesheetAction extends Action
 
         $this->successNotificationTitle('Timesheet successfully verified');
 
-        $this->hidden(function () {
+        $this->hidden(function (Timesheet $record) {
             if ($this->level === false) {
                 return true;
             }
@@ -82,6 +82,10 @@ class CertifyTimesheetAction extends Action
 
                     if (Filament::getCurrentPanel()->getId() === 'leader' && $record->directorSigner) {
                         return $fail('This timesheet has already been verified by the ' . settings('director') . ' (' . $record->directorSigner->signer->name. ').');
+                    }
+
+                    if ($record->{$this->level . 'Signer'} !== null) {
+                        return $fail('This timesheet has already been verified by the ' . settings($this->level) . ' (' . $record->{$this->level . 'Signer'}->signer->name. ').');
                     }
                 })
                 ->label(function () {
