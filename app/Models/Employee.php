@@ -298,7 +298,7 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
         $this->notify(
             (new ResetPassword($token))
                 ->createUrlUsing(function ($notifiable, #[\SensitiveParameter] $token) {
-                    return url(route('password.reset', [
+                    return url(route('filament.app.auth.password-reset.reset', [
                         'type' => 'employees',
                         'token' => $token,
                         'email' => $notifiable->getEmailForPasswordReset(),

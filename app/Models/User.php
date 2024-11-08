@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Notifications\Auth\ResetPassword;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -143,5 +144,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         $permissions = array_map(fn ($permission) => $permission instanceof UnitEnum ? $permission->value : $permission, $permissions);
 
         return count(array_diff($permissions, $this->permissions ?? [])) === 0;
+    }
+
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token)
+    {
+        $this->notify(
+            (new ResetPassword($token))
+                ->createUrlUsing(function ($notifiable, #[\SensitiveParameter] $token) {
+                    return url(route('filament.app.auth.password-reset.reset', [
+                        'type' => 'user',
+                        'token' => $token,
+                        'email' => $notifiable->getEmailForPasswordReset(),
+                    ], false));
+                })
+        );
     }
 }
