@@ -18,13 +18,13 @@ class Reset extends RequestPasswordReset
 {
     public function request(): void
     {
-        // try {
-        //     $this->rateLimit(2);
-        // } catch (TooManyRequestsException $exception) {
-        //     $this->getRateLimitedNotification($exception)?->send();
+        try {
+            $this->rateLimit(2);
+        } catch (TooManyRequestsException $exception) {
+            $this->getRateLimitedNotification($exception)?->send();
 
-        //     return;
-        // }
+            return;
+        }
 
         $data = $this->form->getState();
 
@@ -39,13 +39,7 @@ class Reset extends RequestPasswordReset
 
                 $notification = new ResetPassword($token);
 
-                $notification->createUrlUsing(
-                    fn ($notifiable, $token) => url(route('filament.app.auth.password-reset.reset', [
-                        'type' => $data['account_type'],
-                        'token' => $token,
-                        'email' => $user->getEmailForPasswordReset(),
-                    ], false)),
-                );
+                $notification->url = Filament::getResetPasswordUrl($token, $user, ['type' => $data['account_type']]);
 
                 /** @var \App\Models\User|App\Models\Employee $user */
                 $user->notify($notification);

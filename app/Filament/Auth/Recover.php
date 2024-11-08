@@ -13,9 +13,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 
 class Recover extends ResetPassword
 {
+    #[Locked,Url]
+    public string $type = '';
+
     public function resetPassword(): ?PasswordResetResponse
     {
         try {
@@ -31,7 +36,7 @@ class Recover extends ResetPassword
         $data['email'] = $this->email;
         $data['token'] = $this->token;
 
-        $status = Password::broker(request('type'))->reset(
+        $status = Password::broker($this->type)->reset(
             $data,
             function (CanResetPassword|Model|Authenticatable $user) use ($data) {
                 $user->forceFill([

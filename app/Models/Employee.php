@@ -8,7 +8,6 @@ use App\Traits\FormatsName;
 use App\Traits\HasActiveState;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
-use Filament\Notifications\Auth\ResetPassword;
 use Filament\Panel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
