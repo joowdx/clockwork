@@ -145,18 +145,4 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
         return count(array_diff($permissions, $this->permissions ?? [])) === 0;
     }
-
-    public function sendPasswordResetNotification(#[\SensitiveParameter] $token)
-    {
-        $this->notify(
-            (new ResetPassword($token))
-                ->createUrlUsing(function ($notifiable, #[\SensitiveParameter] $token) {
-                    return url(route('filament.app.auth.password-reset.reset', [
-                        'type' => 'user',
-                        'token' => $token,
-                        'email' => $notifiable->getEmailForPasswordReset(),
-                    ], false));
-                })
-        );
-    }
 }

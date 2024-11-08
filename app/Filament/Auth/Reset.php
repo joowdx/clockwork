@@ -4,9 +4,11 @@ namespace App\Filament\Auth;
 
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Exception;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Auth\ResetPassword;
 use Filament\Notifications\Notification;
 use Filament\Pages\Auth\PasswordReset\RequestPasswordReset;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -28,15 +30,22 @@ class Reset extends RequestPasswordReset
 
         $status = Password::broker($data['account_type'])->sendResetLink(
             ['email' => $data['email']],
-            function (CanResetPassword $user, string $token): void {
+            function (CanResetPassword $user, string $token) use ($data): void {
                 if (! method_exists($user, 'notify')) {
                     $userClass = $user::class;
 
                     throw new Exception("Model [{$userClass}] does not have a [notify()] method.");
                 }
 
+                $notification = new ResetPassword($token);
+                $notification->url = url(route('filament.app.auth.password-reset.reset', [
+                    'type' => $data['account_type'],
+                    'token' => $token,
+                    'email' => $user->getEmailForPasswordReset(),
+                ], false));
+
                 /** @var \App\Models\User|App\Models\Employee $user */
-                $user->sendPasswordResetNotification($token);
+                $user->notify($notification);
             },
         );
 

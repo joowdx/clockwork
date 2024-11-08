@@ -292,18 +292,4 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
     {
         return "{$this->first_name} {$this->middle_initial} {$this->last_name}";
     }
-
-    public function sendPasswordResetNotification(#[\SensitiveParameter] $token)
-    {
-        $this->notify(
-            (new ResetPassword($token))
-                ->createUrlUsing(function ($notifiable, #[\SensitiveParameter] $token) {
-                    return url(route('filament.app.auth.password-reset.reset', [
-                        'type' => 'employees',
-                        'token' => $token,
-                        'email' => $notifiable->getEmailForPasswordReset(),
-                    ], false));
-                })
-        );
-    }
 }
