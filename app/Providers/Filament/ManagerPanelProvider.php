@@ -27,7 +27,6 @@ class ManagerPanelProvider extends PanelProvider
             ->id('manager')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('manager') ?: 'manager')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Manager/Resources'), for: 'App\\Filament\\Manager\\Resources')

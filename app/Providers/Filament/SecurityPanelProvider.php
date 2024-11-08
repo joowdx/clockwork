@@ -21,7 +21,6 @@ class SecurityPanelProvider extends PanelProvider
             ->id('security')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('security') ?: 'security')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Security/Resources'), for: 'App\\Filament\\Security\\Resources')

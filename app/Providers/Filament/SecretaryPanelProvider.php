@@ -22,7 +22,6 @@ class SecretaryPanelProvider extends PanelProvider
             ->id('secretary')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('secretary') ?: 'secretary')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Secretary/Resources'), for: 'App\\Filament\\Secretary\\Resources')

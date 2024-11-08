@@ -21,7 +21,6 @@ class DeveloperPanelProvider extends PanelProvider
             ->id('developer')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('developer') ?: 'developer')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Developer/Resources'), for: 'App\\Filament\\Developer\\Resources')

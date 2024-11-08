@@ -21,7 +21,6 @@ class ExecutivePanelProvider extends PanelProvider
             ->id('executive')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('executive') ?: 'executive')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Executive/Resources'), for: 'App\\Filament\\Executive\\Resources')

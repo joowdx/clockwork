@@ -21,7 +21,6 @@ class BureaucratPanelProvider extends PanelProvider
             ->id('bureaucrat')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('bureaucrat') ?: 'bureaucrat')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Bureaucrat/Resources'), for: 'App\\Filament\\Bureaucrat\\Resources')

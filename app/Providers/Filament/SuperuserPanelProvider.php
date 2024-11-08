@@ -22,7 +22,6 @@ class SuperuserPanelProvider extends PanelProvider
             ->id('superuser')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('superuser') ?: 'superuser')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Superuser/Resources'), for: 'App\\Filament\\Superuser\\Resources')

@@ -22,7 +22,6 @@ class LeaderPanelProvider extends PanelProvider
             ->id('leader')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->passwordReset()
             ->path(str(settings('leader') ?: 'leader')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Leader/Resources'), for: 'App\\Filament\\Leader\\Resources')
