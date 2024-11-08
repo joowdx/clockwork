@@ -8,6 +8,7 @@ use App\Traits\FormatsName;
 use App\Traits\HasActiveState;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
+use Filament\Notifications\Auth\ResetPassword;
 use Filament\Panel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
@@ -290,5 +291,19 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
     public function getFilamentName(): string
     {
         return "{$this->first_name} {$this->middle_initial} {$this->last_name}";
+    }
+
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token)
+    {
+        $this->notify(
+            (new ResetPassword($token))
+                ->createUrlUsing(function ($notifiable, #[\SensitiveParameter] $token) {
+                    return url(route('password.reset', [
+                        'type' => 'employees',
+                        'token' => $token,
+                        'email' => $notifiable->getEmailForPasswordReset(),
+                    ], false));
+                })
+        );
     }
 }
