@@ -11,6 +11,7 @@ use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,9 +26,9 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
-class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatable, \Illuminate\Contracts\Auth\MustVerifyEmail, FilamentUser, HasName
+class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatable, \Illuminate\Contracts\Auth\CanResetPassword, \Illuminate\Contracts\Auth\MustVerifyEmail, FilamentUser, HasName
 {
-    use Authenticatable, FormatsName, HasActiveState, HasFactory, HasUlids, MustVerifyEmail, Notifiable, SoftDeletes;
+    use Authenticatable, CanResetPassword, FormatsName, HasActiveState, HasFactory, HasUlids, MustVerifyEmail, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'prefix_name',
