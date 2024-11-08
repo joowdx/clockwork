@@ -19,10 +19,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ($this->getConnection() === 'sqlite') {
-            return;
-        }
-
         $schema = Schema::connection($this->getConnection());
 
         $schema->create('telescope_entries', function (Blueprint $table) {
@@ -65,10 +61,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if ($this->getConnection() === 'sqlite') {
-            return;
-        }
-
         $schema = Schema::connection($this->getConnection());
 
         $schema->dropIfExists('telescope_entries_tags');

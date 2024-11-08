@@ -19,10 +19,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if ($this->getConnection() === 'sqlite') {
-            return;
-        }
-
         Schema::connection($this->getConnection())->create('backups', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('file')->nullable();
@@ -38,10 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if ($this->getConnection() === 'sqlite') {
-            return;
-        }
-
         Schema::connection($this->getConnection())->dropIfExists('backups');
     }
 };
