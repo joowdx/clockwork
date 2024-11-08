@@ -38,11 +38,14 @@ class Reset extends RequestPasswordReset
                 }
 
                 $notification = new ResetPassword($token);
-                $notification->url = url(route('filament.app.auth.password-reset.reset', [
-                    'type' => $data['account_type'],
-                    'token' => $token,
-                    'email' => $user->getEmailForPasswordReset(),
-                ], false));
+
+                $notification->createUrlUsing(
+                    fn ($notifiable, $token) => url(route('filament.app.auth.password-reset.reset', [
+                        'type' => $data['account_type'],
+                        'token' => $token,
+                        'email' => $user->getEmailForPasswordReset(),
+                    ], false)),
+                );
 
                 /** @var \App\Models\User|App\Models\Employee $user */
                 $user->notify($notification);
