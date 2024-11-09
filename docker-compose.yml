@@ -6,7 +6,7 @@ services:
             args:
                 WWWGROUP: '${WWWGROUP}'
         container_name: clockwork.app
-        image: joowdx/clockwork:v3
+        image: 'joowdx/clockwork:v3'
         restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
@@ -99,16 +99,11 @@ services:
             - '${FORWARD_MAILPIT_PORT:-1025}:1025'
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         environment:
-            APP_ENV: ${APP_ENV:-production}
+            APP_ENV: '${APP_ENV:-production}'
         entrypoint:
             - sh
-            - -c
-            - |
-                if [ "$APP_ENV" != "production" ]; then
-                    exec /mailpit
-                else
-                    exit 0
-                fi
+            - '-c'
+            - "if [ \"$APP_ENV\" != \"production\" ]; then\n    exec /mailpit\nelse\n    exit 0\nfi\n"
         depends_on:
             - clockwork.app
         networks:
