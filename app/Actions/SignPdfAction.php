@@ -10,6 +10,8 @@ use RuntimeException;
 
 class SignPdfAction
 {
+    protected ?string $id = null;
+
     protected User|Employee|null $user = null;
 
     protected ?string $python;
@@ -20,7 +22,7 @@ class SignPdfAction
 
     protected ?string $out = null;
 
-    protected ?string $field = null;
+    protected string $field = 'Signature';
 
     protected ?string $coordinates = null;
 
@@ -47,13 +49,15 @@ class SignPdfAction
         if ($this->pyhanko === null) {
             throw new RuntimeException('PyHanko module is not found or installed');
         }
+
+        $this->id = mb_strtolower(str()->ulid());
     }
 
     public function __invoke(
         User|Employee|null $user,
         string $path,
         ?string $out = null,
-        ?string $field = null,
+        string $field,
         TimesheetCoordinates|string|null $coordinates = null,
         int $page = 1,
         array $data = [],
@@ -73,7 +77,7 @@ class SignPdfAction
     public function sign(
         User|Employee|null $user,
         string $path,
-        ?string $out,
+        ?string $out = null,
         ?string $certificate = null,
         ?string $specimen = null,
         ?string $password = null,
@@ -98,13 +102,16 @@ class SignPdfAction
             if ($user) {
                 file_put_contents($directory.'certificate.pfx', base64_decode($user->signature->certificateBase64));
                 file_put_contents($directory.'signature.webp', base64_decode($user->signature->specimenBase64));
-            } else {
+            } else if ($certificate && $specimen) {
                 rename($certificate, $directory.'certificate.pfx');
                 rename($specimen, $directory.'signature.webp');
             }
 
+            if (! is_null($this->coordinates) && ! is_null($this->page)) {
+                file_put_contents($directory.'pyhanko.yml', $this->yml());
+            }
+
             file_put_contents($directory.'password', $user?->signature->password ?? $password);
-            file_put_contents($directory.'pyhanko.yml', $this->yml());
 
             $timestamp = env('TIMESTAMP_URL') !== null;
 
@@ -132,7 +139,7 @@ class SignPdfAction
         }
     }
 
-    public function field(?string $field): static
+    public function field(string $field): static
     {
         $this->field = $field;
 
@@ -169,13 +176,20 @@ class SignPdfAction
 
     public function command(bool $timestamp = true): array
     {
+        $field = ! is_null($this->coordinates) && ! is_null($this->page)
+            ? "{$this->page}/{$this->coordinates}/{$this->field}"
+            : $this->field;
+
         $command = [
             ...(is_string($this->pyhanko) ? [$this->pyhanko] : $this->pyhanko),
             '--verbose',
             'sign',
             'addsig',
-            "--field={$this->page}/{$this->coordinates}/{$this->field}",
         ];
+
+        if ($field) {
+            $command[] = '--field='.$field;
+        }
 
         if ($this->certify) {
             $command[] = '--certify';
@@ -203,7 +217,7 @@ class SignPdfAction
     public function id(): string
     {
         if ($this->user === null) {
-            return str()->ulid().'-'.$this->path;
+            return "{$this->id}-{$this->path}";
         }
 
         return "{$this->user->id}-{$this->path}";
