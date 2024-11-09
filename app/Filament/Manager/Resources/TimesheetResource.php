@@ -13,6 +13,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Enums\FiltersLayout;
@@ -190,6 +191,49 @@ class TimesheetResource extends Resource
                         ->hidden(false)
                         ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
                         ->label('Verify'),
+                    Tables\Actions\Action::make('notify')
+                        ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
+                        ->requiresConfirmation()
+                        ->icon('heroicon-o-bell')
+                        ->modalIcon('heroicon-o-bell')
+                        ->modalDescription('Notify the employee about their timesheet. This does nothing but send a notification.')
+                        ->form([
+                            Forms\Components\Select::make('type')
+                                ->label('Type')
+                                ->placeholder('Select a type')
+                                ->options([
+                                    'success' => 'Success',
+                                    'info' => 'Information',
+                                    'warning' => 'Warning',
+                                    'danger' => 'Error',
+                                ])
+                                ->required(),
+                            Forms\Components\Textarea::make('message')
+                                ->label('Message')
+                                ->placeholder('Enter a message')
+                                ->rule('required')
+                                ->markAsRequired(),
+                        ])
+                        ->action(function (Timesheet $record, array $data) {
+                            Notification::make()
+                                ->{$data['type']}()
+                                ->title("Timesheet {$record->period}")
+                                ->body(function () use ($data) {
+                                    $user = user();
+
+                                    $message = <<<HTML
+                                        <div>{$data['message']}</div>
+
+                                        <div class="italic">
+                                            - $user->name
+                                        </div>
+                                    HTML;
+
+                                    return str($message)->toHtmlString();
+                                })
+                                ->sendToDatabase($record->employee)
+                                ->toBroadcast($record->employee);
+                        }),
                     DownloadTimesheetAction::make()
                         ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
                         ->label('Download'),
