@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AttachmentClassification;
 use App\Helpers\NumberRangeCompressor;
 use App\Traits\TimelogsHasher;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Carbon;
@@ -53,7 +55,7 @@ class Timesheet extends Model
         static::deleting(function (self $timesheet) {
             $timesheet->timesheets()->lazyById()->each->delete();
 
-            $timesheet->export()->lazyById()->each->delete();
+            $timesheet->attachments()->lazyById()->each->delete();
         });
     }
 
@@ -556,6 +558,20 @@ class Timesheet extends Model
                 $query->join('timesheets', 'timesheets.id', 'exports.exportable_id');
 
                 $query->whereColumn('timesheets.span', 'exports.details->period');
+            });
+    }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachmentable');
+    }
+
+    public function accomplishment(): MorphOne
+    {
+        return $this->attachments()
+            ->one()
+            ->ofMany(['id' => 'max'], function (Builder $query) {
+                $query->where('classification', AttachmentClassification::ACCOMPLISHMENT);
             });
     }
 

@@ -6,6 +6,7 @@ use App\Actions\CertifyTimesheet;
 use App\Models\Timesheet;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\ViewField;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
@@ -30,7 +31,7 @@ class CertifyTimesheetAction extends Action
 
         $this->icon('gmdi-fact-check-o');
 
-        $this->modalWidth('max-w-md');
+        $this->modalWidth('max-w-2xl');
 
         $this->modalIcon('gmdi-fact-check-o');
 
@@ -40,7 +41,7 @@ class CertifyTimesheetAction extends Action
 
         $this->successNotificationTitle('Timesheet successfully verified');
 
-        $this->hidden(function (Timesheet $record) {
+        $this->hidden(function () {
             if ($this->level === false) {
                 return true;
             }
@@ -62,6 +63,11 @@ class CertifyTimesheetAction extends Action
                     'timesheets' => [$record],
                     'preview' => true,
                     'overtime' => false,
+                ]);
+
+            $attachments = ViewField::make('attachments')
+                ->view('filament.validation.pages.attachments', [
+                    'attachments' => $record->attachments,
                 ]);
 
             $confirmation = Checkbox::make('confirmation')
@@ -97,7 +103,21 @@ class CertifyTimesheetAction extends Action
                     LABEL;
                 });
 
-            return [$preview, $confirmation];
+            return [
+                Tabs::make('Timesheet')
+                    ->contained(false)
+                    ->tabs([
+                        Tabs\Tab::make('Timesheet')
+                            ->schema([
+                                $preview,
+                            ]),
+                        Tabs\Tab::make('Attachments')
+                            ->schema([
+                                $attachments,
+                            ]),
+                    ]),
+                $confirmation,
+            ];
         });
 
         $this->action(function (Action $component, CertifyTimesheet $certifier, Timesheet $timesheet, array $data) {

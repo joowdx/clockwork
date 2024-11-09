@@ -3,9 +3,12 @@
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
 use App\Actions\CertifyTimesheet;
+use App\Actions\SignAccomplishment;
+use App\Actions\SignPdfAction;
+use App\Enums\AttachmentClassification;
+use App\Enums\PaperSize;
 use App\Enums\TimelogState;
 use App\Enums\TimesheetPeriod;
-use App\Filament\Actions\TableActions\NavigateTimesheetAction;
 use App\Filament\Employee\Resources\TimesheetResource;
 use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
@@ -16,6 +19,7 @@ use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -30,6 +34,7 @@ use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ViewTimesheet extends ViewRecord
@@ -42,7 +47,6 @@ class ViewTimesheet extends ViewRecord
     {
         return [
             $this->period(),
-            // NavigateTimesheetAction::make(),
             $this->rectify(),
             $this->certify(),
             $this->navigate('prev'),
@@ -319,7 +323,7 @@ class ViewTimesheet extends ViewRecord
         return Action::make('certify')
             ->icon('gmdi-fact-check-o')
             ->modalIcon('gmdi-fact-check-o')
-            ->modalWidth('md')
+            ->modalWidth('xl')
             ->modalDescription(function () {
                 $html = <<<'HTML'
                     Certify your timesheet for the selected period of this month for your superiors to validate and verify.
@@ -335,79 +339,134 @@ class ViewTimesheet extends ViewRecord
             ->closeModalByClickingAway(false)
             ->visible(fn () => Auth::user()->signature?->certificate)
             ->successNotificationTitle('Timesheet successfully certified.')
+            ->failureNotificationTitle('Something went wrong while certifying your timesheet.')
             ->hidden(function (Timesheet $record) {
                 /** @var \App\Models\Employee */
                 $user = Auth::user();
 
-                return ! $user->signature()->exists() ?: $record->export()->exists() &&
-                    $record->timesheets()->where('span', '1st')->exists() && $record->timesheets()->where('span', '2nd')->exists();
+                return ! $user->signature()->exists() ?:
+                    $record->export()->exists() &&
+                    $record->timesheets()->where('span', '1st')->exists() &&
+                    $record->timesheets()->where('span', '2nd')->exists();
             })
-            ->action(function (Action $component, CertifyTimesheet $certifier, array $data) {
-                $certifier($this->record, Auth::user(), $data);
+            ->action(function (Action $component, CertifyTimesheet $certifier, SignAccomplishment $accomplisher, array $data) {
+                try {
+                    DB::beginTransaction();
 
-                $component->sendSuccessNotification();
+                    $timesheet = $certifier($this->record, Auth::user(), $data);
+
+                    $month = Carbon::parse($this->record->month);
+
+                    $period = match ($timesheet->span) {
+                        '1st' => $month->format('Y m ').'01-15',
+                        '2nd' => $month->format('Y m ').'16-'.$month->daysInMonth(),
+                        default => $month->format('Y m ').'01-'.$month->daysInMonth(),
+                    };
+
+                    $filename = "timesheets/{$timesheet->employee->full_name}/{$month->format('Y/Y m M')}/attachments/(Accomplishment {$period}).pdf";
+
+                    $attachment = $timesheet->accomplishment()->create([
+                        'filename' => $filename,
+                        'classification' => AttachmentClassification::ACCOMPLISHMENT,
+                        'disk' => 'azure',
+                        'context' => [
+                            'period' => $timesheet->span,
+                        ],
+                    ]);
+
+                    Storage::disk('azure')->put($filename, $data['accomplishment']->get());
+
+                    $accomplisher($attachment, Auth::user());
+
+                    DB::commit();
+
+                    $component->sendSuccessNotification();
+                } catch (Exception $exception) {
+                    DB::rollBack();
+
+                    if (@$attachment->export->filename && Storage::disk('azure')->exists($attachment->export->filename)) {
+                        Storage::disk('azure')->delete($attachment->export->filename);
+                    }
+
+                    if (app()->isLocal()) {
+                        throw $exception;
+                    }
+
+                    $component->sendFailureNotification();
+                }
             })
             ->form([
-                // Tabs::make()
-                //     ->contained(false)
-                //     ->schema([
-                //         Tab::make('Acknowledgement')
-                //             ->schema([
-                Select::make('period')
-                    ->options(TimesheetPeriod::class)
-                    ->default($this->filters['period'] ?? TimesheetPeriod::FULL)
-                    ->required()
-                    ->rule(fn () => function ($attribute, $value, $fail) {
-                        if ($value === null) {
-                            return;
-                        }
+                Tabs::make()
+                    ->contained(false)
+                    ->schema([
+                        Tab::make('Acknowledgement')
+                            ->schema([
+                                Select::make('period')
+                                    ->options(TimesheetPeriod::class)
+                                    ->default($this->filters['period'] ?? TimesheetPeriod::FULL)
+                                    ->required()
+                                    ->helperText('Select the period of this month to certify.')
+                                    ->rule(fn () => function ($attribute, $value, $fail) {
+                                        if ($value === null) {
+                                            return;
+                                        }
 
-                        if ($value === TimesheetPeriod::FULL) {
-                            if ($this->record->export()->exists()) {
-                                return $fail('Timesheet is already generated and certified.');
-                            }
+                                        if ($value === TimesheetPeriod::FULL) {
+                                            if ($this->record->export()->exists()) {
+                                                return $fail('Timesheet is already generated and certified.');
+                                            }
 
-                            return;
-                        }
+                                            return;
+                                        }
 
-                        if ($this->record->timesheets()->where('span', $value)->exists()) {
-                            return $fail('Timesheet is already generated and certified.');
-                        }
-                    }),
-                Checkbox::make('confirmation')
-                    ->markAsRequired()
-                    ->accepted()
-                    ->extraAttributes(['class' => 'self-start mt-2'])
-                    ->validationMessages(['accepted' => 'You must certify first.'])
-                    ->dehydrated(false)
-                    ->rule(fn () => function ($attribute, $value, $fail) {
-                        /** @var \App\Models\Employee */
-                        $user = Auth::user();
+                                        if ($this->record->timesheets()->where('span', $value)->exists()) {
+                                            return $fail('Timesheet is already generated and certified.');
+                                        }
+                                    }),
+                                FileUpload::make('accomplishment')
+                                    ->hintIcon('heroicon-o-question-mark-circle')
+                                    ->acceptedFileTypes(['application/pdf'])
+                                    ->maxSize(12 * 1024)
+                                    ->required()
+                                    ->helperText('Upload your accomplishment report for the selected period.')
+                                    ->storeFiles(false)
+                                    ->hintIconTooltip(<<<'HTML'
+                                        Accomplishment will be signed and verified by your superiors along with your timesheet.
+                                        Please note that this will only apply an invisible signature field.
+                                        If you wish, you may both your add your superiors' electronic signature to the document before uploading.
+                                        Once uploaded, the document will be locked and cannot be modified.
+                                    HTML),
+                                Checkbox::make('confirmation')
+                                    ->markAsRequired()
+                                    ->accepted()
+                                    ->extraAttributes(['class' => 'self-start mt-2'])
+                                    ->validationMessages(['accepted' => 'You must certify first.'])
+                                    ->dehydrated(false)
+                                    ->rule(fn () => function ($attribute, $value, $fail) {
+                                        /** @var \App\Models\Employee */
+                                        $user = Auth::user();
 
-                        if ($user->signature === null || $user->signature->certificate === null || $user->signature->password === null) {
-                            return $fail('You must have to configure your digital signature first.');
-                        }
-                    })
-                    ->label(function () {
+                                        if ($user->signature === null || $user->signature->certificate === null || $user->signature->password === null) {
+                                            return $fail('You must have to configure your digital signature first.');
+                                        }
+                                    })
+                                    ->label(function () {
 
-                        return <<<'LABEL'
-                            I certify that the information provided is accurate and correctly reports
-                            the hours of work performed in accordance with the prescribed office hours
-                        LABEL;
-                    }),
-                //         ]),
-                //     Tab::make('Options')
-                //         ->schema([
-                //             Select::make('size')
-                //                 ->default('folio')
-                //                 ->options([
-                //                     'a4' => 'A4 (210mm x 297mm)',
-                //                     'letter' => 'Letter (216mm x 279mm)',
-                //                     'folio' => 'Folio (216mm x 330mm)',
-                //                     'legal' => 'Legal (216mm x 356mm)',
-                //                 ])
-                //         ]),
-                // ]),
+                                        return <<<'LABEL'
+                                            I certify that the information provided is accurate and correctly reports
+                                            the hours of work performed in accordance with the prescribed office hours
+                                        LABEL;
+                                    }),
+                            ]),
+                        Tab::make('Miscellaneous')
+                            ->schema([
+                                Select::make('size')
+                                    ->disabled()
+                                    ->required()
+                                    ->default('folio')
+                                    ->options(PaperSize::class),
+                            ]),
+                    ]),
             ]);
     }
 }

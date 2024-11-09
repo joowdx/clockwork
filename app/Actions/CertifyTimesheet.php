@@ -17,15 +17,13 @@ use Throwable;
 
 class CertifyTimesheet
 {
-    public function __invoke(Timesheet $timesheet, User|Employee $user, array $data = [], ?string $level = null)
+    public function __invoke(Timesheet $timesheet, User|Employee $user, array $data = [], string $level = 'employee'): Timesheet
     {
         return $this->certify($timesheet, $user, $data, $level);
     }
 
-    public function certify(Timesheet $timesheet, User|Employee $user, array $data = [], $level = null)
+    public function certify(Timesheet $timesheet, User|Employee $user, array $data = [], string $level = 'employee'): Timesheet
     {
-        $level ??= 'employee';
-
         throw_unless(in_array($level, ['employee', 'leader', 'director']), 'InvalidArgumentException', 'Unknwown timesheet certification level.');
 
         throw_unless(in_array($data['period'] ?? null, [null, 'full', '1st', '2nd']) || $data['period'] instanceof TimesheetPeriod, 'InvalidArgumentException', 'Unknwown timesheet period.');
@@ -36,7 +34,7 @@ class CertifyTimesheet
 
         $out = sys_get_temp_dir().'/'.uniqid().'.pdf';
 
-        DB::transaction(function () use ($timesheet, $user, $data, $level, $out) {
+        return DB::transaction(function () use ($timesheet, $user, $data, $level, $out) {
             $month = Carbon::parse($timesheet->month);
 
             $period = ! (! isset($data['period']) || is_null($data['period']))
@@ -64,7 +62,7 @@ class CertifyTimesheet
                     default => $month->format('Y m ').'01-'.$month->daysInMonth(),
                 };
 
-                $path = "timesheets/{$month->format('Y/Y m M')}/{$timesheet->employee->full_name} ({$period}).pdf";
+                $path = "timesheets/{$timesheet->employee->full_name}/{$month->format('Y/Y m M')}/(Timesheet {$period}).pdf";
             }
 
             $file = match ($level) {
@@ -89,6 +87,8 @@ class CertifyTimesheet
             ]);
 
             Storage::disk('azure')->put($timesheet->export->filename, file_get_contents($out));
+
+            return $timesheet;
         });
     }
 
@@ -100,8 +100,8 @@ class CertifyTimesheet
 
         $field = match ($level) {
             'employee' => 'employee-field',
-            'leader' => 'supervisor-field',
-            'director' => 'head-field',
+            'leader' => 'leader-field',
+            'director' => 'director-field',
         };
 
         $coordinates = match ($level) {
@@ -163,7 +163,7 @@ class CertifyTimesheet
         }
     }
 
-    protected function details(Timesheet $timesheet, string $period)
+    protected function details(Timesheet $timesheet, string $period): array
     {
         $month = Carbon::parse($timesheet->month);
 
