@@ -5,6 +5,7 @@ namespace App\Filament\Actions\TableActions;
 use App\Models\Timesheet;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Carbon;
+use ZipArchive;
 
 class DownloadTimesheetAction extends Action
 {
@@ -28,6 +29,8 @@ class DownloadTimesheetAction extends Action
 
         $this->modalSubmitActionLabel('Download');
 
+        $this->failureNotificationTitle('Download Failed');
+
         $this->modalDescription(function (Timesheet $record) {
             $period = match ($record->span) {
                 'full' => 'month',
@@ -47,11 +50,37 @@ class DownloadTimesheetAction extends Action
         $this->action(function (Timesheet $record) {
             $from = str_pad($record->from, 2, '0', STR_PAD_LEFT);
 
-            $name = "{$record->month} {$from}-{$record->to} ".trim($record->employee->name, '.').'.pdf';
+            $tmp = tempnam(sys_get_temp_dir(), 'zip_');
 
-            $headers = ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
+            $name = "{$record->month} {$from}-{$record->to} ".trim($record->employee->name, '.').'.zip';
 
-            return response()->streamDownload(fn () => print ($record->export->content), $name, $headers);
+            $headers = ['Content-Type' => 'application/zip', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
+
+            $zip = new ZipArchive();
+
+            if ($zip->open($tmp, ZipArchive::CREATE) !== true) {
+                $this->sendFailureNotification();
+
+                return;
+            }
+
+            $filename = function ($filename): string {
+                $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+                $filename = pathinfo($filename, PATHINFO_FILENAME);
+
+                return str($filename)->trim()->unwrap('(', ')')->append(".$extension");
+            };
+
+            $zip->addFromString($filename($record->export->filename), $record->export->content);
+
+            $record->attachments->each(function ($accomplishment) use ($filename, $zip) {
+                $zip->addFromString($filename($accomplishment->filename), $accomplishment->content);
+            });
+
+            $zip->close();
+
+            return response()->download($tmp, $name, $headers)->deleteFileAfterSend();
         });
     }
 }

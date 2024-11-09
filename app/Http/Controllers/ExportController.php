@@ -2,18 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\Export;
 
 class ExportController extends Controller
 {
-    public function __invoke(Export $export)
+    public function __invoke(Export|string $downloadable)
     {
-        abort_unless($export->content, 404);
+        if (is_string($downloadable)) {
+            $downloadable = Attachment::findOrFail($downloadable);
+        }
 
-        $export->increment('downloads');
+        abort_unless($downloadable->content, 404);
 
-        return response()->streamDownload(function () use ($export) {
-            echo $export->content;
-        }, pathinfo($export->filename, PATHINFO_BASENAME));
+        if ($downloadable instanceof Export) {
+            $downloadable->increment('downloads');
+        }
+
+        return response()->streamDownload(function () use ($downloadable) {
+            echo $downloadable->content;
+        }, pathinfo($downloadable->filename, PATHINFO_BASENAME));
     }
 }
