@@ -78,15 +78,17 @@ class CertifyTimesheetAction extends Action
                 ->rule(fn () => function ($attribute, $value, $fail) use ($record) {
                     $user = user();
 
+                    $panel = Filament::getCurrentPanel()->getId();
+
                     if ($user->signature === null || $user->signature->certificate === null || $user->signature->password === null) {
                         return $fail('You must have to configure your digital signature first.');
                     }
 
-                    if (Filament::getCurrentPanel()->getId() === 'director' && @$record->details['supervisor'] && $record->leaderSigner === null) {
+                    if ($panel === 'director' && @$record->details['supervisor'] && $record->leaderSigner === null) {
                         return $fail('This timesheet has not been verified by the '.settings('leader').' yet.');
                     }
 
-                    if (Filament::getCurrentPanel()->getId() === 'leader' && $record->directorSigner) {
+                    if ($panel === 'leader' && $record->directorSigner) {
                         return $fail('This timesheet has already been verified by the '.settings('director').' ('.$record->directorSigner->signer->name.').');
                     }
 
