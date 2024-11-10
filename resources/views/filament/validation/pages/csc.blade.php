@@ -5,6 +5,16 @@ $label = fn ($timesheet) => (trim($timesheet->period) ?: \Carbon\Carbon::parse($
     ($timesheet->getPeriod() === 'overtimeWork' ? ' (OT)' : '');
 
 $holidays = fn ($month) => Holiday::search($month);
+
+$right ??= false;
+
+$left ??= false;
+
+$full ??= false;
+
+$label ??= null;
+
+$title ??= null;
 ?>
 
 @foreach ($timesheets as $timesheet)
@@ -17,11 +27,22 @@ $holidays = fn ($month) => Holiday::search($month);
         @style([
             'display:flex',
             'align-items:center',
-            'justify-content:center',
+            'justify-content:center' => !($right ??= false) && !($left ??= false),
+            'justify-content:flex-end' => $right,
+            'justify-content:flex-start' => $left,
         ])
     >
+        <div @class(['max-w-[24em] sm:max-w-max lg:max-w-[23em] 2xl:max-w-max grid gap-y-2']) @style(['overflow:auto'])>
+            @if($title)
+                <div
+                    @class(['fi-in-entry-wrp-label inline-flex items-center gap-x-3'])
+                >
+                    <span class="text-sm font-medium leading-6 text-gray-950 dark:text-white">
+                        Timesheet
+                    </span>
+                </div>
+            @endif
 
-        <div @class(['max-w-[24em] sm:max-w-max lg:max-w-[23em] 2xl:max-w-max']) @style(['overflow:auto'])>
             <table
                 cellpadding=0
                 cellspacing=0
@@ -51,7 +72,7 @@ $holidays = fn ($month) => Holiday::search($month);
 
                     @php($holiday = $timetable?->holiday ?: $calendar->first(fn ($holiday) => $holiday->date->isSameDay($date))?->name)
 
-                    @if ($timesheet->from <= $day && $day <= $timesheet->to)
+                    @if ($full ?: $timesheet->from <= $day && $day <= $timesheet->to)
                         <tr
                             @class([
                                 'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
