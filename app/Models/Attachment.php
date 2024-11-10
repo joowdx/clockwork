@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 
@@ -111,8 +112,8 @@ class Attachment extends Model
         return $this->morphTo();
     }
 
-    public function signers(): HasMany
+    public function signers(): MorphMany
     {
-        return $this->hasMany(Signer::class);
+        return $this->morphMany(Signer::class, 'signer');
     }
 }
