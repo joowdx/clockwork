@@ -4,7 +4,6 @@ namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
 use App\Actions\CertifyTimesheet;
 use App\Actions\SignAccomplishment;
-use App\Actions\SignPdfAction;
 use App\Enums\AttachmentClassification;
 use App\Enums\PaperSize;
 use App\Enums\TimelogState;
@@ -439,7 +438,7 @@ class ViewTimesheet extends ViewRecord
                                 Checkbox::make('confirmation')
                                     ->markAsRequired()
                                     ->accepted()
-                                    ->extraAttributes(['class' => 'self-start mt-2'])
+                                    ->extraAttributes(['class' => 'self-start mt-1'])
                                     ->validationMessages(['accepted' => 'You must certify first.'])
                                     ->dehydrated(false)
                                     ->rule(fn () => function ($attribute, $value, $fail) {
@@ -451,7 +450,6 @@ class ViewTimesheet extends ViewRecord
                                         }
                                     })
                                     ->label(function () {
-
                                         return <<<'LABEL'
                                             I certify that the information provided is accurate and correctly reports
                                             the hours of work performed in accordance with the prescribed office hours

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Manager\Resources;
 
+use App\Filament\Actions\TableActions\BulkAction\CertifyTimesheetAction as BulkActionCertifyTimesheetAction;
 use App\Filament\Actions\TableActions\CertifyTimesheetAction;
 use App\Filament\Actions\TableActions\DownloadTimesheetAction;
 use App\Filament\Filters\OfficeFilter;
@@ -115,7 +116,7 @@ class TimesheetResource extends Resource
                     ->extraCellAttributes(['class' => 'font-mono'])
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('export.created_at')
-                    ->label('Certified')
+                    ->label('Employee Certified')
                     ->since()
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('leaderSigner.created_at')
@@ -178,19 +179,7 @@ class TimesheetResource extends Resource
                     ->single(),
             ], FiltersLayout::AboveContent)
             ->actions([
-                // ViewTimesheetAction::make(listing: true),
-                // ViewTimesheetAction::make()
-                //     ->label('View')
-                //     ->slideOver(),
-                // CertifyTimesheetAction::make(),
-                // DownloadTimesheetAction::make()
-                //     ->label('Download'),
                 Tables\Actions\ActionGroup::make([
-                    CertifyTimesheetAction::make()
-                        ->visible()
-                        ->hidden(false)
-                        ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
-                        ->label('Verify'),
                     Tables\Actions\Action::make('notify')
                         ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
                         ->requiresConfirmation()
@@ -240,9 +229,8 @@ class TimesheetResource extends Resource
                 ]),
             ])
             ->bulkActions([
-                // VerifyTimesheetAction::make()
-                //     ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader'])),
-                // DownloadTimesheetAction::make(),
+                BulkActionCertifyTimesheetAction::make()
+                    ->label('Verify'),
             ])
             ->defaultSort(function (Builder $query) {
                 $query->orderBy('month', 'desc');
@@ -260,6 +248,7 @@ class TimesheetResource extends Resource
     {
         return [
             'index' => Pages\ListTimesheets::route('/'),
+            'verify' => Pages\VerifyTimesheets::route('verify'),
         ];
     }
 

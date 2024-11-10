@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use finfo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -85,6 +86,27 @@ class Export extends Model
                 return $content ? base64_encode($content) : null;
             },
         )->shouldCache();
+    }
+
+    public function mimetype(): Attribute
+    {
+        return Attribute::make(
+            function (): ?string {
+                if ($this->disk !== null && in_array($this->disk, ['public', 'local', 'azure'])) {
+                    return Storage::disk($this->disk)->mimetype($this->filename);
+                }
+
+                if ($this->disk === null && file_exists($this->filename)) {
+                    return mime_content_type($this->filename);
+                }
+
+                if ($this->content !== null) {
+                    return (new finfo(FILEINFO_MIME_TYPE))->buffer($this->content);
+                }
+
+                return null;
+            },
+        );
     }
 
     public function user(): BelongsTo

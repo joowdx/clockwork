@@ -56,7 +56,7 @@ class SignPdfAction
     public function __invoke(
         User|Employee|null $user,
         string $path,
-        ?string $out = null,
+        ?string $out,
         string $field,
         TimesheetCoordinates|string|null $coordinates = null,
         int $page = 1,
@@ -102,7 +102,7 @@ class SignPdfAction
             if ($user) {
                 file_put_contents($directory.'certificate.pfx', base64_decode($user->signature->certificateBase64));
                 file_put_contents($directory.'signature.webp', base64_decode($user->signature->specimenBase64));
-            } else if ($certificate && $specimen) {
+            } elseif ($certificate && $specimen) {
                 rename($certificate, $directory.'certificate.pfx');
                 rename($specimen, $directory.'signature.webp');
             }

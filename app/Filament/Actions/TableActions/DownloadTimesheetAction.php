@@ -56,7 +56,7 @@ class DownloadTimesheetAction extends Action
 
             $headers = ['Content-Type' => 'application/zip', 'Content-Disposition' => 'attachment; filename="'.$name.'"'];
 
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
 
             if ($zip->open($tmp, ZipArchive::CREATE) !== true) {
                 $this->sendFailureNotification();
