@@ -133,6 +133,8 @@ class TimesheetResource extends Resource
                             if ($record->span === 'full') {
                                 $record->export->delete();
 
+                                $record->attachments()->lazyById()->each->delete();
+
                                 $record->update([
                                     'certification' => null,
                                 ]);
