@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Throwable;
@@ -116,7 +117,15 @@ class CertifyTimesheet
             'director' => 'Office head timesheet approval',
         };
 
-        (new SignPdfAction)($user, $pdf, $out, $field, $coordinates, 1, ['reason' => $reason]);
+        try {
+            (new SignPdfAction)($user, $pdf, $out, $field, $coordinates, 1, ['reason' => $reason]);
+        } catch (RuntimeException $e) {
+            if (preg_match("/^(?!.*Signature field with name .*? appears to be filled already\.).*$/", $e->getMessage())) {
+                throw $e;
+            }
+
+            rename($pdf, $out);
+        }
     }
 
     protected function generate(Timesheet $timesheet, User|Employee $user, array $data, string $path): string
