@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ExportController;
+use App\Http\Controllers\DownloadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,4 +16,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('test', fn () => 'Hello World!')->name('test');
 
-Route::get('export/{export}', ExportController::class)->name('export');
+Route::get('download/export/{export}', [DownloadController::class])->name('export');
+Route::get('download/attachment/{attachment}', [DownloadController::class])->name('attachment');
