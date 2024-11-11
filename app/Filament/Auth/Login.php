@@ -5,8 +5,8 @@ namespace App\Filament\Auth;
 use App\Http\Responses\LoginResponse;
 use App\Traits\CanSendEmailVerification;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
-use Filament\Actions\Action;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\DatePicker;
@@ -293,7 +293,7 @@ class Login extends \Filament\Pages\Auth\Login
                         ]),
                 ]),
             ])
-            ->action(function (Action $action, array $data) {
+            ->action(function (Actions\Action $action, array $data) {
                 $employee = \App\Models\Employee::find($data['employee']);
 
                 $data = array_filter(['email' => $data['email'], 'password' => $data['password'] ?? null]);
