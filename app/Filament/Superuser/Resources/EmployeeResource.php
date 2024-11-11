@@ -225,8 +225,8 @@ class EmployeeResource extends Resource
                         ),
                     Forms\Components\TextInput::make('email')
                         ->rule('email:rfc,strict,dns,spoof,filter')
-                        ->rule('required', fn (Employee $record) => ! empty($record->email))
-                        ->markAsRequired(fn (Employee $record) => ! empty($record->email))
+                        ->rule('required', fn (?Employee $record) => isset($record) && ! empty($record->email))
+                        ->markAsRequired(fn (?Employee $record) => isset($record) && ! empty($record->email))
                         ->helperText('The email address will be used for account recovery, notifications, and other communication purposes.'),
                     Forms\Components\ToggleButtons::make('active')
                         ->boolean()
