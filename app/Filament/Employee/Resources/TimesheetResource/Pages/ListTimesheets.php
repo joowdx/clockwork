@@ -2,21 +2,28 @@
 
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
+use App\Enums\PaperSize;
 use App\Filament\Actions\TableActions\BulkAction\GenerateTimesheetAction;
 use App\Filament\Actions\TableActions\NavigateTimesheetAction;
 use App\Filament\Employee\Resources\TimesheetResource;
 use App\Filament\Employee\Widgets\ScannerStatisticsWidget;
 use App\Models\Employee;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Browsershot\Browsershot;
+use Spatie\LaravelPdf\Facades\Pdf;
 
 class ListTimesheets extends ListRecords
 {
@@ -43,6 +50,10 @@ class ListTimesheets extends ListRecords
         return [
             // NavigateTimesheetAction::make(),
             // $this->generate(),
+            ActionGroup::make([
+                // $this->generate(),
+                $this->downloadBlankTimesheet(),
+            ]),
         ];
     }
 
@@ -111,6 +122,87 @@ class ListTimesheets extends ListRecords
                     ->validationMessages(['accepted' => 'You must confirm that you understand what you are doing.']),
             ])
             ->action(fn (array $data) => $generate->generateAction(Auth::user(), $data));
+    }
+
+    protected function downloadBlankTimesheet(): Action
+    {
+        return Action::make('download-blank-timesheet')
+            ->label('Download Blank Timesheet')
+            ->requiresConfirmation()
+            ->modalWidth('lg')
+            ->modalSubmitActionLabel('Download')
+            ->modalIcon('heroicon-o-arrow-down')
+            ->form([
+                Select::make('size')
+                    ->options(PaperSize::class)
+                    ->default(PaperSize::FOLIO)
+                    ->required()
+                    ->helperText('The paper size of the blank timesheet.'),
+                TextInput::make('month')
+                    ->type('month')
+                    ->required()
+                    ->default(today()->format('Y-m'))
+                    ->helperText('The month to be printed on the blank timesheet.'),
+                Group::make([
+                    Toggle::make('name')
+                        ->default(true)
+                        ->required()
+                        ->helperText('Include your name on the blank timesheet.'),
+                    Toggle::make('schedule')
+                        ->default(true)
+                        ->required()
+                        ->helperText('Include your schedule on the blank timesheet.'),
+                    Toggle::make('supervisor')
+                        ->default(true)
+                        ->required()
+                        ->helperText('Include your supervisor\'s name on the blank timesheet.'),
+                    Toggle::make('head')
+                        ->default(true)
+                        ->required()
+                        ->helperText('Include the office head\'s name on the blank timesheet.'),
+                    Toggle::make('weekends')
+                        ->default(true)
+                        ->required()
+                        ->helperText('Label weekends on the blank timesheet.'),
+                    Toggle::make('holidays')
+                        ->default(true)
+                        ->required()
+                        ->helperText('Label holidays on the blank timesheet.'),
+                    Toggle::make('single')
+                        ->required()
+                        ->helperText('Single timesheet per page.'),
+                ])->columns(2),
+            ])
+            ->action(function (array $data) {
+                $pdf = Pdf::view('print.blank', [
+                    'employee' => Auth::user(),
+                    'name' => $data['name'],
+                    'month' => $data['month'],
+                    'supervisor' => $data['supervisor'],
+                    'head' => $data['head'],
+                    'size' => $data['size']->value,
+                    'weekends' => $data['weekends'],
+                    'holidays' => $data['holidays'],
+                    'single' => $data['single'],
+                    'schedule' => $data['schedule'],
+                ]);
+
+                if ($data['size'] === PaperSize::FOLIO) {
+                    [$width, $height] = PaperSize::FOLIO->getDimension('in');
+
+                    $pdf->paperSize($width, $height, 'in');
+                } else {
+                    $pdf->format($data['size']->value);
+                }
+
+                $pdf->withBrowsershot(fn (Browsershot $browsershot) => $browsershot->noSandbox()->setOption('args', ['--disable-web-security']));
+
+                $out = sys_get_temp_dir().'/'.uniqid().'.pdf';
+
+                $pdf->save($out);
+
+                return response()->download($out, 'blank (csc form 48).pdf', ['Content-Type' => 'application/pdf'])->deleteFileAfterSend();
+            });
     }
 
     protected function getFooterWidgets(): array

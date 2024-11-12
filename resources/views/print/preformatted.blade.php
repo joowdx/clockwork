@@ -577,7 +577,7 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                 <td colspan=3> </td>
                                 <td class="relative font-xxs center courier top nowrap" colspan=3 style="color:#0007;">
                                     @if (@$misc['officer'] ?? true)
-                                        {{ $user->position ?: $user?->employee?->designation ?? 'Staff-in-charge' }}
+                                        {{ $user->position ?: $user?->employee?->designation ?? 'Officer-in-charge' }}
                                     @endif
 
                                     <div class="absolute consolas" style="opacity:0.8;bottom:-1pt;right:0;font-size:4.0pt;">

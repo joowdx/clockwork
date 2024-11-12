@@ -83,12 +83,10 @@ class VerifyTimesheets extends Page
         $timesheets = Timesheet::find($decrypted)->map(function (Timesheet $timesheet) {
             $panel = Filament::getCurrentPanel()->getId();
 
-            $help = match(true) {
+            $help = match (true) {
                 $timesheet->signers->contains(fn ($sign) => $sign->meta === $panel) => 'Already verified.',
-                $panel === 'director' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader'),
-                    => ucfirst(settings('leader')) . ' verification required.',
-                $panel === 'leader' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director')
-                    => ucfirst(settings('director')) . ' verification required.',
+                $panel === 'director' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader'), => ucfirst(settings('leader')).' verification required.',
+                $panel === 'leader' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director') => ucfirst(settings('director')).' verification required.',
                 default => null,
             };
 
