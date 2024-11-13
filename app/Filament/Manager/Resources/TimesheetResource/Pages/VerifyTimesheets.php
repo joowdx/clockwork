@@ -53,11 +53,29 @@ class VerifyTimesheets extends Page
         $this->form->fill(collect($decrypted)->mapWithKeys(fn ($id) => [$id => true])->toArray());
     }
 
-    public function save()
+    public function save(): mixed
     {
         $data = $this->form->getState();
 
-        CertifyTimesheets::dispatchSync(array_keys($data), Filament::getCurrentPanel()->getId(), Auth::id());
+        if (empty($data)) {
+            return Notification::make()
+                ->title('Nothing to verify')
+                ->body('Selected timesheets are either already verified or not yet ready for verification. Skipping.')
+                ->warning()
+                ->send();
+        }
+
+        $selected = array_keys(array_filter($data));
+
+        if (empty($selected)) {
+            return Notification::make()
+                ->title('Nothing to verify')
+                ->body('Please select at least one timesheet to verify.')
+                ->warning()
+                ->send();
+        }
+
+        CertifyTimesheets::dispatch(array_keys(array_filter($data)), Filament::getCurrentPanel()->getId(), Auth::id());
 
         Notification::make()
             ->title('Timesheet verification in progress')
