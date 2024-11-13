@@ -97,11 +97,11 @@ class TimesheetResource extends Resource
                     ->since()
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('leaderSigner.created_at')
-                    ->label(str(settings('leader') ?? '')->title())
+                    ->label(str(settings('leader') ?? 'leader')->title())
                     ->since()
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('directorSigner.created_at')
-                    ->label(str(settings('director') ?? '')->title())
+                    ->label(str(settings('director') ?? 'director')->title())
                     ->since()
                     ->dateTimeTooltip(),
             ])
