@@ -14,6 +14,7 @@ class Signer extends Pivot
 
     protected $fillable = [
         'meta',
+        'field',
         'export_id',
         'signer_type',
         'signer_id',
