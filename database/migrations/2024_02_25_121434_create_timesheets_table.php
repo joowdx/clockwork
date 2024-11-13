@@ -28,6 +28,8 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['employee_id', 'month', 'span']);
             $table->unique(['timesheet_id', 'span']);
+            $table->rawIndex('details jsonb_path_ops', 'timesheets_details_idx')
+                ->algorithm('gin');
         });
 
         Schema::table('timesheets', function (Blueprint $table) {
