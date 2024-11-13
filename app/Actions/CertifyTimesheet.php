@@ -83,6 +83,7 @@ class CertifyTimesheet
 
             $timesheet->export->signers()->create([
                 'meta' => $level,
+                'field' => $level.'-field',
                 'signer_type' => $user::class,
                 'signer_id' => $user->id,
             ]);
@@ -99,12 +100,6 @@ class CertifyTimesheet
 
         file_put_contents($pdf, $file);
 
-        $field = match ($level) {
-            'employee' => 'employee-field',
-            'leader' => 'leader-field',
-            'director' => 'director-field',
-        };
-
         $coordinates = match ($level) {
             'employee' => TimesheetCoordinates::FOLIO_EMPLOYEE,
             'leader' => TimesheetCoordinates::FOLIO_SUPERVISOR,
@@ -118,7 +113,7 @@ class CertifyTimesheet
         };
 
         try {
-            (new SignPdfAction)($user, $pdf, $out, $field, $coordinates, 1, ['reason' => $reason]);
+            (new SignPdfAction)($user, $pdf, $out, $level.'-field', $coordinates, 1, ['reason' => $reason]);
         } catch (RuntimeException $e) {
             if (preg_match("/^(?!.*Signature field with name .*? appears to be filled already\.).*$/", $e->getMessage())) {
                 throw $e;

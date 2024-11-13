@@ -24,7 +24,13 @@ class SignAccomplishment
 
             file_put_contents($out, $file);
 
-            (new SignPdfAction)($user, $out, null, mb_strtolower(str()->ulid()));
+            $field = mb_strtolower(str()->ulid());
+
+            $attachment->signers()->create([
+                'user_id' => $user->id,
+            ]);
+
+            (new SignPdfAction)($user, $out, null, $field);
 
             Storage::disk('azure')->put($attachment->filename, file_get_contents($out));
         });
