@@ -221,6 +221,11 @@ class TimesheetResource extends Resource
                                 })
                                 ->sendToDatabase($record->employee)
                                 ->toBroadcast($record->employee);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Notification sent')
+                                ->send();
                         }),
                     DownloadTimesheetAction::make()
                         ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
