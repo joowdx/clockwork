@@ -16,5 +16,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('test', fn () => 'Hello World!')->name('test');
 
-Route::get('download/export/{export}', [DownloadController::class])->name('download.export');
-Route::get('download/attachment/{attachment}', [DownloadController::class])->name('download.attachment');
+Route::get('download/export/{export}', [DownloadController::class, 'export'])->name('download.export');
+Route::get('download/attachment/{attachment}', [DownloadController::class, 'attachment'])->name('download.attachment');
