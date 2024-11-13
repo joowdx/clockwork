@@ -99,7 +99,6 @@ class VerifyTimesheets extends Page
                     Forms\Components\Group::make([
                         Forms\Components\ViewField::make('preview')
                             ->dehydrated(false)
-                            ->columnSpan(2)
                             ->view('filament.validation.pages.csc', [
                                 'timesheets' => [$timesheet->setSpan($timesheet->span)],
                                 'left' => true,
@@ -108,8 +107,7 @@ class VerifyTimesheets extends Page
                                 'full' => true,
                                 'title' => 'Timesheet',
                             ]),
-
-                    ]),
+                    ])->columnSpan(2),
                     Forms\Components\ViewField::make('attachments')
                         ->dehydrated(false)
                         ->columnSpan(3)
