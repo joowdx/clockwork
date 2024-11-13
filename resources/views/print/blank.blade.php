@@ -112,6 +112,7 @@ $holiday = Holiday::whereBetween('date', [$month->clone()->startOfMonth(), $mont
                         </td>
                     </tr>
                     <tr><td colspan="6"></td></tr>
+                    <tr><td colspan="6"></td></tr>
                     <tr>
                         <td class="underline uppercase courier font-lg center bold" colspan="6" style="text-decoration: none;">
                             @if ($name)
@@ -269,17 +270,6 @@ $holiday = Holiday::whereBetween('date', [$month->clone()->startOfMonth(), $mont
                     @if ($size === 'legal')
                         <tr><td colspan="6"></td></tr>
                     @endif
-
-                    <tr>
-                        <td colspan="1" class="relative">
-                            <div class="consolas" style="font-size:4.0pt;opacity:0.5;"></div>
-                            <div class="absolute font-xxs consolas" style="opacity:0.3;transform:rotate(270deg);left:-17pt;top:10pt;"></div>
-                            <div class="absolute consolas" style="opacity:0.3;font-size:5pt;top:0pt;"></div>
-                        </td>
-                        <td colspan="2"></td>
-                        <td colspan="3" class="relative">
-                        </td>
-                    </tr>
                 </table>
             </div>
         @endfor

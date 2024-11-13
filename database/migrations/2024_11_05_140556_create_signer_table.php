@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('signer', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('meta')->nullable();
+            $table->string('field')->nullable();
             $table->foreignIdFor(Export::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->ulidMorphs('signer');
             $table->timestamps();

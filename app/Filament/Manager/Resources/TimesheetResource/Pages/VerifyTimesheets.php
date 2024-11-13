@@ -53,11 +53,29 @@ class VerifyTimesheets extends Page
         $this->form->fill(collect($decrypted)->mapWithKeys(fn ($id) => [$id => true])->toArray());
     }
 
-    public function save()
+    public function save(): mixed
     {
         $data = $this->form->getState();
 
-        CertifyTimesheets::dispatchSync(array_keys($data), Filament::getCurrentPanel()->getId(), Auth::id());
+        if (empty($data)) {
+            return Notification::make()
+                ->title('Nothing to verify')
+                ->body('Selected timesheets are either already verified or not yet ready for verification. Skipping.')
+                ->warning()
+                ->send();
+        }
+
+        $selected = array_keys(array_filter($data));
+
+        if (empty($selected)) {
+            return Notification::make()
+                ->title('Nothing to verify')
+                ->body('Please select at least one timesheet to verify.')
+                ->warning()
+                ->send();
+        }
+
+        CertifyTimesheets::dispatch(array_keys(array_filter($data)), Filament::getCurrentPanel()->getId(), Auth::id());
 
         Notification::make()
             ->title('Timesheet verification in progress')
@@ -85,21 +103,22 @@ class VerifyTimesheets extends Page
 
             $help = match (true) {
                 $timesheet->signers->contains(fn ($sign) => $sign->meta === $panel) => 'Already verified.',
-                $panel === 'director' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader'), => ucfirst(settings('leader')).' verification required.',
-                $panel === 'leader' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director') => ucfirst(settings('director')).' verification required.',
+                $panel === 'director' && @$timesheet->details['leader'] && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader')
+                    => ucfirst(settings('leader')).' verification required.',
+                $panel === 'leader' && @$timesheet->details['director'] && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director')
+                    => ucfirst(settings('director')).' verification required.',
                 default => null,
             };
 
             return Forms\Components\Group::make([
                 Forms\Components\Checkbox::make($timesheet->id)
                     ->disabled($help !== null)
-                    ->helperText("$help (skipping)")
+                    ->helperText($help !== null ? "$help (skipping)" : null)
                     ->label("{$timesheet->employee->name} ({$timesheet->period})"),
                 Forms\Components\Group::make([
                     Forms\Components\Group::make([
                         Forms\Components\ViewField::make('preview')
                             ->dehydrated(false)
-                            ->columnSpan(2)
                             ->view('filament.validation.pages.csc', [
                                 'timesheets' => [$timesheet->setSpan($timesheet->span)],
                                 'left' => true,
@@ -108,8 +127,7 @@ class VerifyTimesheets extends Page
                                 'full' => true,
                                 'title' => 'Timesheet',
                             ]),
-
-                    ]),
+                    ])->columnSpan(2),
                     Forms\Components\ViewField::make('attachments')
                         ->dehydrated(false)
                         ->columnSpan(3)

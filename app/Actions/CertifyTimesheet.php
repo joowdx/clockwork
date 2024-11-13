@@ -194,6 +194,10 @@ class CertifyTimesheet
             'supervisor' => $timesheet->employee->supervisor?->titled_name,
             'head' => $timesheet->employee->currentOffice?->head?->id !== $timesheet->employee->id ? $timesheet->employee->currentOffice?->head?->titled_name : '',
             'schedule' => ['weekdays' => $time('weekdays'), 'weekends' => $time('weekends')],
+            'signers' => [
+                'leader' => $timesheet->employee->currentDeployment->supervisor_id ?? null,
+                'director' => $timesheet->employee->currentDeployment->office->employee_id ?? null,
+            ],
         ];
     }
 }

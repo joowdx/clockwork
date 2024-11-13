@@ -221,6 +221,11 @@ class TimesheetResource extends Resource
                                 })
                                 ->sendToDatabase($record->employee)
                                 ->toBroadcast($record->employee);
+
+                            Notification::make()
+                                ->success()
+                                ->title('Notification sent')
+                                ->send();
                         }),
                     DownloadTimesheetAction::make()
                         ->visible(fn () => in_array(Filament::getCurrentPanel()->getId(), ['director', 'leader']))
@@ -255,7 +260,7 @@ class TimesheetResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        return $query->where(function ($query) {
+        $query->where(function ($query) {
             $query->certified();
 
             $query->whereHas('employee');
@@ -263,20 +268,34 @@ class TimesheetResource extends Resource
             $panel = Filament::getCurrentPanel()->getId();
 
             $query->when($panel === 'director', function ($query) {
-                $query->whereHas('employee.offices', function (Builder $query) {
-                    $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
+                $query->where(function ($query) {
+                    $query->whereHas('employee.offices', function (Builder $query) {
+                        $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
 
-                    $query->where('deployment.current', true);
+                        $query->where('deployment.current', true);
+                    });
+
+                    $query->where(
+                        'timesheets.details->signers->director',
+                        Employee::select('id')->whereHas('user', fn ($q) => $q->where('id', Auth::id())),
+                    );
                 });
             });
 
             $query->when($panel === 'leader', function ($query) {
-                $query->whereHas('employee.offices', function (Builder $query) {
-                    $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
+                $query->where(function ($query) {
+                    $query->whereHas('employee.offices', function (Builder $query) {
+                        $query->where('offices.id', Auth::user()->employee?->currentDeployment?->office?->id);
 
-                    $query->where('deployment.supervisor_id', Auth::user()->employee?->id);
+                        $query->where('deployment.supervisor_id', Auth::user()->employee?->id);
 
-                    $query->where('deployment.current', true);
+                        $query->where('deployment.current', true);
+                    });
+
+                    $query->where(
+                        'timesheets.details->signers->leader',
+                        Employee::select('id')->whereHas('user', fn ($q) => $q->where('id', Auth::id())),
+                    );
                 });
             });
 
@@ -291,5 +310,7 @@ class TimesheetResource extends Resource
                 });
             });
         });
+
+        return $query;
     }
 }
