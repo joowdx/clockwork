@@ -98,10 +98,12 @@ class TimesheetResource extends Resource
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('leaderSigner.created_at')
                     ->label(str(settings('leader') ?? 'leader')->title())
+                    ->hidden(fn ($livewire) => $livewire->activeTab === 'Monthly')
                     ->since()
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('directorSigner.created_at')
                     ->label(str(settings('director') ?? 'director')->title())
+                    ->hidden(fn ($livewire) => $livewire->activeTab === 'Monthly')
                     ->since()
                     ->dateTimeTooltip(),
             ])

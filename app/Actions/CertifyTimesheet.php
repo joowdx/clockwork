@@ -71,6 +71,8 @@ class CertifyTimesheet
                 default => $this->generate($timesheet, $user, $data, $path),
             };
 
+            $timesheet->refresh(['employee', 'accomplishment', 'export']);
+
             $this->sign($user, $file, $out, $level);
 
             $timesheet->update([
@@ -136,7 +138,7 @@ class CertifyTimesheet
 
             $data = [
                 ...$data,
-                'timesheets' => [$timesheet],
+                'timesheets' => [$timesheet->refresh(['employee', 'accomplishment', 'export'])],
                 'user' => $user,
                 'month' => $timesheet->month,
                 'period' => $data['period'] instanceof TimesheetPeriod ? $data['period']->value : $data['period'] ?? 'full',
@@ -159,9 +161,11 @@ class CertifyTimesheet
 
             return base64_decode($pdf->base64());
         } catch (Throwable $e) {
-            $timesheet->export->delete();
+            $timesheet->export?->delete();
 
-            $timesheet->delete();
+            if ($timesheet->span !== 'full') {
+                $timesheet->delete();
+            }
 
             throw $e;
         }

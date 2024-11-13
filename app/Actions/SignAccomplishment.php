@@ -27,7 +27,9 @@ class SignAccomplishment
             $field = mb_strtolower(str()->ulid());
 
             $attachment->signers()->create([
-                'user_id' => $user->id,
+                'field' => $field,
+                'signer_id' => $user->id,
+                'signer_type' => get_class($user),
             ]);
 
             (new SignPdfAction)($user, $out, null, $field);

@@ -2,13 +2,11 @@
 
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
-use App\Actions\CertifyTimesheet;
-use App\Actions\SignAccomplishment;
-use App\Enums\AttachmentClassification;
 use App\Enums\PaperSize;
 use App\Enums\TimelogState;
 use App\Enums\TimesheetPeriod;
 use App\Filament\Employee\Resources\TimesheetResource;
+use App\Jobs\CertifyTimesheets;
 use App\Jobs\ProcessTimetable;
 use App\Models\Employee;
 use App\Models\Timelog;
@@ -337,8 +335,7 @@ class ViewTimesheet extends ViewRecord
             ->modalSubmitActionLabel('Certify')
             ->closeModalByClickingAway(false)
             ->visible(fn () => Auth::user()->signature?->certificate)
-            ->successNotificationTitle('Timesheet successfully certified.')
-            ->failureNotificationTitle('Something went wrong while certifying your timesheet.')
+            ->successNotificationTitle('Timesheet certification process initiated.')
             ->hidden(function (Timesheet $record) {
                 /** @var \App\Models\Employee */
                 $user = Auth::user();
@@ -348,51 +345,13 @@ class ViewTimesheet extends ViewRecord
                     $record->timesheets()->where('span', '1st')->exists() &&
                     $record->timesheets()->where('span', '2nd')->exists();
             })
-            ->action(function (Action $component, CertifyTimesheet $certifier, SignAccomplishment $accomplisher, array $data) {
-                try {
-                    DB::beginTransaction();
+            ->action(function (Action $component, array $data) {
+                CertifyTimesheets::dispatch([$this->record->id], 'employee', Auth::id(), [
+                    'period' => $data['period'],
+                    'accomplishment' => base64_encode($data['accomplishment']->get()),
+                ]);
 
-                    $timesheet = $certifier($this->record, Auth::user(), $data);
-
-                    $month = Carbon::parse($this->record->month);
-
-                    $period = match ($timesheet->span) {
-                        '1st' => $month->format('Y m ').'01-15',
-                        '2nd' => $month->format('Y m ').'16-'.$month->daysInMonth(),
-                        default => $month->format('Y m ').'01-'.$month->daysInMonth(),
-                    };
-
-                    $filename = "timesheets/{$timesheet->employee->full_name}/{$month->format('Y/Y m M')}/attachments/(Accomplishment {$period}).pdf";
-
-                    $attachment = $timesheet->accomplishment()->create([
-                        'filename' => $filename,
-                        'classification' => AttachmentClassification::ACCOMPLISHMENT,
-                        'disk' => 'azure',
-                        'context' => [
-                            'period' => $timesheet->span,
-                        ],
-                    ]);
-
-                    Storage::disk('azure')->put($filename, $data['accomplishment']->get());
-
-                    $accomplisher($attachment, Auth::user());
-
-                    DB::commit();
-
-                    $component->sendSuccessNotification();
-                } catch (Exception $exception) {
-                    DB::rollBack();
-
-                    if (@$attachment->export->filename && Storage::disk('azure')->exists($attachment->export->filename)) {
-                        Storage::disk('azure')->delete($attachment->export->filename);
-                    }
-
-                    if (app()->isLocal()) {
-                        throw $exception;
-                    }
-
-                    $component->sendFailureNotification();
-                }
+                $component->sendSuccessNotification();
             })
             ->form([
                 Tabs::make()

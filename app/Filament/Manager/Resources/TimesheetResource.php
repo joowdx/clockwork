@@ -43,9 +43,9 @@ class TimesheetResource extends Resource
             ->modifyQueryUsing(function (Builder $query) {
                 $query->with([
                     'employee',
-                    'signers',
                     'records' => fn ($query) => $query->whereNot('punch', '[]'),
                     'exports' => fn ($query) => $query->select(['exports.id', 'exportable_id', 'exportable_type', 'details']),
+                    'exports.signers',
                 ]);
             })
             ->columns([
@@ -120,11 +120,11 @@ class TimesheetResource extends Resource
                     ->since()
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('leaderSigner.created_at')
-                    ->label(str(settings('leader') ?? '')->title())
+                    ->label(str(settings('leader') ?? 'leader')->title())
                     ->since()
                     ->dateTimeTooltip(),
                 Tables\Columns\TextColumn::make('directorSigner.created_at')
-                    ->label(str(settings('director') ?? '')->title())
+                    ->label(str(settings('director') ?? 'director')->title())
                     ->since()
                     ->dateTimeTooltip(),
             ])

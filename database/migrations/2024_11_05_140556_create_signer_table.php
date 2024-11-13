@@ -16,7 +16,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('meta')->nullable();
             $table->string('field')->nullable();
-            $table->foreignIdFor(Export::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->ulidMorphs('signable');
             $table->ulidMorphs('signer');
             $table->timestamps();
         });

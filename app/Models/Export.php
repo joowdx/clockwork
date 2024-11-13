@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 
@@ -56,7 +57,7 @@ class Export extends Model
                 unlink($export->filename);
             }
 
-            $export->signers()->delete();
+            $export->signers()->lazyById()->each->delete();
         });
     }
 
@@ -132,9 +133,9 @@ class Export extends Model
         $query->where('exportable_type', Timesheet::class);
     }
 
-    public function signers(): HasMany
+    public function signers(): MorphMany
     {
-        return $this->hasMany(Signer::class);
+        return $this->morphMany(Signer::class, 'signable');
     }
 
     public function file(): ?string

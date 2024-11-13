@@ -10,15 +10,21 @@ class Signer extends Pivot
 {
     use HasUlids;
 
-    protected $with = ['signer'];
+    protected $with = ['signable', 'signer'];
 
     protected $fillable = [
         'meta',
         'field',
-        'export_id',
+        'signable_type',
+        'signable_id',
         'signer_type',
         'signer_id',
     ];
+
+    public function signable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
     public function signer(): MorphTo
     {
