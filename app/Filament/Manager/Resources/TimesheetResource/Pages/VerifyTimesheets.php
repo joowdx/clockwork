@@ -85,15 +85,17 @@ class VerifyTimesheets extends Page
 
             $help = match (true) {
                 $timesheet->signers->contains(fn ($sign) => $sign->meta === $panel) => 'Already verified.',
-                $panel === 'director' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader'), => ucfirst(settings('leader')).' verification required.',
-                $panel === 'leader' && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director') => ucfirst(settings('director')).' verification required.',
+                $panel === 'director' && @$timesheet->details['leader'] && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader')
+                    => ucfirst(settings('leader')).' verification required.',
+                $panel === 'leader' && @$timesheet->details['director'] && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director')
+                    => ucfirst(settings('director')).' verification required.',
                 default => null,
             };
 
             return Forms\Components\Group::make([
                 Forms\Components\Checkbox::make($timesheet->id)
                     ->disabled($help !== null)
-                    ->helperText("$help (skipping)")
+                    ->helperText($help !== null ? "$help (skipping)" : null)
                     ->label("{$timesheet->employee->name} ({$timesheet->period})"),
                 Forms\Components\Group::make([
                     Forms\Components\Group::make([
