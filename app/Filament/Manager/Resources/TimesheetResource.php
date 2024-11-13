@@ -3,6 +3,7 @@
 namespace App\Filament\Manager\Resources;
 
 use App\Filament\Actions\TableActions\BulkAction\CertifyTimesheetAction as BulkActionCertifyTimesheetAction;
+use App\Filament\Actions\TableActions\BulkAction\DownloadTimesheetBulkAction;
 use App\Filament\Actions\TableActions\DownloadTimesheetAction;
 use App\Filament\Filters\OfficeFilter;
 use App\Filament\Filters\StatusFilter;
@@ -233,6 +234,7 @@ class TimesheetResource extends Resource
                 ]),
             ])
             ->bulkActions([
+                DownloadTimesheetBulkAction::make(),
                 BulkActionCertifyTimesheetAction::make()
                     ->label('Verify'),
             ])
