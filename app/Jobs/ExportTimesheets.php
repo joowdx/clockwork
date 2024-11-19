@@ -95,7 +95,7 @@ class ExportTimesheets implements ShouldBeEncrypted, ShouldQueue
                         ->button()
                         ->color('primary')
                         ->markAsRead()
-                        ->url(route('export', $this->export), true),
+                        ->url(route('download.export', $this->export), true),
                 ]);
         } catch (Exception $exception) {
             $notification = Notification::make()
