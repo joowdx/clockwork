@@ -53,7 +53,7 @@ class Attachment extends Model
                 unlink($attachment->filename);
             }
 
-            $attachment->signers()->delete();
+            $attachment->signers()->lazyById()->each->delete();
         });
     }
 
@@ -113,6 +113,6 @@ class Attachment extends Model
 
     public function signers(): MorphMany
     {
-        return $this->morphMany(Signer::class, 'signer');
+        return $this->morphMany(Signer::class, 'signable');
     }
 }

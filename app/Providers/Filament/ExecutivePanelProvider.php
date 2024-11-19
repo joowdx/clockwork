@@ -29,7 +29,7 @@ class ExecutivePanelProvider extends PanelProvider
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
-            ->databaseNotificationsPolling(15)
+            ->databaseNotificationsPolling('15s')
             ->userMenuItems(Navigation::menuItems());
         // ->spaUrlExceptions(Navigation::spaExceptions())
         // ->spa()

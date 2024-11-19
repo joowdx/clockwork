@@ -229,22 +229,14 @@ class Timesheet extends Model
     public function leaderSigner(): Attribute
     {
         return Attribute::make(function () {
-            if ($this->relationLoaded('signers')) {
-                return $this->signers->first(fn ($signer) => $signer->meta === 'leader');
-            }
-
-            return $this->signers()->where('meta', 'leader')->first();
+            return $this->export?->signers()->where('meta', 'leader')->first();
         });
     }
 
     public function directorSigner(): Attribute
     {
         return Attribute::make(function () {
-            if ($this->relationLoaded('signers')) {
-                return $this->signers->first(fn ($signer) => $signer->meta === 'director');
-            }
-
-            return $this->signers()->where('meta', 'director')->first();
+            return $this->export?->signers()->where('meta', 'director')->first();
         });
     }
 
@@ -572,16 +564,5 @@ class Timesheet extends Model
             ->ofMany(['id' => 'max'], function (Builder $query) {
                 $query->where('classification', AttachmentClassification::ACCOMPLISHMENT);
             });
-    }
-
-    public function signers(): HasManyThrough
-    {
-        return $this->through('export')
-            ->has('signers');
-    }
-
-    public function signer()
-    {
-        return $this->signers();
     }
 }
