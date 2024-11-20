@@ -230,7 +230,7 @@ class TimesheetExporter implements Responsable
 
         @[$period, $range] = explode('|', $this->period, 2);
 
-        @[$from, $to] = explode('-', $range, 2);
+        @[$from, $to] = explode('-', $range ?? '', 2);
 
         if ($this->format === 'default') {
             $timelogs = function ($query) use ($period, $from, $to) {
