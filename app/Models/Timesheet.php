@@ -47,6 +47,8 @@ class Timesheet extends Model
 
     protected ?int $to = null;
 
+    protected bool $temporary = false;
+
     protected static function booted()
     {
         static::creating(fn (self $timesheet) => $timesheet->timesheet_id ??= $timesheet->id);
@@ -111,6 +113,13 @@ class Timesheet extends Model
         return $this;
     }
 
+    public function setTemporary(bool $temporary = true): self
+    {
+        $this->temporary = $temporary;
+
+        return $this;
+    }
+
     public function setCustomRange(int $from, int $to): self
     {
         if ($from > $to || $from < 0) {
@@ -132,7 +141,7 @@ class Timesheet extends Model
 
     public function getPeriod(): string
     {
-        return match ($this->getAttribute('span') ?? $this->span) {
+        return match ($this->temporary ? $this->span : $this->getAttribute('span')) {
             '1st' => 'firstHalf',
             '2nd' => 'secondHalf',
             'overtime' => 'overtimeWork',
@@ -300,7 +309,7 @@ class Timesheet extends Model
                     return (new NumberRangeCompressor)($days).' '.$this->{$this->getPeriod()}->map->date->first()?->format('M Y');
                 });
 
-                return match ($this->getOriginal('span') ?? $this->span) {
+                return match ($this->temporary ? $this->span : $this->getAttribute('span')) {
                     '1st' => '01-15 '.$month->format('M Y'),
                     '2nd' => '16-'.$month->endOfMonth()->day.' '.$month->format('M Y'),
                     'overtime' => $formatted(),
@@ -486,7 +495,7 @@ class Timesheet extends Model
 
     public function timetables(): HasMany
     {
-        return match ($this->getAttribute('span') ?? $this->span) {
+        return match ($this->temporary ? $this->span : $this->getAttribute('span')) {
             '1st' => $this->firstHalf(),
             '2nd' => $this->secondHalf(),
             'overtime' => $this->overtimeWork(),
