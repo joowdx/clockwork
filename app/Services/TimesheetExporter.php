@@ -230,7 +230,7 @@ class TimesheetExporter implements Responsable
 
         @[$period, $range] = explode('|', $this->period, 2);
 
-        @[$from, $to] = explode('-', $range, 2);
+        @[$from, $to] = explode('-', $range ?? '', 2);
 
         if ($this->format === 'default') {
             $timelogs = function ($query) use ($period, $from, $to) {
@@ -317,6 +317,7 @@ class TimesheetExporter implements Responsable
         $timesheets = Timesheet::query()
             ->whereIn('employee_id', $id)
             ->whereDate('month', $this->month->startOfMonth())
+            ->where('span', 'full')
             ->when($period === '1st', fn ($query) => $query->with('firstHalf'))
             ->when($period === '2nd', fn ($query) => $query->with('secondHalf'))
             ->when($period === 'regular', fn ($query) => $query->with('regularDays'))
@@ -334,6 +335,8 @@ class TimesheetExporter implements Responsable
             'range' => $timesheets->map->setCustomRange($from, $to),
             default => $timesheets,
         };
+
+        $timesheets = $timesheets->map->setTemporary();
 
         if ($this->transmittal > 0 && $this->grouping !== false) { //grouping only available to office
             $timesheets = $timesheets->groupBy(fn ($timesheet) => $timesheet->employee->offices->pluck('code')->toArray())->flatten();
