@@ -83,7 +83,7 @@ class VerifyTimesheets extends Page
             ->success()
             ->send();
 
-        $this->redirect(static::getResource()::getUrl());
+        return $this->redirect(static::getResource()::getUrl());
     }
 
     public function form(Form $form): Form
@@ -91,7 +91,7 @@ class VerifyTimesheets extends Page
         try {
             $decrypted = decrypt($this->timesheets);
 
-            $timesheets = Timesheet::with(['employee', 'attachments', 'signers'])->find($decrypted);
+            $timesheets = Timesheet::with(['employee', 'attachments', 'export.signers'])->find($decrypted);
 
             abort_unless($timesheets->count() === count($decrypted), 404);
         } catch (DecryptException) {
@@ -102,10 +102,10 @@ class VerifyTimesheets extends Page
             $panel = Filament::getCurrentPanel()->getId();
 
             $help = match (true) {
-                $timesheet->signers->contains(fn ($sign) => $sign->meta === $panel) => 'Already verified.',
-                $panel === 'director' && @$timesheet->details['leader'] && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'leader')
+                $timesheet->export->signers->contains(fn ($sign) => $sign->meta === $panel) => 'Already verified.',
+                $panel === 'director' && @$timesheet->details['leader'] && $timesheet->export->signers->doesntContain(fn ($sign) => $sign->meta === 'leader')
                     => ucfirst(settings('leader')).' verification required.',
-                $panel === 'leader' && @$timesheet->details['director'] && $timesheet->signers->doesntContain(fn ($sign) => $sign->meta === 'director')
+                $panel === 'leader' && @$timesheet->details['director'] && $timesheet->export->signers->doesntContain(fn ($sign) => $sign->meta === 'director')
                     => ucfirst(settings('director')).' verification required.',
                 default => null,
             };
