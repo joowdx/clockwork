@@ -52,7 +52,7 @@ class CertifyTimesheets implements ShouldQueue
         });
 
         $signed->each(function (Timesheet $timesheet) {
-            match($this->level) {
+            match ($this->level) {
                 'employee' => $this->employee($timesheet),
                 default => $this->superior($timesheet),
             };
@@ -132,8 +132,7 @@ class CertifyTimesheets implements ShouldQueue
     {
         $body = match ($this->level) {
             'employee' => str($signed->first()?->period),
-            default =>
-                str(<<<HTML
+            default => str(<<<HTML
                     <b>Verified ({$signed->count()}):</b> <br>
                     <ul>:verified</ul>
                     <br>

@@ -103,10 +103,8 @@ class VerifyTimesheets extends Page
 
             $help = match (true) {
                 $timesheet->export->signers->contains(fn ($sign) => $sign->meta === $panel) => 'Already verified.',
-                $panel === 'director' && @$timesheet->details['leader'] && $timesheet->export->signers->doesntContain(fn ($sign) => $sign->meta === 'leader')
-                    => ucfirst(settings('leader')).' verification required.',
-                $panel === 'leader' && @$timesheet->details['director'] && $timesheet->export->signers->doesntContain(fn ($sign) => $sign->meta === 'director')
-                    => ucfirst(settings('director')).' verification required.',
+                $panel === 'director' && @$timesheet->details['leader'] && $timesheet->export->signers->doesntContain(fn ($sign) => $sign->meta === 'leader') => ucfirst(settings('leader')).' verification required.',
+                $panel === 'leader' && @$timesheet->details['director'] && $timesheet->export->signers->doesntContain(fn ($sign) => $sign->meta === 'director') => ucfirst(settings('director')).' verification required.',
                 default => null,
             };
 
