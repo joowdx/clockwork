@@ -103,8 +103,13 @@ class SignPdfAction
                 file_put_contents($directory.'certificate.pfx', base64_decode($user->signature->certificateBase64));
                 file_put_contents($directory.'signature.webp', base64_decode($user->signature->specimenBase64));
             } elseif ($certificate && $specimen) {
-                rename($certificate, $directory.'certificate.pfx');
-                rename($specimen, $directory.'signature.webp');
+                if (file_exists($certificate) && file_exists($specimen)) {
+                    rename($certificate, $directory.'certificate.pfx');
+                    rename($specimen, $directory.'signature.webp');
+                } else {
+                    file_put_contents($directory.'certificate.pfx', 'certificate.pfx');
+                    file_put_contents($directory.'signature.webp', 'signature.webp');
+                }
             }
 
             if (! is_null($this->coordinates) && ! is_null($this->page)) {

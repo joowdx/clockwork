@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Actions\SignPdfAction;
 use App\Http\Controllers\Controller;
+use App\Jobs\PdfSignerJob;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,10 +12,11 @@ use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
 
 class SignerController extends Controller
 {
-    public function __invoke(Request $request, SignPdfAction $signer)
+    public function __invoke(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'pdf' => 'required|file|mimes:pdf|max:10240',
+            'callback' => 'nullable|url|active_url',
+            'pdf' => 'required|file|mimes:pdf|max:10mb',
             'employees' => 'nullable|array',
             'employees.*.field' => 'required|string',
             'employees.*.page' => 'required|integer|min:1',
@@ -79,53 +80,18 @@ class SignerController extends Controller
             return response()->json($validator->messages(), 422);
         }
 
-        try {
-            $pdf = $request->file('pdf')->store('signing');
+        $pdf = $request->file('pdf')->store('signing');
 
-            $pdf = storage_path('app/'.$pdf);
+        $pdf = storage_path('app/'.$pdf);
 
-            foreach ($request->employees as $row) {
-                $employee = Employee::where('uid', $row['uid'])->first();
-
-                $signer(
-                    $employee,
-                    $pdf,
-                    null,
-                    $employee->uid,
-                    $row['coordinates'],
-                    $row['page'] ?? 1,
-                    [
-                        'reason' => @$row['reason'],
-                        'location' => @$row['location'],
-                    ],
-                );
-            }
-
-            foreach ($request->signatures as $signature) {
-                $signer(
-                    null,
-                    $pdf,
-                    null,
-                    $signature['field'],
-                    $signature['coordinates'],
-                    $signature['page'] ?? 1,
-                    [
-                        'reason' => @$row['reason'],
-                        'location' => @$row['location'],
-                        'contact' => @$row['contact'],
-                    ],
-                    false,
-                    $signature['certificate']->getRealPath(),
-                    $signature['specimen']->getRealPath(),
-                    $signature['password'],
-                );
-            }
-        } finally {
-            if (file_exists($pdf)) {
-                unlink($pdf);
-            }
-        }
-
-        return response()->download($pdf, 'signed.pdf', ['Content-Type' => 'application/pdf'])->deleteFileAfterSend();
+        PdfSignerJob::dispatch(
+            $pdf,
+            $request->callback,
+            $request->employees,
+            array_map(fn ($signature) => array_merge($signature, [
+                'certificate' => $signature['certificate']->get(),
+                'specimen' => $signature['specimen']->get(),
+            ]), $request->signatures),
+        );
     }
 }
