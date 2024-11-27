@@ -201,4 +201,16 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Remote server
+    |--------------------------------------------------------------------------
+    |
+    | This value is to identify if the server is local or not.
+    | When the server is not local, this will disable direct network access to
+    | scanner devices.
+    */
+
+    'remote' => env('REMOTE_SERVER', false),
 ];

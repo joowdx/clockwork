@@ -17,7 +17,11 @@ class FetchAction extends Action
     {
         parent::setUp();
 
-        $this->name ??= 'fetch-timelogs';
+        $this->name('fetch-timelogs');
+
+        $this->visible(! config('app.remote'));
+
+        $this->hidden(config('app.remote'));
 
         $this->label('Fetch');
 

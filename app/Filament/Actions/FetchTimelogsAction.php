@@ -17,7 +17,11 @@ class FetchTimelogsAction extends Action
     {
         parent::setUp();
 
-        $this->name ??= 'fetch-timelogs';
+        $this->name('fetch-timelogs');
+
+        $this->visible(! config('app.remote'));
+
+        $this->hidden(config('app.remote'));
 
         $this->requiresConfirmation();
 
@@ -45,7 +49,7 @@ class FetchTimelogsAction extends Action
                 }),
             CheckboxList::make('scanners')
                 ->options(fn () => $this->onlyAssigned
-                        ? auth()->user()->scanners()->reorder()->orderByDesc('priority')->orderBy('name')->pluck('name', 'scanners.id')->toArray()
+                        ? user()->scanners()->reorder()->orderByDesc('priority')->orderBy('name')->pluck('name', 'scanners.id')->toArray()
                         : Scanner::query()->reorder()->orderByDesc('priority')->orderBy('name')->pluck('name', 'id')->toArray()
                 )
                 ->rules(['required'])
