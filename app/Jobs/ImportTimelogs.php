@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\LazyCollection;
 use League\Csv\Reader;
+use Throwable;
 
 class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
@@ -198,5 +199,17 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
             throw $exception;
         }
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        $notification = Notification::make()
+            ->danger()
+            ->title('Timelog Import Failed')
+            ->body('Something went wrong. Please try again.');
+
+        $notification->sendToDatabase($this->user);
+
+        $notification->broadcast($this->user);
     }
 }
