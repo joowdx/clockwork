@@ -34,7 +34,7 @@ class Holiday extends Model
         $date = is_string($date) ? Carbon::parse($date) : $date;
 
         return cache()->remember(
-            'holiday-'.$date->format('Y-m-d-').($all ? 'all' : 'one'), 60,
+            'holiday-'.$date->format('Y-m-d-').($all ? 'all' : 'one'), 86400,
             fn () => static::query()->whereDate('date', $date)->{$all ? 'get' : 'first'}()
         );
     }
