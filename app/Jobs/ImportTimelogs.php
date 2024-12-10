@@ -174,7 +174,7 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                         HTML)
                             ->toHtmlString()
                     )
-                    ->sendToDatabase($this->user);
+                    ->sendToDatabase($this->user, true);
             }
         } catch (Exception $exception) {
             if ($exception instanceof $invalidDataException) {
@@ -192,7 +192,7 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                     ->danger()
                     ->title(str($title)->toHtmlString())
                     ->body(str($body)->toHtmlString())
-                    ->sendToDatabase($this->user);
+                    ->sendToDatabase($this->user, true);
 
                 return;
             }
@@ -208,7 +208,7 @@ class ImportTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ->title('Timelog Import Failed')
             ->body('Something went wrong. Please try again.');
 
-        $notification->sendToDatabase($this->user);
+        $notification->sendToDatabase($this->user, true);
 
         $notification->broadcast($this->user);
     }

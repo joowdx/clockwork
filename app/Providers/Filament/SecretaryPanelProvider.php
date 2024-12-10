@@ -31,7 +31,7 @@ class SecretaryPanelProvider extends PanelProvider
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
-            ->databaseNotificationsPolling(fn () => '45s')
+            ->databaseNotificationsPolling(fn () => '300s')
             ->userMenuItems(Navigation::menuItems());
         // ->spaUrlExceptions(Navigation::spaExceptions())
         // ->spa()

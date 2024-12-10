@@ -89,7 +89,7 @@ class GenerateTimesheetAction extends BulkAction
                 ->info()
                 ->title('Timesheets are already generated')
                 ->body("No timesheets to generate for month {$data['month']} <br>".$employee->pluck('name')->sort()->join('<br>'))
-                ->sendToDatabase($user);
+                ->sendToDatabase($user, true);
 
             return;
         }
@@ -102,14 +102,14 @@ class GenerateTimesheetAction extends BulkAction
                     ->info()
                     ->title('Timesheets are being generated')
                     ->body("<b>({$data['month']})</b> <br> To be generated for (please wait for a while): <br>{$names->join('<br>')}")
-                    ->sendToDatabase($user);
+                    ->sendToDatabase($user, true);
             })
             ->catch(function () use ($user) {
                 Notification::make()
                     ->error()
                     ->title('Failed to generate timesheets')
                     ->body('Please try again')
-                    ->sendToDatabase($user);
+                    ->sendToDatabase($user, true);
             })
             ->onQueue('main')
             ->dispatch();

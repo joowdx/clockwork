@@ -458,7 +458,7 @@ class ImportData implements ShouldBeEncrypted, ShouldQueue
             ->$type()
             ->title($title)
             ->body($body)
-            ->sendToDatabase($this->user)
+            ->sendToDatabase($this->user, true)
             ->broadcast($this->user);
     }
 }

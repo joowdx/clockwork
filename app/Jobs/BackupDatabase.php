@@ -53,12 +53,12 @@ class BackupDatabase implements ShouldQueue
             Notification::make()
                 ->title('Database backup successful')
                 ->body('The database has been successfully backed up at '.$dump->created_at)
-                ->sendToDatabase($this->user);
+                ->sendToDatabase($this->user, true);
         } catch (Exception $exception) {
             Notification::make()
                 ->title('Database backup failed')
                 ->body($exception->getMessage())
-                ->sendToDatabase($this->user);
+                ->sendToDatabase($this->user, true);
         }
     }
 }

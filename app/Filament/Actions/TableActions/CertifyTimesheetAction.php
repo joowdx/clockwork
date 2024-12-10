@@ -137,7 +137,7 @@ class CertifyTimesheetAction extends Action
                 ->success()
                 ->title('Timesheet Verified')
                 ->body(str($body)->toHtmlString())
-                ->sendToDatabase($timesheet->employee);
+                ->sendToDatabase($timesheet->employee, true);
 
             $component->sendSuccessNotification();
         });

@@ -142,14 +142,14 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                         HTML)
                             ->toHtmlString()
                     )
-                    ->sendToDatabase($this->user);
+                    ->sendToDatabase($this->user, true);
             }
         } catch (TimelogsFetcherException $exception) {
             Notification::make()
                 ->danger()
                 ->title('Fetch failed')
                 ->body(str("Errors occurred <i>{$this->scanner->name}</i>: <br> ".$exception->getMessage())->toHtmlString())
-                ->sendToDatabase($this->user);
+                ->sendToDatabase($this->user, true);
         }
     }
 }

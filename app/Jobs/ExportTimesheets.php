@@ -108,7 +108,7 @@ class ExportTimesheets implements ShouldBeEncrypted, ShouldQueue
             throw $exception;
         }
 
-        $notification->sendToDatabase($this->user);
+        $notification->sendToDatabase($this->user, true);
 
         $notification->broadcast($this->user);
     }
@@ -122,7 +122,7 @@ class ExportTimesheets implements ShouldBeEncrypted, ShouldQueue
             ->title('Timesheet Export Failed')
             ->body('Something went wrong. Please try again.');
 
-        $notification->sendToDatabase($this->user);
+        $notification->sendToDatabase($this->user, true);
 
         $notification->broadcast($this->user);
     }

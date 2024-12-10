@@ -43,7 +43,7 @@ class FlushTimelogs implements ShouldQueue
             Notification::make()
                 ->warning()
                 ->title('Scanner timelogs are flushed')
-                ->sendToDatabase($this->user);
+                ->sendToDatabase($this->user, true);
         });
     }
 }

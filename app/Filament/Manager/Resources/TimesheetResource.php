@@ -220,7 +220,7 @@ class TimesheetResource extends Resource
 
                                     return str($message)->toHtmlString();
                                 })
-                                ->sendToDatabase($record->employee)
+                                ->sendToDatabase($record->employee, true)
                                 ->toBroadcast($record->employee);
 
                             Notification::make()

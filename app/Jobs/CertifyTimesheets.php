@@ -124,7 +124,7 @@ class CertifyTimesheets implements ShouldQueue
                 ->title('Timesheet certification failed')
                 ->body('An error occurred while certifying your timesheet. Please try again later.')
                 ->success()
-                ->sendToDatabase($employee);
+                ->sendToDatabase($employee, true);
         }
     }
 
@@ -165,6 +165,6 @@ class CertifyTimesheets implements ShouldQueue
             ->title($this->level !== 'employee' ? 'Timesheets verified' : 'Timesheets certified')
             ->body($body->toHtmlString())
             ->success()
-            ->sendToDatabase(($this->level === 'employee' ? 'App\Models\Employee' : 'App\Models\User')::find($this->user));
+            ->sendToDatabase(($this->level === 'employee' ? 'App\Models\Employee' : 'App\Models\User')::find($this->user), true);
     }
 }
