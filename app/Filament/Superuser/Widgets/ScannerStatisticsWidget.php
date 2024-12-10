@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ScannerStatisticsWidget extends BaseWidget
 {
+    protected static ?string $pollingInterval = '45s';
+
     protected function getColumns(): int
     {
         return 4;
