@@ -10,6 +10,8 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
+use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Support\Facades\Http;
 
 class FetchAction extends Action
 {
@@ -19,9 +21,9 @@ class FetchAction extends Action
 
         $this->name('fetch-timelogs');
 
-        $this->visible(! config('app.remote'));
+        $this->visible(! config('app.remote.server'));
 
-        $this->hidden(config('app.remote'));
+        $this->hidden(config('app.remote.server'));
 
         $this->label('Fetch');
 
@@ -93,8 +95,21 @@ class FetchAction extends Action
                 return;
             }
 
-            FetchTimelogs::dispatch($record->uid, $data['month'])
-                ->onQueue('main');
+            if (config('app.remote.server')) {
+                Http::withToken(config('app.remote.token'))
+                    ->post(config('app.host') . '/api/fetch', [
+                        'callback' => config('app.url') . '/api/fetch/receive',
+                        'host' => $record->host,
+                        'port' => $record->port,
+                        'pass' => $record->pass,
+                        'month' => $data['month'],
+                        'user' => user()->id,
+                        'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
+                    ]);
+            } else {
+                FetchTimelogs::dispatch($record->uid, $data['month'])
+                    ->onQueue('main');
+            }
 
             Notification::make()
                 ->success()

@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\FetchController;
 use App\Http\Controllers\Api\HolidayController;
 use App\Http\Controllers\Api\SignerController;
 use App\Http\Controllers\Api\TimesheetController;
+use App\Http\Middleware\NoRemoteConnection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,10 +19,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', fn (Request $request) => $request->user());
+Route::middleware('auth:sanctum')->get('user', fn (Request $request) => $request->user());
 
 Route::match(['get', 'post'], 'timesheet', TimesheetController::class)->middleware(['auth:sanctum']);
 
 Route::match(['get', 'post'], 'holiday', HolidayController::class)->middleware(['auth:sanctum']);
 
 Route::match(['get', 'post'], 'signer', SignerController::class)->middleware(['auth:sanctum']);
+
+Route::controller(FetchController::class)
+    ->middleware(['auth:sanctum'])
+    ->prefix('fetch')
+    ->group(function () {
+        Route::post('send', 'send')->middleware([NoRemoteConnection::class]);
+        Route::post('receive', 'receive');
+    });

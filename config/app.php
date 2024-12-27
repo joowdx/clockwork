@@ -212,5 +212,15 @@ return [
     | scanner devices.
     */
 
-    'remote' => env('REMOTE_SERVER', false),
+    'remote' => [
+        'server' => (bool) env('REMOTE_SERVER') ?: false,
+
+        'host' => env('REMOTE_HOST', null),
+
+        'key' => env('REMOTE_KEY', 'APP_KEY'),
+
+        'token' => env('REMOTE_TOKEN', null),
+
+        'user' => env('REMOTE_USER', null),
+    ]
 ];

@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Actions\UpsertTimelogs;
 use App\Events\TimelogsSynchronized;
 use App\Models\Scanner;
 use App\Models\Timelog;
 use App\Models\User;
 use App\Services\TimelogFetcher;
 use App\Services\TimelogsFetcher\TimelogsFetcherException;
+use Exception;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
@@ -15,18 +17,17 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable;
 
     public $timeout = 300;
 
-    public readonly User $user;
+    public readonly User|string $user;
 
     public readonly Scanner $scanner;
 
@@ -40,18 +41,31 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        private readonly int $device,
+        private readonly string|int $device,
         private readonly ?string $month = null,
+        private readonly ?int $port = null,
+        private readonly ?string $pass = null,
+        private readonly ?string $token = null,
+        private readonly ?string $callback = null,
         private readonly int $chunkSize = 1000,
         private readonly bool $notify = true,
+        string $user = '',
     ) {
-        $this->scanner = Scanner::where('uid', $device)->firstOrFail();
+        if (is_numeric($device)) {
+            $this->scanner = Scanner::where('uid', $device)->firstOrFail();
+
+            $this->user = Auth::user();
+        } else {
+            $this->scanner = new Scanner([
+                'host' => $device,
+                'port' => $port,
+                'pass' => $pass,
+            ]);
+
+            $this->user = $user;
+        }
 
         $this->fetcher = new TimelogFetcher($this->scanner);
-
-        $this->user = Auth::user();
-
-        $this->queue = 'main';
 
         if ($month) {
             $this->from = Carbon::parse($month)
@@ -68,6 +82,8 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
             $this->to = null;
         }
+
+        $this->queue = 'main';
     }
 
     /**
@@ -75,13 +91,52 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
      */
     public function uniqueId(): string
     {
-        return $this->device;
+        return $this->device ?? $this->scanner->host;
     }
 
     /**
      * Execute the job.
      */
     public function handle(): void
+    {
+        match (config('app.remote.server')) {
+            true => $this->remote(),
+            default => $this->local(),
+        };
+    }
+
+    protected function remote(): void
+    {
+        try {
+            $timelogs = $this->fetcher->fetchTimelogs($this->from, $this->to)->map(fn ($entry) => [
+                'uid' => $entry['uid'],
+                'time' => $entry['time'],
+                'state' => $entry['state'],
+                'mode' => $entry['mode'],
+            ]);
+
+            Http::withToken($this->token)
+                ->post($this->callback, [
+                    'status' => 'success',
+                    'message' => 'Timelogs fetched successfully',
+                    'user' => $this->user,
+                    'data' => [
+                        'timelogs' => $timelogs,
+                        'host' => $this->device,
+                        'month' => $this->month,
+                    ],
+                ]);
+        } catch (Exception $exception) {
+            Http::withToken($this->token)
+                ->post($this->callback, [
+                    'status' => 'error',
+                    'message' => $exception->getMessage(),
+                ])
+                ->throw();
+        }
+    }
+
+    protected function local(): void
     {
         try {
             if (empty($this->scanner->host)) {
@@ -96,40 +151,13 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'mode' => $entry['mode'],
             ]);
 
-            DB::transaction(function () use ($timelogs) {
-                $timelogs->chunk($this->chunkSize)->each(function ($entries) {
-                    Timelog::upsert($entries->toArray(), [
-                        'device',
-                        'uid',
-                        'time',
-                        'state',
-                        'mode',
-                    ], [
-                        'uid',
-                        'time',
-                        'state',
-                        'mode',
-                    ]);
-                });
-
-                Scanner::where('uid', $this->device)->update(['synced_at' => now()]);
-            });
-
-            TimelogsSynchronized::dispatch(
-                $this->scanner,
-                $this->user,
-                'fetch',
-                $this->month,
-                $timelogs->first()['time'] ?? null,
-                $timelogs->last()['time'] ?? null,
-                $timelogs->count(),
-                null,
-                [
-                    'host' => $this->scanner->host,
-                    'port' => $this->scanner->port,
-                    'pass' => $this->scanner->pass,
-                ]
-            );
+            app(UpsertTimelogs::class, [
+                'scanner' => $this->scanner,
+                'timelogs' => $timelogs,
+                'month' => Carbon::parse($this->month),
+                'user' => $this->user,
+                'chunkSize' => $this->chunkSize,
+            ])->execute();
 
             if ($this->notify) {
                 Notification::make()
@@ -140,6 +168,8 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                             Timelogs of <i>{$this->scanner->name}</i> has been successfully fetched from the device <br>
                             <i>You may have to wait for a bit before the employees' records are updated</i>
                         HTML)
+                            ->squish()
+                            ->trim()
                             ->toHtmlString()
                     )
                     ->sendToDatabase($this->user, true);
