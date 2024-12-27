@@ -40,7 +40,7 @@ class FetchController extends Controller
             }],
         ]);
 
-        FetchTimelogs::dispatchSync($host, $month, $port, $pass, decrypt($token), $callback, user: $user);
+        FetchTimelogs::dispatch($host, $month, $port, $pass, decrypt($token), $callback, user: $user);
     }
 
     public function receive(Request $request)

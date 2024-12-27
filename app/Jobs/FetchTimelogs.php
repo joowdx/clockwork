@@ -99,7 +99,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
      */
     public function handle(): void
     {
-        match (config('app.remote.server')) {
+        match ((bool) $this->callback) {
             true => $this->remote(),
             default => $this->local(),
         };
