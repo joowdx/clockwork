@@ -97,6 +97,7 @@ class FetchAction extends Action
 
             if (config('app.remote.server')) {
                 Http::withToken(config('app.remote.token'))
+                    ->withoutVerifying()
                     ->post(config('app.host') . '/api/fetch', [
                         'callback' => config('app.url') . '/api/fetch/receive',
                         'host' => $record->host,
