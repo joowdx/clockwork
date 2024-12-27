@@ -80,7 +80,7 @@ class TimesheetController extends Controller
         $employees = Employee::query()
             ->{is_array($validated['uid']) ? 'whereIn' : 'where'}('uid', $validated['uid'])
             ->with([
-                'timesheets' => fn ($query) => $query->select(['id', 'month', 'employee_id'])->whereMonth('month', $month->month)->whereYear('month', $month->year),
+                'timesheets' => fn ($query) => $query->select(['id', 'month', 'employee_id', 'timesheet_id'])->whereMonth('month', $month->month)->whereYear('month', $month->year),
                 'timesheets.timetables' => function ($query) use ($validated) {
                     match ($validated['period']) {
                         '1st' => $query->firstHalf(),
