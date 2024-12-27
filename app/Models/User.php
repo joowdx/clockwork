@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Traits\FormatsName;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -20,7 +21,7 @@ use UnitEnum;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, HasUlids, Notifiable, SoftDeletes;
+    use FormatsName, HasApiTokens, HasFactory, HasUlids, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -43,6 +44,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function name(): Attribute
+    {
+        return Attribute::make(fn ($name) => $this->formatName($name), fn ($name) => $this->formatName($name));
+    }
 
     public function root(): Attribute
     {
