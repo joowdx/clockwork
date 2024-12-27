@@ -120,11 +120,11 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                     'status' => 'success',
                     'message' => 'Timelogs fetched successfully',
                     'user' => $this->user,
-                    'data' => [
+                    'data' => json_encode([
                         'timelogs' => $timelogs,
                         'host' => $this->device,
                         'month' => $this->month,
-                    ],
+                    ]),
                 ]);
         } catch (Exception $exception) {
             Http::withToken($this->token)
