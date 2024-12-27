@@ -21,9 +21,7 @@ class FetchAction extends Action
 
         $this->name('fetch-timelogs');
 
-        $this->visible(! config('app.remote.server'));
-
-        $this->hidden(config('app.remote.server'));
+        $this->visible(! config('app.remote.server') ?: config('app.remote.host') && config('app.remote.key') && config('app.remote.token') && config('app.remote.user'));
 
         $this->label('Fetch');
 
@@ -98,7 +96,7 @@ class FetchAction extends Action
             if (config('app.remote.server')) {
                 Http::withToken(config('app.remote.token'))
                     ->withoutVerifying()
-                    ->post(config('app.host') . '/api/fetch', [
+                    ->post(config('app.remote.host') . '/api/fetch', [
                         'callback' => config('app.url') . '/api/fetch/receive',
                         'host' => $record->host,
                         'port' => $record->port,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Superuser\Resources\ScannerResource\Pages;
 
+use App\Filament\Actions\FetchTimelogsAction;
 use App\Filament\Actions\ImportTimelogsAction;
 use App\Filament\Superuser\Resources\ScannerResource;
 use Filament\Actions;
@@ -16,6 +17,7 @@ class ListScanners extends ListRecords
         return [
             Actions\ActionGroup::make([
                 ImportTimelogsAction::make(),
+                FetchTimelogsAction::make(),
                 Actions\CreateAction::make(),
             ]),
         ];

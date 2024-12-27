@@ -8,6 +8,8 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Support\Facades\Http;
 
 class FetchTimelogsAction extends Action
 {
@@ -19,9 +21,7 @@ class FetchTimelogsAction extends Action
 
         $this->name('fetch-timelogs');
 
-        $this->visible(! config('app.remote'));
-
-        $this->hidden(config('app.remote'));
+        $this->visible(! config('app.remote.server') ?: config('app.remote.host') && config('app.remote.key') && config('app.remote.token') && config('app.remote.user'));
 
         $this->requiresConfirmation();
 
@@ -86,8 +86,22 @@ class FetchTimelogsAction extends Action
             }
 
             $filtered->each(function (Scanner $scanner) use ($data) {
-                FetchTimelogs::dispatch($scanner->uid, $data['month'])
-                    ->onQueue('main');
+                if (config('app.remote.server')) {
+                    Http::withToken(config('app.remote.token'))
+                        ->withoutVerifying()
+                        ->post(config('app.remote.host') . '/api/fetch', [
+                            'callback' => config('app.url') . '/api/fetch/receive',
+                            'host' => $scanner->host,
+                            'port' => $scanner->port,
+                            'pass' => $scanner->pass,
+                            'month' => $data['month'],
+                            'user' => user()->id,
+                            'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
+                        ]);
+                } else {
+                    FetchTimelogs::dispatch($scanner->uid, $data['month'])
+                        ->onQueue('main');
+                }
             });
 
             Notification::make()

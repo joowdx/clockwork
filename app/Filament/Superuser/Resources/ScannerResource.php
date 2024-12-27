@@ -81,7 +81,7 @@ class ScannerResource extends Resource
                 ]),
             Forms\Components\Section::make('Connection Parameters')
                 ->columns(3)
-                ->hidden(config('app.remote'))
+                ->visible(! config('app.remote.server') ?: config('app.remote.host') && config('app.remote.key') && config('app.remote.token') && config('app.remote.user'))
                 ->schema([
                     Forms\Components\TextInput::make('host')
                         ->unique(ignoreRecord: true)
