@@ -4,6 +4,7 @@ namespace App\Filament\Actions;
 
 use App\Jobs\FetchTimelogs;
 use App\Models\Scanner;
+use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
@@ -87,17 +88,26 @@ class FetchTimelogsAction extends Action
 
             $filtered->each(function (Scanner $scanner) use ($data) {
                 if (config('app.remote.server')) {
-                    Http::withToken(config('app.remote.token'))
-                        ->withoutVerifying()
-                        ->post(config('app.remote.host') . '/api/fetch', [
-                            'callback' => config('app.url') . '/api/fetch/receive',
-                            'host' => $scanner->host,
-                            'port' => $scanner->port,
-                            'pass' => $scanner->pass,
-                            'month' => $data['month'],
-                            'user' => user()->id,
-                            'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
-                        ]);
+                    try {
+                        Http::throw()
+                            ->withToken(config('app.remote.token'))
+                            ->withoutVerifying()
+                            ->post(config('app.remote.host') . '/api/fetch/send', [
+                                'callback' => config('app.url') . '/api/fetch/receive',
+                                'host' => $scanner->host,
+                                'port' => $scanner->port,
+                                'pass' => $scanner->pass,
+                                'month' => $data['month'],
+                                'user' => user()->id,
+                                'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
+                            ]);
+                    } catch (Exception) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Fetch failed')
+                            ->body("Something went wrong while trying to remotely fetch timelogs from {$scanner->name}.")
+                            ->send();
+                    }
                 } else {
                     FetchTimelogs::dispatch($scanner->uid, $data['month'])
                         ->onQueue('main');

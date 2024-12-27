@@ -4,6 +4,7 @@ namespace App\Filament\Actions\TableActions;
 
 use App\Jobs\FetchTimelogs;
 use App\Models\Scanner;
+use Exception;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Get;
@@ -94,17 +95,26 @@ class FetchAction extends Action
             }
 
             if (config('app.remote.server')) {
-                Http::withToken(config('app.remote.token'))
-                    ->withoutVerifying()
-                    ->post(config('app.remote.host') . '/api/fetch', [
-                        'callback' => config('app.url') . '/api/fetch/receive',
-                        'host' => $record->host,
-                        'port' => $record->port,
-                        'pass' => $record->pass,
-                        'month' => $data['month'],
-                        'user' => user()->id,
-                        'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
-                    ]);
+                try {
+                    Http::throw()
+                        ->withToken(config('app.remote.token'))
+                        ->withoutVerifying()
+                        ->post(config('app.remote.host') . '/api/fetch/send', [
+                            'callback' => config('app.url') . '/api/fetch/receive',
+                            'host' => $record->host,
+                            'port' => $record->port,
+                            'pass' => $record->pass,
+                            'month' => $data['month'],
+                            'user' => user()->id,
+                            'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
+                        ]);
+                } catch (Exception) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Fetch failed')
+                        ->body("Something went wrong while trying to remotely fetch timelogs from {$record->name}.")
+                        ->send();
+                }
             } else {
                 FetchTimelogs::dispatch($record->uid, $data['month'])
                     ->onQueue('main');
