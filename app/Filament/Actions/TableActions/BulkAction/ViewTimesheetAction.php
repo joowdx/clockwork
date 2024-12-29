@@ -74,6 +74,8 @@ class ViewTimesheetAction extends BulkAction
                         default => $timesheets,
                     };
 
+                    $timesheets = $timesheets->map->setTemporary();
+
                     return View::make('print.csc')->viewData([
                         'preview' => true,
                         'timesheets' => $timesheets,
