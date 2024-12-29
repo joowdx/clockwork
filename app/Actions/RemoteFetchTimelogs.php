@@ -10,8 +10,8 @@ class RemoteFetchTimelogs
 {
     public function fetch(
         string $host,
-        string $port,
-        string $pass,
+        ?string $port,
+        ?string $pass,
         string $month,
         ?string $user = null,
     ) {
