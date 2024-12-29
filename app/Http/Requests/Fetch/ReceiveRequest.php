@@ -21,9 +21,11 @@ class ReceiveRequest extends FormRequest
 
     protected ?array $timelogs = null;
 
-    protected ?User $user = null;
+    protected ?string $host = null;
 
     protected ?Scanner $scanner = null;
+
+    protected ?User $user = null;
 
     protected ?Carbon $month = null;
 
@@ -32,7 +34,7 @@ class ReceiveRequest extends FormRequest
         return [
             'status' => 'required|string',
             'message' => 'required_unless:status,success|string',
-            'data' => 'required_if:status,success|json|ascii|max:'.self::MAX_DATA_SIZE,
+            'data' => 'required|json|ascii|max:'.self::MAX_DATA_SIZE,
         ];
     }
 
@@ -47,6 +49,10 @@ class ReceiveRequest extends FormRequest
     {
         return [
             function (Validator $validator) {
+                if ($this->isNotFilled('data')) {
+                    return;
+                }
+
                 $data = json_decode($this->input('data'), true);
 
                 if (json_last_error() !== JSON_ERROR_NONE || $this->input('status') !== 'success' || empty($data)) {
@@ -60,7 +66,7 @@ class ReceiveRequest extends FormRequest
                     'data.timelogs.*.state' => 'required|numeric|min:0',
                     'data.timelogs.*.mode' => 'required|numeric|min:0',
                     'data.timelogs.*.time' => 'required|date_format:Y-m-d H:i:s',
-                    'data.timelogs' => 'required|array',
+                    'data.timelogs' => $this->input('success') === 'success' ? 'required|array' : [],
                     'data.month' => 'required|date_format:Y-m',
                     'data.host' => ['required', function ($attribute, $value, $fail) {
                         try {
@@ -92,41 +98,48 @@ class ReceiveRequest extends FormRequest
 
     public function user($guard = null): User
     {
-        return is_null($guard) ? $this->user ?? User::findOrFail(decrypt($this->payload['user']) ?? null) : parent::user($guard);
+        if ($guard) {
+            return parent::user($guard);
+        }
+
+        return $this->user ??= User::findOrFail(decrypt($this->payload['user']) ?? null);
     }
 
     public function scanner(): Scanner
     {
-        return $this->scanner ?? Scanner::where('host', $this->host())->firstOrFail();
+        return $this->scanner ??= Scanner::where('host', $this->host())->firstOrFail();
     }
 
     public function month(): Carbon
     {
-        return $this->month ?? Carbon::parse($this->payload['month']);
+        return $this->month ??= Carbon::parse($this->payload['month']);
     }
 
     public function timelogs(): Collection
     {
-        return $this->timelogs ?? collect($this->payload['timelogs'])->map(fn ($t) => [...$t, 'device' => $this->scanner()->uid]);
+        return $this->timelogs ??= collect($this->payload['timelogs'])->map(fn ($t) => [...$t, 'device' => $this->scanner()->uid]);
     }
 
     public function host(): string
     {
-        return $this->host ?? $this->payload['host'];
+        return $this->host ??= $this->payload['host'];
     }
 
     public function notify()
     {
-        $message = $this->success()
-            ? <<<HTML
+        $message = match($this->success()) {
+            true => <<<HTML
                 Timelogs of <i>{$this->scanner()->name}</i> has been successfully fetched from the device <br>
                 <i>You may have to wait for a bit before the employees' records are updated</i>
-            HTML
-            : <<<HTML
-                Errors occurred <i>{$this->scanner()->name}</i>: <br>
-                {$this->message}
-            HTML;
-
+            HTML,
+            default => match (isset($this->payload['host'])) {
+                true => <<<HTML
+                    Errors occurred <i>{$this->scanner()->name}</i>: <br>
+                    {$this->message}
+                HTML,
+                default => "Errors occured: <br> {$this->message}"
+            }
+        };
 
         $notification = Notification::make()
             ->title($this->success() ? 'Fetch successful' : 'Fetch failed')
@@ -134,7 +147,7 @@ class ReceiveRequest extends FormRequest
 
         match ($this->success()) {
             true => $notification->success(),
-            default => $notification->error(),
+            default => $notification->danger(),
         };
 
         $notification->sendToDatabase($this->user(), true);
@@ -142,6 +155,6 @@ class ReceiveRequest extends FormRequest
 
     protected function passedValidation(): void
     {
-        $this->payload = json_decode($this->input('data'), true);
+        $this->payload = $this->payload ?? json_decode($this->input('data'), true);
     }
 }

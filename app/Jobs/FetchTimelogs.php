@@ -137,6 +137,11 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 ->post($this->callback, [
                     'status' => 'error',
                     'message' => $exception->getMessage(),
+                    'data' => json_encode([
+                        'user' => $this->user,
+                        'host' => $this->host,
+                        'month' => $this->month,
+                    ]),
                 ]);
         }
     }
