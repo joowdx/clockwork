@@ -41,7 +41,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        private readonly string|int $device,
+        private readonly string|int $host,
         private readonly ?string $month = null,
         private readonly ?int $port = null,
         private readonly ?string $pass = null,
@@ -51,13 +51,13 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         private readonly bool $notify = true,
         string $user = '',
     ) {
-        if (is_numeric($device)) {
-            $this->scanner = Scanner::where('uid', $device)->firstOrFail();
+        if (is_numeric($host)) {
+            $this->scanner = Scanner::where('uid', $host)->firstOrFail();
 
             $this->user = Auth::user();
         } else {
             $this->scanner = new Scanner([
-                'host' => $device,
+                'host' => $host,
                 'port' => $port,
                 'pass' => $pass,
             ]);
@@ -91,7 +91,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
      */
     public function uniqueId(): string
     {
-        return $this->device ?? $this->scanner->host;
+        return $this->host ?? $this->scanner->host;
     }
 
     /**
@@ -122,7 +122,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                     'user' => $this->user,
                     'data' => json_encode([
                         'timelogs' => $timelogs,
-                        'host' => $this->device,
+                        'host' => $this->host,
                         'month' => $this->month,
                     ]),
                 ]);
@@ -144,7 +144,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             }
 
             $timelogs = $this->fetcher->fetchTimelogs($this->from, $this->to)->map(fn ($entry) => [
-                'device' => $this->device,
+                'device' => $this->host,
                 'uid' => $entry['uid'],
                 'time' => $entry['time'],
                 'state' => $entry['state'],
