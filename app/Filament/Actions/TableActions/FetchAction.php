@@ -97,6 +97,7 @@ class FetchAction extends Action
             if (config('app.remote.server')) {
                 try {
                     Http::throw()
+                        ->acceptJson()
                         ->withToken(config('app.remote.token'))
                         ->withoutVerifying()
                         ->post(config('app.remote.host') . '/api/fetch/send', [
