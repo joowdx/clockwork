@@ -98,8 +98,8 @@ class FetchTimelogsAction extends Action
                                 'port' => $scanner->port,
                                 'pass' => $scanner->pass,
                                 'month' => $data['month'],
-                                'user' => user()->id,
-                                'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
+                                'user' => encrypt(user()->id),
+                                'token' => encrypt(config('app.remote.user')),
                             ]);
                     } catch (Exception) {
                         Notification::make()

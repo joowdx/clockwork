@@ -107,7 +107,7 @@ class FetchAction extends Action
                             'pass' => $record->pass,
                             'month' => $data['month'],
                             'user' => encrypt(user()->id),
-                            'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
+                            'token' => encrypt(config('app.remote.user')),
                         ]);
                 } catch (Exception) {
                     Notification::make()
