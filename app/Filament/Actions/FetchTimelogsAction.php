@@ -2,6 +2,7 @@
 
 namespace App\Filament\Actions;
 
+use App\Actions\RemoteFetchTimelogs;
 use App\Jobs\FetchTimelogs;
 use App\Models\Scanner;
 use Exception;
@@ -9,8 +10,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Illuminate\Contracts\Encryption\Encrypter;
-use Illuminate\Support\Facades\Http;
 
 class FetchTimelogsAction extends Action
 {
@@ -89,18 +88,12 @@ class FetchTimelogsAction extends Action
             $filtered->each(function (Scanner $scanner) use ($data) {
                 if (config('app.remote.server')) {
                     try {
-                        Http::throw()
-                            ->withToken(config('app.remote.token'))
-                            ->withoutVerifying()
-                            ->post(config('app.remote.host') . '/api/fetch/send', [
-                                'callback' => config('app.url') . '/api/fetch/receive',
-                                'host' => $scanner->host,
-                                'port' => $scanner->port,
-                                'pass' => $scanner->pass,
-                                'month' => $data['month'],
-                                'user' => encrypt(user()->id),
-                                'token' => app(Encrypter::class, ['key' => config('app.remote.key')])->encrypt(config('app.remote.user')),
-                            ]);
+                        app(RemoteFetchTimelogs::class)->fetch(
+                            $scanner->host,
+                            $scanner->port,
+                            $scanner->pass,
+                            $data['month'],
+                        );
                     } catch (Exception) {
                         Notification::make()
                             ->danger()

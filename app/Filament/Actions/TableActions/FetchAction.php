@@ -2,6 +2,7 @@
 
 namespace App\Filament\Actions\TableActions;
 
+use App\Actions\RemoteFetchTimelogs;
 use App\Jobs\FetchTimelogs;
 use App\Models\Scanner;
 use Exception;
@@ -11,8 +12,6 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
-use Illuminate\Contracts\Encryption\Encrypter;
-use Illuminate\Support\Facades\Http;
 
 class FetchAction extends Action
 {
@@ -96,19 +95,12 @@ class FetchAction extends Action
 
             if (config('app.remote.server')) {
                 try {
-                    Http::throw()
-                        ->acceptJson()
-                        ->withToken(config('app.remote.token'))
-                        ->withoutVerifying()
-                        ->post(config('app.remote.host') . '/api/fetch/send', [
-                            'callback' => config('app.url') . '/api/fetch/receive',
-                            'host' => $record->host,
-                            'port' => $record->port,
-                            'pass' => $record->pass,
-                            'month' => $data['month'],
-                            'user' => encrypt(user()->id),
-                            'token' => app(Encrypter::class, ['key' => config('app.remote.key')])->encrypt(config('app.remote.user')),
-                        ]);
+                    app(RemoteFetchTimelogs::class)->fetch(
+                        $record->host,
+                        $record->port,
+                        $record->pass,
+                        $data['month'],
+                    );
                 } catch (Exception) {
                     Notification::make()
                         ->danger()
