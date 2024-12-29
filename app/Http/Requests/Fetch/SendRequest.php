@@ -15,7 +15,7 @@ class SendRequest extends FormRequest
             'port' => 'nullable|integer|min:1',
             'pass' => 'nullable|string',
             'month' => 'required|string|date_format:Y-m',
-            'user' => 'required|string|ulid',
+            'user' => 'required|string',
             'token' => ['required', 'string', function ($attribute, $value, $fail) {
                 try {
                     decrypt($value);
