@@ -157,16 +157,16 @@ class PreselectFormAction extends FilterAction
                             No grouping will generate a single transmittal for all selected employees.
                         '),
                 ]),
-            Checkbox::make('electronic_signature')
-                ->hintIcon('heroicon-o-check-badge')
-                ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
-                ->live()
-                ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
-                ->rule(fn () => function ($attribute, $value, $fail) {
-                    if ($value && ! Auth::user()->signature) {
-                        $fail('Configure your electronic signature first');
-                    }
-                }),
+            // Checkbox::make('electronic_signature')
+            //     ->hintIcon('heroicon-o-check-badge')
+            //     ->hintIconTooltip('Electronically sign the document. This does not provide security against tampering.')
+            //     ->live()
+            //     ->afterStateUpdated(fn ($get, $set, $state) => $set('digital_signature', $state ? $get('digital_signature') : false))
+            //     ->rule(fn () => function ($attribute, $value, $fail) {
+            //         if ($value && ! Auth::user()->signature) {
+            //             $fail('Configure your electronic signature first');
+            //         }
+            //     }),
         ]);
     }
 }
