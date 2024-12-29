@@ -12,7 +12,7 @@ class FetchController extends Controller
 {
     public function send(SendRequest $request)
     {
-        FetchTimelogs::dispatch(...$request->data());
+        FetchTimelogs::dispatch(...$request->safe());
     }
 
     public function receive(ReceiveRequest $request)

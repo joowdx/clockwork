@@ -117,7 +117,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
 
             Http::throw()
                 ->acceptJson()
-                ->withToken($this->token)
+                ->withToken(decrypt($this->token))
                 ->withoutVerifying()
                 ->post($this->callback, [
                     'status' => 'success',
@@ -132,7 +132,7 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
         } catch (Exception $exception) {
             Http::throw()
                 ->acceptJson()
-                ->withToken($this->token)
+                ->withToken(decrypt($this->token))
                 ->withoutVerifying()
                 ->post($this->callback, [
                     'status' => 'error',

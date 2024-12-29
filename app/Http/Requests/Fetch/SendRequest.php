@@ -26,11 +26,6 @@ class SendRequest extends FormRequest
         ];
     }
 
-    public function data(): array
-    {
-        return array_merge($data = $this->safe()->all(), ['token' => decrypt($data['token'])]);
-    }
-
     protected function prepareForValidation(): void
     {
         $this->merge([
