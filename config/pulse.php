@@ -218,6 +218,9 @@ return [
             'ignore' => [
                 // '/^Package\\\\Jobs\\\\/',
             ],
+            'filter' => function ($user) {
+                return ! $user->hasRole('root');
+            },
         ],
 
         Recorders\UserRequests::class => [
