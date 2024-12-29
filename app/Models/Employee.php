@@ -108,7 +108,7 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
     public function middleInitial(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => (string) str(!in_array($this->middle_name, [null, 'N/A']) ? $this->middle_name : null)
+            get: fn (): string => (string) str(! in_array($this->middle_name, [null, 'N/A']) ? $this->middle_name : null)
                 ->substr(0, 1)
                 ->append('.')
                 ->ltrim('.')
@@ -126,7 +126,7 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
                 ->append($this->middle_initial)
                 ->append(' ')
                 ->append($this->last_name)
-                ->append(!in_array($this->qualifier_name, [null, 'N/A']) ? ", $this->qualifier_name" : null)
+                ->append(! in_array($this->qualifier_name, [null, 'N/A']) ? ", $this->qualifier_name" : null)
                 ->append($this->suffix_name ? ", {$this->suffix_name}" : null)
                 ->squish()
                 ->trim(),

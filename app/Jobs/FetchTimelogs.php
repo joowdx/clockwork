@@ -3,9 +3,7 @@
 namespace App\Jobs;
 
 use App\Actions\UpsertTimelogs;
-use App\Events\TimelogsSynchronized;
 use App\Models\Scanner;
-use App\Models\Timelog;
 use App\Models\User;
 use App\Services\TimelogFetcher;
 use App\Services\TimelogsFetcher\TimelogsFetcherException;

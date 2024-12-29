@@ -2,7 +2,6 @@
 
 namespace App\Resolver;
 
-use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Laravel\Pulse\Contracts\ResolvesUsers;
@@ -60,7 +59,7 @@ class PulseUserResolver implements ResolvesUsers
 
         return (object) [
             'name' => $user->name ?? "ID: $key",
-            'extra' => $user?->email ? class_basename($user) . ': ' . $user->email : '',
+            'extra' => $user?->email ? class_basename($user).': '.$user->email : '',
             'avatar' => $user->avatar ?? (($user->email ?? false)
                 ? sprintf('https://gravatar.com/avatar/%s?d=mp', hash('sha256', trim(strtolower($user->email)))) // @phpstan-ignore property.nonObject
                 : sprintf('https://gravatar.com/avatar?d=mp')

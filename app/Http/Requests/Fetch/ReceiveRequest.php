@@ -87,7 +87,7 @@ class ReceiveRequest extends FormRequest
                 if ($validation->fails()) {
                     $validator->errors()->merge($validation->errors());
                 }
-            }
+            },
         ];
     }
 
@@ -127,7 +127,7 @@ class ReceiveRequest extends FormRequest
 
     public function notify()
     {
-        $message = match($this->success()) {
+        $message = match ($this->success()) {
             true => <<<HTML
                 Timelogs of <i>{$this->scanner()->name}</i> has been successfully fetched from the device <br>
                 <i>You may have to wait for a bit before the employees' records are updated</i>

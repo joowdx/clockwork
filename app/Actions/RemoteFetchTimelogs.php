@@ -19,8 +19,8 @@ class RemoteFetchTimelogs
             ->acceptJson()
             ->withToken(config('app.remote.token'))
             ->withoutVerifying()
-            ->post(config('app.remote.host') . '/api/fetch/send', [
-                'callback' => config('app.url') . '/api/fetch/receive',
+            ->post(config('app.remote.host').'/api/fetch/send', [
+                'callback' => config('app.url').'/api/fetch/receive',
                 'host' => $host,
                 'port' => $port,
                 'pass' => $pass,

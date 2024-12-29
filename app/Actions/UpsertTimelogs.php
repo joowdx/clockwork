@@ -18,8 +18,7 @@ class UpsertTimelogs
         private readonly Carbon $month,
         private readonly User $user,
         private readonly int $chunkSize = 1000,
-    ) {
-    }
+    ) {}
 
     public function execute()
     {

@@ -201,7 +201,6 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
-
     /*
     |--------------------------------------------------------------------------
     | Remote server
@@ -222,5 +221,5 @@ return [
         'token' => env('REMOTE_TOKEN', null),
 
         'user' => env('REMOTE_USER', null),
-    ]
+    ],
 ];

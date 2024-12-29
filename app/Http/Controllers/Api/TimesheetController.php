@@ -25,21 +25,19 @@ class TimesheetController extends Controller
         $employees = Employee::query()
             ->{is_array($validated['uid']) ? 'whereIn' : 'where'}('uid', $validated['uid'])
             ->with([
-                'timesheets' =>
-                    fn ($query) => $query->select(['id', 'month', 'employee_id', 'timesheet_id'])
-                        ->whereMonth('month', $month->month)->whereYear('month', $month->year),
-                'timesheets.timetables' =>
-                    function ($query) use ($validated) {
-                        match ($validated['period']) {
-                            '1st' => $query->firstHalf(),
-                            '2nd' => $query->secondHalf(),
-                            'regular' => $query->regularDays(),
-                            'overtime' => $query->overtimeWork(),
-                            'dates' => $query->whereIn('date', $validated['dates']),
-                            'range' => $query->whereBetween('date', [$validated['from'], $validated['to']]),
-                            default => $query,
-                        };
-                    },
+                'timesheets' => fn ($query) => $query->select(['id', 'month', 'employee_id', 'timesheet_id'])
+                    ->whereMonth('month', $month->month)->whereYear('month', $month->year),
+                'timesheets.timetables' => function ($query) use ($validated) {
+                    match ($validated['period']) {
+                        '1st' => $query->firstHalf(),
+                        '2nd' => $query->secondHalf(),
+                        'regular' => $query->regularDays(),
+                        'overtime' => $query->overtimeWork(),
+                        'dates' => $query->whereIn('date', $validated['dates']),
+                        'range' => $query->whereBetween('date', [$validated['from'], $validated['to']]),
+                        default => $query,
+                    };
+                },
             ]);
 
         return EmployeeTimesheetResourceCollection::make($employees->get());
