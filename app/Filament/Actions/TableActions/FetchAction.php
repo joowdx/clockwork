@@ -105,7 +105,7 @@ class FetchAction extends Action
                             'port' => $record->port,
                             'pass' => $record->pass,
                             'month' => $data['month'],
-                            'user' => user()->id,
+                            'user' => encrypt(user()->id),
                             'token' => app(Encrypter::class, ['key' => config('app.passkey')])->encrypt(config('app.token')),
                         ]);
                 } catch (Exception) {

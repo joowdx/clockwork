@@ -116,11 +116,12 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
             ]);
 
             Http::withToken($this->token)
+                ->withoutVerifying()
                 ->post($this->callback, [
                     'status' => 'success',
                     'message' => 'Timelogs fetched successfully',
-                    'user' => $this->user,
                     'data' => json_encode([
+                        'user' => $this->user,
                         'timelogs' => $timelogs,
                         'host' => $this->host,
                         'month' => $this->month,
