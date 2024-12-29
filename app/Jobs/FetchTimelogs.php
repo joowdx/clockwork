@@ -115,7 +115,8 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                 'mode' => $entry['mode'],
             ]);
 
-            Http::withToken($this->token)
+            Http::throw()
+                ->withToken($this->token)
                 ->withoutVerifying()
                 ->post($this->callback, [
                     'status' => 'success',
@@ -128,12 +129,12 @@ class FetchTimelogs implements ShouldBeEncrypted, ShouldBeUnique, ShouldQueue
                     ]),
                 ]);
         } catch (Exception $exception) {
-            Http::withToken($this->token)
+            Http::throw()
+                ->withToken($this->token)
                 ->post($this->callback, [
                     'status' => 'error',
                     'message' => $exception->getMessage(),
-                ])
-                ->throw();
+                ]);
         }
     }
 
