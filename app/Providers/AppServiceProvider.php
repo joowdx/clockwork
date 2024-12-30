@@ -72,9 +72,5 @@ class AppServiceProvider extends ServiceProvider
                 $config
             );
         });
-
-        if (config('services.infolinks.script')) {
-            FilamentAsset::register([Js::make('infolinks')->html(config('services.infolinks.script'))]);
-        }
     }
 }

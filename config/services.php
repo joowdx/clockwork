@@ -39,8 +39,4 @@ return [
         'url' => env('CALENDARIFIC_URL', 'https://calendarific.com/api/v2/holidays'),
         'key' => env('CALENDARIFIC_KEY'),
     ],
-
-    'infolinks' => [
-        'script' => env('INFOLINKS_SCRIPT'),
-    ],
 ];
