@@ -315,7 +315,11 @@ $generator = fn ($timesheet) => (new GenerateQrCode) (
                                 </tr>
                             @endif
                         @endfor
-                        <tr style="height:10pt"> </tr>
+                        @if ($size === 'legal')
+                            <tr>
+                                <td colspan=6></td>
+                            </tr>
+                        @endif
                         <tr>
                             <td colspan=2 class="font-md courier right bold" style="padding-right:12pt;padding-bottom:2pt;">TOTAL:</td>
                             <td colspan={{ $preview ? 5 : 4 }} @class(["underline courier left", $timesheet->getPeriod() === 'overtimeWork' ? 'font-xs' : 'font-md' ])>
@@ -421,14 +425,6 @@ $generator = fn ($timesheet) => (new GenerateQrCode) (
                             <tr>
                                 <td class="bahnschrift-light top center font-xs" colspan=6>Office Head</td>
                             </tr>
-                            <tr>
-                                <td colspan=6></td>
-                            </tr>
-                            @if ($size === 'legal')
-                                <tr>
-                                    <td colspan=6></td>
-                                </tr>
-                            @endif
                             <tr>
                                 <td colspan=1 class="relative">
                                     <div class="consolas" style="font-size:4.0pt;opacity:0.5;">

@@ -57,8 +57,9 @@ RUN phpdismod pcov xdebug
 RUN groupadd --force -g $WWWGROUP sail
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 
-RUN pip3 install pyzkc>=0.9.1 pyHanko[pkcs11,image-support,opentype,xmp] >=0.25.1 && npm install --location=global --unsafe-perm puppeteer@^17
-RUN chmod -R o+rx /usr/lib/node_modules/puppeteer/.local-chromium
+RUN pip3 install pyzkc>=0.9.1 pyHanko[pkcs11,image-support,opentype,xmp] >=0.25.1 \
+    && npm install --location=global --unsafe-perm puppeteer@^23.11.1
+RUN su - sail -c "npx puppeteer browsers install chrome"
 
 COPY NotoSansTagalog.ttf /usr/share/fonts/truetype/NotoSansTagalog.ttf
 RUN fc-cache -vf

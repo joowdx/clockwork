@@ -446,7 +446,11 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                     <td class="border" colspan="5"></td>
                                 </tr>
                             @endfor
-                            <tr style="height:12pt"> </tr>
+                            @if ($size === 'legal')
+                                <tr>
+                                    <td colspan=6></td>
+                                </tr>
+                            @endif
                             <tr>
                                 <td colspan=2 class="font-md courier right bold" style="padding-right:10pt;padding-bottom:2pt;">TOTAL:</td>
                                 <td colspan=4 @class(["underline courier left", 'font-md bold' ])>
@@ -520,9 +524,6 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                 </tr>
                             @endif
                             <tr>
-                                <td colspan=6></td>
-                            </tr>
-                            <tr>
                                 <td colspan=6 class="underline center font-sm">
                                     {{ ($head = $employee->currentDeployment?->office?->head)?->is($employee) ? null : $head?->titled_name }}
                                 </td>
@@ -530,11 +531,6 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                             <tr>
                                 <td class="bahnschrift-light top center font-xs" colspan=6>Office Head</td>
                             </tr>
-                            @if ($size === 'legal')
-                                <tr>
-                                    <td colspan=6></td>
-                                </tr>
-                            @endif
                             <tr>
                                 <td colspan=1 class="relative">
                                     <div class="consolas" style="font-size:4.0pt;opacity:0.5;">
