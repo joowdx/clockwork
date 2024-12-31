@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('socials', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('user_id');
-            $table->string('provider');
             $table->string('provider_id');
+            $table->string('provider');
+            $table->ulidMorphs('sociable');
+            $table->jsonb('data')->nullable();
             $table->timestamps();
-            $table->unique(['provider', 'provider_id']);
+            $table->unique(['provider', 'provider_id', 'sociable_type', 'sociable_id']);
         });
     }
 

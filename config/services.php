@@ -29,6 +29,19 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('APP_URL').'/oauth/callback/google',
+    ],
+
+    'microsoft' => [
+        'client_id' => env('MICROSOFT_CLIENT_ID'),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
+        'redirect' => env('APP_URL').'/oauth/callback/microsoft',
+        'proxy' => env('PROXY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -39,4 +52,6 @@ return [
         'url' => env('CALENDARIFIC_URL', 'https://calendarific.com/api/v2/holidays'),
         'key' => env('CALENDARIFIC_KEY'),
     ],
+
+    'oath_providers' => explode(',', env('OATH_PROVIDERS') ?? '') ?: [],
 ];

@@ -8,12 +8,18 @@ use App\Filament\Auth\Reset;
 use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
 use App\Http\Responses\LoginResponse;
+use App\Models\Employee;
+use App\Models\Social;
+use App\Models\User;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
+use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
+use DutchCodingCompany\FilamentSocialite\Provider;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class AppPanelProvider extends PanelProvider
 {
@@ -38,7 +44,33 @@ class AppPanelProvider extends PanelProvider
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
             ->databaseNotificationsPolling(fn () => '300s')
-            ->userMenuItems(Navigation::menuItems());
+            ->userMenuItems(Navigation::menuItems())
+            ->plugin(
+                FilamentSocialitePlugin::make()
+                    ->slug('')
+                    ->socialiteUserModelClass(Social::class)
+                    ->registration(fn (?Authenticatable $user) => (bool) $user)
+                    ->resolveUserUsing(function ($oauthUser) {
+                        $model = match (session()->get('guard')) {
+                            'employee' => Employee::class,
+                            default => User::class,
+                        };
+
+                        return $model::where('email', $oauthUser->getEmail())->first();
+                    })
+                    ->providers([
+                        Provider::make('google')
+                            ->label('Google')
+                            ->icon('fab-google')
+                            ->outlined(false)
+                            ->visible(false),
+                        Provider::make('microsoft')
+                            ->label('Microsoft')
+                            ->icon('fab-microsoft')
+                            ->outlined(false)
+                            ->visible(false),
+                    ])
+            );
     }
 }
 

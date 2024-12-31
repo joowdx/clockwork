@@ -5,6 +5,8 @@ namespace App\Filament\Auth;
 use App\Http\Responses\LoginResponse;
 use App\Traits\CanSendEmailVerification;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action as FormAction;
@@ -85,6 +87,40 @@ class Login extends \Filament\Pages\Auth\Login
         return app(LoginResponse::class);
     }
 
+    public function socialite(string $provider)
+    {
+        try {
+            $this->rateLimit(5);
+        } catch (TooManyRequestsException $exception) {
+            $this->getRateLimitedNotification($exception)?->send();
+
+            return null;
+        }
+
+        $guard = match ($this->form->getRawState()['login_as'] ?? null) {
+            'employee' => 'employee',
+            default => 'web',
+        };
+
+        return redirect()->route('socialite.filament.app.oauth.redirect', [
+            'provider' => $provider, 'guard' => $guard,
+        ]);
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getAuthenticateFormAction(),
+            ActionGroup::make([
+                $this->getSocialiteLoginFormAction('google'),
+                $this->getSocialiteLoginFormAction('microsoft'),
+            ])
+                ->button()
+                ->label('More options')
+                ->color('gray'),
+        ];
+    }
+
     protected function getForms(): array
     {
         return [
@@ -101,13 +137,20 @@ class Login extends \Filament\Pages\Auth\Login
         ];
     }
 
+    protected function getSocialiteLoginFormAction(string $provider): Action
+    {
+        return Action::make($provider)
+            ->icon("fab-$provider")
+            ->action("socialite('$provider')");
+    }
+
     protected function getAuthenticationOptionFormComponent()
     {
         return Radio::make('login_as')
             ->inline()
             ->inlineLabel(false)
             ->live()
-            ->default('web')
+            ->default(fn () => session()->get('guard') ?? 'web')
             ->required()
             ->options([
                 'web' => 'Administrator',
