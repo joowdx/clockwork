@@ -59,27 +59,42 @@ class Settings extends Page
         return $form
             ->statePath('data')
             ->schema([
-                Forms\Components\Section::make('Agency Information')
-                    ->columns(5)
-                    ->schema([
-                        Forms\Components\FileUpload::make('seal')
-                            ->columnSpan(1)
-                            ->visibility('public')
-                            ->getUploadedFileNameForStorageUsing(fn (TemporaryUploadedFile $file) => 'seal.'.$file->extension())
-                            ->imageEditor()
-                            ->avatar()
-                            ->required()
-                            ->maxSize(2048),
-                        Forms\Components\Group::make([
-                            Forms\Components\TextInput::make('name')
-                                ->markAsRequired()
-                                ->rule('required'),
-                            Forms\Components\TextInput::make('address')
-                                ->markAsRequired()
-                                ->rule('required'),
-                            Forms\Components\TextInput::make('url')
-                                ->activeUrl(),
-                        ])->columnSpan(2),
+                Forms\Components\Tabs::make()
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('General Information')
+                            ->columns(5)
+                            ->schema([
+                                Forms\Components\FileUpload::make('seal')
+                                    ->columnSpan(1)
+                                    ->visibility('public')
+                                    ->getUploadedFileNameForStorageUsing(fn (TemporaryUploadedFile $file) => 'seal.'.$file->extension())
+                                    ->imageEditor()
+                                    ->avatar()
+                                    ->required()
+                                    ->maxSize(2048),
+                                Forms\Components\Group::make([
+                                    Forms\Components\TextInput::make('name')
+                                        ->markAsRequired()
+                                        ->rule('required'),
+                                    Forms\Components\TextInput::make('address')
+                                        ->markAsRequired()
+                                        ->rule('required'),
+                                    Forms\Components\TextInput::make('url')
+                                        ->url(),
+                                    Forms\Components\TextInput::make('email')
+                                        ->rule('email'),
+                                ])->columnSpan(2),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Privacy Policy')
+                            ->schema([
+                                Forms\Components\MarkdownEditor::make('pp')
+                                    ->hiddenLabel(),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('User Agreement')
+                            ->schema([
+                                Forms\Components\MarkdownEditor::make('ua')
+                                    ->hiddenLabel(),
+                            ]),
                     ]),
             ]);
     }

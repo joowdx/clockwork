@@ -177,6 +177,7 @@ return [
         App\Providers\Filament\EmployeePanelProvider::class,
         App\Providers\Filament\ValidationPanelProvider::class,
         App\Providers\Filament\LeaderPanelProvider::class,
+        App\Providers\Filament\LegalPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         /*
          * Package Service Providers...
