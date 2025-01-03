@@ -14,8 +14,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 
-use function Safe\stream_get_contents;
-
 class Export extends Model
 {
     use HasFactory, HasUlids, Prunable;
