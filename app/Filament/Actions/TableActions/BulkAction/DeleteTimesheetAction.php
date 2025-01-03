@@ -44,7 +44,6 @@ class DeleteTimesheetAction extends BulkAction
             Timesheet::query()
                 ->whereIn('employee_id', $records->pluck('id'))
                 ->whereDate('month', $data['month'].'-01')
-                ->first()
                 ->delete();
 
             Notification::make()
