@@ -91,7 +91,10 @@ class Export extends Model
         return Attribute::make(
             function (): ?string {
                 if ($this->disk !== null && in_array($this->disk, ['public', 'local', 'azure'])) {
-                    return Storage::disk($this->disk)->mimetype($this->filename);
+                    /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                    $disk = Storage::disk($this->disk);
+
+                    return $disk->mimetype($this->filename);
                 }
 
                 if ($this->disk === null && file_exists($this->filename)) {
