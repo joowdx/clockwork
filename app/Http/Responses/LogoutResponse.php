@@ -12,6 +12,6 @@ class LogoutResponse implements Responsable
     {
         $user = $request->user() ?? $request->user('employee');
 
-        return redirect()->route($user instanceof Employee ? 'filament.employee.auth.login' : 'filament.app.auth.login');
+        return redirect()->route($user instanceof Employee ? 'filament.employee.auth.login' : 'filament.auth.auth.login');
     }
 }
