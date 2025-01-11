@@ -15,18 +15,18 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class ValidationPanelProvider extends PanelProvider
+class HomePanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('validation')
-            ->path('validation')
+            ->id('home')
+            ->path('')
             ->colors(['primary' => Color::Cyan])
-            ->discoverResources(in: app_path('Filament/Validation/Resources'), for: 'App\\Filament\\Validation\\Resources')
-            ->discoverPages(in: app_path('Filament/Validation/Pages'), for: 'App\\Filament\\Validation\\Pages')
+            ->discoverPages(in: app_path('Filament/Home/Pages'), for: 'App\\Filament\\Home\\Pages')
+            ->navigation(false)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

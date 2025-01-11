@@ -91,7 +91,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function canAccessPanel(Panel $panel, ?string $id = null): bool
     {
-        if (($id ?? $panel->getId()) === 'app') {
+        if (in_array(($id ?? $panel->getId()), ['home', 'auth'])) {
             return true;
         }
 

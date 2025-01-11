@@ -10,30 +10,30 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Responses\LoginResponse;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
+use Exception;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 
-class AppPanelProvider extends PanelProvider
+class AuthPanelProvider extends PanelProvider
 {
+    /**
+     * @throws Exception
+     */
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('app')
+            ->id('auth')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->path('')
-            ->default()
+            ->path('auth')
             ->login(Login::class)
             ->revealablePasswords(false)
             ->emailVerification(Verification::class)
             ->passwordReset(Reset::class, Recover::class)
             ->colors(['primary' => Color::Cyan])
-            ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
-            ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\\Filament\\App\\Pages')
             ->pages([Redirect::class])
-            ->discoverWidgets(in: app_path('Filament/App/Widgets'), for: 'App\\Filament\\App\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
@@ -49,7 +49,7 @@ class Redirect extends Pages\Dashboard
         (new LoginResponse)->toResponse(request());
     }
 
-    public function mount()
+    public function mount(): void
     {
         (new LoginResponse)->toResponse(request());
     }

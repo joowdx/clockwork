@@ -16,7 +16,7 @@ class Authenticate extends Middleware
     {
         $panel = Filament::getCurrentPanel();
 
-        $id = $panel->getId();
+        $id = $panel?->getId();
 
         $current = Auth::guard($id === 'employee' ? 'employee' : null);
 
@@ -55,6 +55,6 @@ class Authenticate extends Middleware
      */
     protected function redirectTo($request): ?string
     {
-        return $request->expectsJson() ? null : url('login');
+        return $request->expectsJson() ? null : route('filament.auth.auth.login');
     }
 }

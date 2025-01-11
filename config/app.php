@@ -166,7 +166,7 @@ return [
         App\Providers\HorizonServiceProvider::class,
         App\Providers\PulseServiceProvider::class,
         App\Providers\Filament\SuperuserPanelProvider::class,
-        App\Providers\Filament\AppPanelProvider::class,
+        App\Providers\Filament\AuthPanelProvider::class,
         App\Providers\Filament\SecretaryPanelProvider::class,
         App\Providers\Filament\ManagerPanelProvider::class,
         App\Providers\Filament\SecurityPanelProvider::class,
@@ -178,6 +178,7 @@ return [
         App\Providers\Filament\ValidationPanelProvider::class,
         App\Providers\Filament\LeaderPanelProvider::class,
         App\Providers\Filament\LegalPanelProvider::class,
+        App\Providers\Filament\HomePanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         /*
          * Package Service Providers...
