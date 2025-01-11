@@ -19,7 +19,7 @@ class ReceiveRequest extends FormRequest
 
     protected ?array $payload = null;
 
-    protected ?array $timelogs = null;
+    protected array|Collection|null $timelogs = null;
 
     protected ?string $host = null;
 

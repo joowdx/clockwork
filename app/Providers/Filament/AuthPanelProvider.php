@@ -15,31 +15,31 @@ use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
 use DutchCodingCompany\FilamentSocialite\Provider;
+use Exception;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Illuminate\Contracts\Auth\Authenticatable;
 
-class AppPanelProvider extends PanelProvider
+class AuthPanelProvider extends PanelProvider
 {
+    /**
+     * @throws Exception
+     */
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('app')
+            ->id('auth')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->path('')
-            ->default()
+            ->path('auth')
             ->login(Login::class)
             ->revealablePasswords(false)
             ->emailVerification(Verification::class)
             ->passwordReset(Reset::class, Recover::class)
             ->colors(['primary' => Color::Cyan])
-            ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
-            ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\\Filament\\App\\Pages')
             ->pages([Redirect::class])
-            ->discoverWidgets(in: app_path('Filament/App/Widgets'), for: 'App\\Filament\\App\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
@@ -47,7 +47,6 @@ class AppPanelProvider extends PanelProvider
             ->userMenuItems(Navigation::menuItems())
             ->plugin(
                 FilamentSocialitePlugin::make()
-                    ->slug('')
                     ->socialiteUserModelClass(Social::class)
                     ->registration(fn (?Authenticatable $user) => (bool) $user)
                     ->resolveUserUsing(function ($oauthUser) {
@@ -56,7 +55,14 @@ class AppPanelProvider extends PanelProvider
                             default => User::class,
                         };
 
-                        return $model::where('email', $oauthUser->getEmail())->first();
+                        /** @var \App\Models\User|\App\Models\Employee $user */
+                        $user = $model::where('email', $oauthUser->getEmail())->first();
+
+                        if ($user) {
+                            $user->markEmailAsVerified();
+                        }
+
+                        return $user;
                     })
                     ->providers([
                         Provider::make('google')
@@ -81,7 +87,7 @@ class Redirect extends Pages\Dashboard
         (new LoginResponse)->toResponse(request());
     }
 
-    public function mount()
+    public function mount(): void
     {
         (new LoginResponse)->toResponse(request());
     }

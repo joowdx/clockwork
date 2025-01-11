@@ -7,7 +7,9 @@
     <section class="grid auto-cols-fr gap-y-6">
         <header class="flex flex-col items-center fi-simple-header">
             <div class="w-1/4 pb-3">
-                @include('logo')
+                <a href="/">
+                    @include('logo')
+                </a>
             </div>
 
             <h1 class="text-2xl font-bold tracking-tight text-center fi-simple-header-heading text-gray-950 dark:text-white">

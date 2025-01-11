@@ -71,7 +71,7 @@ class OfficeResource extends Resource
                         ->visible(fn () => $self || $head)
                         ->disabled(function (Get $get) use ($panel) {
                             if ($panel === 'superuser') {
-                                return true;
+                                return false;
                             }
 
                             return Employee::find($get('head'))?->user?->hasRole(UserRole::DIRECTOR);

@@ -104,9 +104,7 @@ class SocialiteController extends SocialiteLoginController
 
     protected function plugin(): FilamentSocialitePlugin
     {
-        parent::plugin();
-
-        return $this->plugin ??= FilamentSocialitePlugin::current();
+        return $this->plugin ??= parent::plugin();
     }
 
     protected function getModel(): string
