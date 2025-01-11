@@ -6,7 +6,8 @@
                     @include('banner')
                 </span>
             </a>
-            <div class="flex items-center lg:order-2">
+            <div class="flex items-center lg:order-2 gap-2">
+                <x-filament-panels::theme-switcher />
                 <x-filament::button tag="a" :href="route('filament.auth.auth.login')">
                     @guest
                         Login
