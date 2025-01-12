@@ -8,9 +8,7 @@
             <section class="grid auto-cols-fr gap-y-6">
                 <header class="flex flex-col items-center fi-simple-header">
                     <div class="flex justify-end w-full">
-                        @if($themer ?? true)
-                            <x-filament-panels::theme-switcher />
-                        @endif
+                        @include('theme-switcher')
                     </div>
 
                     <h1 class="text-3xl font-bold tracking-tight text-center fi-simple-header-heading text-gray-950 dark:text-white">

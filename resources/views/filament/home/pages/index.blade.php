@@ -7,7 +7,8 @@
                 </span>
             </a>
             <div class="flex items-center lg:order-2 gap-2">
-                <x-filament-panels::theme-switcher />
+                @include('theme-switcher')
+
                 <x-filament::button tag="a" :href="route('filament.auth.auth.login')">
                     @if(auth()->check() || auth()->guard('employee')->check())
                         Continue

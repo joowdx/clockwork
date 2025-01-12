@@ -1,7 +1,5 @@
 @extends('filament.auth.base')
 
-@php($themer = false)
-
 @section('content')
     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_PASSWORD_RESET_RESET_FORM_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
