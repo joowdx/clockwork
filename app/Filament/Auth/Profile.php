@@ -4,6 +4,7 @@ namespace App\Filament\Auth;
 
 use App\Actions\OptimizeImage;
 use App\Traits\CanSendEmailVerification;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -192,6 +193,15 @@ class Profile extends EditProfile
                 return ["socialite-$provider" => $social?->data?->email];
             })->toArray(),
         ];
+    }
+
+    protected function getRedirectUrl(): ?string
+    {
+        if ($this->getUser()->wasChanged('email')) {
+            return route('filament.'.Filament::getCurrentPanel()->getId().'.auth.email-verification.prompt');
+        }
+
+        return null;
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model
