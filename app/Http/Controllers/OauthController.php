@@ -15,7 +15,7 @@ use Laravel\Socialite\Contracts\User;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\Response;
 
-class SocialiteController extends SocialiteLoginController
+class OauthController extends SocialiteLoginController
 {
     private ?FilamentSocialitePlugin $plugin = null;
 

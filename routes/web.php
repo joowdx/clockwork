@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\DownloadController;
-use App\Http\Controllers\SocialiteController;
+use App\Http\Controllers\OauthController;
 use App\Http\Middleware\OauthAuthorization;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +25,7 @@ Route::controller(DownloadController::class)
         Route::get('attachment/{attachment}', 'attachment')->name('download.attachment');
     });
 
-Route::controller(SocialiteController::class)
+Route::controller(OauthController::class)
     ->prefix('/auth/oauth')
     ->middleware(OauthAuthorization::class)
     ->group(function () {
