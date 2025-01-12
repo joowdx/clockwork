@@ -4,11 +4,18 @@ namespace App\Providers\Filament;
 
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Responses\LoginResponse;
+use App\Models\Employee;
+use App\Models\Social;
+use App\Models\User;
+use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
+use DutchCodingCompany\FilamentSocialite\Provider;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
@@ -22,6 +29,7 @@ class HomePanelProvider extends PanelProvider
         return $panel
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
+            ->default()
             ->id('home')
             ->path('')
             ->colors(['primary' => Color::Cyan])
@@ -37,6 +45,33 @@ class HomePanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ]);
+            ])
+            ->plugin(
+                FilamentSocialitePlugin::make()
+                    ->socialiteUserModelClass(Social::class)
+                    ->registration(fn (?Authenticatable $user) => (bool) $user)
+                    ->redirectAfterLoginUsing(fn () => app(LoginResponse::class)->toResponse(request()))
+                    ->resolveUserUsing(function ($oauthUser) {
+                        $model = match (session()->get('guard')) {
+                            'employee' => Employee::class,
+                            default => User::class,
+                        };
+
+                        /** @var \App\Models\User|\App\Models\Employee $user */
+                        $user = $model::where('email', $oauthUser->getEmail())->first();
+
+                        if ($user) {
+                            $user->markEmailAsVerified();
+                        }
+
+                        return $user;
+                    })
+                    ->providers(array_map(function (string $provider) {
+                        return Provider::make($provider)
+                            ->label(ucfirst($provider))
+                            ->icon("fab-$provider")
+                            ->outlined(true);
+                    }, config('services.oauth_providers')))
+            );
     }
 }
