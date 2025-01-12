@@ -3,6 +3,8 @@
 namespace App\Filament\Auth;
 
 use App\Http\Responses\LoginResponse;
+use App\Models\Employee;
+use App\Models\User;
 use App\Traits\CanSendEmailVerification;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Actions\Action;
@@ -21,8 +23,11 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Support\Facades\FilamentIcon;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -31,6 +36,8 @@ use Illuminate\Validation\ValidationException;
 class Login extends \Filament\Pages\Auth\Login
 {
     use CanSendEmailVerification;
+
+    public array $verification = [];
 
     protected static string $layout = 'filament-panels::components.layout.base';
 
@@ -46,7 +53,33 @@ class Login extends \Filament\Pages\Auth\Login
             redirect()->route('filament.employee.resources.timesheets.index');
         }
 
+        if (session()->has('url.intended')) {
+            $previous = Route::getRoutes()->match(HttpRequest::create(session('url.intended')));
+
+            if (strpos($previous->action['prefix'] ?? '', 'email-verification') !== false) {
+                $this->verification = [
+                    'id' => $id = @$previous->parameters['id'],
+                    'guard' => $guard = match (strpos($previous->action['prefix'], 'employee') !== false) {
+                        true => 'employee',
+                        default => 'web',
+                    },
+                    'model' => $model = match ($guard) {
+                        'employee' => Employee::class,
+                        default => User::class,
+                    },
+                    'email' => $model::find($id)->email,
+                ];
+            }
+        }
+
         $this->form->fill();
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return empty($this->verification)
+            ? __('filament-panels::pages/auth/login.heading')
+            : 'Sign in to verify your email address';
     }
 
     public function homeAction(): Action
@@ -119,6 +152,7 @@ class Login extends \Filament\Pages\Auth\Login
     protected function getFormActions(): array
     {
         return [
+            $this->removeVerificationIntent(),
             $this->getAuthenticateFormAction(),
             ActionGroup::make([
                 $this->getSocialiteLoginFormAction('google'),
@@ -160,13 +194,28 @@ class Login extends \Filament\Pages\Auth\Login
             ->inline()
             ->inlineLabel(false)
             ->live()
-            ->default(fn () => session()->get('guard') ?? 'web')
+            ->default(fn () => $this->verification['guard'] ?? session()->get('guard') ?? 'web')
+            ->hidden(fn () => $this->verification['guard'] ?? false)
+            ->dehydratedWhenHidden()
             ->required()
             ->options([
                 'web' => 'Administrator',
                 'employee' => 'Employee',
             ])
             ->extraInputAttributes(['tabindex' => 2]);
+    }
+
+    protected function removeVerificationIntent(): Action
+    {
+        return Action::make('remove-verification-intent')
+            ->label('Cancel')
+            ->hidden(empty($this->verification))
+            ->color('gray')
+            ->action(function () {
+                session()->forget('url.intended');
+
+                return redirect()->route('filament.auth.auth.login');
+            });
     }
 
     protected function getEmailFormComponent(): Component
@@ -178,6 +227,7 @@ class Login extends \Filament\Pages\Auth\Login
             ->rule('required')
             ->autocomplete()
             ->autofocus()
+            ->default(fn () => $this->verification['email'] ?? null)
             ->label(fn (Get $get) => $get('login_as') === 'web' ? 'Username' : 'Email')
             ->rule(fn (Get $get) => $get('login_as') !== 'web' ? 'email' : null)
             ->hintAction($this->getAccountSetupAction())
@@ -190,7 +240,7 @@ class Login extends \Filament\Pages\Auth\Login
             ->required(false)
             ->markAsRequired()
             ->rule('required')
-            ->hint(filament()->hasPasswordReset() ? new HtmlString(Blade::render('<x-filament::link :href="filament()->getRequestPasswordResetUrl()" tabindex="6"> {{ __(\'filament-panels::pages/auth/login.actions.request_password_reset.label\') }}</x-filament::link>')) : null)
+            ->hint(filament()->hasPasswordReset() && empty($this->verification) ? new HtmlString(Blade::render('<x-filament::link :href="filament()->getRequestPasswordResetUrl()" tabindex="6"> {{ __(\'filament-panels::pages/auth/login.actions.request_password_reset.label\') }}</x-filament::link>')) : null)
             ->extraInputAttributes(['tabindex' => 5]);
     }
 
@@ -245,6 +295,7 @@ class Login extends \Filament\Pages\Auth\Login
         };
 
         $action = FormAction::make('Setup Account')
+            ->visible(empty($this->verification))
             ->successNotificationTitle('Account setup successful')
             ->requiresConfirmation()
             ->modalHeading('Setup Account')
