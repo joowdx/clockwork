@@ -32,13 +32,13 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('APP_URL').'/oauth/callback/google',
+        'redirect' => env('APP_URL').'/auth/oauth/callback/google',
     ],
 
     'microsoft' => [
         'client_id' => env('MICROSOFT_CLIENT_ID'),
         'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
-        'redirect' => env('APP_URL').'/oauth/callback/microsoft',
+        'redirect' => env('APP_URL').'/auth/oauth/callback/microsoft',
         'proxy' => env('PROXY'),
     ],
 
@@ -53,5 +53,5 @@ return [
         'key' => env('CALENDARIFIC_KEY'),
     ],
 
-    'oath_providers' => explode(',', env('OATH_PROVIDERS') ?? '') ?: [],
+    'oauth_providers' => empty(env('OAUTH_PROVIDERS')) ? [] : explode(',', env('OAUTH_PROVIDERS')),
 ];

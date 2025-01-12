@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Password;
 
 class Reset extends RequestPasswordReset
 {
+    protected static string $layout = 'filament-panels::components.layout.base';
+
+    protected static string $view = 'filament.auth.reset';
+
     public function request(): void
     {
         try {
@@ -83,7 +87,7 @@ class Reset extends RequestPasswordReset
             ->inline()
             ->inlineLabel(false)
             ->live()
-            ->default('employees')
+            ->default('users')
             ->required()
             ->options([
                 'users' => 'Administrator',

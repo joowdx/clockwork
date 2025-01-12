@@ -20,7 +20,7 @@ use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Contracts\Support\Htmlable;
+use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
@@ -31,6 +31,8 @@ use Illuminate\Validation\ValidationException;
 class Login extends \Filament\Pages\Auth\Login
 {
     use CanSendEmailVerification;
+
+    protected static string $layout = 'filament-panels::components.layout.base';
 
     protected static string $view = 'filament.auth.login';
 
@@ -47,9 +49,16 @@ class Login extends \Filament\Pages\Auth\Login
         $this->form->fill();
     }
 
-    public function getSubheading(): string|Htmlable|null
+    public function homeAction(): Action
     {
-        return config('app.name');
+        return Action::make('go-home')
+            ->link()
+            ->label('back to home')
+            ->icon(match (__('filament-panels::layout.direction')) {
+                'rtl' => FilamentIcon::resolve('panels::pages.password-reset.request-password-reset.actions.login.rtl') ?? 'heroicon-m-arrow-right',
+                default => FilamentIcon::resolve('panels::pages.password-reset.request-password-reset.actions.login') ?? 'heroicon-m-arrow-left',
+            })
+            ->url('/');
     }
 
     public function authenticate(): ?LoginResponse
@@ -102,7 +111,7 @@ class Login extends \Filament\Pages\Auth\Login
             default => 'web',
         };
 
-        return redirect()->route('socialite.filament.app.oauth.redirect', [
+        return redirect()->route('socialite.filament.auth.oauth.redirect', [
             'provider' => $provider, 'guard' => $guard,
         ]);
     }
@@ -115,6 +124,7 @@ class Login extends \Filament\Pages\Auth\Login
                 $this->getSocialiteLoginFormAction('google'),
                 $this->getSocialiteLoginFormAction('microsoft'),
             ])
+                ->hidden()
                 ->button()
                 ->label('More options')
                 ->color('gray'),

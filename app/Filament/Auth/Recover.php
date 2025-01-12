@@ -3,6 +3,9 @@
 namespace App\Filament\Auth;
 
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Http\Responses\Auth\Contracts\PasswordResetResponse;
 use Filament\Notifications\Notification;
 use Filament\Pages\Auth\PasswordReset\ResetPassword;
@@ -20,6 +23,47 @@ class Recover extends ResetPassword
 {
     #[Locked,Url]
     public string $type = '';
+
+    public array $data = [];
+
+    protected static string $layout = 'filament-panels::components.layout.base';
+
+    protected static string $view = 'filament.auth.recover';
+
+    public function mount(?string $email = null, ?string $token = null): void
+    {
+        if (Filament::auth()->check()) {
+            redirect()->intended(Filament::getUrl());
+        }
+
+        $this->token = $token ?? request()->query('token');
+
+        $this->email = $email ?? request()->query('email');
+
+        $this->form->fill([
+            'email' => $this->email,
+            'type' => match (request()->query('type')) {
+                'employees' => 'Employee',
+                default => 'Administrator',
+            },
+        ]);
+    }
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->statePath('data')
+            ->schema([
+                TextInput::make('type')
+                    ->label('Account type')
+                    ->disabled()
+                    ->autofocus(),
+                $this->getEmailFormComponent(),
+                $this->getPasswordFormComponent()
+                    ->label('New password'),
+                $this->getPasswordConfirmationFormComponent(),
+            ]);
+    }
 
     public function resetPassword(): ?PasswordResetResponse
     {

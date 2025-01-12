@@ -64,18 +64,12 @@ class AuthPanelProvider extends PanelProvider
 
                         return $user;
                     })
-                    ->providers([
-                        Provider::make('google')
-                            ->label('Google')
-                            ->icon('fab-google')
-                            ->outlined(false)
-                            ->visible(false),
-                        Provider::make('microsoft')
-                            ->label('Microsoft')
-                            ->icon('fab-microsoft')
-                            ->outlined(false)
-                            ->visible(false),
-                    ])
+                    ->providers(array_map(function (string $provider) {
+                        return Provider::make($provider)
+                            ->label(ucfirst($provider))
+                            ->icon("fab-$provider")
+                            ->outlined(true);
+                    }, config('services.oauth_providers')))
             );
     }
 }

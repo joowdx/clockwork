@@ -26,9 +26,9 @@ Route::controller(DownloadController::class)
     });
 
 Route::controller(SocialiteController::class)
-    ->prefix('oauth')
+    ->prefix('/auth/oauth')
     ->middleware(OauthAuthorization::class)
     ->group(function () {
         Route::match(['get', 'post'], 'callback/{provider}', 'processCallback')->name('oauth.callback');
-        Route::get('{provider}', 'redirectToProvider')->name('socialite.filament.app.oauth.redirect');
+        Route::get('{provider}', 'redirectToProvider')->name('socialite.filament.auth.oauth.redirect');
     });
