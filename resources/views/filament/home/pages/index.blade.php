@@ -9,11 +9,11 @@
             <div class="flex items-center lg:order-2 gap-2">
                 <x-filament-panels::theme-switcher />
                 <x-filament::button tag="a" :href="route('filament.auth.auth.login')">
-                    @guest
-                        Login
-                    @else
+                    @if(auth()->check() || auth()->guard('employee')->check())
                         Continue
-                    @endguest
+                    @else
+                        Sign in here
+                    @endif
                 </x-filament::button>
             </div>
         </div>
@@ -128,11 +128,11 @@
             </p>
 
             <x-filament::button tag="a" :href="route('filament.auth.auth.login')" size="xl">
-                @guest
-                    Sign in here
-                @else
+                @if(auth()->check() || auth()->guard('employee')->check())
                     Continue
-                @endguest
+                @else
+                    Sign in here
+                @endif
             </x-filament::button>
         </div>
         <div class="col-span-2 mb-8">
