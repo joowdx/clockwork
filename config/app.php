@@ -186,6 +186,7 @@ return [
         Illuminate\Concurrency\ConcurrencyServiceProvider::class,
         Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
+        SocialiteProviders\Manager\ServiceProvider::class,
     ])->toArray(),
 
     /*

@@ -8,13 +8,19 @@ use App\Filament\Auth\Reset;
 use App\Filament\Auth\Verification;
 use App\Http\Middleware\Authenticate;
 use App\Http\Responses\LoginResponse;
+use App\Models\Employee;
+use App\Models\Social;
+use App\Models\User;
 use App\Providers\Filament\Utils\Middleware;
 use App\Providers\Filament\Utils\Navigation;
+use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
+use DutchCodingCompany\FilamentSocialite\Provider;
 use Exception;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class AuthPanelProvider extends PanelProvider
 {
@@ -38,7 +44,33 @@ class AuthPanelProvider extends PanelProvider
             ->authMiddleware([Authenticate::class])
             ->databaseNotifications()
             ->databaseNotificationsPolling(fn () => '300s')
-            ->userMenuItems(Navigation::menuItems());
+            ->userMenuItems(Navigation::menuItems())
+            ->plugin(
+                FilamentSocialitePlugin::make()
+                    ->socialiteUserModelClass(Social::class)
+                    ->registration(fn (?Authenticatable $user) => (bool) $user)
+                    ->resolveUserUsing(function ($oauthUser) {
+                        $model = match (session()->get('guard')) {
+                            'employee' => Employee::class,
+                            default => User::class,
+                        };
+
+                        /** @var \App\Models\User|\App\Models\Employee $user */
+                        $user = $model::where('email', $oauthUser->getEmail())->first();
+
+                        if ($user) {
+                            $user->markEmailAsVerified();
+                        }
+
+                        return $user;
+                    })
+                    ->providers(array_map(function (string $provider) {
+                        return Provider::make($provider)
+                            ->label(ucfirst($provider))
+                            ->icon("fab-$provider")
+                            ->outlined(true);
+                    }, config('services.oauth_providers')))
+            );
     }
 }
 

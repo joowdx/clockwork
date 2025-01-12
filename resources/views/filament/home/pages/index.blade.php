@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <canvas class="spacer layer-1"> </canvas>
+        <div class="spacer layer-1"> </div>
     </section>
 
 
@@ -114,7 +114,7 @@
     </section>
 
     <section class="bg-white dark:bg-gray-900">
-    <canvas class="spacer layer-2"> </canvas>
+    <div class="spacer layer-2"> </div>
     <div class="items-center max-w-screen-xl px-4 py-8 mx-auto lg:grid lg:grid-cols-4 lg:gap-16 xl:gap-24 lg:py-24 lg:px-6">
 
         <div class="col-span-2 mb-8">

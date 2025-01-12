@@ -3,13 +3,17 @@
 namespace App\Filament\Auth;
 
 use App\Actions\OptimizeImage;
+use App\Models\Social;
 use App\Traits\CanSendEmailVerification;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Pages\Auth\EditProfile;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -138,10 +142,100 @@ class Account extends EditProfile
                                                 return $data;
                                             }),
                                     ]),
+                                Tab::make('Socials')
+                                    ->schema([
+                                        Section::make()
+                                            ->schema($this->getOathProviders()),
+                                    ]),
                             ]),
                     ]),
             ),
         ];
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        return [
+            ...$data,
+            ...collect(config('services.oath_providers'))->mapWithKeys(function (string $provider) {
+                $social = $this->getUser()->socials->first(fn ($social) => $social->provider === $provider);
+
+                return ["socialite-$provider" => $social?->data?->email];
+            })->toArray(),
+        ];
+    }
+
+    protected function getOathProviders(): array
+    {
+        $socials = $this->getUser()->socials;
+
+        return collect(config('services.oath_providers'))->map(function (string $provider) use ($socials) {
+            $email = $this->getUser()->email;
+
+            $social = $socials->first(fn ($social) => $social->provider === $provider);
+
+            $unlink = <<<HTML
+                After unlinking your $provider account,
+                you will still be able log in with it
+                as long as the email address used matches your account email
+                <i>({$email})</i>.
+            HTML;
+
+            $link = <<<HTML
+                Link your $provider account to this account to enable single sign-on.
+            HTML;
+
+            return TextInput::make("socialite-$provider")
+                ->label(ucfirst($provider))
+                ->prefixIcon("fab-$provider")
+                ->readOnly()
+                ->dehydrated(false)
+                ->hintActions([
+                    Action::make("link-$provider")
+                        ->visible($social === null)
+                        ->label('Link')
+                        ->icon('gmdi-link-o')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalIcon('gmdi-link-o')
+                        ->modalHeading(str('<i></i>')->toHtmlString())
+                        ->modalDescription(str($link)->toHtmlString())
+                        ->modalSubmitActionLabel('Continue')
+                        ->action(function () use ($provider) {
+                            $this->linkSocialAccount($provider);
+                        }),
+                    Action::make("unlink-$provider")
+                        ->visible($social !== null)
+                        ->label('Unlink')
+                        ->icon('gmdi-link-off-o')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalIcon('gmdi-link-off-o')
+                        ->modalHeading(str('<i></i>')->toHtmlString())
+                        ->modalDescription(str($unlink)->toHtmlString())
+                        ->modalSubmitActionLabel('Unlink')
+                        ->action(function () use ($social) {
+                            $this->unlinkSocialAccount($social);
+                        }),
+                ]);
+        })->toArray();
+    }
+
+    protected function linkSocialAccount(string $provider): void {}
+
+    protected function unlinkSocialAccount(Social $social): void
+    {
+        $social->delete();
+
+        $this->form->fill([
+            "socialite-{$social->provider}" => null,
+        ]);
+
+        Notification::make()
+            ->title('Social account unlinked')
+            ->body("Your {$social->provider} account has been unlinked.")
+            ->success()
+            ->send();
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model

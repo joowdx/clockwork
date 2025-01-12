@@ -5,6 +5,8 @@ namespace App\Filament\Auth;
 use App\Http\Responses\LoginResponse;
 use App\Traits\CanSendEmailVerification;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action as FormAction;
@@ -18,7 +20,7 @@ use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Contracts\Support\Htmlable;
+use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
@@ -29,6 +31,8 @@ use Illuminate\Validation\ValidationException;
 class Login extends \Filament\Pages\Auth\Login
 {
     use CanSendEmailVerification;
+
+    protected static string $layout = 'filament-panels::components.layout.base';
 
     protected static string $view = 'filament.auth.login';
 
@@ -45,9 +49,16 @@ class Login extends \Filament\Pages\Auth\Login
         $this->form->fill();
     }
 
-    public function getSubheading(): string|Htmlable|null
+    public function homeAction(): Action
     {
-        return config('app.name');
+        return Action::make('go-home')
+            ->link()
+            ->label('back to home')
+            ->icon(match (__('filament-panels::layout.direction')) {
+                'rtl' => FilamentIcon::resolve('panels::pages.password-reset.request-password-reset.actions.login.rtl') ?? 'heroicon-m-arrow-right',
+                default => FilamentIcon::resolve('panels::pages.password-reset.request-password-reset.actions.login') ?? 'heroicon-m-arrow-left',
+            })
+            ->url('/');
     }
 
     public function authenticate(): ?LoginResponse
@@ -85,6 +96,41 @@ class Login extends \Filament\Pages\Auth\Login
         return app(LoginResponse::class);
     }
 
+    public function socialite(string $provider)
+    {
+        try {
+            $this->rateLimit(5);
+        } catch (TooManyRequestsException $exception) {
+            $this->getRateLimitedNotification($exception)?->send();
+
+            return null;
+        }
+
+        $guard = match ($this->form->getRawState()['login_as'] ?? null) {
+            'employee' => 'employee',
+            default => 'web',
+        };
+
+        return redirect()->route('socialite.filament.auth.oauth.redirect', [
+            'provider' => $provider, 'guard' => $guard,
+        ]);
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getAuthenticateFormAction(),
+            ActionGroup::make([
+                $this->getSocialiteLoginFormAction('google'),
+                $this->getSocialiteLoginFormAction('microsoft'),
+            ])
+                ->hidden()
+                ->button()
+                ->label('More options')
+                ->color('gray'),
+        ];
+    }
+
     protected function getForms(): array
     {
         return [
@@ -101,13 +147,20 @@ class Login extends \Filament\Pages\Auth\Login
         ];
     }
 
+    protected function getSocialiteLoginFormAction(string $provider): Action
+    {
+        return Action::make($provider)
+            ->icon("fab-$provider")
+            ->action("socialite('$provider')");
+    }
+
     protected function getAuthenticationOptionFormComponent()
     {
         return Radio::make('login_as')
             ->inline()
             ->inlineLabel(false)
             ->live()
-            ->default('web')
+            ->default(fn () => session()->get('guard') ?? 'web')
             ->required()
             ->options([
                 'web' => 'Administrator',

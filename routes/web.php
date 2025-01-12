@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\SocialiteController;
+use App\Http\Middleware\OauthAuthorization;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,5 +18,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('test', fn () => 'Hello World!')->name('test');
 
-Route::get('download/export/{export}', [DownloadController::class, 'export'])->name('download.export');
-Route::get('download/attachment/{attachment}', [DownloadController::class, 'attachment'])->name('download.attachment');
+Route::controller(DownloadController::class)
+    ->prefix('download')
+    ->group(function () {
+        Route::get('export/{export}', 'export')->name('download.export');
+        Route::get('attachment/{attachment}', 'attachment')->name('download.attachment');
+    });
+
+Route::controller(SocialiteController::class)
+    ->prefix('/auth/oauth')
+    ->middleware(OauthAuthorization::class)
+    ->group(function () {
+        Route::match(['get', 'post'], 'callback/{provider}', 'processCallback')->name('oauth.callback');
+        Route::get('{provider}', 'redirectToProvider')->name('socialite.filament.auth.oauth.redirect');
+    });
