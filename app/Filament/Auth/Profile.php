@@ -22,6 +22,7 @@ use SensitiveParameter;
 class Profile extends EditProfile
 {
     use CanSendEmailVerification;
+    use Concerns\SocialOauthProviderLinker;
 
     protected function getForms(): array
     {
@@ -33,6 +34,7 @@ class Profile extends EditProfile
                     ->statePath('data')
                     ->schema([
                         Tabs::make()
+                            ->persistTabInQueryString()
                             ->contained(false)
                             ->schema([
                                 Tab::make('Information')
@@ -173,9 +175,22 @@ class Profile extends EditProfile
                                                 return $data;
                                             }),
                                     ]),
+                                $this->socialFormTab(),
                             ]),
                     ]),
             ),
+        ];
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        return [
+            ...$data,
+            ...collect(config('services.oauth_providers'))->mapWithKeys(function (string $provider) {
+                $social = $this->getUser()->socials?->first(fn ($social) => $social->provider === $provider);
+
+                return ["socialite-$provider" => $social?->data?->email];
+            })->toArray(),
         ];
     }
 

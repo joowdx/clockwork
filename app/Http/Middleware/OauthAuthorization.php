@@ -27,7 +27,7 @@ class OauthAuthorization
             }
 
             if (str_contains($request->path(), 'callback')) {
-                abort_if(session()->get('guard') !== $guard || ! (bool) session()->get('link'), 403);
+                abort_if(session()->get('guard') !== $guard || ! (bool) session()->get('oauth-link'), 403);
             } else {
                 abort_if(request()->input('guard') !== $guard || ! (bool) request()->input('link'), 403);
             }

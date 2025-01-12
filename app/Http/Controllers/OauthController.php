@@ -11,6 +11,8 @@ use DutchCodingCompany\FilamentSocialite\Http\Controllers\SocialiteLoginControll
 use DutchCodingCompany\FilamentSocialite\Http\Middleware\PanelFromUrlQuery;
 use DutchCodingCompany\FilamentSocialite\Models\Contracts\FilamentSocialiteUser;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Contracts\User;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,8 +42,12 @@ class OauthController extends SocialiteLoginController
 
         session()->put('guard', request()->input('guard'));
 
-        if (request()->filled('link')) {
-            session()->put('link', (bool) request()->input('link'));
+        if (request()->filled('link') && (bool) request()->input('link')) {
+            session()->flash('oauth-link', 1);
+
+            if (request()->filled('url')) {
+                session()->flash('oauth-url', request()->input('url'));
+            }
         }
 
         return $response;
@@ -69,6 +75,10 @@ class OauthController extends SocialiteLoginController
 
         if ($socialiteUser) {
             return $this->loginUser($provider, $socialiteUser, $oauthUser);
+        }
+
+        if (session()->get('oauth-link')) {
+            return $this->linkUser($provider, $oauthUser);
         }
 
         $user = app()->call($this->plugin()->getResolveUserUsing(), [
@@ -100,6 +110,20 @@ class OauthController extends SocialiteLoginController
     protected function retrieveSocialiteUser(string $provider, User $oauthUser): ?FilamentSocialiteUser
     {
         return $this->plugin()->getSocialiteUserModel()::findForProvider($provider, $oauthUser, $this->getModel());
+    }
+
+    protected function linkUser(string $provider, User $oauthUser): RedirectResponse
+    {
+        $this->plugin()->getSocialiteUserModel()::createForProvider($provider, $oauthUser, Auth::user(), $this->getModel());
+
+        return redirect()->to(url(session()->get('oauth-url')));
+    }
+
+    protected function redirectToLogin(string $message): RedirectResponse
+    {
+        session()->flash('filament-socialite-login-error', __($message));
+
+        return redirect()->route('filament.auth.auth.login');
     }
 
     protected function plugin(): FilamentSocialitePlugin

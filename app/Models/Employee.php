@@ -284,7 +284,7 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($panel->getId(), ['app', 'employee']);
+        return in_array($panel->getId(), ['home', 'auth', 'employee']);
     }
 
     public function getFilamentName(): string
