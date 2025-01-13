@@ -10,6 +10,8 @@ class Index extends Page
 
     protected static string $view = 'filament.home.pages.index';
 
+    protected static ?string $title = 'Home';
+
     protected ?string $heading = '';
 
     public static function getSlug(): string
