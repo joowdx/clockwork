@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
@@ -280,6 +281,11 @@ class Employee extends Model implements \Illuminate\Contracts\Auth\Authenticatab
     public function user(): HasOne
     {
         return $this->hasOne(User::class);
+    }
+
+    public function socials(): MorphMany
+    {
+        return $this->morphMany(Social::class, 'sociable');
     }
 
     public function canAccessPanel(Panel $panel): bool

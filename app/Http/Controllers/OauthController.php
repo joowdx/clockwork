@@ -114,7 +114,7 @@ class OauthController extends SocialiteLoginController
 
     protected function linkUser(string $provider, User $oauthUser): RedirectResponse
     {
-        $this->plugin()->getSocialiteUserModel()::createForProvider($provider, $oauthUser, Auth::user(), $this->getModel());
+        $this->plugin()->getSocialiteUserModel()::createForProvider($provider, $oauthUser, Auth::guard(session()->get('guard'))->user(), $this->getModel());
 
         return redirect()->to(url(session()->get('oauth-url')));
     }
