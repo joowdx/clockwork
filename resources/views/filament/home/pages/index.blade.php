@@ -1,21 +1,30 @@
 <main class="relative">
     <nav class="bg-white border-gray-200 py-2.5 dark:bg-gray-900 sticky">
         <div class="flex flex-wrap items-center justify-end max-w-screen-xl px-4 mx-auto">
-            <a href="/" title="Home" class="lg:flex items-center hidden mr-auto">
+            <a href="/" title="Home" class="items-center hidden mr-auto lg:flex">
                 <span class="w-48">
                     @include('banner')
                 </span>
             </a>
-            <div class="flex items-center lg:order-2 gap-2">
+            <div class="flex items-center gap-2 lg:order-2">
                 @include('theme-switcher')
 
                 <x-filament::button tag="a" :href="route('filament.auth.auth.login')">
                     @if(auth()->check() || auth()->guard('employee')->check())
                         Continue
                     @else
-                        Sign in here
+                        Sign in
                     @endif
                 </x-filament::button>
+
+                @if(auth()->check() || auth()->guard('employee')->check())
+                    <form method="post" action="{{ route('filament.home.auth.logout') }}">
+                        @csrf
+                        <x-filament::button type="submit">
+                            Sign out
+                        </x-filament::button>
+                    </form>
+                @endif
             </div>
         </div>
     </nav>
@@ -46,8 +55,8 @@
 
     <section class="bg-[#145a92]">
         <div class="max-w-screen-xl px-4 py-8 mx-auto space-y-12 lg:space-y-20 lg:py-24 lg:px-6">
-            <div class="items-center gap-8 lg:grid lg:grid-cols-2 xl:gap-16 space-y-12 lg:space-y-0">
-                <div class="sm:text-lg text-gray-300">
+            <div class="items-center gap-8 space-y-12 lg:grid lg:grid-cols-2 xl:gap-16 lg:space-y-0">
+                <div class="text-gray-300 sm:text-lg">
                     <h2 class="mb-4 text-3xl font-extrabold tracking-tight text-white">
                         Why Choose {{ config('app.name') }}?
                     </h2>
@@ -63,26 +72,26 @@
                                 <svg class="flex-shrink-0 w-5 h-5 text-[aqua]" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                 <span class="text-base font-medium leading-tight text-white">Streamlined Attendance Tracking</span>
                             </div>
-                            <p class="text-gray-400 text-sm mt-1 ml-8">Say goodbye to manual attendance processes! Clockwork automates the collection and management of attendance data from biometric devices, ensuring precision and reliability.</p>
+                            <p class="mt-1 ml-8 text-sm text-gray-400">Say goodbye to manual attendance processes! Clockwork automates the collection and management of attendance data from biometric devices, ensuring precision and reliability.</p>
                         </li>
                         <li>
                             <div class="flex space-x-3">
                                 <svg class="flex-shrink-0 w-5 h-5 text-[aqua]" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                 <span class="text-base font-medium leading-tight text-white">Secure and Private</span>
                             </div>
-                            <p class="text-gray-400 text-sm mt-1 ml-8">We prioritize your privacy. Your data is encrypted and stored securely, with no third-party sharing.</p>
+                            <p class="mt-1 ml-8 text-sm text-gray-400">We prioritize your privacy. Your data is encrypted and stored securely, with no third-party sharing.</p>
                         </li>
                         <li>
                             <div class="flex space-x-3">
                                 <svg class="flex-shrink-0 w-5 h-5 text-[aqua]" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                 <span class="text-base font-medium leading-tight text-white">Empower Your Workday</span>
                             </div>
-                            <p class="text-gray-400 text-sm mt-1 ml-8">Access your attendance time logs, review attendance records, and manage your digital signature for official documents — all in one place.</p>
+                            <p class="mt-1 ml-8 text-sm text-gray-400">Access your attendance time logs, review attendance records, and manage your digital signature for official documents — all in one place.</p>
                         </li>
                     </ul>
                 </div>
 
-                <div class="sm:text-lg text-gray-300">
+                <div class="text-gray-300 sm:text-lg">
                     <h2 class="mb-4 text-3xl font-extrabold tracking-tight text-white">
                         Features
                     </h2>
@@ -124,7 +133,7 @@
                 Please contact us to get started with {{ config('app.name') }}. Either send us an email, give us a call, or send us a letter, and we'll be happy to assist you with your account setup.
             </p>
 
-            <p class="mb-6 font-light text-gray-500 dark:text-gray-400 text-sm">
+            <p class="mb-6 text-sm font-light text-gray-500 dark:text-gray-400">
                 If you do not work for the {{ settings('name') }}, we are sorry, but this service is not for you.
             </p>
 
