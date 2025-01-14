@@ -12,6 +12,7 @@ use DutchCodingCompany\FilamentSocialite\Http\Controllers\SocialiteLoginControll
 use DutchCodingCompany\FilamentSocialite\Http\Middleware\PanelFromUrlQuery;
 use DutchCodingCompany\FilamentSocialite\Models\Contracts\FilamentSocialiteUser;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class OauthController extends SocialiteLoginController
             return $this->redirectToLogin('You are not authorized to access this page.');
         }
 
-        /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+        /** @var \Laravel\Socialite\Two\AbstractProvider|\Laravel\Socialite\Two\FacebookProvider $driver */
         $driver = Socialite::driver($provider);
 
         $response = $driver
@@ -37,8 +38,13 @@ class OauthController extends SocialiteLoginController
                 ...$this->plugin()->getProvider($provider)->getWith(),
                 'state' => $state = PanelFromUrlQuery::encrypt($this->plugin()->getPanel()->getId()),
             ])
-            ->scopes($this->plugin()->getProvider($provider)->getScopes())
-            ->redirect();
+            ->scopes($this->plugin()->getProvider($provider)->getScopes());
+
+        if ($provider === 'facebook') {
+            $response->reRequest();
+        }
+
+        $response = $response->redirect();
 
         session()->put('state', $state);
 
@@ -55,7 +61,7 @@ class OauthController extends SocialiteLoginController
         return $response;
     }
 
-    public function disconnectProvider(Request $request, string $provider)
+    public function disconnectProvider(Request $request, string $provider): JsonResponse
     {
         $socials = Social::where('provider', $provider)
             ->where('provider_id', $request->id)
@@ -77,6 +83,12 @@ class OauthController extends SocialiteLoginController
         }
 
         $oauthUser = $this->retrieveOauthUser($provider);
+
+        dd($oauthUser, session('guard'));
+
+        if (! array_key_exists('email', $oauthUser->user)) {
+            return $this->redirectToLogin('Grant email access to continue.');
+        }
 
         if (is_null($oauthUser)) {
             return $this->redirectToLogin('filament-socialite::auth.login-failed');
