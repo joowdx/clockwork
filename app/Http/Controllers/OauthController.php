@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Social;
 use DutchCodingCompany\FilamentSocialite\Events\RegistrationNotEnabled;
 use DutchCodingCompany\FilamentSocialite\Events\SocialiteUserConnected;
 use DutchCodingCompany\FilamentSocialite\Events\UserNotAllowed;
@@ -12,6 +13,7 @@ use DutchCodingCompany\FilamentSocialite\Http\Middleware\PanelFromUrlQuery;
 use DutchCodingCompany\FilamentSocialite\Models\Contracts\FilamentSocialiteUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Contracts\User;
 use Laravel\Socialite\Facades\Socialite;
@@ -51,6 +53,21 @@ class OauthController extends SocialiteLoginController
         }
 
         return $response;
+    }
+
+    public function disconnectProvider(Request $request, string $provider)
+    {
+        $socials = Social::where('provider', $provider)
+            ->where('provider_id', $request->id)
+            ->get();
+
+        if ($socials->isNotEmpty()) {
+            $socials->each->delete();
+
+            return response()->json(['status' => 'success']);
+        }
+
+        return response()->json(['status' => 'error'], 404);
     }
 
     public function processCallback(string $provider): Response
