@@ -6,7 +6,7 @@ use App\Events\TimelogsSynchronized;
 use App\Listeners\ActivityMonitor;
 use App\Listeners\PostTimelogsSynchronization;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use SocialiteProviders\Facebook\FacebookExtendSocialite;
 use SocialiteProviders\Google\GoogleExtendSocialite;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
@@ -26,6 +26,7 @@ class EventServiceProvider extends ServiceProvider
         SocialiteWasCalled::class => [
             GoogleExtendSocialite::class.'@handle',
             MicrosoftExtendSocialite::class.'@handle',
+            FacebookExtendSocialite::class.'@handle',
         ],
     ];
 
