@@ -84,8 +84,6 @@ class OauthController extends SocialiteLoginController
 
         $oauthUser = $this->retrieveOauthUser($provider);
 
-        dd($oauthUser, session('guard'));
-
         if (! array_key_exists('email', $oauthUser->user)) {
             return $this->redirectToLogin('Grant email access to continue.');
         }
