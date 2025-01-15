@@ -19,7 +19,7 @@
     @if ($providers = config('services.oauth_providers'))
         <div class="relative flex items-center justify-center text-center">
             <div class="absolute w-[calc(100%-2rem)] h-px border-t border-gray-200 mr-8"></div>
-            <p class="relative inline-flex items-center p-2 text-sm font-medium text-gray-500 bg-white rounded-full dark:bg-gray-800 dark:text-gray-100">
+            <p class="relative tracking-tight inline-flex items-center p-2 px-4 text-sm font-medium text-gray-500 bg-white rounded-full dark:bg-gray-700 dark:text-gray-100">
                 Or log in via
             </p>
             <div class="absolute w-full justify-items-end">
