@@ -529,7 +529,7 @@ class Timesheet extends Model
         return $this->belongsTo(Timesheet::class);
     }
 
-    public function records()
+    public function records(): HasManyThrough
     {
         return $this->hasManyThrough(Timetable::class, Timesheet::class, 'id', 'timesheets.timesheet_id', null, 'timetables.timesheet_id')
             ->where(function ($query) {
@@ -543,6 +543,11 @@ class Timesheet extends Model
 
                 $query->orWhere('timesheets.span', 'full');
             });
+    }
+
+    public function annotations(): HasManyThrough
+    {
+        return $this->hasManyThrough(Annotation::class, Timesheet::class, 'timesheet_id', 'timesheets.timesheet_id', null, 'annotations.timesheet_id');
     }
 
     public function exports(): MorphMany
