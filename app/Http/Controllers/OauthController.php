@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Social;
+use DutchCodingCompany\FilamentSocialite\Events\Login;
 use DutchCodingCompany\FilamentSocialite\Events\RegistrationNotEnabled;
 use DutchCodingCompany\FilamentSocialite\Events\SocialiteUserConnected;
 use DutchCodingCompany\FilamentSocialite\Events\UserNotAllowed;
@@ -144,6 +145,15 @@ class OauthController extends SocialiteLoginController
         $this->plugin()->getSocialiteUserModel()::createForProvider($provider, $oauthUser, Auth::guard(session()->get('guard'))->user(), $this->getModel());
 
         return redirect()->to(url(session()->get('oauth-url')));
+    }
+
+    protected function loginUser(string $provider, $socialiteUser, User $oauthUser): Response
+    {
+        Auth::guard(session()->get('guard'))->login($socialiteUser->getUser(), $this->plugin()->getRememberLogin());
+
+        Login::dispatch($socialiteUser, $oauthUser);
+
+        return app()->call($this->plugin()->getRedirectAfterLoginUsing(), ['provider' => $provider, 'socialiteUser' => $socialiteUser, 'plugin' => $this->plugin]);
     }
 
     protected function redirectToLogin(string $message): RedirectResponse
