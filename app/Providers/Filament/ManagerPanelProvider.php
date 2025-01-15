@@ -22,12 +22,13 @@ class ManagerPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('manager')
+            ->path(str(settings('manager') ?: 'manager')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('manager')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('manager') ?: 'manager')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Manager/Resources'), for: 'App\\Filament\\Manager\\Resources')
             ->discoverPages(in: app_path('Filament/Manager/Pages'), for: 'App\\Filament\\Manager\\Pages')

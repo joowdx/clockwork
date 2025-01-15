@@ -31,9 +31,10 @@ class AuthPanelProvider extends PanelProvider
     {
         return $panel
             ->id('auth')
+            ->path('auth')
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->path('auth')
             ->login(Login::class)
             ->revealablePasswords(false)
             ->emailVerification(Verification::class)

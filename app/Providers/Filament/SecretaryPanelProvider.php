@@ -17,12 +17,13 @@ class SecretaryPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('secretary')
+            ->path(str(settings('secretary') ?: 'secretary')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('secretary')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('secretary') ?: 'secretary')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Secretary/Resources'), for: 'App\\Filament\\Secretary\\Resources')
             ->discoverPages(in: app_path('Filament/Secretary/Pages'), for: 'App\\Filament\\Secretary\\Pages')

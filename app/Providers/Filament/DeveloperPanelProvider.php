@@ -16,12 +16,13 @@ class DeveloperPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('developer')
+            ->path(str(settings('developer') ?: 'developer')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('developer')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('developer') ?: 'developer')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Developer/Resources'), for: 'App\\Filament\\Developer\\Resources')
             ->discoverPages(in: app_path('Filament/Developer/Pages'), for: 'App\\Filament\\Developer\\Pages')

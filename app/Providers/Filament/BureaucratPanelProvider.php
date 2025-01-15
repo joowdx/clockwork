@@ -16,12 +16,13 @@ class BureaucratPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('bureaucrat')
+            ->path(str(settings('bureaucrat') ?: 'bureaucrat')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('bureaucrat')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('bureaucrat') ?: 'bureaucrat')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Bureaucrat/Resources'), for: 'App\\Filament\\Bureaucrat\\Resources')
             ->discoverPages(in: app_path('Filament/Bureaucrat/Pages'), for: 'App\\Filament\\Bureaucrat\\Pages')

@@ -16,12 +16,13 @@ class SecurityPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('security')
+            ->path(str(settings('security') ?: 'security')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('security')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('security') ?: 'security')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Security/Resources'), for: 'App\\Filament\\Security\\Resources')
             ->discoverPages(in: app_path('Filament/Security/Pages'), for: 'App\\Filament\\Security\\Pages')

@@ -20,10 +20,11 @@ class LegalPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->brandName('Clockwork')
-            ->brandLogo(fn () => view('banner'))
             ->id('legal')
             ->path('legal')
+            ->homeUrl('/')
+            ->brandName('Clockwork')
+            ->brandLogo(fn () => view('banner'))
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Legal/Resources'), for: 'App\\Filament\\Legal\\Resources')
             ->discoverPages(in: app_path('Filament/Legal/Pages'), for: 'App\\Filament\\Legal\\Pages')

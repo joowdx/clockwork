@@ -16,12 +16,13 @@ class ExecutivePanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('executive')
+            ->path(str(settings('executive') ?: 'executive')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('executive')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('executive') ?: 'executive')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Executive/Resources'), for: 'App\\Filament\\Executive\\Resources')
             ->discoverPages(in: app_path('Filament/Executive/Pages'), for: 'App\\Filament\\Executive\\Pages')

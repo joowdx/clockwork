@@ -17,12 +17,13 @@ class SuperuserPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->id('superuser')
+            ->path(str(settings('superuser') ?: 'superuser')->slug())
+            ->homeUrl('/')
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
-            ->id('superuser')
             ->profile(Account::class)
             ->emailVerification(Verification::class)
-            ->path(str(settings('superuser') ?: 'superuser')->slug())
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Superuser/Resources'), for: 'App\\Filament\\Superuser\\Resources')
             ->discoverPages(in: app_path('Filament/Superuser/Pages'), for: 'App\\Filament\\Superuser\\Pages')

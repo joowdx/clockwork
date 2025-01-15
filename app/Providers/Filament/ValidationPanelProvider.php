@@ -20,10 +20,11 @@ class ValidationPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->brandName('Clockwork')
-            ->brandLogo(fn () => view('banner'))
             ->id('validation')
             ->path('validation')
+            ->homeUrl('/')
+            ->brandName('Clockwork')
+            ->brandLogo(fn () => view('banner'))
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Validation/Resources'), for: 'App\\Filament\\Validation\\Resources')
             ->discoverPages(in: app_path('Filament/Validation/Pages'), for: 'App\\Filament\\Validation\\Pages')

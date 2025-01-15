@@ -27,11 +27,12 @@ class HomePanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->brandName('Clockwork')
-            ->brandLogo(fn () => view('banner'))
-            ->default()
             ->id('home')
             ->path('')
+            ->homeUrl('/')
+            ->default()
+            ->brandName('Clockwork')
+            ->brandLogo(fn () => view('banner'))
             ->colors(['primary' => Color::Cyan])
             ->discoverPages(in: app_path('Filament/Home/Pages'), for: 'App\\Filament\\Home\\Pages')
             ->navigation(false)
