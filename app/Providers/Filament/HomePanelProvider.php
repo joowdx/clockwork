@@ -70,7 +70,8 @@ class HomePanelProvider extends PanelProvider
                         return Provider::make($provider)
                             ->label(ucfirst($provider))
                             ->icon("fab-$provider")
-                            ->outlined(true);
+                            ->outlined(true)
+                            ->hidden();
                     }, config('services.oauth_providers')))
             );
     }
