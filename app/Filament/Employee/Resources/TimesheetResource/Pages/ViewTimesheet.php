@@ -2,6 +2,7 @@
 
 namespace App\Filament\Employee\Resources\TimesheetResource\Pages;
 
+use App\Enums\AnnotationField;
 use App\Enums\PaperSize;
 use App\Enums\TimelogState;
 use App\Enums\TimesheetPeriod;
@@ -13,6 +14,7 @@ use App\Models\Timelog;
 use App\Models\Timesheet;
 use Exception;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
@@ -42,11 +44,14 @@ class ViewTimesheet extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            $this->period(),
-            $this->rectify(),
-            $this->certify(),
             $this->navigate('prev'),
             $this->navigate('next'),
+            $this->period(),
+            $this->annotate(),
+            ActionGroup::make([
+                $this->rectify(),
+                $this->certify(),
+            ]),
         ];
     }
 
@@ -138,7 +143,7 @@ class ViewTimesheet extends ViewRecord
             ]);
     }
 
-    protected function navigate(string $to = 'next')
+    protected function navigate(string $to = 'next'): Action
     {
         $timesheet = $this->record->employee->timesheets()
             ->whereColumn('timesheets.id', 'timesheets.timesheet_id')
@@ -160,12 +165,23 @@ class ViewTimesheet extends ViewRecord
             ->url($url);
     }
 
-    protected function rectify()
+    protected function period(): Action
+    {
+        return FilterAction::make()
+            ->color('primary')
+            ->iconButton()
+            ->form([
+                Select::make('period')
+                    ->options(TimesheetPeriod::class)
+                    ->default(TimesheetPeriod::FULL),
+            ]);
+    }
+
+    protected function rectify(): Action
     {
         return Action::make('rectify')
-            ->icon('gmdi-border-color-o')
-            ->requiresConfirmation()
-            ->modalIcon('gmdi-border-color-o')
+            ->icon('gmdi-rebase-edit')
+            ->modalIcon('gmdi-rebase-edit')
             ->modalDescription('This will allow you to correct your timesheet by adjusting erroneous punch states.')
             ->modalSubmitActionLabel('Save')
             ->modalWidth('lg')
@@ -182,6 +198,8 @@ class ViewTimesheet extends ViewRecord
                     ->dehydrated(false)
                     ->markAsRequired()
                     ->debounce(500)
+                    ->minDate(Carbon::parse($this->record->month)->startOfMonth())
+                    ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
                     ->rule('required')
                     ->rule(fn () => function ($attribute, $value, $fail) {
                         if ($value === null) {
@@ -303,18 +321,7 @@ class ViewTimesheet extends ViewRecord
             });
     }
 
-    protected function period()
-    {
-        return FilterAction::make()
-            ->color('primary')
-            ->form([
-                Select::make('period')
-                    ->options(TimesheetPeriod::class)
-                    ->default(TimesheetPeriod::FULL),
-            ]);
-    }
-
-    protected function certify()
+    protected function certify(): Action
     {
         return Action::make('certify')
             ->icon('gmdi-fact-check-o')
@@ -424,5 +431,58 @@ class ViewTimesheet extends ViewRecord
                             ]),
                     ]),
             ]);
+    }
+
+    protected function annotate(): Action
+    {
+        return Action::make('annotate')
+            ->icon('gmdi-edit-calendar-o')
+            ->modalIcon('gmdi-edit-calendar-o')
+            ->modalWidth('xl')
+            ->modalSubmitActionLabel('Save')
+            ->modalDescription(function () {
+                $html = <<<'HTML'
+                    Annotate your timesheet to provide additional information or context for your superiors to review and verify.
+
+                    <span class="inline-block mt-4 text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
+                        Annotations will not be reflected if there is record a for the selected date or designated arrival and departure times.
+                    </span>
+                HTML;
+
+                return str($html)->toHtmlString();
+            })
+            ->slideOver()
+            ->form([
+                Repeater::make('annotations')
+                    ->label('Annotations')
+                    ->defaultItems(0)
+                    ->addActionLabel('Add annotation')
+                    ->reorderable(false)
+                    ->columns(12)
+                    ->collapsible()
+                    ->schema([
+                        DatePicker::make('date')
+                            ->required()
+                            ->rule('required')
+                            ->minDate(Carbon::parse($this->record->month)->startOfMonth())
+                            ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
+                            ->columnSpan(6),
+                        Select::make('field')
+                            ->options(AnnotationField::class)
+                            ->required()
+                            ->rule('required')
+                            ->columnSpan(6),
+                        TextInput::make('note')
+                            ->label('Note')
+                            ->required()
+                            ->rule('required')
+                            ->maxLength(60)
+                            ->columnSpan(12)
+                            ->hint('Excessive texts will be truncated.'),
+                    ]),
+            ])
+            ->action(function (Timesheet $record, array $data) {
+                dd($record, $data);
+            });
     }
 }
