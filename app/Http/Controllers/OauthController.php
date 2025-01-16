@@ -118,12 +118,12 @@ class OauthController extends SocialiteLoginController
         if (! $this->evaluate($this->plugin()->getRegistration(), ['provider' => $provider, 'oauthUser' => $oauthUser, 'user' => $user])) {
             RegistrationNotEnabled::dispatch($provider, $oauthUser, $user);
 
-            return $this->redirectToLogin('filament-socialite::auth.registration-not-enabled');
+            return $this->redirectToLogin('User account not found.');
         }
 
         return $user
             ? $this->registerSocialiteUser($provider, $oauthUser, $user)
-            : $this->redirectToLogin('User not found.');
+            : $this->redirectToLogin('User account not found.');
     }
 
     protected function registerSocialiteUser(string $provider, User $oauthUser, Authenticatable $user): Response
