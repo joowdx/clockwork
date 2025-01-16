@@ -16,7 +16,7 @@ class SignerController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'callback' => 'nullable|url|active_url',
-            'pdf' => 'required|file|mimes:pdf|max:10mb',
+            'pdf' => 'required|file|mimes:pdf|max:10240',
             'employees' => 'nullable|array',
             'employees.*.field' => 'required|string',
             'employees.*.page' => 'required|integer|min:1',
@@ -87,8 +87,8 @@ class SignerController extends Controller
         PdfSignerJob::dispatch(
             $pdf,
             $request->callback,
-            $request->employees,
-            array_map(fn ($signature) => array_merge($signature, [
+            empty($request->employees) ? [] : $request->employees,
+            empty($request->signatures) ? [] : array_map(fn ($signature) => array_merge($signature, [
                 'certificate' => $signature['certificate']->get(),
                 'specimen' => $signature['specimen']->get(),
             ]), $request->signatures),
