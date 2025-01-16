@@ -322,7 +322,7 @@ class TimesheetExporter implements Responsable
             ->when($period === '2nd', fn ($query) => $query->with('secondHalf'))
             ->when($period === 'regular', fn ($query) => $query->with('regularDays'))
             ->when($period === 'overtime', fn ($query) => $query->with('overtimeWork'))
-            ->with(['employee:id,name,status'])
+            ->with(['employee:id,name,status', 'annotations'])
             ->orderBy(Employee::select('full_name')->whereColumn('employees.id', 'timesheets.employee_id')->limit(1))
             ->lazy();
 

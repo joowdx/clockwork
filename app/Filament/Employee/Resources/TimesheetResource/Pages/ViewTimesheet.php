@@ -16,6 +16,8 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -445,44 +447,94 @@ class ViewTimesheet extends ViewRecord
                     Annotate your timesheet to provide additional information or context for your superiors to review and verify.
 
                     <span class="inline-block mt-4 text-sm text-custom-600 dark:text-custom-400" style="--c-400:var(--warning-400);--c-600:var(--warning-600);">
-                        Annotations will not be reflected if there is record a for the selected date or designated arrival and departure times.
+                        Annotations will not be reflected if there is a record for the selected date or designated arrival and departure times.
                     </span>
                 HTML;
 
                 return str($html)->toHtmlString();
             })
             ->slideOver()
+            ->model($this->record)
+            ->successNotificationTitle('Annotations successfully saved.')
+            ->fillForm(fn (Timesheet $record) => ['details' => [
+                ...$record->details
+            ]])
             ->form([
-                Repeater::make('annotations')
-                    ->label('Annotations')
-                    ->defaultItems(0)
+                Builder::make('details.annotations')
                     ->addActionLabel('Add annotation')
-                    ->reorderable(false)
-                    ->columns(12)
-                    ->collapsible()
-                    ->schema([
-                        DatePicker::make('date')
-                            ->required()
-                            ->rule('required')
-                            ->minDate(Carbon::parse($this->record->month)->startOfMonth())
-                            ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
-                            ->columnSpan(6),
-                        Select::make('field')
-                            ->options(AnnotationField::class)
-                            ->required()
-                            ->rule('required')
-                            ->columnSpan(6),
-                        TextInput::make('note')
-                            ->label('Note')
-                            ->required()
-                            ->rule('required')
-                            ->maxLength(60)
-                            ->columnSpan(12)
-                            ->hint('Excessive texts will be truncated.'),
+                    ->reorderable()
+                    ->blocks([
+                        Block::make('entire_date')
+                            ->columns(12)
+                            ->schema([
+                                DatePicker::make('date')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->minDate(Carbon::parse($this->record->month)->startOfMonth())
+                                    ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
+                                    ->columnSpan(12),
+                                TextInput::make('note')
+                                    ->label('Note')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->maxLength(60)
+                                    ->columnSpan(12)
+                                    ->hint('Excessive texts will be truncated.'),
+                            ]),
+                        Block::make('specified_field')
+                            ->columns(12)
+                            ->schema([
+                                DatePicker::make('date')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->minDate(Carbon::parse($this->record->month)->startOfMonth())
+                                    ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
+                                    ->columnSpan(6),
+                                Select::make('field')
+                                    ->options([
+                                        AnnotationField::ARRIVAL_1->value => AnnotationField::ARRIVAL_1->getLabel(),
+                                        AnnotationField::DEPARTURE_1->value => AnnotationField::DEPARTURE_1->getLabel(),
+                                        AnnotationField::ARRIVAL_2->value => AnnotationField::ARRIVAL_2->getLabel(),
+                                        AnnotationField::DEPARTURE_2->value => AnnotationField::DEPARTURE_2->getLabel(),
+                                    ])
+                                    ->required()
+                                    ->columnSpan(6),
+                                TextInput::make('note')
+                                    ->label('Note')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->maxLength(60)
+                                    ->columnSpan(12)
+                                    ->hint('Excessive texts will be truncated.'),
+                            ]),
+                        Block::make('date_range')
+                            ->columns(12)
+                            ->schema([
+                                DatePicker::make('date')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->minDate(Carbon::parse($this->record->month)->startOfMonth())
+                                    ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
+                                    ->columnSpan(6),
+                                DatePicker::make('to')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->minDate(Carbon::parse($this->record->month)->startOfMonth())
+                                    ->maxDate(Carbon::parse($this->record->month)->endOfMonth())
+                                    ->after('date')
+                                    ->columnSpan(6),
+                                TextInput::make('note')
+                                    ->label('Note')
+                                    ->rule('required')
+                                    ->markAsRequired()
+                                    ->maxLength(60)
+                                    ->columnSpan(12)
+                                    ->hint('Excessive texts will be truncated.'),
+                            ]),
                     ]),
             ])
-            ->action(function (Timesheet $record, array $data) {
-                dd($record, $data);
+            ->action(function (Action $component, Timesheet $record, array $data) {
+                $record->update($data);
             });
     }
 }

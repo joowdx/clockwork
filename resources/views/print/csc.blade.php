@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\GenerateQrCode;
+use App\Enums\AnnotationField;
 use App\Models\Holiday;
 
 $size = isset($size)  ? mb_strtolower($size) : 'folio';
@@ -208,8 +209,9 @@ $generator = fn ($timesheet) => (new GenerateQrCode) (
                                         'weekend' => $date->isWeekend() && (@$misc['weekends'] ?? true) && ! $timetable?->holiday,
                                         'holiday' => ($holiday && (@$misc['holidays'] ?? true)),
                                         'absent' => $timetable?->absent && (@$misc['highlights'] ?? true) && (@$misc['absences'] ?? true),
+                                        'annotation' => $annotation = $timesheet->annotations->first(fn ($annotation) => $annotation->date->isSameDay($date) && $annotation->field === AnnotationField::DATE),
                                         // 'invalid' => $timetable?->invalid,
-                                        'font-sm' => true
+                                        'font-sm' => true,
                                     ])
                                 >
                                     <td
@@ -273,6 +275,10 @@ $generator = fn ($timesheet) => (new GenerateQrCode) (
                                     @elseif($holiday && (@$misc['holidays'] ?? true) || $date->isWeekend() && (@$misc['weekends'] ?? true))
                                         <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
                                             {{ $holiday ?: $date->format('l') }}
+                                        </td>
+                                    @elseif($annotation)
+                                        <td colspan=4 @class(['border cascadia nowrap', $preview ? 'text-left px-4' : 'center']) style="overflow:hidden;text-overflow:ellipsis;">
+                                            {{ $annotation->note }}
                                         </td>
                                     @else
                                         @for ($cell = 0; $cell < 4; $cell++)

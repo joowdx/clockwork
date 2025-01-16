@@ -3,6 +3,7 @@
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\OauthController;
 use App\Http\Middleware\OauthAuthorization;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,3 +34,7 @@ Route::controller(OauthController::class)
         Route::get('{provider}', 'redirectToProvider')->name('socialite.filament.auth.oauth.redirect');
         Route::get('disconnect/{provider}', 'disconnectProvider')->name('oauth.disconnect');
     });
+
+Route::get('ttt', function () {
+    return Http::withToken();
+});

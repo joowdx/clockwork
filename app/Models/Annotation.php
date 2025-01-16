@@ -12,12 +12,14 @@ class Annotation extends Model
 
     protected $fillable = [
         'date',
+        'to',
         'field',
         'note',
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'date:Y-m-d',
+        'to' => 'date:Y-m-d',
         'field' => AnnotationField::class,
     ];
 

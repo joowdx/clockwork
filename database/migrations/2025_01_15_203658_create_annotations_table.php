@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('annotations', function (Blueprint $table) {
             $table->ulid('id');
             $table->date('date');
+            $table->date('to')->nullable();
             $table->string('field');
             $table->string('note');
             $table->foreignUlid('timesheet_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();

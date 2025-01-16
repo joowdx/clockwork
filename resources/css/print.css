@@ -92,6 +92,10 @@ tr, td {
     background-color: #FF9D2834 !important;
 }
 
+.annotation {
+    background-color: #00ffff34 !important;
+}
+
 .scanner {
     display: flex;
     justify-content: space-between;
