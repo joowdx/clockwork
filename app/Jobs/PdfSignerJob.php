@@ -18,6 +18,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
+        protected string $identifier,
         protected string $path,
         protected string $callback,
         protected array $employees,
@@ -69,10 +70,21 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
         }
 
         try {
-            Http::attach('file', file_get_contents($this->path), 'file.pdf')
+            Http::asMultipart()
+                ->attach('file', file_get_contents($this->path), 'file.pdf')
                 ->post($this->callback, [
-                    'status' => 'success',
-                    'message' => 'The PDF has been signed successfully.',
+                    [
+                        'name' => 'identifier',
+                        'contents' => $this->identifier,
+                    ],
+                    [
+                        'name' => 'status',
+                        'contents' => 'success',
+                    ],
+                    [
+                        'name' => 'message',
+                        'contents' => 'The PDF file has been signed successfully.',
+                    ]
                 ]);
         } finally {
             if (file_exists($this->path)) {
