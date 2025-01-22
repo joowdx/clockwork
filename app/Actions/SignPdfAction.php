@@ -107,8 +107,8 @@ class SignPdfAction
                     rename($certificate, $directory.'certificate.pfx');
                     rename($specimen, $directory.'signature.webp');
                 } else {
-                    file_put_contents($directory.'certificate.pfx', 'certificate.pfx');
-                    file_put_contents($directory.'signature.webp', 'signature.webp');
+                    file_put_contents($directory.'certificate.pfx', $certificate);
+                    file_put_contents($directory.'signature.webp', $specimen);
                 }
             }
 
