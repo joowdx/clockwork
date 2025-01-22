@@ -133,6 +133,20 @@ return [
     */
 
     'recorders' => [
+        // \Vcian\Pulse\PulseActiveSessions\Recorders\PulseActiveSessionRecorder::class => [],
+
+        Morrislaptop\LaravelPulse4xx\FourXxRecorder::class => [
+            'enabled' => env('PULSE_4XX_ENABLED', true),
+            'sample_rate' => env('PULSE_4XX_SAMPLE_RATE', 1),
+            'ignore' => [
+                '#^/wp-admin#', // Classic WordPress...
+                '#^/wp-login#',
+                '#^/wp-config#',
+                '#^/xmlrpc\.php#',
+                '#^/browserconfig\.xml#', // Microsoft junk
+            ],
+        ],
+
         Recorders\CacheInteractions::class => [
             'enabled' => env('PULSE_CACHE_INTERACTIONS_ENABLED', true),
             'sample_rate' => env('PULSE_CACHE_INTERACTIONS_SAMPLE_RATE', 1),
