@@ -45,6 +45,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
                 [
                     'reason' => @$row['reason'],
                     'location' => @$row['location'],
+                    'yml' => @$row['yml'],
                 ],
             );
         }
@@ -61,6 +62,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
                     'reason' => @$row['reason'],
                     'location' => @$row['location'],
                     'contact' => @$row['contact'],
+                    'yml' => @$row['yml'],
                 ],
                 false,
                 $signature['certificate'],

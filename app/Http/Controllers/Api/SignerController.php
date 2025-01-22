@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use LSNepomuceno\LaravelA1PdfSign\Exceptions\ProcessRunTimeException;
 use LSNepomuceno\LaravelA1PdfSign\Sign\ManageCert;
+use Symfony\Component\Yaml\Yaml;
 
 class SignerController extends Controller
 {
@@ -24,6 +25,21 @@ class SignerController extends Controller
             'employees.*.coordinates' => 'required|string|regex:/^(\d+,\s*\d+,\s*\d+,\s*\d+)$/',
             'employees.*.reason' => 'nullable|string|max:255',
             'employees.*.location' => 'nullable|string|max:255',
+            'employees.*.yml' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if ($value === null) {
+                        return;
+                    }
+
+                    try {
+                        Yaml::parse($value);
+                    } catch (\Symfony\Component\Yaml\Exception\ParseException) {
+                        return $fail("The $attribute field invalid must be a valid YAML string.");
+                    }
+                },
+            ],
             'employees.*.uid' => [
                 'required',
                 'string',
@@ -50,6 +66,21 @@ class SignerController extends Controller
             'signatures.*.contact' => 'nullable|string|max:255',
             'signatures.*.specimen' => 'required|file|mimes:jpg,png|max:10240',
             'signatures.*.certificate.*' => 'required|file|mimetypes:application/x-pkcs12|max:128',
+            'signatures.*.yml' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if ($value === null) {
+                        return;
+                    }
+
+                    try {
+                        Yaml::parse($value);
+                    } catch (\Symfony\Component\Yaml\Exception\ParseException) {
+                        return $fail("The $attribute field invalid must be a valid YAML string.");
+                    }
+                },
+            ],
             'signatures.*.password' => [
                 'required',
                 'string',

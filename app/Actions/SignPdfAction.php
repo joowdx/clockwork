@@ -113,7 +113,7 @@ class SignPdfAction
             }
 
             if (! is_null($this->coordinates) && ! is_null($this->page)) {
-                file_put_contents($directory.'pyhanko.yml', $this->yml());
+                file_put_contents($directory.'pyhanko.yml', isset($this->data['yml']) ? $this->data['yml'] : $this->yml());
             }
 
             file_put_contents($directory.'password', $user?->signature->password ?? $password);
