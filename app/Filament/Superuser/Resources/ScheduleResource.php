@@ -7,6 +7,7 @@ use App\Enums\WorkArrangement;
 use App\Filament\Superuser\Resources\ScheduleResource\Pages;
 use App\Filament\Superuser\Resources\ScheduleResource\RelationManagers\EmployeesRelationManager;
 use App\Models\Schedule;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -37,13 +38,14 @@ class ScheduleResource extends Resource
                             ->columns(2)
                             ->schema([
                                 Forms\Components\ToggleButtons::make('global')
+                                    ->visible(Filament::getCurrentPanel()->getId() === 'superuser')
                                     ->hintIcon('heroicon-m-question-mark-circle')
                                     ->hintIconTooltip('Global schedules will be applied to all employees without specific schedules.')
                                     ->required()
                                     ->boolean()
                                     ->inline()
                                     ->grouped()
-                                    ->default(true)
+                                    ->default(Filament::getCurrentPanel()->getId() === 'superuser')
                                     ->live()
                                     ->afterStateUpdated(function (Forms\Set $set, string $state) {
                                         if ($state) {
@@ -83,7 +85,13 @@ class ScheduleResource extends Resource
                                     ]),
                             ]),
                         Forms\Components\Select::make('office_id')
-                            ->relationship('office', 'name')
+                            ->relationship('office', 'name', function ($query) {
+                                if (Filament::getCurrentPanel()->getId() === 'superuser') {
+                                    return $query;
+                                }
+
+                                return $query->whereIn('id', user()->offices()->select('offices.id'));
+                            })
                             ->searchable()
                             ->preload()
                             ->hidden(fn (Forms\Get $get) => $get('global')) // || $get('arrangement') == WorkArrangement::UNSET->value)
@@ -383,6 +391,8 @@ class ScheduleResource extends Resource
                     ]),
                 Forms\Components\Section::make('Threshold')
                     // ->hidden(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::UNSET->value)
+                    ->disabled(Filament::getCurrentPanel()->getId() !== 'superuser')
+                    ->dehydrated(Filament::getCurrentPanel()->getId() !== 'superuser')
                     ->columnSpan(1)
                     ->columns(2)
                     ->schema([
@@ -506,6 +516,7 @@ class ScheduleResource extends Resource
                                             ->type('text'),
                                     ]),
                                 Forms\Components\Fieldset::make('Tardy')
+                                    ->hidden()
                                     ->columns(2)
                                     ->schema([
                                         Forms\Components\TextInput::make('threshold.tardy.min')

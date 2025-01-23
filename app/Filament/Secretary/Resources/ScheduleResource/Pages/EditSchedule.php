@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class EditSchedule extends EditRecord
@@ -32,7 +33,14 @@ class EditSchedule extends EditRecord
                 ->validation(fn (Schedule $record) => $record->employees->isNotEmpty())
                 ->failureNotificationBody('Please assign some employees before sending a request'),
             Actions\ActionGroup::make([
-                Actions\DeleteAction::make(),
+                Actions\DeleteAction::make()
+                    ->disabled(function () {
+                        if (! $this->record->request->completed) {
+                            return false;
+                        }
+
+                        return $this->record->request->user_id !== Auth::id();
+                    }),
             ]),
         ];
     }
