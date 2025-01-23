@@ -9,6 +9,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rules\Unique;
 
 class EmployeesRelationManager extends RelationManager
 {
@@ -235,6 +236,8 @@ class EmployeesRelationManager extends RelationManager
                             ->columns(1)
                             ->schema([
                                 $action->getRecordSelect()
+                                    ->unique('shift', 'employee_id', modifyRuleUsing: fn (Unique $rule) => $rule->where('schedule_id', $this->ownerRecord->id))
+                                    ->validationMessages(['unique' => 'The employee(s) selected are already on the schedule.'])
                                     ->hiddenLabel(false)
                                     ->label('Employee'),
                             ]),
