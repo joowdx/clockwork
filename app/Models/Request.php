@@ -21,6 +21,7 @@ class Request extends MorphPivot
         'body',
         'status',
         'remarks',
+        'bypassed',
         'to',
         'step',
         'user_id',
@@ -30,8 +31,6 @@ class Request extends MorphPivot
     protected $casts = [
         'status' => RequestStatus::class,
     ];
-
-    protected $temp = [];
 
     public function to(): Attribute
     {
@@ -103,20 +102,6 @@ class Request extends MorphPivot
     {
         return Attribute::make(
             fn () => $this->status === RequestStatus::DEFLECT,
-        )->shouldCache();
-    }
-
-    public function revoked(): Attribute
-    {
-        return Attribute::make(
-            fn () => $this->status === RequestStatus::REVOKE,
-        )->shouldCache();
-    }
-
-    public function terminated(): Attribute
-    {
-        return Attribute::make(
-            fn () => $this->status === RequestStatus::TERMINATE,
         )->shouldCache();
     }
 

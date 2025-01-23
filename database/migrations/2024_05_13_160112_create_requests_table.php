@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('body')->nullable();
             $table->string('status');
             $table->text('remarks')->nullable();
-            $table->string('for')->default('approval');
+            $table->boolean('bypassed')->default(false);
             $table->ulidMorphs('requestable');
             $table->string('to')->nullable();
             $table->unsignedTinyInteger('step')->nullable();
