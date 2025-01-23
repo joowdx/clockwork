@@ -17,8 +17,6 @@ class RequestResource extends Resource
 {
     protected static ?string $model = Request::class;
 
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $navigationIcon = 'gmdi-rule-folder-o';
 
     public static function form(Form $form): Form
@@ -96,11 +94,11 @@ class RequestResource extends Resource
     {
         return parent::getEloquentQuery()
             ->whereHas('requestable', function (Builder $query) {
-                if (auth()->user()->root) {
+                if (user()->root) {
                     return;
                 }
 
-                $office = auth()->user()->employee?->office?->id;
+                $office = user()->employee?->office?->id;
 
                 $query->when(
                     $office,
