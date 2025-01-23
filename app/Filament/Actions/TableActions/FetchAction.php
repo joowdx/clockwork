@@ -12,6 +12,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
+use Illuminate\Http\Client\ConnectionException;
 
 class FetchAction extends Action
 {
@@ -101,6 +102,12 @@ class FetchAction extends Action
                         $record->pass,
                         $data['month'],
                     );
+                } catch (ConnectionException) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Fetch failed')
+                        ->body("Failed to connect to `" . config('app.remote.host') . '`')
+                        ->send();
                 } catch (Exception) {
                     Notification::make()
                         ->danger()

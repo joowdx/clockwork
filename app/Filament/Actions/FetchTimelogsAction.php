@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Http\Client\ConnectionException;
 
 class FetchTimelogsAction extends Action
 {
@@ -94,6 +95,12 @@ class FetchTimelogsAction extends Action
                             $scanner->pass,
                             $data['month'],
                         );
+                    }  catch (ConnectionException) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Fetch failed')
+                            ->body("Failed to connect to `" . config('app.remote.host') . '`')
+                            ->send();
                     } catch (Exception) {
                         Notification::make()
                             ->danger()
