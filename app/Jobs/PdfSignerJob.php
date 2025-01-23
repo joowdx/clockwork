@@ -88,9 +88,9 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
                     [
                         'name' => 'message',
                         'contents' => 'The PDF file has been signed successfully.',
-                    ]
+                    ],
                 ]);
-        } catch(Throwable $exception) {
+        } catch (Throwable $exception) {
 
             $this->failed($exception);
 

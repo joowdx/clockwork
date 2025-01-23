@@ -106,7 +106,7 @@ class FetchAction extends Action
                     Notification::make()
                         ->danger()
                         ->title('Fetch failed')
-                        ->body("Failed to connect to `" . config('app.remote.host') . '`')
+                        ->body('Failed to connect to `'.config('app.remote.host').'`')
                         ->send();
                 } catch (Exception) {
                     Notification::make()

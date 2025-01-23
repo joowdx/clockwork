@@ -95,11 +95,11 @@ class FetchTimelogsAction extends Action
                             $scanner->pass,
                             $data['month'],
                         );
-                    }  catch (ConnectionException) {
+                    } catch (ConnectionException) {
                         Notification::make()
                             ->danger()
                             ->title('Fetch failed')
-                            ->body("Failed to connect to `" . config('app.remote.host') . '`')
+                            ->body('Failed to connect to `'.config('app.remote.host').'`')
                             ->send();
                     } catch (Exception) {
                         Notification::make()
