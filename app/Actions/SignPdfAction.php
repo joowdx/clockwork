@@ -107,13 +107,13 @@ class SignPdfAction
                     rename($certificate, $directory.'certificate.pfx');
                     rename($specimen, $directory.'signature.webp');
                 } else {
-                    file_put_contents($directory.'certificate.pfx', 'certificate.pfx');
-                    file_put_contents($directory.'signature.webp', 'signature.webp');
+                    file_put_contents($directory.'certificate.pfx', $certificate);
+                    file_put_contents($directory.'signature.webp', $specimen);
                 }
             }
 
             if (! is_null($this->coordinates) && ! is_null($this->page)) {
-                file_put_contents($directory.'pyhanko.yml', $this->yml());
+                file_put_contents($directory.'pyhanko.yml', isset($this->data['yml']) ? $this->data['yml'] : $this->yml());
             }
 
             file_put_contents($directory.'password', $user?->signature->password ?? $password);

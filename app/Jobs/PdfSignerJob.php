@@ -18,6 +18,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
+        protected string $identifier,
         protected string $path,
         protected string $callback,
         protected array $employees,
@@ -31,49 +32,68 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
      */
     public function handle(SignPdfAction $signer): void
     {
-        foreach ($this->employees as $row) {
-            $employee = Employee::where('uid', $row['uid'])->first();
-
-            $signer(
-                $employee,
-                $this->path,
-                null,
-                $employee->uid,
-                $row['coordinates'],
-                $row['page'] ?? 1,
-                [
-                    'reason' => @$row['reason'],
-                    'location' => @$row['location'],
-                ],
-            );
-        }
-
-        foreach ($this->signatures as $signature) {
-            $signer(
-                null,
-                $this->path,
-                null,
-                $signature['field'],
-                $signature['coordinates'],
-                $signature['page'] ?? 1,
-                [
-                    'reason' => @$row['reason'],
-                    'location' => @$row['location'],
-                    'contact' => @$row['contact'],
-                ],
-                false,
-                $signature['certificate'],
-                $signature['specimen'],
-                $signature['password'],
-            );
-        }
-
         try {
-            Http::attach('file', file_get_contents($this->path), 'file.pdf')
+            $employees = Employee::whereIn('uid', array_column($this->employees, 'uid'))->get();
+
+            foreach ($this->employees as $row) {
+                $employee = $employees->first(fn ($employee) => $employee->uid === $row['uid']);
+
+                $signer(
+                    $employee,
+                    $this->path,
+                    null,
+                    $row['field'],
+                    $row['coordinates'],
+                    $row['page'] ?? 1,
+                    [
+                        'reason' => @$row['reason'],
+                        'location' => @$row['location'],
+                        'yml' => @$row['yml'],
+                    ],
+                );
+            }
+
+            foreach ($this->signatures as $signature) {
+                $signer(
+                    null,
+                    $this->path,
+                    null,
+                    $signature['field'],
+                    $signature['coordinates'],
+                    $signature['page'] ?? 1,
+                    [
+                        'reason' => @$row['reason'],
+                        'location' => @$row['location'],
+                        'contact' => @$row['contact'],
+                        'yml' => @$row['yml'],
+                    ],
+                    false,
+                    $signature['certificate'],
+                    $signature['specimen'],
+                    $signature['password'],
+                );
+            }
+
+            Http::asMultipart()
+                ->attach('file', file_get_contents($this->path), 'file.pdf')
                 ->post($this->callback, [
-                    'status' => 'success',
-                    'message' => 'The PDF has been signed successfully.',
+                    [
+                        'name' => 'identifier',
+                        'contents' => $this->identifier,
+                    ],
+                    [
+                        'name' => 'status',
+                        'contents' => 'success',
+                    ],
+                    [
+                        'name' => 'message',
+                        'contents' => 'The PDF file has been signed successfully.',
+                    ],
                 ]);
+        } catch (Throwable $exception) {
+
+            $this->failed($exception);
+
         } finally {
             if (file_exists($this->path)) {
                 unlink($this->path);

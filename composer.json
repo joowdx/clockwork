@@ -11,6 +11,7 @@
         "php": "^8.2",
         "azure-oss/storage-blob-laravel": "^1.0",
         "codeat3/blade-google-material-design-icons": "^1.19",
+        "denniseilander/pulse-about-application": "^0.2.1",
         "dutchcodingcompany/filament-socialite": "^2.3",
         "fakerphp/faker": "^1.9.1",
         "filament/filament": "^3.2",
@@ -30,6 +31,7 @@
         "livewire/volt": "^1.6",
         "lsnepomuceno/laravel-a1-pdf-sign": "^1.1",
         "mailersend/laravel-driver": "^2.7",
+        "morrislaptop/laravel-pulse-4xx": "^0.2.0",
         "owenvoke/blade-fontawesome": "^2.6",
         "resend/resend-php": "^0.13.0",
         "sentry/sentry-laravel": "^4.9",
@@ -40,6 +42,8 @@
         "spatie/laravel-pdf": "^1.5",
         "symfony/http-client": "^7.1",
         "symfony/mailgun-mailer": "^7.1",
+        "symfony/yaml": "^7.2",
+        "vcian/pulse-active-sessions": "*",
         "webklex/laravel-pdfmerger": "*"
     },
     "require-dev": {

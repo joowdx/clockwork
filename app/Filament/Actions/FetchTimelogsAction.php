@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Http\Client\ConnectionException;
 
 class FetchTimelogsAction extends Action
 {
@@ -85,7 +86,9 @@ class FetchTimelogsAction extends Action
                 return;
             }
 
-            $filtered->each(function (Scanner $scanner) use ($data) {
+            $failed = false;
+
+            $filtered->each(function (Scanner $scanner) use ($data, &$failed) {
                 if (config('app.remote.server')) {
                     try {
                         app(RemoteFetchTimelogs::class)->fetch(
@@ -94,12 +97,26 @@ class FetchTimelogsAction extends Action
                             $scanner->pass,
                             $data['month'],
                         );
+                    } catch (ConnectionException) {
+                        $failed = true;
+
+                        Notification::make()
+                            ->danger()
+                            ->title('Fetch failed')
+                            ->body('Failed to connect to `'.config('app.remote.host').'`')
+                            ->send();
+
+                        return false;
                     } catch (Exception) {
+                        $failed = true;
+
                         Notification::make()
                             ->danger()
                             ->title('Fetch failed')
                             ->body("Something went wrong while trying to remotely fetch timelogs from {$scanner->name}.")
                             ->send();
+
+                        return false;
                     }
                 } else {
                     FetchTimelogs::dispatch($scanner->uid, $data['month'])
@@ -107,11 +124,14 @@ class FetchTimelogsAction extends Action
                 }
             });
 
-            Notification::make()
-                ->success()
-                ->title('Timelogs fetching initiated')
-                ->body("The timelogs will be fetched for scanners [{$filtered->pluck('name')->join(', ')}] in the background. Please wait for the process to complete.")
-                ->send();
+            if (! $failed) {
+                Notification::make()
+                    ->success()
+                    ->title('Timelogs fetching initiated')
+                    ->body("The timelogs will be fetched for scanners [{$filtered->pluck('name')->join(', ')}] in the background. Please wait for the process to complete.")
+                    ->send();
+            }
+
         });
 
         $this->modalSubmitActionLabel('Fetch');
