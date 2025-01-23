@@ -457,7 +457,7 @@ class ViewTimesheet extends ViewRecord
             ->model($this->record)
             ->successNotificationTitle('Annotations successfully saved.')
             ->fillForm(fn (Timesheet $record) => ['details' => [
-                ...$record->details
+                ...$record->details,
             ]])
             ->form([
                 Builder::make('details.annotations')
