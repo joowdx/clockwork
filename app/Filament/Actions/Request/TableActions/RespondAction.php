@@ -18,6 +18,7 @@ use Filament\Forms\Components\ViewField;
 use Filament\Forms\Get;
 use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class RespondAction extends Action
@@ -30,8 +31,6 @@ class RespondAction extends Action
 
         $this->label('Respond');
 
-        $this->requiresConfirmation();
-
         $this->modalIcon('gmdi-rule-folder-o');
 
         $this->modalDescription('What action would you like to take on this request?');
@@ -39,6 +38,8 @@ class RespondAction extends Action
         $this->modalWidth('xl');
 
         $this->disabled(fn (Request $record) => ! $record->requestable->respondible);
+
+        $this->slideOver();
 
         $this->form([
             Tabs::make()
@@ -109,7 +110,7 @@ class RespondAction extends Action
                         'status' => RequestStatus::ESCALATE,
                         'to' => $data['target'],
                         'step' => null,
-                        'user_id' => auth()->id(),
+                        'user_id' => Auth::id(),
                         'remarks' => $data['remarks'] ?? null,
                     ]);
                 } elseif ($data['status'] === RequestStatus::DEFLECT->value) {
@@ -117,13 +118,13 @@ class RespondAction extends Action
                         'status' => RequestStatus::DEFLECT,
                         'to' => $record->requestable->route->final(),
                         'step' => $record->requestable->route->final(true),
-                        'user_id' => auth()->id(),
+                        'user_id' => Auth::id(),
                         'remarks' => $data['remarks'] ?? null,
                     ]);
                 } else {
                     $record->requestable->requests()->create([
                         'status' => $data['status'],
-                        'user_id' => auth()->id(),
+                        'user_id' => Auth::id(),
                         'to' => Filament::getCurrentPanel()->getId(),
                         'step' => $record->step,
                         'remarks' => $data['remarks'] ?? null,

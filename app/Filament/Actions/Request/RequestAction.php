@@ -11,6 +11,7 @@ use Filament\Actions\Concerns\InteractsWithRecord;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -47,6 +48,8 @@ class RequestAction extends Action
         $this->successNotificationTitle('Request success');
 
         $this->slideOver();
+
+        $this->visible(settings('requests'));
 
         $this->modalDescription(<<<'DESC'
             Be sure to finalize everything else before proceeding as you will not be able to make adjustments after this action.
@@ -106,7 +109,7 @@ class RequestAction extends Action
             DB::transaction(function () use ($data) {
                 $this->record->forceFill([
                     'title' => $data['title'],
-                    'requestor_id' => auth()->id(),
+                    'requestor_id' => Auth::id(),
                     'requested_at' => now(),
                 ])->save();
 
@@ -115,7 +118,7 @@ class RequestAction extends Action
                     'body' => $data['body'],
                     'status' => RequestStatus::REQUEST,
                     'to' => $this->record->next_route,
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'remarks' => $data['remarks'],
                     'step' => 1,
                 ]);
