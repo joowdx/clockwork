@@ -94,6 +94,8 @@ class FetchAction extends Action
                 return;
             }
 
+            $failed = false;
+
             if (config('app.remote.server')) {
                 try {
                     app(RemoteFetchTimelogs::class)->fetch(
@@ -103,12 +105,16 @@ class FetchAction extends Action
                         $data['month'],
                     );
                 } catch (ConnectionException) {
+                    $failed = true;
+
                     Notification::make()
                         ->danger()
                         ->title('Fetch failed')
                         ->body('Failed to connect to `'.config('app.remote.host').'`')
                         ->send();
                 } catch (Exception) {
+                    $failed = true;
+
                     Notification::make()
                         ->danger()
                         ->title('Fetch failed')
@@ -120,11 +126,13 @@ class FetchAction extends Action
                     ->onQueue('main');
             }
 
-            Notification::make()
-                ->success()
-                ->title('Command queued')
-                ->body(str("We'll notify you once the timelogs of {$record->name} have been fetched.")->toHtmlString())
-                ->send();
+            if (! $failed) {
+                Notification::make()
+                    ->success()
+                    ->title('Command queued')
+                    ->body(str("We'll notify you once the timelogs of {$record->name} have been fetched.")->toHtmlString())
+                    ->send();
+            }
         });
     }
 }
