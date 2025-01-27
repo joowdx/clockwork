@@ -11,26 +11,11 @@ class CreateSchedule extends CreateRecord
 {
     protected static string $resource = ScheduleResource::class;
 
+    protected static bool $canCreateAnother = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // $data['office_id'] =>
-
         return $data;
-    }
-
-    protected function afterCreate()
-    {
-        if (settings('requests')) {
-            return;
-        }
-
-        $this->record->application()->create([
-            'completed' => true,
-            'status' => RequestStatus::APPROVE,
-            'for' => 'approval',
-            'remarks' => 'Schedule added directly without approval',
-            'user_id' => Auth::id(),
-        ]);
     }
 
     protected function getRedirectUrl(): string

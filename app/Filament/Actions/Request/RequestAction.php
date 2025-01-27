@@ -3,12 +3,16 @@
 namespace App\Filament\Actions\Request;
 
 use App\Enums\RequestStatus;
+use App\Enums\UserRole;
+use App\Models\Employee;
 use App\Models\Route;
 use App\Models\Schedule;
+use App\Models\User;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithRecord;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -35,8 +39,6 @@ class RequestAction extends Action
 
         $this->name ??= 'request';
 
-        $this->requiresConfirmation();
-
         $this->modalWidth('2xl');
 
         $this->label('Request');
@@ -45,19 +47,20 @@ class RequestAction extends Action
 
         $this->failureNotificationBody('Please check the request again.');
 
+        $this->icon('gmdi-rule-folder-o');
+
+        $this->modalIcon('gmdi-rule-folder-o');
+
         $this->successNotificationTitle('Request success');
 
         $this->slideOver();
 
-        $this->visible(settings('requests'));
-
         $this->modalDescription(<<<'DESC'
             Be sure to finalize everything else before proceeding as you will not be able to make adjustments after this action.
-            Would you like to continue?
         DESC);
 
         $this->successNotificationBody(function () {
-            $target = $this->record->next_route;
+            $target = $this->record->next_route['role'];
 
             $alias = settings($target, true) ?? $target;
 
@@ -97,6 +100,22 @@ class RequestAction extends Action
                     'orderedList',
                     'link',
                 ]),
+            Select::make($this->record->next_route['action'])
+                ->rule($this->record->next_route['assignable'] ? 'required' : null)
+                ->visible($this->record->next_route['assignable'])
+                ->markAsRequired()
+                ->searchable()
+                ->placeholder('Select ' . UserRole::tryFrom($this->record->next_route['role'])->getLabel())
+                ->getSearchResultsUsing(function (string $search) {
+                    return Employee::query()
+                        ->where(function ($query) use ($search) {
+                            $query->orWhere('full_name', 'ilike', "%$search%");
+                            $query->orWhere('name', 'ilike', "%$search%");
+                        })
+                        ->pluck('name', 'id')
+                        ->toArray();
+                })
+                ->getOptionLabelsUsing(fn (array $values) => Employee::whereIn('id', $values)->pluck('name', 'id')->toArray()),
         ]);
 
         $this->action(function (array $data) {
@@ -117,7 +136,9 @@ class RequestAction extends Action
                     'title' => $data['title'],
                     'body' => $data['body'],
                     'status' => RequestStatus::REQUEST,
-                    'to' => $this->record->next_route,
+                    'to' => $this->record->next_route['role'],
+                    'for' => $this->record->next_route['action'],
+                    'target_id' => null,
                     'user_id' => Auth::id(),
                     'remarks' => $data['remarks'],
                     'step' => 1,

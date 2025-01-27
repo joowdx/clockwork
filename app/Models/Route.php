@@ -16,6 +16,7 @@ class Route extends Model
         'type',
         'path',
         'escalation',
+        'skippable',
     ];
 
     protected $casts = [
@@ -23,7 +24,7 @@ class Route extends Model
         'escalation' => 'json',
     ];
 
-    public function next(?int $current): ?string
+    public function next(?int $current): ?array
     {
         if ($current === null) {
             return $this->path[0] ?? null;

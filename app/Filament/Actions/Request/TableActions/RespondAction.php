@@ -122,15 +122,26 @@ class RespondAction extends Action
                         'remarks' => $data['remarks'] ?? null,
                     ]);
                 } else {
-                    $record->requestable->requests()->create([
-                        'status' => $data['status'],
-                        'user_id' => Auth::id(),
-                        'to' => Filament::getCurrentPanel()->getId(),
-                        'step' => $record->step,
-                        'remarks' => $data['remarks'] ?? null,
-                        'completed' => $data['status'] === RequestStatus::REJECT->value ||
-                            $record->final && $data['status'] === RequestStatus::APPROVE->value,
-                    ]);
+                    if ($record->step > 1) {
+                        $record->update([
+                            'status' => $data['status'],
+                            'user_id' => Auth::id(),
+                            'remarks' => $data['remarks'] ?? null,
+                            'completed' => $data['status'] === RequestStatus::REJECT->value ||
+                                $record->final && $data['status'] === RequestStatus::APPROVE->value,
+                        ]);
+                    } else {
+                        $record->requestable->requests()->create([
+                            'status' => $data['status'],
+                            'user_id' => Auth::id(),
+                            'to' => Filament::getCurrentPanel()->getId(),
+                            'for' => $record->for,
+                            'step' => $record->step,
+                            'remarks' => $data['remarks'] ?? null,
+                            'completed' => $data['status'] === RequestStatus::REJECT->value ||
+                                $record->final && $data['status'] === RequestStatus::APPROVE->value,
+                        ]);
+                    }
                 }
 
                 if ($data['status'] === RequestStatus::APPROVE->value) {
@@ -150,7 +161,8 @@ class RespondAction extends Action
                     } elseif ($record->requestable->next_route) {
                         $record->requestable->requests()->create([
                             'status' => RequestStatus::REQUEST,
-                            'to' => $record->requestable->next_route,
+                            'to' => $record->requestable->next_route['role'],
+                            'for' => $record->requestable->next_route['action'],
                             'step' => $record->step + 1,
                             'user_id' => null,
                         ]);

@@ -138,7 +138,7 @@ class ScheduleResource extends Resource
                             ->validationMessages(['not_in' => 'This feature is not yet supported or deprecated and might be removed in the future.'])
                             ->disableOptionWhen(function (string $value, Forms\Get $get) {
                                 return match ($value) {
-                                    // WorkArrangement::UNSET->value,
+                                    WorkArrangement::UNSET->value => true,
                                     WorkArrangement::WORK_SHIFTING->value,
                                     // WorkArrangement::COMPRESSED_WORK_WEEK->value,
                                     WorkArrangement::ROUND_THE_CLOCK->value => $get('global'),
@@ -417,7 +417,7 @@ class ScheduleResource extends Resource
                                             ->hint('mins')
                                             ->hintIcon('heroicon-m-question-mark-circle')
                                             ->hintIconTooltip('Disregard attendance records that are "after" the specified number of minutes from Punch 1.')
-                                            ->default(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::STANDARD_WORK_HOUR->value ? 180 : 360)
+                                            ->default(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::STANDARD_WORK_HOUR->value ? 240 : 360)
                                             ->numeric()
                                             ->type('text')
                                             ->markAsRequired()
@@ -430,7 +430,7 @@ class ScheduleResource extends Resource
                                             ->hint('mins')
                                             ->hintIcon('heroicon-m-question-mark-circle')
                                             ->hintIconTooltip('Disregard attendance records that are "before" the specified number of minutes from Punch 2.')
-                                            ->default(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::STANDARD_WORK_HOUR->value ? 180 : 360)
+                                            ->default(fn (Forms\Get $get) => $get('arrangement') == WorkArrangement::STANDARD_WORK_HOUR->value ? 240 : 360)
                                             ->numeric()
                                             ->type('text')
                                             ->markAsRequired()
@@ -464,7 +464,7 @@ class ScheduleResource extends Resource
                                             ->hint('mins')
                                             ->hintIcon('heroicon-m-question-mark-circle')
                                             ->hintIconTooltip('Disregard attendance records that are "after" the specified number of minutes from Punch 3.')
-                                            ->default(180)
+                                            ->default(240)
                                             ->numeric()
                                             ->type('text')
                                             ->markAsRequired()
@@ -478,7 +478,7 @@ class ScheduleResource extends Resource
                                             ->hint('mins')
                                             ->hintIcon('heroicon-m-question-mark-circle')
                                             ->hintIconTooltip('Disregard attendance records that are "before" the specified number of minutes from Punch 4.')
-                                            ->default(180)
+                                            ->default(240)
                                             ->numeric()
                                             ->markAsRequired()
                                             ->type('text')

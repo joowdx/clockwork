@@ -33,7 +33,6 @@ class ScheduleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->visible(settings('requests'))
                     ->searchable()
                     ->getStateUsing(fn (Schedule $record) => $record->drafted ? null : ($record->request->cancelled ? null : $record->title))
                     ->placeholder(fn (Schedule $record) => $record->drafted ? 'Drafted' : ($record->request->cancelled ? 'Cancelled' : $record->title)),
@@ -50,7 +49,6 @@ class ScheduleResource extends Resource
                         };
                     }),
                 Tables\Columns\TextColumn::make('request.status')
-                    ->visible(settings('requests'))
                     ->placeholder('Draft'),
                 Tables\Columns\TextColumn::make('request.user.name')
                     ->label('Requestor'),
@@ -73,10 +71,8 @@ class ScheduleResource extends Resource
                     ->native(false),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->visible(fn (?Schedule $record) => ! in_array($record?->request?->status, [null, RequestStatus::CANCEL, RequestStatus::RETURN])),
-                Tables\Actions\EditAction::make()
-                    ->hidden(fn (?Schedule $record) => ! in_array($record?->request?->status, [null, RequestStatus::CANCEL, RequestStatus::RETURN])),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\ActionGroup::make([
                     ShowRoutingAction::make(),
                     CancelAction::make(),
@@ -105,7 +101,6 @@ class ScheduleResource extends Resource
         return [
             'index' => Pages\ListSchedules::route('/'),
             'create' => Pages\CreateSchedule::route('/create'),
-            // 'create-overtime' => Pages\CreateOvertimeSchedule::route('/create-overtime'),
             'view' => Pages\ViewSchedule::route('/{record}/view'),
             'edit' => Pages\EditSchedule::route('/{record}/edit'),
         ];

@@ -1,3 +1,5 @@
+@use(App\Enums\RequestStatus)
+
 @php($requests ??= $schedule->requests)
 
 <section class="space-y-3">
@@ -21,7 +23,7 @@
                             'bg-gray-500' => $request->requested,
                             'bg-purple-500' => $request->cancelled,
                             'bg-red-500' => $request->rejected,
-                            'bg-green-500' => $request->approved,
+                            'bg-cyan-500' => $request->approved,
                             'bg-yellow-500' => $request->returned || $request->deflected,
                             'bg-sky-500' => $request->escalated,
                         ])
@@ -67,12 +69,12 @@
                                 'font-bold uppercase' => $request->status->value !== 'requested',
                                 'text-purple-500' => $request->cancelled,
                                 'text-red-500' => $request->rejected,
-                                'text-green-500' => $request->approved,
+                                'text-cyan-500' => $request->approved,
                                 'text-yellow-500' => $request->returned || $request->deflected,
                                 'text-sky-500' => $request->escalated,
                             ])
                         >
-                            {{ "{$request->status->getLabel()}" }}&nbsp;
+                            {{ $request->status === RequestStatus::APPROVE ? $request->for->getLabel(true) : $request->status->getLabel() }}&nbsp;
                         </span>
 
                         @if (in_array($request->status->value, ['approved', 'rejected', 'returned']))
@@ -85,7 +87,7 @@
                         @elseif($request->status->value === 'escalated')
                             to the {{ $request->to }}
                         @else
-                            @if ($request->for && ! $request->cancelled)
+                            @if (! $request->cancelled)
                                 for {{ $request->for }}
                             @endif
 

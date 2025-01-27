@@ -2,6 +2,7 @@
 
 namespace App\Filament\Developer\Resources;
 
+use App\Enums\RouteAction;
 use App\Enums\UserRole;
 use App\Models\Route;
 use App\Models\Schedule;
@@ -32,20 +33,26 @@ class RouteResource extends Resource
                             ->required(),
                         Forms\Components\Repeater::make('path')
                             ->grid(4)
-                            ->simple(
+                            ->schema([
                                 Forms\Components\Select::make('role')
                                     ->label('Role')
                                     ->options(UserRole::requestable())
                                     ->required(),
-                            ),
+                                Forms\Components\Select::make('action')
+                                    ->default(RouteAction::APPROVAL)
+                                    ->options(RouteAction::class),
+                                Forms\Components\Checkbox::make('assignable')
+                                    ->hintIcon('heroicon-o-information-circle')
+                                    ->hintIconTooltip('Assign to specific employee. They must have the corresponding role and must be correctly linked to its user account.'),
+                            ]),
                         Forms\Components\Repeater::make('escalation')
                             ->grid(4)
-                            ->simple(
+                            ->schema([
                                 Forms\Components\Select::make('role')
                                     ->label('Role')
                                     ->options(UserRole::requestable())
                                     ->required(),
-                            ),
+                            ]),
                     ]),
             ]);
     }
@@ -59,9 +66,9 @@ class RouteResource extends Resource
                     ->sortable()
                     ->getStateUsing(fn (Route $record) => class_basename($record->model)),
                 Tables\Columns\TextColumn::make('path')
-                    ->getStateUsing(fn (Route $record) => collect($record->path)->map(fn ($path) => UserRole::tryFrom($path)->getLabel())->join(', ')),
+                    ->getStateUsing(fn (Route $record) => collect($record->path)->map(fn ($path) => UserRole::tryFrom($path['role'])->getLabel())->join(', ')),
                 Tables\Columns\TextColumn::make('escalation')
-                    ->getStateUsing(fn (Route $record) => collect($record->escalation)->map(fn ($target) => UserRole::tryFrom($target)->getLabel())->join(', ')),
+                    ->getStateUsing(fn (Route $record) => collect($record->escalation)->map(fn ($target) => UserRole::tryFrom($target['role'])->getLabel())->join(', ')),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make()

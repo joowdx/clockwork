@@ -7,6 +7,7 @@ use App\Filament\Actions\Request\TableActions\RespondAction;
 use App\Filament\Director\Resources\RequestResource\Pages;
 use App\Models\Request;
 use App\Models\Schedule;
+use Filament\Facades\Filament;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -93,20 +94,24 @@ class RequestResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->whereHas('requestable', function (Builder $query) {
-                if (user()->root) {
-                    return;
-                }
+            ->where(function (Builder $query) {
+                $query->where(function (Builder $query) {
+                    $query->whereHas('requestable', function (Builder $query) {
+                        match(Filament::getCurrentPanel()->getId()) {
+                            'leader' => $query->where('to', 'leader'),
+                            default => $query->when(
+                                user()->employee?->office?->id,
+                                fn ($query, $office) => $query->where('office_id', $office),
+                                fn ($query) => $query->whereRaw('1 = 0'),
+                            ),
+                        };
+                    });
 
-                $office = user()->employee?->office?->id;
+                    $query->whereNot('status', RequestStatus::CANCEL);
 
-                $query->when(
-                    $office,
-                    fn ($query) => $query->where('office_id', $office),
-                    fn ($query) => $query->whereRaw('1 = 0'),
-                );
+                    $query->whereIn('id', Request::selectRaw('MAX(requests.id)')->groupBy('requestable_id', 'requestable_type'));
+                });
             })
-            ->whereNot('status', RequestStatus::CANCEL)
-            ->whereIn('id', Request::selectRaw('MAX(requests.id)')->groupBy('requestable_id', 'requestable_type'));
+            ->whereNot(fn ($query) => $query->where('bypassed', true)->where('completed', true));
     }
 }

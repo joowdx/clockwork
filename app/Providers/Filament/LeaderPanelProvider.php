@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Account;
 use App\Filament\Auth\Verification;
+use App\Filament\Director\Resources\RequestResource;
 use App\Filament\Manager\Resources\TimesheetResource;
 use App\Http\Middleware\Authenticate;
 use App\Providers\Filament\Utils\Middleware;
@@ -27,7 +28,7 @@ class LeaderPanelProvider extends PanelProvider
             ->colors(['primary' => Color::Cyan])
             ->discoverResources(in: app_path('Filament/Leader/Resources'), for: 'App\\Filament\\Leader\\Resources')
             ->discoverPages(in: app_path('Filament/Leader/Pages'), for: 'App\\Filament\\Leader\\Pages')
-            ->resources([TimesheetResource::class])
+            ->resources([RequestResource::class, TimesheetResource::class])
             ->discoverWidgets(in: app_path('Filament/Leader/Widgets'), for: 'App\\Filament\\Leader\\Widgets')
             ->middleware(Middleware::middlewares())
             ->authMiddleware([Authenticate::class])

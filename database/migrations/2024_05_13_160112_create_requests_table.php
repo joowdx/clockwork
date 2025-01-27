@@ -17,11 +17,14 @@ return new class extends Migration
             $table->text('body')->nullable();
             $table->string('status');
             $table->text('remarks')->nullable();
-            $table->boolean('bypassed')->default(false);
-            $table->ulidMorphs('requestable');
             $table->string('to')->nullable();
+            $table->string('for')->nullable();
             $table->unsignedTinyInteger('step')->nullable();
             $table->boolean('completed')->default(false);
+            $table->boolean('ratified')->default(false);
+            $table->boolean('bypassed')->default(false);
+            $table->ulidMorphs('requestable');
+            $table->foreignUlid('target_id')->nullable()->constrained('users', 'id')->cascadeOnUpdate()->noActionOnDelete();
             $table->foreignUlid('user_id')->nullable()->constrained()->cascadeOnUpdate()->noActionOnDelete();
             $table->timestamps();
         });

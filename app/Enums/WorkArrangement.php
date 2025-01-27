@@ -31,6 +31,7 @@ enum WorkArrangement: string implements HasDescription, HasLabel
             // self::FLEXI_TIME => 'Custom start and end times within set limits',
             // self::COMPRESSED_WORK_WEEK => 'More hours in fewer days',
             self::ROUND_THE_CLOCK => 'For continuous operation 24h or 48h shifts',
+            self::UNSET => 'N/A',
             default => null,
         };
     }

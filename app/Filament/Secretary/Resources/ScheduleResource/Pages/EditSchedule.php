@@ -5,7 +5,9 @@ namespace App\Filament\Secretary\Resources\ScheduleResource\Pages;
 use App\Filament\Actions\Request\RequestAction;
 use App\Filament\Secretary\Resources\ScheduleResource;
 use App\Models\Schedule;
+use App\Models\User;
 use Filament\Actions;
+use Filament\Actions\Modal\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -33,14 +35,9 @@ class EditSchedule extends EditRecord
                 ->validation(fn (Schedule $record) => $record->employees->isNotEmpty())
                 ->failureNotificationBody('Please assign some employees before sending a request'),
             Actions\ActionGroup::make([
-                Actions\DeleteAction::make()
-                    ->disabled(function () {
-                        if (! $this->record->request->completed) {
-                            return false;
-                        }
-
-                        return $this->record->request->user_id !== Auth::id();
-                    }),
+                Actions\DeleteAction::make(),
+                Actions\RestoreAction::make(),
+                Actions\ForceDeleteAction::make(),
             ]),
         ];
     }

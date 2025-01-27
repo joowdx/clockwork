@@ -109,10 +109,15 @@ class RequestResource extends Resource
                     $query->whereNot('status', RequestStatus::CANCEL);
 
                     $query->whereIn('id', Request::selectRaw('MAX(requests.id)')->groupBy('requestable_id', 'requestable_type'));
+
+                    $query->where('to', 'manager');
                 });
 
-                $query->orWhere('completed', true);
+                $query->orWhere(function ($query) {
+                    $query->where('completed', true);
+                });
             })
-            ->whereHas('requestable');
+            ->whereHas('requestable')
+            ->where('bypassed', false);
     }
 }

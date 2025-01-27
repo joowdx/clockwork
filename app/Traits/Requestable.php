@@ -10,6 +10,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -17,6 +18,13 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 trait Requestable
 {
+    public static function bootRequestable(): void
+    {
+        static::forceDeleting(function (Model $model) {
+            $model->requests()->delete();
+        });
+    }
+
     public function application(): MorphOne
     {
         return $this->morphOne(Request::class, 'requestable')
@@ -108,6 +116,10 @@ trait Requestable
 
                     if ($this->request->deflected) {
                         return $this->route->final() === $panel;
+                    }
+
+                    if ($this->request->step === 0) {
+                        return $this->request->target->is(user()) && $this->request->to === $panel;
                     }
 
                     if ($this->request->toward === $panel) {
