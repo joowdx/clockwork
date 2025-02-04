@@ -12,7 +12,7 @@ class CreateOffice extends CreateRecord
 
     protected function afterCreate(): void
     {
-        if ($this->record->icon && file_exists($this->record->icon)) {
+        if ($this->record->logo && file_exists($this->record->icon)) {
             $optimized = app(OptimizeImage::class)($this->record->icon);
 
             $this->record->update(['logo' => preg_replace('/^.*\/offices/', 'offices', $optimized)]);
