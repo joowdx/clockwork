@@ -4,6 +4,8 @@ namespace App\Filament\Superuser\Resources\ScheduleResource\Pages;
 
 use App\Filament\Superuser\Resources\ScheduleResource;
 use Filament\Actions;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +27,16 @@ class EditSchedule extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->form([
+                    TextInput::make('password')
+                        ->visible(Filament::getCurrentPanel()->getId() !== 'superuser')
+                        ->label('Password')
+                        ->placeholder('Enter your password to confirm')
+                        ->currentPassword()
+                        ->rule('required')
+                        ->markAsRequired(),
+                ]),
             Actions\ForceDeleteAction::make(),
             Actions\RestoreAction::make(),
         ];
