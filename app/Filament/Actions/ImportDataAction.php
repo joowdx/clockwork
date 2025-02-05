@@ -2,6 +2,7 @@
 
 namespace App\Filament\Actions;
 
+use App\Enums\UserRole;
 use App\Jobs\ImportData;
 use Filament\Actions\Action;
 use Filament\Forms;
@@ -19,6 +20,8 @@ class ImportDataAction extends Action
         $this->icon('heroicon-m-arrow-up-tray');
 
         $this->groupedIcon('heroicon-m-arrow-up-tray');
+
+        $this->visible(user()->hasAnyRole(UserRole::ROOT, UserRole::DEVELOPER));
 
         $this->modalDescription(function () {
             $html = <<<'HTML'

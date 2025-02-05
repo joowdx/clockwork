@@ -60,12 +60,14 @@ class OfficeFilter extends Filter
 
                     $query = Office::query();
 
-                    $query->where(function ($query) use ($user) {
-                        $query->whereIn('id', $user->offices->pluck('id'));
+                    $query->when(Filament::getCurrentPanel()->getId() === 'secretary', function ($query) use ($user) {
+                        $query->where(function ($query) use ($user) {
+                            $query->whereIn('id', $user->offices()->select('offices.id'));
 
-                        $query->orWhereHas('employees', function ($query) use ($user) {
-                            $query->whereHas('scanners', function (Builder $query) use ($user) {
-                                $query->whereIn('scanners.id', $user->scanners->pluck('id')->toArray());
+                            $query->orWhereHas('employees', function ($query) use ($user) {
+                                $query->whereHas('scanners', function (Builder $query) use ($user) {
+                                    $query->whereIn('scanners.id', $user->scanners()->select('offices.id'));
+                                });
                             });
                         });
                     });
