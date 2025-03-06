@@ -11,7 +11,7 @@ class TimesheetRequest extends FormRequest
     public function rules(): array
     {
         $date = function ($a, $v, $f) {
-            if (empty($this->input('month'))) {
+            if (empty($this->input('month')) || $this->input('period') === 'range') {
                 return;
             }
 
