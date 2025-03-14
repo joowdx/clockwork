@@ -30,7 +30,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(SignPdfAction $signer): void
+    public function handle(): void
     {
         try {
             $employees = Employee::whereIn('uid', array_column($this->employees, 'uid'))->get();
@@ -38,7 +38,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
             foreach ($this->employees as $row) {
                 $employee = $employees->first(fn ($employee) => $employee->uid === $row['uid']);
 
-                $signer(
+                (new SignPdfAction) (
                     $employee,
                     $this->path,
                     null,
@@ -54,7 +54,7 @@ class PdfSignerJob implements ShouldBeEncrypted, ShouldQueue
             }
 
             foreach ($this->signatures as $signature) {
-                $signer(
+                (new SignPdfAction) (
                     null,
                     $this->path,
                     null,

@@ -11,7 +11,7 @@ class TimesheetRequest extends FormRequest
     public function rules(): array
     {
         $date = function ($a, $v, $f) {
-            if (empty($this->input('month'))) {
+            if (empty($this->input('month')) || $this->input('period') === 'range') {
                 return;
             }
 
@@ -36,7 +36,7 @@ class TimesheetRequest extends FormRequest
             'dates.*' => ['required', $date],
             'dates' => 'required_if:period,dates|array',
             'period' => 'required|string|in:1st,2nd,full,regular,overtime,dates,range',
-            'month' => 'required|string|date_format:Y-m',
+            'month' => array_filter([$this->input('period') !== 'range' ? 'required' : null, 'string', 'date_format:Y-m']),
             'uid.*' => 'required|string',
             'uid' => ['required', function ($a, $v, $f) {
                 if (! is_string($v) && ! is_array($v)) {

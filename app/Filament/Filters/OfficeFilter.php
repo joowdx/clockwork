@@ -66,7 +66,7 @@ class OfficeFilter extends Filter
 
                             $query->orWhereHas('employees', function ($query) use ($user) {
                                 $query->whereHas('scanners', function (Builder $query) use ($user) {
-                                    $query->whereIn('scanners.id', $user->scanners()->select('offices.id'));
+                                    $query->whereIn('scanners.id', $user->scanners()->select('scanners.id'));
                                 });
                             });
                         });

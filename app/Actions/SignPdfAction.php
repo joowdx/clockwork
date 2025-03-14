@@ -113,6 +113,10 @@ class SignPdfAction
             }
 
             if (! is_null($this->coordinates) && ! is_null($this->page)) {
+                if (file_exists($directory.'pyhanko.yml')) {
+                    unlink($directory.'pyhanko.yml');
+                }
+
                 file_put_contents($directory.'pyhanko.yml', isset($this->data['yml']) ? $this->data['yml'] : $this->yml());
             }
 
