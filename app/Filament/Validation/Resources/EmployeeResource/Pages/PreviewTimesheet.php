@@ -33,7 +33,7 @@ class PreviewTimesheet extends ViewRecord
 
         $this->record = $employee->timesheets()
             ->where('month', "{$this->month}-01")
-            ->first();
+            ->firstOrFail();
 
         $this->record->setSpan($this->period);
 
