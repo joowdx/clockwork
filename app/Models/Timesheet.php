@@ -545,15 +545,15 @@ class Timesheet extends Model
             });
     }
 
-    // public function notes(): HasMany
-    // {
-    //     return $this->hasMany(Annotation::class);
-    // }
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Annotation::class);
+    }
 
-    // public function annotations(): HasManyThrough
-    // {
-    //     return $this->hasManyThrough(Annotation::class, Timesheet::class, 'timesheet_id', 'timesheets.timesheet_id', null, 'annotations.timesheet_id');
-    // }
+    public function annotations(): HasManyThrough
+    {
+        return $this->hasManyThrough(Annotation::class, Timesheet::class, 'timesheet_id', 'timesheets.timesheet_id', null, 'annotations.timesheet_id');
+    }
 
     public function exports(): MorphMany
     {
