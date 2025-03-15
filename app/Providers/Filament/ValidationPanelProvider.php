@@ -26,6 +26,7 @@ class ValidationPanelProvider extends PanelProvider
             ->brandName('Clockwork')
             ->brandLogo(fn () => view('banner'))
             ->colors(['primary' => Color::Cyan])
+            ->topNavigation()
             ->discoverResources(in: app_path('Filament/Validation/Resources'), for: 'App\\Filament\\Validation\\Resources')
             ->discoverPages(in: app_path('Filament/Validation/Pages'), for: 'App\\Filament\\Validation\\Pages')
             ->middleware([
