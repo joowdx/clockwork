@@ -79,7 +79,7 @@ class UpdateEmployeeAction extends Action
                         $group->id => [
                             'id' => $group->id,
                             'group_id' => $group->id,
-                            'active' => $group->pivot->active,
+                            'active' => $group->active,
                         ],
                     ];
                 })->values()->all(),
