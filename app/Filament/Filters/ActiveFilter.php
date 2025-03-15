@@ -4,6 +4,7 @@ namespace App\Filament\Filters;
 
 use App\Models\Scopes\ActiveScope;
 use Closure;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -57,6 +58,24 @@ class ActiveFilter extends TernaryFilter
                 fn ($query) => $query->withoutInactive(),
             ),
         );
+
+        $this->indicateUsing(function (TernaryFilter $filter, array $state): array {
+            if (blank($state['value'] ?? null)) {
+                return [];
+            }
+
+            $stateLabel = $state['value'] ?
+                $filter->getTrueLabel() :
+                $filter->getFalseLabel();
+
+            $indicator = $filter->getIndicator();
+
+            if (! $indicator instanceof Indicator) {
+                $indicator = Indicator::make("{$stateLabel}");
+            }
+
+            return [$indicator];
+        });
     }
 
     public function modelRelationship(?string $modelRelationship): static
