@@ -21,6 +21,8 @@ return new class extends Migration
     {
         $schema = Schema::connection($this->getConnection());
 
+        $this->down();
+
         $schema->create('telescope_entries', function (Blueprint $table) {
             $table->bigIncrements('sequence');
             $table->uuid('uuid');

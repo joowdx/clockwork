@@ -19,6 +19,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $this->down();
+
         Schema::connection($this->getConnection())->create('backups', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('file')->nullable();

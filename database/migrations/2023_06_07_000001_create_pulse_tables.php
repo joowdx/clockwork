@@ -15,6 +15,8 @@ return new class extends PulseMigration
             return;
         }
 
+        $this->down();
+
         Schema::connection($this->getConnection())->create('pulse_values', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('timestamp');
