@@ -505,7 +505,7 @@ $hasPreviousDay ??= function (array $timelogs, array $current) {
                                 <tr>
                                     <td colspan=6 @class(['center font-sm', 'underline' => $supervisor ??= true])>
                                         @if($supervisor)
-                                            {{ ($sv = $employee->currentDeployment?->supervisor?->name) === $employee->name ? null : $sv }}
+                                            {{ ($sv = $employee->currentDeployment?->supervisor?->titled_name) === $employee->titled_name ? null : $sv }}
                                         @endif
                                     </td>
                                 </tr>
