@@ -156,6 +156,7 @@ class EmployeeResource extends Resource
             ->withoutGlobalScopes([
                 ActiveScope::class,
                 SoftDeletingScope::class,
+                'excludeInterns',
             ])
             ->where(function (Builder $query) {
                 $query->orWhereHas('offices', function (Builder $query) {

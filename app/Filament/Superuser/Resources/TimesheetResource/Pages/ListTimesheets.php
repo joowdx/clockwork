@@ -69,7 +69,7 @@ class ListTimesheets extends ListRecords
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn () => ($this->filters['model'] ?? Employee::class)::query())
+            ->query(fn () => ($this->filters['model'] ?? Employee::class)::query()->withoutGlobalScopes(['excludeInterns']))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()

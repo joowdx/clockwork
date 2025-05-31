@@ -151,6 +151,7 @@ class TimesheetResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->withoutGlobalScope('excludeInterns')
             ->where(function ($query) {
                 $user = user();
 
