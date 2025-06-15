@@ -11,7 +11,7 @@ trait FormatsName
         }
 
         $mapping = [
-            'ma' => 'Maria',
+            // 'ma' => 'Maria',
             'jr' => 'Jr',
             'sr' => 'Sr',
             'ii' => 'II',
