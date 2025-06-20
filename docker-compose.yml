@@ -6,7 +6,7 @@ services:
             args:
                 WWWGROUP: '${WWWGROUP}'
         container_name: clockwork.app
-        image: 'joowdx/clockwork:v3'
+        image: 'joowdx/laravel:clockwork'
         restart: unless-stopped
         extra_hosts:
             - 'host.docker.internal:host-gateway'
